@@ -1,0 +1,15 @@
+ {
+  "title": "Shiyan Yishu",
+  "artist": "ECMcCready",
+  "bpm": 180,
+  "tuning": "Dropped D",
+  "key": "D Major / Pentatonic / Minor",
+  "genre": ["punk-metal", "hyper-reality", "generative-art"],
+  "lyrics": {
+    "verse1": "I am caught up in hyper-reality. Immersive interconnected environments. Cognition, creativity, discovery. My memories tend to sim experiments. Health tools, VR therapy. Augmenting my gallery. Past my future's sent warped gravity. Weaving my virtual realm's confinements. Simulation explores captivity. Boundless segments dance for my firmaments. Reflections form my spectrum. My cosmic web weaves and presents.",
+    "chorus": "Shiyan Yishu Shiyan Yishu Shiyan Yishu Shiyan Yishu Shiyan Yishu",
+    "verse2": "Via realms an endless multiverse. I am singular unified and vast. Trance, expanse, traverse. My future's an echoed broadcast. Chaotic dream's digital spree. Generative art's a blooming scream. Scripted dreams of data's intertwined. Simulacra's art merged as mazed science. Virtual alliances are designed. Encrypted sparks anchored reliance. Portals gleam of worlds galore. Multiverses, bubbles and the unseen.",
+    "verse3": "Stream flickered voice story multiplies. Neon trailing crowds converged lives synergized. Minds and circuits electrifies. Reshaped thoughts evolved energized. Ads replayed are blurred. Everywhere this daily stare."
+  },
+  "evidence": ["lyrics", "guitar-pro", "bass", "drums"]
+}
