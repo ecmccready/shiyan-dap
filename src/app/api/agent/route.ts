@@ -10,8 +10,8 @@ async function runAgent(domainId: Domain = "music") {
   // 1. Model Adapter
   const rawNarrative = seed.lyrics?.verse1 || "No narrative provided";
   const modelResult = await runModelAdapter(rawNarrative, {
-    provider: "mock",
-  });
+  provider: "grok",
+});
 
   // Domain-specific content
   const domainSpecific = {
