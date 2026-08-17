@@ -1,3 +1,4 @@
+import { addClusterToMarketplace } from "@/lib/marketplace";
 import { NextResponse } from "next/server";
 import seed from "@/data/seed/shiyan-yishu.json";
 import { domains, Domain } from "@/lib/domains";
@@ -138,7 +139,20 @@ async function runAgent(domainId: Domain = "music") {
     similarity: Number(similarity.toFixed(3)),
     timestamp: new Date().toISOString(),
   });
-
+  // ── Register cluster into the Missing Middle Marketplace ──
+  addClusterToMarketplace({
+    id: cluster.id,
+    name: cluster.name,
+    domain: domain.label,
+    size: cluster.size,
+    tags: cluster.tags,
+    similarity: policyExtension.similarity_score,
+    pi_inv: Number(pi_inv.toFixed(3)),
+    status: "available",
+    owner: seed.artist || domain.defaultArtist,
+    createdAt: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+  });
   return {
     success: true,
     message: "Full GTP loop complete (with self-improvement)",

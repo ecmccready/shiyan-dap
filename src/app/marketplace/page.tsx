@@ -1,0 +1,147 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+export default function MarketplacePage() {
+  const [inventory, setInventory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Trigger the agent a few times across domains so inventory gets populated
+    const domains = ["music", "visual", "text", "professional"];
+
+    Promise.all(
+      domains.map((domain) =>
+        fetch(`/api/agent?domain=${domain}`).then((res) => res.json())
+      )
+    )
+      .then(() => {
+        // After agents have run, fetch the marketplace inventory
+        return fetch("/api/marketplace");
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        setInventory(data.inventory || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <p className="text-zinc-400">Loading marketplace inventory…</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <header className="border-b border-zinc-800/80">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="font-semibold tracking-tight text-lg">
+              Shiyan Yishu
+            </Link>
+            <span className="text-zinc-500 text-sm">Marketplace</span>
+          </div>
+
+          <nav className="flex items-center gap-8">
+            <Link
+              href="/dashboard"
+              className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/upload"
+              className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+            >
+              Upload
+            </Link>
+            <Link
+              href="/track/shiyan-yishu"
+              className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+            >
+              Music
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-6 py-12">
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">
+            Missing Middle Marketplace
+          </h1>
+          <p className="text-zinc-400">
+            Living clusters as inventory — where C2C narratives meet B2B demand.
+          </p>
+        </div>
+
+        {inventory.length === 0 ? (
+          <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-12 text-center">
+            <p className="text-zinc-400">
+              No clusters in inventory yet. Run the agent from the Dashboard to populate.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {inventory.map((cluster) => (
+              <div
+                key={cluster.id}
+                className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold">{cluster.name}</h2>
+                    <p className="text-sm text-zinc-400 mt-1">
+                      {cluster.domain} · Owner: {cluster.owner}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-xs px-2.5 py-1 rounded-full ${
+                      cluster.status === "available"
+                        ? "bg-emerald-900/50 text-emerald-400"
+                        : "bg-zinc-800 text-zinc-400"
+                    }`}
+                  >
+                    {cluster.status}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 text-sm mb-4">
+                  <div>
+                    <p className="text-zinc-500 text-xs">π<sub>inv</sub></p>
+                    <p className="font-medium">{cluster.pi_inv}</p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs">Similarity</p>
+                    <p className="font-medium">{cluster.similarity}</p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs">Size</p>
+                    <p className="font-medium">{cluster.size}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {cluster.tags?.map((tag: string, i: number) => (
+                    <span
+                      key={`${tag}-${i}`}
+                      className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
