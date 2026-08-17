@@ -6,9 +6,22 @@ import Link from "next/link";
 export default function MarketplacePage() {
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  const loadInventory = async () => {
+    try {
+      const res = await fetch("/api/marketplace");
+      const data = await res.json();
+      setInventory(data.inventory || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Trigger the agent a few times across domains so inventory gets populated
+    // First populate inventory by running the agent across domains
     const domains = ["music", "visual", "text", "professional"];
 
     Promise.all(
@@ -16,17 +29,29 @@ export default function MarketplacePage() {
         fetch(`/api/agent?domain=${domain}`).then((res) => res.json())
       )
     )
-      .then(() => {
-        // After agents have run, fetch the marketplace inventory
-        return fetch("/api/marketplace");
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        setInventory(data.inventory || []);
-        setLoading(false);
-      })
+      .then(() => loadInventory())
       .catch(() => setLoading(false));
   }, []);
+
+  const updateStatus = async (id: string, status: string) => {
+    setUpdating(id);
+    try {
+      const res = await fetch("/api/marketplace/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Refresh inventory
+        await loadInventory();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUpdating(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -84,7 +109,8 @@ export default function MarketplacePage() {
         {inventory.length === 0 ? (
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-12 text-center">
             <p className="text-zinc-400">
-              No clusters in inventory yet. Run the agent from the Dashboard to populate.
+              No clusters in inventory yet. Run the agent from the Dashboard to
+              populate.
             </p>
           </div>
         ) : (
@@ -102,19 +128,23 @@ export default function MarketplacePage() {
                     </p>
                   </div>
                   <span
-                    className={`text-xs px-2.5 py-1 rounded-full ${
+                    className={`text-xs px-2.5 py-1 rounded-full capitalize ${
                       cluster.status === "available"
                         ? "bg-emerald-900/50 text-emerald-400"
-                        : "bg-zinc-800 text-zinc-400"
+                        : cluster.status === "reserved"
+                        ? "bg-amber-900/50 text-amber-400"
+                        : "bg-zinc-700 text-zinc-300"
                     }`}
                   >
                     {cluster.status}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 text-sm mb-4">
+                <div className="grid grid-cols-3 gap-4 text-sm mb-5">
                   <div>
-                    <p className="text-zinc-500 text-xs">π<sub>inv</sub></p>
+                    <p className="text-zinc-500 text-xs">
+                      π<sub>inv</sub>
+                    </p>
                     <p className="font-medium">{cluster.pi_inv}</p>
                   </div>
                   <div>
@@ -127,7 +157,7 @@ export default function MarketplacePage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-5">
                   {cluster.tags?.map((tag: string, i: number) => (
                     <span
                       key={`${tag}-${i}`}
@@ -136,6 +166,45 @@ export default function MarketplacePage() {
                       {tag}
                     </span>
                   ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  {cluster.status === "available" && (
+                    <button
+                      onClick={() => updateStatus(cluster.id, "reserved")}
+                      disabled={updating === cluster.id}
+                      className="flex-1 h-10 rounded-full bg-amber-600/90 text-white text-sm font-medium hover:bg-amber-500 transition-colors disabled:opacity-50"
+                    >
+                      {updating === cluster.id ? "Updating…" : "Reserve"}
+                    </button>
+                  )}
+
+                  {cluster.status === "reserved" && (
+                    <button
+                      onClick={() => updateStatus(cluster.id, "settled")}
+                      disabled={updating === cluster.id}
+                      className="flex-1 h-10 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors disabled:opacity-50"
+                    >
+                      {updating === cluster.id ? "Updating…" : "Settle"}
+                    </button>
+                  )}
+
+                  {cluster.status === "settled" && (
+                    <div className="flex-1 h-10 rounded-full border border-zinc-700 text-zinc-400 text-sm flex items-center justify-center">
+                      Settled
+                    </div>
+                  )}
+
+                  {cluster.status !== "available" && (
+                    <button
+                      onClick={() => updateStatus(cluster.id, "available")}
+                      disabled={updating === cluster.id}
+                      className="h-10 px-4 rounded-full border border-zinc-700 text-zinc-400 text-sm hover:border-zinc-500 hover:text-white transition-colors disabled:opacity-50"
+                    >
+                      Reset
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
