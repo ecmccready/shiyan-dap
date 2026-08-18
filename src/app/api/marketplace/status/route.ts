@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { updateClusterStatus, getClusterById } from "@/lib/marketplace";
+import {
+  updateClusterStatus,
+  getClusterById,
+} from "@/lib/marketplace";
+import { processPayment } from "@/lib/payment";
 
 export async function POST(request: Request) {
   try {
@@ -20,14 +24,32 @@ export async function POST(request: Request) {
       );
     }
 
+    // Update status first
     updateClusterStatus(id, status);
     const updated = getClusterById(id);
+
+    // If we just settled, trigger payment
+    let paymentResult = null;
+    if (status === "settled" && updated) {
+      paymentResult = await processPayment(
+        {
+          clusterId: updated.id,
+          amount: updated.artistPayout || 29.4,
+          currency: "usd",
+          owner: updated.owner,
+          description: `Settlement for cluster: ${updated.name}`,
+        },
+        "simulated" // ← change to "stripe" later when ready
+      );
+    }
 
     return NextResponse.json({
       success: true,
       cluster: updated,
+      payment: paymentResult,
     });
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { success: false, error: "Failed to update status" },
       { status: 500 }

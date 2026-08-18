@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { clusterToNFTMetadata } from "@/lib/nft";
 
 export default function MarketplacePage() {
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [mintedNFT, setMintedNFT] = useState<any>(null);
 
   const loadInventory = async () => {
     try {
@@ -21,7 +23,6 @@ export default function MarketplacePage() {
   };
 
   useEffect(() => {
-    // First populate inventory by running the agent across domains
     const domains = ["music", "visual", "text", "professional"];
 
     Promise.all(
@@ -43,7 +44,6 @@ export default function MarketplacePage() {
       });
       const data = await res.json();
       if (data.success) {
-        // Refresh inventory
         await loadInventory();
       }
     } catch (err) {
@@ -51,6 +51,11 @@ export default function MarketplacePage() {
     } finally {
       setUpdating(null);
     }
+  };
+
+  const handleMint = (cluster: any) => {
+    const metadata = clusterToNFTMetadata(cluster);
+    setMintedNFT(metadata);
   };
 
   if (loading) {
@@ -109,8 +114,7 @@ export default function MarketplacePage() {
         {inventory.length === 0 ? (
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-12 text-center">
             <p className="text-zinc-400">
-              No clusters in inventory yet. Run the agent from the Dashboard to
-              populate.
+              No clusters in inventory yet.
             </p>
           </div>
         ) : (
@@ -142,9 +146,7 @@ export default function MarketplacePage() {
 
                 <div className="grid grid-cols-3 gap-4 text-sm mb-5">
                   <div>
-                    <p className="text-zinc-500 text-xs">
-                      π<sub>inv</sub>
-                    </p>
+                    <p className="text-zinc-500 text-xs">π<sub>inv</sub></p>
                     <p className="font-medium">{cluster.pi_inv}</p>
                   </div>
                   <div>
@@ -156,6 +158,18 @@ export default function MarketplacePage() {
                     <p className="font-medium">{cluster.size}</p>
                   </div>
                 </div>
+
+                {cluster.status === "settled" && cluster.artistPayout && (
+                  <div className="mb-5 p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40">
+                    <p className="text-xs text-emerald-400 mb-1">Simulated Settlement</p>
+                    <p className="text-lg font-semibold text-emerald-400">
+                      ${cluster.artistPayout.toFixed(2)} paid to {cluster.owner}
+                    </p>
+                    <p className="text-xs text-zinc-400 mt-1">
+                      From ${cluster.simulatedRevenue} revenue · 70% share
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex flex-wrap gap-2 mb-5">
                   {cluster.tags?.map((tag: string, i: number) => (
@@ -169,14 +183,21 @@ export default function MarketplacePage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {cluster.status === "available" && (
                     <button
                       onClick={() => updateStatus(cluster.id, "reserved")}
                       disabled={updating === cluster.id}
-                      className="flex-1 h-10 rounded-full bg-amber-600/90 text-white text-sm font-medium hover:bg-amber-500 transition-colors disabled:opacity-50"
+                      className="flex-1 h-10 rounded-full bg-amber-600/90 text-white text-sm font-medium hover:bg-amber-500 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      {updating === cluster.id ? "Updating…" : "Reserve"}
+                      {updating === cluster.id ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Reserving…
+                        </>
+                      ) : (
+                        "Reserve"
+                      )}
                     </button>
                   )}
 
@@ -184,16 +205,31 @@ export default function MarketplacePage() {
                     <button
                       onClick={() => updateStatus(cluster.id, "settled")}
                       disabled={updating === cluster.id}
-                      className="flex-1 h-10 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors disabled:opacity-50"
+                      className="flex-1 h-10 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      {updating === cluster.id ? "Updating…" : "Settle"}
+                      {updating === cluster.id ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Settling…
+                        </>
+                      ) : (
+                        "Settle"
+                      )}
                     </button>
                   )}
 
                   {cluster.status === "settled" && (
-                    <div className="flex-1 h-10 rounded-full border border-zinc-700 text-zinc-400 text-sm flex items-center justify-center">
-                      Settled
-                    </div>
+                    <>
+                      <div className="flex-1 h-10 rounded-full border border-zinc-700 text-zinc-400 text-sm flex items-center justify-center">
+                        Settled
+                      </div>
+                      <button
+                        onClick={() => handleMint(cluster)}
+                        className="h-10 px-5 rounded-full bg-purple-600 text-white text-sm font-medium hover:bg-purple-500 transition-colors"
+                      >
+                        Mint as NFT
+                      </button>
+                    </>
                   )}
 
                   {cluster.status !== "available" && (
@@ -211,6 +247,34 @@ export default function MarketplacePage() {
           </div>
         )}
       </main>
+
+      {/* Simple NFT Preview Modal */}
+      {mintedNFT && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-purple-400">
+                NFT Metadata (Simulated Mint)
+              </h3>
+              <button
+                onClick={() => setMintedNFT(null)}
+                className="text-zinc-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <pre className="text-xs text-zinc-300 bg-black/50 p-4 rounded-xl overflow-x-auto">
+              {JSON.stringify(mintedNFT, null, 2)}
+            </pre>
+
+            <p className="text-xs text-zinc-500 mt-4">
+              This is a simulated mint. In the next stage we will connect a real
+              chain (Base / Polygon / Solana).
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

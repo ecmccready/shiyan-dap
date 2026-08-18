@@ -18,6 +18,12 @@ export default function Home() {
     Dashboard
   </Link>
   <Link
+    href="/marketplace"
+    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+  >
+    Marketplace
+  </Link>
+  <Link
     href="/upload"
     className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
   >
