@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { clusterToNFTMetadata } from "@/lib/nft";
+import StripePayment from "@/components/StripePayment";
 
 export default function MarketplacePage() {
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [mintedNFT, setMintedNFT] = useState<any>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const loadInventory = async () => {
     try {
@@ -43,7 +45,12 @@ export default function MarketplacePage() {
         body: JSON.stringify({ id, status }),
       });
       const data = await res.json();
+
       if (data.success) {
+        // If Stripe returned a clientSecret, open the payment modal
+        if (data.payment?.clientSecret) {
+          setClientSecret(data.payment.clientSecret);
+        }
         await loadInventory();
       }
     } catch (err) {
@@ -53,10 +60,33 @@ export default function MarketplacePage() {
     }
   };
 
-  const handleMint = (cluster: any) => {
-    const metadata = clusterToNFTMetadata(cluster);
-    setMintedNFT(metadata);
-  };
+  const handleMint = async (cluster: any) => {
+  const metadata = clusterToNFTMetadata(cluster);
+
+  try {
+    const res = await fetch("/api/nft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        metadata,
+        owner: cluster.owner,
+        clusterId: cluster.id,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setMintedNFT(data.nft.metadata); // still show the preview
+    } else {
+      console.error("Failed to save NFT:", data.error);
+      setMintedNFT(metadata); // fallback to just showing it
+    }
+  } catch (err) {
+    console.error(err);
+    setMintedNFT(metadata); // fallback
+  }
+};
 
   if (loading) {
     return (
@@ -113,9 +143,7 @@ export default function MarketplacePage() {
 
         {inventory.length === 0 ? (
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-12 text-center">
-            <p className="text-zinc-400">
-              No clusters in inventory yet.
-            </p>
+            <p className="text-zinc-400">No clusters in inventory yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -146,7 +174,9 @@ export default function MarketplacePage() {
 
                 <div className="grid grid-cols-3 gap-4 text-sm mb-5">
                   <div>
-                    <p className="text-zinc-500 text-xs">π<sub>inv</sub></p>
+                    <p className="text-zinc-500 text-xs">
+                      π<sub>inv</sub>
+                    </p>
                     <p className="font-medium">{cluster.pi_inv}</p>
                   </div>
                   <div>
@@ -161,7 +191,9 @@ export default function MarketplacePage() {
 
                 {cluster.status === "settled" && cluster.artistPayout && (
                   <div className="mb-5 p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40">
-                    <p className="text-xs text-emerald-400 mb-1">Simulated Settlement</p>
+                    <p className="text-xs text-emerald-400 mb-1">
+                      Simulated Settlement
+                    </p>
                     <p className="text-lg font-semibold text-emerald-400">
                       ${cluster.artistPayout.toFixed(2)} paid to {cluster.owner}
                     </p>
@@ -248,7 +280,7 @@ export default function MarketplacePage() {
         )}
       </main>
 
-      {/* Simple NFT Preview Modal */}
+      {/* NFT Preview Modal */}
       {mintedNFT && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
           <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
@@ -270,10 +302,22 @@ export default function MarketplacePage() {
 
             <p className="text-xs text-zinc-500 mt-4">
               This is a simulated mint. In the next stage we will connect a real
-              chain (Base / Polygon / Solana).
+              chain.
             </p>
           </div>
         </div>
+      )}
+
+      {/* Stripe Payment Modal */}
+      {clientSecret && (
+        <StripePayment
+          clientSecret={clientSecret}
+          onSuccess={() => {
+            setClientSecret(null);
+            loadInventory();
+          }}
+          onCancel={() => setClientSecret(null)}
+        />
       )}
     </div>
   );

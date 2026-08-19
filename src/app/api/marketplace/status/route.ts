@@ -39,7 +39,7 @@ export async function POST(request: Request) {
           owner: updated.owner,
           description: `Settlement for cluster: ${updated.name}`,
         },
-        "simulated" // ← change to "stripe" later when ready
+        "simulated"
       );
     }
 
