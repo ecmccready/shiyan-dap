@@ -9,12 +9,10 @@ export interface StoredNFT {
   status: "simulated" | "minted";
 }
 
-// Simple in-memory store (resets on server restart)
-// Later this can be replaced with a database
+// Simple in-memory store
 let nfts: StoredNFT[] = [];
 
 export function saveNFT(nft: StoredNFT) {
-  // Avoid duplicates by clusterId
   const exists = nfts.find((n) => n.clusterId === nft.clusterId);
   if (exists) {
     nfts = nfts.map((n) =>

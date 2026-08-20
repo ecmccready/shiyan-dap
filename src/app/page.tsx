@@ -24,16 +24,16 @@ export default function Home() {
     Marketplace
   </Link>
   <Link
+    href="/nfts"
+    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+  >
+    My NFTs
+  </Link>
+  <Link
     href="/upload"
     className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
   >
     Upload
-  </Link>
-  <Link
-    href="/track/visual"
-    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-  >
-    Visual
   </Link>
   <Link
     href="/track/shiyan-yishu"

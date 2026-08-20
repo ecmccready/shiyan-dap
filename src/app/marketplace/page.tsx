@@ -47,7 +47,6 @@ export default function MarketplacePage() {
       const data = await res.json();
 
       if (data.success) {
-        // If Stripe returned a clientSecret, open the payment modal
         if (data.payment?.clientSecret) {
           setClientSecret(data.payment.clientSecret);
         }
@@ -61,32 +60,32 @@ export default function MarketplacePage() {
   };
 
   const handleMint = async (cluster: any) => {
-  const metadata = clusterToNFTMetadata(cluster);
+    const metadata = clusterToNFTMetadata(cluster);
 
-  try {
-    const res = await fetch("/api/nft", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        metadata,
-        owner: cluster.owner,
-        clusterId: cluster.id,
-      }),
-    });
+    try {
+      const res = await fetch("/api/nft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          metadata,
+          owner: cluster.owner,
+          clusterId: cluster.id,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.success) {
-      setMintedNFT(data.nft.metadata); // still show the preview
-    } else {
-      console.error("Failed to save NFT:", data.error);
-      setMintedNFT(metadata); // fallback to just showing it
+      if (data.success) {
+        setMintedNFT(data.nft.metadata);
+      } else {
+        console.error("Failed to save NFT:", data.error);
+        setMintedNFT(metadata);
+      }
+    } catch (err) {
+      console.error(err);
+      setMintedNFT(metadata);
     }
-  } catch (err) {
-    console.error(err);
-    setMintedNFT(metadata); // fallback
-  }
-};
+  };
 
   if (loading) {
     return (
@@ -109,25 +108,31 @@ export default function MarketplacePage() {
           </div>
 
           <nav className="flex items-center gap-8">
-            <Link
-              href="/dashboard"
-              className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/upload"
-              className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-            >
-              Upload
-            </Link>
-            <Link
-              href="/track/shiyan-yishu"
-              className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-            >
-              Music
-            </Link>
-          </nav>
+  <Link
+    href="/dashboard"
+    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+  >
+    Dashboard
+  </Link>
+  <Link
+    href="/nfts"
+    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+  >
+    My NFTs
+  </Link>
+  <Link
+    href="/upload"
+    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+  >
+    Upload
+  </Link>
+  <Link
+    href="/track/shiyan-yishu"
+    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+  >
+    Music
+  </Link>
+</nav>
         </div>
       </header>
 
@@ -301,8 +306,7 @@ export default function MarketplacePage() {
             </pre>
 
             <p className="text-xs text-zinc-500 mt-4">
-              This is a simulated mint. In the next stage we will connect a real
-              chain.
+              This is a simulated mint. The NFT has also been saved.
             </p>
           </div>
         </div>

@@ -1,28 +1,36 @@
 import { NextResponse } from "next/server";
-import { saveNFT, getAllNFTs, getNFTsByOwner } from "@/lib/nft-store";
-import { ClusterNFTMetadata } from "@/lib/nft";
+
+// Temporary in-file store (avoids the module resolution issue)
+interface StoredNFT {
+  id: string;
+  metadata: any;
+  mintedAt: string;
+  owner: string;
+  clusterId: string;
+  status: "simulated" | "minted";
+}
+
+let nfts: StoredNFT[] = [];
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const owner = searchParams.get("owner");
 
-  const nfts = owner ? getNFTsByOwner(owner) : getAllNFTs();
+  const result = owner
+    ? nfts.filter((n) => n.owner === owner)
+    : [...nfts];
 
   return NextResponse.json({
     success: true,
-    count: nfts.length,
-    nfts,
+    count: result.length,
+    nfts: result,
   });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { metadata, owner, clusterId } = body as {
-      metadata: ClusterNFTMetadata;
-      owner: string;
-      clusterId: string;
-    };
+    const { metadata, owner, clusterId } = body;
 
     if (!metadata || !owner || !clusterId) {
       return NextResponse.json(
@@ -31,16 +39,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const nft = {
+    const nft: StoredNFT = {
       id: `nft_${clusterId}_${Date.now()}`,
       metadata,
       mintedAt: new Date().toISOString(),
       owner,
       clusterId,
-      status: "simulated" as const,
+      status: "simulated",
     };
 
-    saveNFT(nft);
+    // Replace if already exists for this cluster
+    const exists = nfts.findIndex((n) => n.clusterId === clusterId);
+    if (exists >= 0) {
+      nfts[exists] = nft;
+    } else {
+      nfts.push(nft);
+    }
 
     return NextResponse.json({
       success: true,
