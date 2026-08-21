@@ -11,34 +11,22 @@ export default function Home() {
           </span>
 
           <nav className="flex items-center gap-8">
-  <Link
-    href="/dashboard"
-    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-  >
+  <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
     Dashboard
   </Link>
-  <Link
-    href="/marketplace"
-    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-  >
+  <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
     Marketplace
   </Link>
-  <Link
-    href="/nfts"
-    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-  >
+  <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
+    Tokens
+  </Link>
+  <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
     My NFTs
   </Link>
-  <Link
-    href="/upload"
-    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-  >
+  <Link href="/upload" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
     Upload
   </Link>
-  <Link
-    href="/track/shiyan-yishu"
-    className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
-  >
+  <Link href="/track/shiyan-yishu" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
     Music Track →
   </Link>
 </nav>
