@@ -107,6 +107,12 @@ export default function TokensPage() {
               className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
               Dashboard
+              <Link
+  href="/measurements"
+  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+>
+  Measurements
+</Link>
             </Link>
           </nav>
         </div>

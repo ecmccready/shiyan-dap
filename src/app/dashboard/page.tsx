@@ -84,6 +84,12 @@ export default function DashboardPage() {
   <Link href="/track/shiyan-yishu" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
     Music Track →
   </Link>
+  <Link
+  href="/measurements"
+  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+>
+  Measurements
+</Link>
 </nav>
         </div>
       </header>

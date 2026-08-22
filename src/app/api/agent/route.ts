@@ -1,179 +1,129 @@
-import { addClusterToMarketplace } from "@/lib/marketplace";
 import { NextResponse } from "next/server";
-import seed from "@/data/seed/shiyan-yishu.json";
 import { domains, Domain } from "@/lib/domains";
+import { addClusterToMarketplace } from "@/lib/marketplace";
+import { recordOutcome, getSelfImprovementMetrics } from "@/lib/outcomes";
 import { runModelAdapter } from "@/lib/model-adapter";
-import { recordOutcome, getAveragePiInv, getRecentOutcomes } from "@/lib/outcomes";
 
 async function runAgent(domainId: Domain = "music") {
-  const domain = domains[domainId];
+  const domain = domains[domainId] || domains.music;
 
-  // 1. Model Adapter
-  const rawNarrative = seed.lyrics?.verse1 || "No narrative provided";
-  const modelResult = await runModelAdapter(rawNarrative, {
-  provider: "grok",
-});
+  // 1. Seed (Know)
+  const seed = {
+    title: `${domain.label} Seed Narrative`,
+    artist: domain.defaultArtist,
+    description: domain.description,
+    themes: domain.themes,
+  };
 
-  // Domain-specific content
-  const domainSpecific = {
-    music: {
-      clusterName: "Punk Metal × Hyper-Reality",
-      policyName: "Indie Punk Fashion Drop",
-      policyAction: "Target fans who love hyper-reality + generative aesthetics",
-      approach: "Dropped D • 180 BPM • punk-metal",
-      evidence: ["lyrics", "guitar-pro", "bass", "drums"],
-    },
-    visual: {
-      clusterName: "Generative Visual × Aesthetic Networks",
-      policyName: "Digital Art Marketplace Boost",
-      policyAction: "Target collectors who engage with generative and narrative imagery",
-      approach: "Prompt-based generative visual system",
-      evidence: ["prompt", "image", "seed", "parameters"],
-    },
-    text: {
-      clusterName: "Narrative Worlds × Story Clusters",
-      policyName: "Long-form Fiction Promotion",
-      policyAction: "Target readers who follow world-building and character-driven stories",
-      approach: "Long-form narrative structure",
-      evidence: ["manuscript", "outline", "chapters"],
-    },
-    professional: {
-      clusterName: "Competency Networks × Professional Memory",
-      policyName: "Enterprise Knowledge Extension",
-      policyAction: "Target institutions seeking structured competency and outcome data",
-      approach: "Domain-specific competency model",
-      evidence: ["case", "protocol", "result", "attestation"],
-    },
-  }[domainId];
+  // 2. Call the model adapter
+  const modelResult = await runModelAdapter(
+    `Analyze and structure this ${domain.label} narrative for clustering and policy extension: ${seed.description}. Themes: ${domain.themes.join(", ")}`,
+    { provider: "grok" } // change to "mock" if you want to avoid API calls
+  );
 
-  // Base similarity
-  let similarity = 0.87;
+  const modelInfo = {
+    provider: modelResult.provider || "mock",
+    confidence: modelResult.confidence || 0.82,
+    raw: modelResult,
+  };
 
-  // Self-improvement: slightly adjust based on previous outcomes
-  const avgPi = getAveragePiInv(domain.label);
-  if (avgPi !== null) {
-    // If previous runs were strong, nudge similarity upward slightly
-    similarity = Math.min(0.95, similarity + (avgPi - 0.8) * 0.1);
-  }
+  // 3. Simple loss + inverting policy
+  const ell = 0.15 + Math.random() * 0.1;
+  const pi_inv = Number((1 - ell).toFixed(3));
 
-  const ell = 1 - similarity;
-  const pi_inv = 1 - ell;
-
-  // ── Miller Pyramid ──
+  // 4. Miller Pyramid
   const pyramid = {
-    Know: {
+    know: {
       level: "Know",
-      description: "Basic facts about the content",
+      description: "Factual knowledge of the content",
       content: {
         title: seed.title,
-        artist: seed.artist || domain.defaultArtist,
+        artist: seed.artist,
         domain: domain.label,
-        model_provider: modelResult.provider,
-        model_confidence: modelResult.confidence,
-      },
-    },
-    "Knows-How": {
-      level: "Knows-How",
-      description: "How the content is structured",
-      content: {
-        narrative_structure:
-          domainId === "music" ? "Verse-Chorus form" : "Structured narrative",
         themes: domain.themes,
-        approach: domainSpecific.approach,
-        cleaned_preview: modelResult.cleanedText.slice(0, 100) + "...",
       },
     },
-    "Shows-How": {
+    knowsHow: {
+      level: "Knows-How",
+      description: "Procedural understanding",
+      content: {
+        approach: domain.approach,
+        evidence: domain.evidence,
+      },
+    },
+    showsHow: {
       level: "Shows-How",
-      description: "What can be demonstrated",
+      description: "Demonstrated structure",
       content: {
-        evidence: domainSpecific.evidence,
-        demonstrable: "Structured memory + AI clusters + policy extension",
+        structure: "Cluster-ready narrative object",
+        model: modelInfo.provider,
       },
     },
-    Does: {
+    does: {
       level: "Does",
-      description: "Real-world action and outcomes",
+      description: "Actionable outcome",
       content: {
-        status: "Self-improving loop active",
-        ownership: "Fully owned by ECMcCready",
-        next_action: "Continue multi-domain scaling",
-        recent_outcomes: getRecentOutcomes(domain.label, 3).length,
+        action: "Ready for marketplace and policy extension",
+        pi_inv,
       },
     },
   };
 
-  // ── Cluster ──
+  // 5. Cluster
   const cluster = {
-    id: `cluster-${domainId}-001`,
-    name: domainSpecific.clusterName,
-    size: 1,
-    members: [seed.title],
-    tags: domain.themes.slice(0, 4),
-  };
-
-  // ── Policy Extension ──
-  const policyExtension = {
-    policy_name: domainSpecific.policyName,
-    source: "B2B Advertiser",
-    similarity_score: Number(similarity.toFixed(3)),
-    status: "Successfully extended into cluster",
-    action: domainSpecific.policyAction,
-  };
-
-  // ── Settlement ──
-  const settlement = {
-    status: "Ready for smart-contract",
-    artist_share: "70%",
-    platform_share: "30%",
-    mock_revenue: "$42.00",
-    artist_payout: "$29.40",
-    method: "Tokenized split via future smart contract",
-  };
-
-  // Record this run as an outcome (self-improvement data)
-  recordOutcome({
+    id: `cl_${domainId}_${Date.now()}`,
+    name: `${domain.label} × ${domain.themes[0] || "Core"}`,
     domain: domain.label,
-    pi_inv: Number(pi_inv.toFixed(3)),
-    ell: Number(ell.toFixed(3)),
-    similarity: Number(similarity.toFixed(3)),
-    timestamp: new Date().toISOString(),
-  });
-  // ── Register cluster into the Missing Middle Marketplace ──
+    size: 1,
+    tags: domain.themes.slice(0, 4),
+    similarity: Number((0.85 + Math.random() * 0.1).toFixed(3)),
+  };
+
+  // 6. Policy Extension
+  const policyExtension = {
+    policy_name: `${domain.label} Value Extension`,
+    action: "Extend into marketplace inventory and token potential",
+    similarity_score: cluster.similarity,
+  };
+
+  // 7. Register into Marketplace
   addClusterToMarketplace({
     id: cluster.id,
     name: cluster.name,
     domain: domain.label,
     size: cluster.size,
     tags: cluster.tags,
-    similarity: policyExtension.similarity_score,
-    pi_inv: Number(pi_inv.toFixed(3)),
+    similarity: cluster.similarity,
+    pi_inv,
     status: "available",
-    owner: seed.artist || domain.defaultArtist,
+    owner: seed.artist,
     createdAt: new Date().toISOString(),
     lastUpdated: new Date().toISOString(),
   });
+
+  // 8. Record outcome for .self()
+  recordOutcome({
+    domain: domain.label,
+    pi_inv,
+    ell: Number(ell.toFixed(3)),
+    clusterId: cluster.id,
+    modelProvider: modelInfo.provider,
+  });
+
+  // 9. Return full result
   return {
     success: true,
     message: "Full GTP loop complete (with self-improvement)",
     domain: domain.label,
     title: seed.title,
     artist: seed.artist,
-    lyrics: seed.lyrics,
-    model: {
-      provider: modelResult.provider,
-      confidence: modelResult.confidence,
-    },
-    self_improvement: {
-      average_pi_inv: avgPi,
-      outcomes_recorded: getRecentOutcomes(domain.label).length,
-    },
     pyramid,
     cluster,
     policyExtension,
-    settlement,
-    pi_inv: Number(pi_inv.toFixed(3)),
+    model: modelInfo,
+    pi_inv,
     ell: Number(ell.toFixed(3)),
+    self_improvement: getSelfImprovementMetrics(domain.label),
   };
 }
 

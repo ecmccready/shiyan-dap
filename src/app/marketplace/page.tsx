@@ -25,7 +25,14 @@ export default function MarketplacePage() {
   };
 
   useEffect(() => {
-    const domains = ["music", "visual", "text", "professional"];
+    const domains = [
+  "music",
+  "visual",
+  "social-transmedia",
+  "blockchain-games",
+  "animation",
+  "professional",
+];
 
     Promise.all(
       domains.map((domain) =>
@@ -126,6 +133,12 @@ export default function MarketplacePage() {
   <Link href="/track/shiyan-yishu" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
     Music Track →
   </Link>
+  <Link
+  href="/measurements"
+  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+>
+  Measurements
+</Link>
 </nav>
         </div>
       </header>
