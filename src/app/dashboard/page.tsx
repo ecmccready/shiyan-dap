@@ -90,6 +90,12 @@ export default function DashboardPage() {
 >
   Measurements
 </Link>
+<Link
+  href="/bot"
+  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+>
+  Grok Bot
+</Link>
 </nav>
         </div>
       </header>

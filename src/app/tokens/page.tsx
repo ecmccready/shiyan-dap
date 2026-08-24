@@ -114,6 +114,12 @@ export default function TokensPage() {
   Measurements
 </Link>
             </Link>
+            <Link
+  href="/bot"
+  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
+>
+  Grok Bot
+</Link>
           </nav>
         </div>
       </header>
