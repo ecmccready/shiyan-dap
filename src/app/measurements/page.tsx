@@ -16,6 +16,7 @@ export default function MeasurementsPage() {
       "animation",
       "real-estate",
       "professional",
+      "text",
     ];
 
     Promise.all(
