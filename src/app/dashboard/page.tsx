@@ -16,6 +16,7 @@ type Domain =
 const domainList: Domain[] = [
   "music",
   "visual",
+  "text",
   "social-transmedia",
   "blockchain-games",
   "animation",
