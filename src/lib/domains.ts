@@ -5,7 +5,8 @@ export type DomainId =
   | "professional"
   | "social-transmedia"
   | "blockchain-games"
-  | "animation";
+  | "animation"
+  | "real-estate";
 
 export interface DomainConfig {
   id: DomainId;
@@ -39,7 +40,7 @@ export const domains: Record<DomainId, DomainConfig> = {
   text: {
     id: "text",
     label: "Text / Narrative",
-    description: "Legacy text domain (being absorbed into Social Transmedia)",
+    description: "Legacy text domain (absorbed into Social Transmedia)",
     defaultArtist: "ECMcCready",
     themes: ["story", "world-building", "character", "theme"],
     evidence: ["prose", "dialogue", "structure"],
@@ -96,6 +97,15 @@ export const domains: Record<DomainId, DomainConfig> = {
     evidence: ["screenplay", "character design", "sequence", "world rules"],
     approach:
       "Turn screenplay and animation development into living, ownable, tokenizable narrative clusters",
+  },
+  "real-estate": {
+    id: "real-estate",
+    label: "Real Estate",
+    description: "Property narratives, ownership clusters, and spatial value systems",
+    defaultArtist: "ECMcCready",
+    themes: ["property", "ownership", "spatial", "development", "place-based narrative"],
+    evidence: ["location", "ownership record", "development story", "value signals"],
+    approach: "Cluster place-based and ownership narratives into tradable real-estate intelligence",
   },
 };
 

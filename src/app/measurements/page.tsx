@@ -8,13 +8,13 @@ export default function MeasurementsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Run the agent across key domains to generate fresh outcomes
     const domains = [
       "music",
       "visual",
       "social-transmedia",
       "blockchain-games",
       "animation",
+      "real-estate",
       "professional",
     ];
 
@@ -24,7 +24,6 @@ export default function MeasurementsPage() {
       )
     )
       .then(async () => {
-        // After running agents, get overall metrics from the last response
         const res = await fetch("/api/agent?domain=music");
         const data = await res.json();
         setMetrics(data.self_improvement || null);
@@ -43,6 +42,7 @@ export default function MeasurementsPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Header */}
       <header className="border-b border-zinc-800/80">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -51,7 +51,8 @@ export default function MeasurementsPage() {
             </Link>
             <span className="text-zinc-500 text-sm">Measurements</span>
           </div>
-          <nav className="flex items-center gap-8">
+
+          <nav className="flex items-center gap-6">
             <Link
               href="/dashboard"
               className="text-sm text-zinc-400 hover:text-white transition-colors"
@@ -71,11 +72,23 @@ export default function MeasurementsPage() {
               Tokens
             </Link>
             <Link
-  href="/bot"
-  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
->
-  Grok Bot
-</Link>
+              href="/nfts"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              My NFTs
+            </Link>
+            <Link
+              href="/bot"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Grok Bot
+            </Link>
+            <Link
+              href="/home"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Home
+            </Link>
           </nav>
         </div>
       </header>
@@ -100,21 +113,26 @@ export default function MeasurementsPage() {
           </div>
         ) : (
           <>
-            {/* Top level metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
                 <p className="text-sm text-zinc-400 mb-1">Total Outcomes</p>
                 <p className="text-3xl font-bold">{metrics.count}</p>
               </div>
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-                <p className="text-sm text-zinc-400 mb-1">Average π<sub>inv</sub></p>
+                <p className="text-sm text-zinc-400 mb-1">
+                  Average π<sub>inv</sub>
+                </p>
                 <p className="text-3xl font-bold text-emerald-400">
                   {metrics.avg_pi_inv ?? "—"}
                 </p>
               </div>
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-                <p className="text-sm text-zinc-400 mb-1">Latest π<sub>inv</sub></p>
-                <p className="text-3xl font-bold">{metrics.latest_pi_inv ?? "—"}</p>
+                <p className="text-sm text-zinc-400 mb-1">
+                  Latest π<sub>inv</sub>
+                </p>
+                <p className="text-3xl font-bold">
+                  {metrics.latest_pi_inv ?? "—"}
+                </p>
               </div>
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
                 <p className="text-sm text-zinc-400 mb-1">Trend</p>
@@ -132,7 +150,6 @@ export default function MeasurementsPage() {
               </div>
             </div>
 
-            {/* Per-domain breakdown */}
             <h2 className="text-lg font-semibold mb-5">Per-Domain Breakdown</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {metrics.domains &&
@@ -148,7 +165,9 @@ export default function MeasurementsPage() {
                         <span>{stats.count}</span>
                       </div>
                       <div className="flex justify-between text-sm mt-2">
-                        <span className="text-zinc-400">Avg π<sub>inv</sub></span>
+                        <span className="text-zinc-400">
+                          Avg π<sub>inv</sub>
+                        </span>
                         <span className="text-emerald-400">
                           {stats.avg_pi_inv}
                         </span>

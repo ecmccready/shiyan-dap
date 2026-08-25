@@ -10,7 +10,8 @@ type Domain =
   | "professional"
   | "social-transmedia"
   | "blockchain-games"
-  | "animation";
+  | "animation"
+  | "real-estate";
 
 const domainList: Domain[] = [
   "music",
@@ -18,6 +19,7 @@ const domainList: Domain[] = [
   "social-transmedia",
   "blockchain-games",
   "animation",
+  "real-estate",
   "professional",
 ];
 
@@ -65,38 +67,44 @@ export default function DashboardPage() {
             <span className="text-zinc-500 text-sm">Dashboard</span>
           </div>
 
-          <nav className="flex items-center gap-8">
-  <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
-    Dashboard
-  </Link>
-  <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
-    Marketplace
-  </Link>
-  <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
-    Tokens
-  </Link>
-  <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
-    My NFTs
-  </Link>
-  <Link href="/upload" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
-    Upload
-  </Link>
-  <Link href="/track/shiyan-yishu" className="text-sm text-zinc-400 hover:text-white transition-colors duration-200">
-    Music Track →
-  </Link>
-  <Link
-  href="/measurements"
-  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
->
-  Measurements
-</Link>
-<Link
-  href="/bot"
-  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
->
-  Grok Bot
-</Link>
-</nav>
+          <nav className="flex items-center gap-6">
+            <Link
+              href="/marketplace"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Marketplace
+            </Link>
+            <Link
+              href="/tokens"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Tokens
+            </Link>
+            <Link
+              href="/nfts"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              My NFTs
+            </Link>
+            <Link
+              href="/bot"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Grok Bot
+            </Link>
+            <Link
+              href="/home"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Home
+            </Link>
+            <Link
+              href="/measurements"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Measurements
+            </Link>
+          </nav>
         </div>
       </header>
 

@@ -78,7 +78,14 @@ export default function BotPage() {
             </Link>
             <span className="text-zinc-500 text-sm">Grok Bot</span>
           </div>
+
           <nav className="flex items-center gap-6">
+            <Link
+              href="/dashboard"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Dashboard
+            </Link>
             <Link
               href="/marketplace"
               className="text-sm text-zinc-400 hover:text-white transition-colors"
@@ -92,10 +99,16 @@ export default function BotPage() {
               Tokens
             </Link>
             <Link
-              href="/dashboard"
+              href="/home"
               className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
-              Dashboard
+              Home
+            </Link>
+            <Link
+              href="/measurements"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Measurements
             </Link>
           </nav>
         </div>

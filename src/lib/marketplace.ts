@@ -20,6 +20,10 @@ export interface MarketCluster {
 // Simple in-memory marketplace inventory
 let inventory: MarketCluster[] = [];
 
+export function clearInventory() {
+  inventory.length = 0;
+}
+
 export function addClusterToMarketplace(cluster: MarketCluster) {
   const exists = inventory.find((c) => c.id === cluster.id);
   if (!exists) {

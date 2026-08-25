@@ -81,6 +81,7 @@ export default function TokensPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Header */}
       <header className="border-b border-zinc-800/80">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -89,7 +90,14 @@ export default function TokensPage() {
             </Link>
             <span className="text-zinc-500 text-sm">Tokens</span>
           </div>
-          <nav className="flex items-center gap-8">
+
+          <nav className="flex items-center gap-6">
+            <Link
+              href="/dashboard"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Dashboard
+            </Link>
             <Link
               href="/marketplace"
               className="text-sm text-zinc-400 hover:text-white transition-colors"
@@ -103,23 +111,23 @@ export default function TokensPage() {
               My NFTs
             </Link>
             <Link
-              href="/dashboard"
+              href="/bot"
               className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
-              Dashboard
-              <Link
-  href="/measurements"
-  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
->
-  Measurements
-</Link>
+              Grok Bot
             </Link>
             <Link
-  href="/bot"
-  className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
->
-  Grok Bot
-</Link>
+              href="/home"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Home
+            </Link>
+            <Link
+              href="/measurements"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              Measurements
+            </Link>
           </nav>
         </div>
       </header>
