@@ -4,21 +4,26 @@ import { addClusterToMarketplace } from "@/lib/marketplace";
 import { recordOutcome, getSelfImprovementMetrics } from "@/lib/outcomes";
 import { runModelAdapter } from "@/lib/model-adapter";
 
-async function runAgent(domainId: Domain = "music") {
+async function runAgent(domainId: Domain = "music", userText: string = "") {
   const domain = domains[domainId] || domains.music;
 
   // 1. Seed (Know)
-  const seed = {
-    title: `${domain.label} Seed Narrative`,
+    const seed = {
+    title: userText
+      ? `${domain.label} User Narrative`
+      : `${domain.label} Seed Narrative`,
     artist: domain.defaultArtist,
-    description: domain.description,
+    description: userText || domain.description,
     themes: domain.themes,
+    rawInput: userText || null,
   };
-
+  
   // 2. Call the model adapter
-  const modelResult = await runModelAdapter(
-    `Analyze and structure this ${domain.label} narrative for clustering and policy extension: ${seed.description}. Themes: ${domain.themes.join(", ")}`,
-    { provider: "grok" } // change to "mock" if you want to avoid API calls
+    const modelResult = await runModelAdapter(
+    userText
+      ? `Structure this ${domain.label} narrative for clustering, policy extension, and ad-based monetization: ${userText}`
+      : `Analyze and structure this ${domain.label} narrative for clustering and policy extension: ${seed.description}. Themes: ${domain.themes.join(", ")}`,
+    { provider: "grok" }
   );
 
   const modelInfo = {
@@ -141,8 +146,16 @@ export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const domainParam = searchParams.get("domain") as Domain | null;
   const domain: Domain =
-    domainParam && domains[domainParam] ? domainParam : "music";
+    domainParam && domains[domainParam] ? domainParam : "social-transmedia";
 
-  const result = await runAgent(domain);
+  let userText = "";
+  try {
+    const body = await request.json();
+    userText = body?.input || body?.text || "";
+  } catch {
+    userText = "";
+  }
+
+  const result = await runAgent(domain, userText);
   return NextResponse.json(result);
 }
