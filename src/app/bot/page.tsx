@@ -7,6 +7,12 @@ interface Message {
   role: "user" | "bot";
   content: string;
   suggestedActions?: string[];
+  transaction?: {
+    action: string;
+    amount: number;
+    total: number;
+    status?: string;
+  } | null;
 }
 
 export default function BotPage() {
@@ -14,7 +20,7 @@ export default function BotPage() {
     {
       role: "bot",
       content:
-        "I’m the Grok Bot sitting on top of your Clusters. I can help you Explore, Buy, Sell, or Trade. What would you like to do?",
+        "I’m the Grok Bot sitting on top of your Clusters. I can help you Explore, Buy, Sell, or Trade Music and AI content. What would you like to do?",
       suggestedActions: ["Explore Clusters", "Buy", "Sell", "Trade"],
     },
   ]);
@@ -35,6 +41,7 @@ export default function BotPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text,
+          domain: "music",
           mode: "simulated",
         }),
       });
@@ -45,6 +52,7 @@ export default function BotPage() {
         role: "bot",
         content: data.reply || "I didn’t catch that.",
         suggestedActions: data.suggestedActions,
+        transaction: data.transaction || null,
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -63,13 +71,8 @@ export default function BotPage() {
     sendMessage(input);
   };
 
-  const handleSuggestion = (action: string) => {
-    sendMessage(action);
-  };
-
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Header */}
       <header className="border-b border-zinc-800/80">
         <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -78,51 +81,29 @@ export default function BotPage() {
             </Link>
             <span className="text-zinc-500 text-sm">Grok Bot</span>
           </div>
-
           <nav className="flex items-center gap-6">
-            <Link
-              href="/dashboard"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/marketplace"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Marketplace
-            </Link>
-            <Link
-              href="/tokens"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Tokens
-            </Link>
-            <Link
-              href="/home"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Home
             </Link>
-            <Link
-              href="/measurements"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Measurements
+            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              Marketplace
+            </Link>
+            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              Tokens
+            </Link>
+            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              Dashboard
             </Link>
           </nav>
         </div>
       </header>
 
-      {/* Chat Area */}
       <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-8 flex flex-col">
         <div className="flex-1 space-y-6 overflow-y-auto mb-6">
           {messages.map((msg, i) => (
             <div
               key={i}
-              className={`flex ${
-                msg.role === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
                 className={`max-w-[80%] rounded-2xl px-5 py-3 ${
@@ -133,12 +114,22 @@ export default function BotPage() {
               >
                 <p className="text-sm leading-relaxed">{msg.content}</p>
 
+                {msg.transaction && (
+                  <div className="mt-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 p-3">
+                    <p className="text-xs text-emerald-400 mb-1">Transaction executed</p>
+                    <p className="text-sm font-medium">
+                      {msg.transaction.action.toUpperCase()} · {msg.transaction.amount} tokens · $
+                      {msg.transaction.total}
+                    </p>
+                  </div>
+                )}
+
                 {msg.suggestedActions && msg.suggestedActions.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {msg.suggestedActions.map((action) => (
                       <button
                         key={action}
-                        onClick={() => handleSuggestion(action)}
+                        onClick={() => sendMessage(action)}
                         className="text-xs px-3 py-1.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
                       >
                         {action}
@@ -159,13 +150,12 @@ export default function BotPage() {
           )}
         </div>
 
-        {/* Input */}
         <form onSubmit={handleSubmit} className="flex gap-3">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about Buy, Sell, Trade, or explore clusters…"
+            placeholder="Ask about Buy, Sell, Trade, or explore Music clusters…"
             className="flex-1 h-12 rounded-full bg-zinc-900 border border-zinc-800 px-5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600"
           />
           <button

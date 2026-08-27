@@ -3,12 +3,13 @@ import { domains, Domain } from "@/lib/domains";
 import { addClusterToMarketplace } from "@/lib/marketplace";
 import { recordOutcome, getSelfImprovementMetrics } from "@/lib/outcomes";
 import { runModelAdapter } from "@/lib/model-adapter";
+import { createToken } from "@/lib/token";
+import { computeAdSignal } from "@/lib/ads";
 
 async function runAgent(domainId: Domain = "music", userText: string = "") {
   const domain = domains[domainId] || domains.music;
 
-  // 1. Seed (Know)
-    const seed = {
+  const seed = {
     title: userText
       ? `${domain.label} User Narrative`
       : `${domain.label} Seed Narrative`,
@@ -17,9 +18,8 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
     themes: domain.themes,
     rawInput: userText || null,
   };
-  
-  // 2. Call the model adapter
-    const modelResult = await runModelAdapter(
+
+  const modelResult = await runModelAdapter(
     userText
       ? `Structure this ${domain.label} narrative for clustering, policy extension, and ad-based monetization: ${userText}`
       : `Analyze and structure this ${domain.label} narrative for clustering and policy extension: ${seed.description}. Themes: ${domain.themes.join(", ")}`,
@@ -32,11 +32,9 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
     raw: modelResult,
   };
 
-  // 3. Simple loss + inverting policy
   const ell = 0.15 + Math.random() * 0.1;
   const pi_inv = Number((1 - ell).toFixed(3));
 
-  // 4. Miller Pyramid
   const pyramid = {
     know: {
       level: "Know",
@@ -46,6 +44,7 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
         artist: seed.artist,
         domain: domain.label,
         themes: domain.themes,
+        rawInput: seed.rawInput,
       },
     },
     knowsHow: {
@@ -68,13 +67,12 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
       level: "Does",
       description: "Actionable outcome",
       content: {
-        action: "Ready for marketplace and policy extension",
+        action: "Ready for marketplace, tokens, and ad-based extension",
         pi_inv,
       },
     },
   };
 
-  // 5. Cluster
   const cluster = {
     id: `cl_${domainId}_${Date.now()}`,
     name: `${domain.label} × ${domain.themes[0] || "Core"}`,
@@ -84,14 +82,19 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
     similarity: Number((0.85 + Math.random() * 0.1).toFixed(3)),
   };
 
-  // 6. Policy Extension
+  const adSignal = computeAdSignal({
+    pi_inv,
+    similarity: cluster.similarity,
+    hasUserInput: Boolean(userText),
+    domain: domain.label,
+  });
+
   const policyExtension = {
     policy_name: `${domain.label} Value Extension`,
-    action: "Extend into marketplace inventory and token potential",
+    action: "Extend into marketplace inventory, tokens, and ad-based pipelines",
     similarity_score: cluster.similarity,
   };
 
-  // 7. Register into Marketplace
   addClusterToMarketplace({
     id: cluster.id,
     name: cluster.name,
@@ -104,9 +107,21 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
     owner: seed.artist,
     createdAt: new Date().toISOString(),
     lastUpdated: new Date().toISOString(),
-  });
+    adSignal,
+  } as any);
 
-  // 8. Record outcome for .self()
+  let token = null;
+  if (domainId === "music") {
+    token = createToken({
+      symbol: "MUSIC",
+      name: cluster.name,
+      domain: "music",
+      owner: seed.artist,
+      initialSupply: 1000,
+      price: Number((1 + cluster.similarity).toFixed(2)),
+    });
+  }
+
   recordOutcome({
     domain: domain.label,
     pi_inv,
@@ -115,7 +130,6 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
     modelProvider: modelInfo.provider,
   });
 
-  // 9. Return full result
   return {
     success: true,
     message: "Full GTP loop complete (with self-improvement)",
@@ -124,8 +138,10 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
     artist: seed.artist,
     pyramid,
     cluster,
+    adSignal,
     policyExtension,
     model: modelInfo,
+    token,
     pi_inv,
     ell: Number(ell.toFixed(3)),
     self_improvement: getSelfImprovementMetrics(domain.label),

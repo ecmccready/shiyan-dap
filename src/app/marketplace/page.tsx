@@ -35,7 +35,6 @@ export default function MarketplacePage() {
       "professional",
     ];
 
-    // Clear old inventory first so we don't get duplicates
     fetch("/api/marketplace/clear", { method: "POST" })
       .then(() =>
         Promise.all(
@@ -179,7 +178,7 @@ export default function MarketplacePage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 text-sm mb-5">
+                <div className="grid grid-cols-4 gap-4 text-sm mb-5">
                   <div>
                     <p className="text-zinc-500 text-xs">π<sub>inv</sub></p>
                     <p className="font-medium">{cluster.pi_inv}</p>
@@ -192,11 +191,22 @@ export default function MarketplacePage() {
                     <p className="text-zinc-500 text-xs">Size</p>
                     <p className="font-medium">{cluster.size}</p>
                   </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs">Attention</p>
+                    <p className="font-medium">
+                      {cluster.adSignal?.attentionScore ?? "—"}
+                    </p>
+                    <p className="text-[10px] uppercase text-zinc-500">
+                      {cluster.adSignal?.label || ""}
+                    </p>
+                  </div>
                 </div>
 
                 {cluster.status === "settled" && cluster.artistPayout && (
                   <div className="mb-5 p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40">
-                    <p className="text-xs text-emerald-400 mb-1">Simulated Settlement</p>
+                    <p className="text-xs text-emerald-400 mb-1">
+                      Simulated Settlement
+                    </p>
                     <p className="text-lg font-semibold text-emerald-400">
                       ${cluster.artistPayout.toFixed(2)} paid to {cluster.owner}
                     </p>
@@ -272,7 +282,10 @@ export default function MarketplacePage() {
               <h3 className="text-lg font-semibold text-purple-400">
                 NFT Metadata (Simulated Mint)
               </h3>
-              <button onClick={() => setMintedNFT(null)} className="text-zinc-400 hover:text-white">
+              <button
+                onClick={() => setMintedNFT(null)}
+                className="text-zinc-400 hover:text-white"
+              >
                 ✕
               </button>
             </div>
