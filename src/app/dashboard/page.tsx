@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/agent?domain=${domain}`)
+    fetch(`/api/agent?domain=${domain}&path=deep`)
       .then((res) => res.json())
       .then((json) => {
         setData(json);
@@ -58,7 +58,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
       <header className="border-b border-zinc-800/80">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -69,40 +68,22 @@ export default function DashboardPage() {
           </div>
 
           <nav className="flex items-center gap-6">
-            <Link
-              href="/marketplace"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Marketplace
             </Link>
-            <Link
-              href="/tokens"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Tokens
             </Link>
-            <Link
-              href="/nfts"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors">
               My NFTs
             </Link>
-            <Link
-              href="/bot"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Grok Bot
             </Link>
-            <Link
-              href="/home"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Home
             </Link>
-            <Link
-              href="/measurements"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/measurements" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Measurements
             </Link>
           </nav>
@@ -110,7 +91,6 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
-        {/* Domain Switcher */}
         <div>
           <h2 className="text-sm text-zinc-400 mb-4">Domain</h2>
           <div className="flex flex-wrap gap-3">
@@ -130,19 +110,18 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Score */}
         <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-2xl p-8">
           <p className="text-sm text-emerald-400 mb-3">Inverting Policy</p>
           <p className="text-4xl font-bold">
             π<sub className="text-2xl">inv</sub> = {data.pi_inv}
           </p>
           <p className="text-zinc-400 mt-2">
-            Loss (ℓ) = {data.ell} · Model: {data.model?.provider || "mock"}
+            Loss (ℓ) = {data.ell} · Model: {data.model?.provider || "mock"} · Path:{" "}
+            {data.model?.path || "fast"}
           </p>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
             <p className="text-sm text-zinc-400 mb-1">Domain</p>
             <p className="text-lg font-semibold">{data.domain}</p>
@@ -157,11 +136,16 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-            <p className="text-sm text-zinc-400 mb-1">Self Improvement</p>
+            <p className="text-sm text-zinc-400 mb-1">Route Path</p>
+            <p className="text-lg font-semibold">{data.model?.path || "fast"}</p>
+            <p className="text-xs text-zinc-500 mt-1">
+              Secondary: {data.model?.secondaryProvider || "none"}
+            </p>
+          </div>
+          <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
+            <p className="text-sm text-zinc-400 mb-1">Disagreement</p>
             <p className="text-lg font-semibold">
-              {data.self_improvement?.avg_pi_inv
-                ? Number(data.self_improvement.avg_pi_inv).toFixed(3)
-                : "—"}
+              {data.model?.disagreement ?? 0}
             </p>
             <p className="text-xs text-zinc-500 mt-1">
               Outcomes: {data.self_improvement?.count ?? 0}
@@ -169,7 +153,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Miller Pyramid */}
         <section>
           <h2 className="text-lg font-semibold mb-6 text-emerald-400">
             Miller Pyramid
@@ -203,7 +186,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Cluster + Policy */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
             <h3 className="text-sm font-medium text-blue-400 mb-3">Cluster</h3>

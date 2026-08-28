@@ -58,7 +58,21 @@ export async function runGrokBot(
         confidence: 0.86,
       };
     }
-
+        if (
+      lower.includes("refine") ||
+      lower.includes("analyze") ||
+      lower.includes("deep") ||
+      lower.includes("hy4") ||
+      lower.includes("attention")
+    ) {
+      return {
+        reply: `Deep path engaged. I’m comparing Grok with Hy4 on this cluster and feeding the disagreement into Attention so the next token can mint from a stronger signal.`,
+        mode: "simulated",
+        suggestedActions: ["Show Disagreement", "View Cluster", "Buy"],
+        clusterId: context.clusterId,
+        confidence: 0.91,
+      };
+    }
     return {
       reply: `I’m the Grok Bot sitting on top of your Clusters. I can help you explore, Buy, Sell, or Trade. What would you like to do?`,
       mode: "simulated",

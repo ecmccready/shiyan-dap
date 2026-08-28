@@ -6,6 +6,23 @@ import {
   executeTokenAction,
   getAllTokens,
 } from "@/lib/token";
+import { routeModels, RoutePath } from "@/lib/router";
+
+function choosePath(message: string): RoutePath {
+  const lower = message.toLowerCase();
+  const deepHints = [
+    "refine",
+    "analyze",
+    "compare",
+    "improve",
+    "mint",
+    "cluster",
+    "attention",
+    "hy4",
+    "deep",
+  ];
+  return deepHints.some((word) => lower.includes(word)) ? "deep" : "fast";
+}
 
 export async function POST(request: Request) {
   try {
@@ -20,10 +37,10 @@ export async function POST(request: Request) {
     }
 
     const lower = String(message).toLowerCase();
+    const path = choosePath(message);
     const inventory = getMarketplaceInventory(domain);
     const tokens = getAllTokens();
 
-    // Ensure there is at least one token to act on
     let token = tokens[0];
     if (!token) {
       token = createToken({
@@ -37,7 +54,6 @@ export async function POST(request: Request) {
     }
 
     let transaction = null;
-
     if (lower.includes("buy")) {
       transaction = executeTokenAction({
         tokenId: token.id,
@@ -64,6 +80,8 @@ export async function POST(request: Request) {
       });
     }
 
+    const routed = await routeModels(message, path);
+
     const clusterSummary =
       inventory.length > 0
         ? inventory
@@ -77,12 +95,17 @@ export async function POST(request: Request) {
 
     const enrichedMessage = `${message}
 
+[Route: ${path}]
+[Primary: ${routed.primary.provider}]
+[Secondary: ${routed.secondary?.provider || "none"}]
+[Disagreement: ${routed.disagreement}]
+
 [Current Cluster Inventory Context]
 ${clusterSummary}
 
 ${
   transaction
-    ? `[Executed ${transaction.action.toUpperCase()}] ${transaction.amount} tokens for $${transaction.total}. New balance context available.`
+    ? `[Executed ${transaction.action.toUpperCase()}] ${transaction.amount} tokens for $${transaction.total}.`
     : ""
 }`;
 
@@ -99,6 +122,9 @@ ${
     return NextResponse.json({
       success: true,
       ...response,
+      path,
+      disagreement: routed.disagreement,
+      secondaryProvider: routed.secondary?.provider || null,
       availableClusters: inventory.length,
       transaction,
     });
