@@ -1,6 +1,12 @@
 import OpenAI from "openai";
 
-export type ModelProvider = "mock" | "openai" | "grok" | "anthropic" | "local";
+export type ModelProvider =
+  | "mock"
+  | "openai"
+  | "grok"
+  | "anthropic"
+  | "local"
+  | "hy4";
 
 export interface ModelAdapterConfig {
   provider: ModelProvider;
@@ -16,7 +22,8 @@ export interface ModelResponse {
 
 /**
  * Model Adapter
- * Supports: mock | grok | openai
+ * Supports: mock | grok | openai | hy4
+ * Portable: Grok Bot can route to any registered provider.
  */
 export async function runModelAdapter(
   input: string,
@@ -129,6 +136,41 @@ export async function runModelAdapter(
         cleanedText: input.trim(),
         confidence: 0.5,
         provider: "mock",
+      };
+    }
+  }
+
+  // ----- HY4 (stubbed / portable local-open-source path) -----
+  if (config.provider === "hy4") {
+    if (!process.env.HY4_API_URL) {
+      return {
+        cleanedText: `[hy4-stub] ${input.trim()}`,
+        confidence: 0.84,
+        provider: "hy4",
+      };
+    }
+
+    try {
+      const res = await fetch(process.env.HY4_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: config.modelName || "hy4",
+          input,
+        }),
+      });
+      const data = await res.json();
+      return {
+        cleanedText: data.text || data.cleanedText || input.trim(),
+        confidence: data.confidence || 0.9,
+        provider: "hy4",
+      };
+    } catch (error) {
+      console.error("Hy4 call failed, using stub:", error);
+      return {
+        cleanedText: `[hy4-stub] ${input.trim()}`,
+        confidence: 0.7,
+        provider: "hy4",
       };
     }
   }

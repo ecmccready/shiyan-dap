@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import { domains, Domain } from "@/lib/domains";
 import { addClusterToMarketplace } from "@/lib/marketplace";
 import { recordOutcome, getSelfImprovementMetrics } from "@/lib/outcomes";
-import { runModelAdapter } from "@/lib/model-adapter";
 import { createToken } from "@/lib/token";
 import { computeAdSignal } from "@/lib/ads";
+import { routeModels, RoutePath } from "@/lib/router";
 
-async function runAgent(domainId: Domain = "music", userText: string = "") {
+async function runAgent(
+  domainId: Domain = "music",
+  userText: string = "",
+  path: RoutePath = "fast"
+) {
   const domain = domains[domainId] || domains.music;
 
   const seed = {
@@ -19,20 +23,23 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
     rawInput: userText || null,
   };
 
-  const modelResult = await runModelAdapter(
+  const routed = await routeModels(
     userText
       ? `Structure this ${domain.label} narrative for clustering, policy extension, and ad-based monetization: ${userText}`
       : `Analyze and structure this ${domain.label} narrative for clustering and policy extension: ${seed.description}. Themes: ${domain.themes.join(", ")}`,
-    { provider: "grok" }
+    path
   );
 
   const modelInfo = {
-    provider: modelResult.provider || "mock",
-    confidence: modelResult.confidence || 0.82,
-    raw: modelResult,
+    provider: routed.primary.provider || "mock",
+    confidence: routed.mergedConfidence,
+    path: routed.path,
+    disagreement: routed.disagreement,
+    secondaryProvider: routed.secondary?.provider || null,
+    raw: routed.primary,
   };
 
-  const ell = 0.15 + Math.random() * 0.1;
+  const ell = Number((0.15 + routed.disagreement * 0.2 + Math.random() * 0.05).toFixed(3));
   const pi_inv = Number((1 - ell).toFixed(3));
 
   const pyramid = {
@@ -61,6 +68,7 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
       content: {
         structure: "Cluster-ready narrative object",
         model: modelInfo.provider,
+        path: modelInfo.path,
       },
     },
     does: {
@@ -125,14 +133,14 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
   recordOutcome({
     domain: domain.label,
     pi_inv,
-    ell: Number(ell.toFixed(3)),
+    ell,
     clusterId: cluster.id,
     modelProvider: modelInfo.provider,
   });
 
   return {
     success: true,
-    message: "Full GTP loop complete (with self-improvement)",
+    message: "Full GTP loop complete (with routed providers)",
     domain: domain.label,
     title: seed.title,
     artist: seed.artist,
@@ -143,7 +151,7 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
     model: modelInfo,
     token,
     pi_inv,
-    ell: Number(ell.toFixed(3)),
+    ell,
     self_improvement: getSelfImprovementMetrics(domain.label),
   };
 }
@@ -151,10 +159,12 @@ async function runAgent(domainId: Domain = "music", userText: string = "") {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const domainParam = searchParams.get("domain") as Domain | null;
+  const pathParam = searchParams.get("path") as RoutePath | null;
   const domain: Domain =
     domainParam && domains[domainParam] ? domainParam : "music";
+  const path: RoutePath = pathParam === "deep" ? "deep" : "fast";
 
-  const result = await runAgent(domain);
+  const result = await runAgent(domain, "", path);
   return NextResponse.json(result);
 }
 
@@ -165,13 +175,15 @@ export async function POST(request: Request) {
     domainParam && domains[domainParam] ? domainParam : "social-transmedia";
 
   let userText = "";
+  let path: RoutePath = "fast";
   try {
     const body = await request.json();
     userText = body?.input || body?.text || "";
+    if (body?.path === "deep") path = "deep";
   } catch {
     userText = "";
   }
 
-  const result = await runAgent(domain, userText);
+  const result = await runAgent(domain, userText, path);
   return NextResponse.json(result);
 }

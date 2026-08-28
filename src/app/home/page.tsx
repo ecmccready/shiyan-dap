@@ -9,6 +9,7 @@ export default function SocialTransmediaHome() {
   const [input, setInput] = useState("");
   const [domain, setDomain] = useState<InputDomain>("music");
   const [loading, setLoading] = useState(false);
+  const [refining, setRefining] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
 
@@ -16,36 +17,70 @@ export default function SocialTransmediaHome() {
     e.preventDefault();
     if (!input.trim()) return;
 
+    const currentInput = input;
     setLoading(true);
+    setRefining(false);
     setResult(null);
 
     try {
+      // FAST PATH — user is waiting
       const res = await fetch(`/api/agent?domain=${domain}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          input: input,
+          input: currentInput,
+          path: "fast",
         }),
       });
 
       const data = await res.json();
 
       const entry = {
-        input,
+        input: currentInput,
         timestamp: new Date().toISOString(),
         cluster: data.cluster,
         pi_inv: data.pi_inv,
         policy: data.policyExtension,
         domain: data.domain,
+        model: data.model,
+        adSignal: data.adSignal,
+        refined: false,
       };
 
       setResult(entry);
       setHistory((prev) => [entry, ...prev]);
       setInput("");
+      setLoading(false);
+
+      // DEEP PATH — background refinement
+      setRefining(true);
+      const deepRes = await fetch(`/api/agent?domain=${domain}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          input: currentInput,
+          path: "deep",
+        }),
+      });
+      const deepData = await deepRes.json();
+
+      const refined = {
+        ...entry,
+        cluster: deepData.cluster,
+        pi_inv: deepData.pi_inv,
+        policy: deepData.policyExtension,
+        model: deepData.model,
+        adSignal: deepData.adSignal,
+        refined: true,
+      };
+
+      setResult(refined);
+      setHistory((prev) => [refined, ...prev.slice(1)]);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      setRefining(false);
     }
   };
 
@@ -59,7 +94,6 @@ export default function SocialTransmediaHome() {
             </Link>
             <span className="text-zinc-500 text-sm">Creator Input Home</span>
           </div>
-
           <nav className="flex items-center gap-6">
             <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Dashboard
@@ -86,8 +120,8 @@ export default function SocialTransmediaHome() {
             Your Narrative Home
           </h1>
           <p className="text-zinc-400">
-            Music and AI content enter here. Social Transmedia structures the
-            loop. The protocol decides. You keep ownership.
+            Fast path answers immediately. Deep path refines with Grok + Hy4 in
+            the background.
           </p>
         </div>
 
@@ -139,18 +173,25 @@ export default function SocialTransmediaHome() {
 
         {result && (
           <div className="mb-12 bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-            <h2 className="text-sm text-emerald-400 mb-4">Latest Cluster</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm text-emerald-400">Latest Cluster</h2>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300">
+                {result.model?.path || "fast"}
+                {refining ? " · refining…" : result.refined ? " · refined" : ""}
+              </span>
+            </div>
             <p className="text-lg font-semibold mb-2">{result.cluster?.name}</p>
             <p className="text-sm text-zinc-400 mb-4">
               Domain: {result.domain} · π<sub>inv</sub>: {result.pi_inv}
+              {result.model?.disagreement != null && (
+                <> · disagreement: {result.model.disagreement}</>
+              )}
             </p>
             <p className="text-sm text-zinc-300 mb-2">
-              <span className="text-zinc-500">Policy:</span>{" "}
-              {result.policy?.policy_name}
+              <span className="text-zinc-500">Policy:</span> {result.policy?.policy_name}
             </p>
             <p className="text-sm text-zinc-300">
-              <span className="text-zinc-500">Action:</span>{" "}
-              {result.policy?.action}
+              <span className="text-zinc-500">Action:</span> {result.policy?.action}
             </p>
             <div className="flex flex-wrap gap-2 mt-4">
               {result.cluster?.tags?.map((tag: string, i: number) => (
@@ -180,7 +221,7 @@ export default function SocialTransmediaHome() {
                   <p className="text-sm font-medium">{entry.cluster?.name}</p>
                   <p className="text-xs text-zinc-500 mt-1">
                     {entry.domain} · π<sub>inv</sub>: {entry.pi_inv} ·{" "}
-                    {new Date(entry.timestamp).toLocaleString()}
+                    {entry.model?.path || "fast"}
                   </p>
                 </div>
               ))}
