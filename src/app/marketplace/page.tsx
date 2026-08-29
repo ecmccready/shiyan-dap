@@ -113,7 +113,6 @@ export default function MarketplacePage() {
             </Link>
             <span className="text-zinc-500 text-sm">Marketplace</span>
           </div>
-
           <nav className="flex items-center gap-6">
             <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Dashboard
@@ -143,7 +142,7 @@ export default function MarketplacePage() {
             Missing Middle Marketplace
           </h1>
           <p className="text-zinc-400">
-            Living clusters as inventory — where C2C narratives meet B2B demand.
+            Living clusters as inventory — creator-owned data, founder-owned protocol.
           </p>
         </div>
 
@@ -164,6 +163,12 @@ export default function MarketplacePage() {
                     <p className="text-sm text-zinc-400 mt-1">
                       {cluster.domain} · Owner: {cluster.owner}
                     </p>
+                    {cluster.sovereignty && (
+                      <p className="text-xs text-zinc-500 mt-1">
+                        User keeps data · Protocol owned by{" "}
+                        {cluster.sovereignty.protocolOwner}
+                      </p>
+                    )}
                   </div>
                   <span
                     className={`text-xs px-2.5 py-1 rounded-full capitalize ${

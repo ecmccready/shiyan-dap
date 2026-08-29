@@ -7,6 +7,7 @@ import { computeAdSignal } from "@/lib/ads";
 import { routeModels, RoutePath } from "@/lib/router";
 import { createSovereigntyRecord } from "@/lib/sovereignty";
 import { calibratePolicy } from "@/lib/policy";
+import { addClusterToPlaylist } from "@/lib/playlist";
 
 async function runAgent(
   domainId: Domain = "music",
@@ -140,6 +141,7 @@ async function runAgent(
   } as any);
 
   let token = null;
+  let playlist = null;
   if (domainId === "music") {
     token = createToken({
       symbol: "MUSIC",
@@ -149,6 +151,7 @@ async function runAgent(
       initialSupply: 1000,
       price: Number((1 + cluster.similarity).toFixed(2)),
     });
+    playlist = addClusterToPlaylist(cluster.id);
   }
 
   recordOutcome({
@@ -161,7 +164,7 @@ async function runAgent(
 
   return {
     success: true,
-    message: "Full GTP loop complete (with sovereignty and z-policy)",
+    message: "Full GTP loop complete (with sovereignty, z-policy, and playlist)",
     domain: domain.label,
     title: seed.title,
     artist: seed.artist,
@@ -171,6 +174,7 @@ async function runAgent(
     policyExtension,
     model: modelInfo,
     token,
+    playlist,
     sovereignty,
     zPolicy,
     pi_inv,

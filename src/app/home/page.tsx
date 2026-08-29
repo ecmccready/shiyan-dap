@@ -23,7 +23,6 @@ export default function SocialTransmediaHome() {
     setResult(null);
 
     try {
-      // FAST PATH — user is waiting
       const res = await fetch(`/api/agent?domain=${domain}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -44,6 +43,9 @@ export default function SocialTransmediaHome() {
         domain: data.domain,
         model: data.model,
         adSignal: data.adSignal,
+        sovereignty: data.sovereignty,
+        token: data.token,
+        playlist: data.playlist,
         refined: false,
       };
 
@@ -52,7 +54,6 @@ export default function SocialTransmediaHome() {
       setInput("");
       setLoading(false);
 
-      // DEEP PATH — background refinement
       setRefining(true);
       const deepRes = await fetch(`/api/agent?domain=${domain}`, {
         method: "POST",
@@ -71,6 +72,9 @@ export default function SocialTransmediaHome() {
         policy: deepData.policyExtension,
         model: deepData.model,
         adSignal: deepData.adSignal,
+        sovereignty: deepData.sovereignty,
+        token: deepData.token || entry.token,
+        playlist: deepData.playlist || entry.playlist,
         refined: true,
       };
 
@@ -120,8 +124,7 @@ export default function SocialTransmediaHome() {
             Your Narrative Home
           </h1>
           <p className="text-zinc-400">
-            Fast path answers immediately. Deep path refines with Grok + Hy4 in
-            the background.
+            You keep the data. The protocol may learn. You own the asset.
           </p>
         </div>
 
@@ -181,12 +184,49 @@ export default function SocialTransmediaHome() {
               </span>
             </div>
             <p className="text-lg font-semibold mb-2">{result.cluster?.name}</p>
-            <p className="text-sm text-zinc-400 mb-4">
+            <p className="text-sm text-zinc-400 mb-2">
               Domain: {result.domain} · π<sub>inv</sub>: {result.pi_inv}
               {result.model?.disagreement != null && (
                 <> · disagreement: {result.model.disagreement}</>
               )}
             </p>
+            {result.sovereignty && (
+              <p className="text-xs text-zinc-500 mb-2">
+                Data owner: {result.sovereignty.dataOwner} · Protocol owner:{" "}
+                {result.sovereignty.protocolOwner} · User keeps data:{" "}
+                {result.sovereignty.userKeepsData ? "yes" : "no"}
+              </p>
+            )}
+            {result.token && (
+              <p className="text-xs text-emerald-400 mb-2">
+                Music token created: {result.token.symbol} · ${result.token.price}
+              </p>
+            )}
+            {result.playlist && (
+              <p className="text-xs text-zinc-400 mb-4">
+                Added to playlist: {result.playlist.name}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-3 mt-2 mb-4">
+              <Link
+                href="/marketplace"
+                className="h-9 px-4 rounded-full bg-amber-600 text-white text-xs font-medium flex items-center"
+              >
+                List in Marketplace
+              </Link>
+              <Link
+                href="/tokens"
+                className="h-9 px-4 rounded-full bg-emerald-600 text-white text-xs font-medium flex items-center"
+              >
+                Open Tokens
+              </Link>
+              <Link
+                href="/bot"
+                className="h-9 px-4 rounded-full bg-zinc-800 text-white text-xs font-medium flex items-center"
+              >
+                Ask Grok Bot to Buy
+              </Link>
+            </div>
             <p className="text-sm text-zinc-300 mb-2">
               <span className="text-zinc-500">Policy:</span> {result.policy?.policy_name}
             </p>
