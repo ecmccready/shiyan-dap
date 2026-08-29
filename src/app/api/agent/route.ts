@@ -5,6 +5,8 @@ import { recordOutcome, getSelfImprovementMetrics } from "@/lib/outcomes";
 import { createToken } from "@/lib/token";
 import { computeAdSignal } from "@/lib/ads";
 import { routeModels, RoutePath } from "@/lib/router";
+import { createSovereigntyRecord } from "@/lib/sovereignty";
+import { calibratePolicy } from "@/lib/policy";
 
 async function runAgent(
   domainId: Domain = "music",
@@ -39,8 +41,22 @@ async function runAgent(
     raw: routed.primary,
   };
 
-  const ell = Number((0.15 + routed.disagreement * 0.2 + Math.random() * 0.05).toFixed(3));
+  const ell = Number(
+    (0.15 + routed.disagreement * 0.2 + Math.random() * 0.05).toFixed(3)
+  );
   const pi_inv = Number((1 - ell).toFixed(3));
+
+  const zPolicy = calibratePolicy({
+    x: pi_inv,
+    z: domainId === "music" ? 1.2 : 1,
+    C: 0.05,
+  });
+
+  const sovereignty = createSovereigntyRecord({
+    dataOwner: seed.artist,
+    protocolOwner: "ECMcCready",
+    trainingGranted: true,
+  });
 
   const pyramid = {
     know: {
@@ -77,6 +93,7 @@ async function runAgent(
       content: {
         action: "Ready for marketplace, tokens, and ad-based extension",
         pi_inv,
+        y: zPolicy.y,
       },
     },
   };
@@ -101,6 +118,8 @@ async function runAgent(
     policy_name: `${domain.label} Value Extension`,
     action: "Extend into marketplace inventory, tokens, and ad-based pipelines",
     similarity_score: cluster.similarity,
+    y: zPolicy.y,
+    z: zPolicy.z,
   };
 
   addClusterToMarketplace({
@@ -116,6 +135,8 @@ async function runAgent(
     createdAt: new Date().toISOString(),
     lastUpdated: new Date().toISOString(),
     adSignal,
+    sovereignty,
+    zPolicy,
   } as any);
 
   let token = null;
@@ -140,7 +161,7 @@ async function runAgent(
 
   return {
     success: true,
-    message: "Full GTP loop complete (with routed providers)",
+    message: "Full GTP loop complete (with sovereignty and z-policy)",
     domain: domain.label,
     title: seed.title,
     artist: seed.artist,
@@ -150,6 +171,8 @@ async function runAgent(
     policyExtension,
     model: modelInfo,
     token,
+    sovereignty,
+    zPolicy,
     pi_inv,
     ell,
     self_improvement: getSelfImprovementMetrics(domain.label),
