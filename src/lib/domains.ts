@@ -1,5 +1,6 @@
 export type DomainId =
   | "music"
+  | "music-video"
   | "visual"
   | "text"
   | "professional"
@@ -27,6 +28,17 @@ export const domains: Record<DomainId, DomainConfig> = {
     themes: ["playlist", "music video", "independent", "generative"],
     evidence: ["audio", "lyrics", "performance", "playlist context"],
     approach: "Cluster songs into living playlists that can be monetized and tokenized",
+  },
+  "music-video": {
+    id: "music-video",
+    label: "Music Video",
+    description:
+      "Song + picture as a sellable audiovisual cluster under the Music label theater",
+    defaultArtist: "ECMcCready",
+    themes: ["music video", "playlist", "visual narrative", "single"],
+    evidence: ["song", "picture", "sequence", "performance"],
+    approach:
+      "Package the song and its visual story as one owned, tokenizable launch asset",
   },
   visual: {
     id: "visual",

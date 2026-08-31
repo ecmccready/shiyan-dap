@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { clusterToNFTMetadata } from "@/lib/nft";
+import StripePayment from "@/components/StripePayment";
 
-export default function TokensPage() {
-  const [tokens, setTokens] = useState<any[]>([]);
+export default function MarketplacePage() {
+  const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [mintedNFT, setMintedNFT] = useState<any>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
-  const loadTokens = async () => {
+  const loadInventory = async () => {
     try {
-      const res = await fetch("/api/token");
+      const res = await fetch("/api/marketplace");
       const data = await res.json();
-      setTokens(data.tokens || []);
+      setInventory(data.inventory || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -21,206 +25,254 @@ export default function TokensPage() {
   };
 
   useEffect(() => {
-    loadTokens();
+    const domains = [
+      "music",
+      "music-video",
+      "visual",
+      "social-transmedia",
+      "blockchain-games",
+      "animation",
+      "real-estate",
+      "professional",
+    ];
+
+    fetch("/api/marketplace/clear", { method: "POST" })
+      .then(() =>
+        Promise.all(
+          domains.map((domain) =>
+            fetch(`/api/agent?domain=${domain}`).then((res) => res.json())
+          )
+        )
+      )
+      .then(() => loadInventory())
+      .catch(() => {
+        setLoading(false);
+        loadInventory();
+      });
   }, []);
 
-  const createDemoToken = async () => {
-    const res = await fetch("/api/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "create",
-        symbol: "SYSH",
-        name: "Shiyan Yishu Token",
-        domain: "music",
-        owner: "ECMcCready",
-        initialSupply: 1000,
-        price: 1.5,
-      }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setMessage(`Created token: ${data.token.symbol}`);
-      loadTokens();
+  const updateStatus = async (id: string, status: string) => {
+    setUpdating(id);
+    try {
+      const res = await fetch("/api/marketplace/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.payment?.clientSecret) {
+          setClientSecret(data.payment.clientSecret);
+        }
+        await loadInventory();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUpdating(null);
     }
   };
 
-  const executeAction = async (
-    tokenId: string,
-    action: "buy" | "sell" | "trade"
-  ) => {
-    const res = await fetch("/api/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action,
-        tokenId,
-        from: "ECMcCready",
-        to: action === "buy" ? "ECMcCready" : "Marketplace",
-        amount: 10,
-      }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      setMessage(
-        `${action.toUpperCase()} successful — ${data.transaction.amount} tokens for $${data.transaction.total}`
-      );
-      loadTokens();
-    } else {
-      setMessage(data.error || "Transaction failed");
+  const handleMint = async (cluster: any) => {
+    const metadata = clusterToNFTMetadata(cluster);
+    try {
+      const res = await fetch("/api/nft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          metadata,
+          owner: cluster.owner,
+          clusterId: cluster.id,
+        }),
+      });
+      const data = await res.json();
+      setMintedNFT(data.success ? data.nft.metadata : metadata);
+    } catch (err) {
+      console.error(err);
+      setMintedNFT(metadata);
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-zinc-400">Loading tokens…</p>
+        <p className="text-zinc-400">Loading marketplace inventory…</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
       <header className="border-b border-zinc-800/80">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="font-semibold tracking-tight text-lg">
               Shiyan Yishu
             </Link>
-            <span className="text-zinc-500 text-sm">Tokens</span>
+            <span className="text-zinc-500 text-sm">Marketplace</span>
           </div>
-
           <nav className="flex items-center gap-6">
-            <Link
-              href="/dashboard"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/marketplace"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Marketplace
-            </Link>
-            <Link
-              href="/nfts"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              My NFTs
-            </Link>
-            <Link
-              href="/bot"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Grok Bot
-            </Link>
-            <Link
-              href="/home"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Home
-            </Link>
-            <Link
-              href="/measurements"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              Measurements
-            </Link>
+            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">Dashboard</Link>
+            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">Tokens</Link>
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white transition-colors">Playlist</Link>
+            <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors">My NFTs</Link>
+            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">Grok Bot</Link>
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">Home</Link>
+            <Link href="/measurements" className="text-sm text-zinc-400 hover:text-white transition-colors">Measurements</Link>
           </nav>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Tokens</h1>
-            <p className="text-zinc-400">
-              Buy · Sell · Trade across every domain
-            </p>
-          </div>
-          <button
-            onClick={createDemoToken}
-            className="h-11 px-6 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors"
-          >
-            Create Demo Token
-          </button>
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Missing Middle Marketplace</h1>
+          <p className="text-zinc-400">
+            Living clusters as inventory — creator-owned data, founder-owned protocol.
+          </p>
         </div>
 
-        {message && (
-          <div className="mb-6 p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-sm">
-            {message}
-          </div>
-        )}
-
-        {tokens.length === 0 ? (
+        {inventory.length === 0 ? (
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-12 text-center">
-            <p className="text-zinc-400 mb-4">No tokens yet.</p>
-            <button
-              onClick={createDemoToken}
-              className="h-11 px-6 rounded-full bg-emerald-600 text-white text-sm font-medium"
-            >
-              Create First Token
-            </button>
+            <p className="text-zinc-400">No clusters in inventory yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {tokens.map((token) => (
-              <div
-                key={token.id}
-                className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6"
-              >
+            {inventory.map((cluster) => (
+              <div key={cluster.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h2 className="text-xl font-semibold">{token.symbol}</h2>
-                    <p className="text-sm text-zinc-400">{token.name}</p>
+                    <h2 className="text-lg font-semibold">{cluster.name}</h2>
+                    <p className="text-sm text-zinc-400 mt-1">
+                      {cluster.domain} · Owner: {cluster.owner}
+                    </p>
+                    {cluster.sovereignty && (
+                      <p className="text-xs text-zinc-500 mt-1">
+                        User keeps data · Protocol owned by {cluster.sovereignty.protocolOwner}
+                      </p>
+                    )}
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300">
-                    {token.domain}
+                  <span
+                    className={`text-xs px-2.5 py-1 rounded-full capitalize ${
+                      cluster.status === "available"
+                        ? "bg-emerald-900/50 text-emerald-400"
+                        : cluster.status === "reserved"
+                        ? "bg-amber-900/50 text-amber-400"
+                        : "bg-zinc-700 text-zinc-300"
+                    }`}
+                  >
+                    {cluster.status}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 text-sm mb-6">
+                <div className="grid grid-cols-4 gap-4 text-sm mb-5">
                   <div>
-                    <p className="text-zinc-500 text-xs">Price</p>
-                    <p className="font-medium">${token.price}</p>
+                    <p className="text-zinc-500 text-xs">π<sub>inv</sub></p>
+                    <p className="font-medium">{cluster.pi_inv}</p>
                   </div>
                   <div>
-                    <p className="text-zinc-500 text-xs">Balance</p>
-                    <p className="font-medium">{token.balance}</p>
+                    <p className="text-zinc-500 text-xs">Similarity</p>
+                    <p className="font-medium">{cluster.similarity}</p>
                   </div>
                   <div>
-                    <p className="text-zinc-500 text-xs">Owner</p>
-                    <p className="font-medium text-sm">{token.owner}</p>
+                    <p className="text-zinc-500 text-xs">Size</p>
+                    <p className="font-medium">{cluster.size}</p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs">Attention</p>
+                    <p className="font-medium">{cluster.adSignal?.attentionScore ?? "—"}</p>
+                    <p className="text-[10px] uppercase text-zinc-500">{cluster.adSignal?.label || ""}</p>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => executeAction(token.id, "buy")}
-                    className="flex-1 h-10 rounded-full bg-emerald-600/90 text-white text-sm font-medium hover:bg-emerald-500"
-                  >
-                    Buy
-                  </button>
-                  <button
-                    onClick={() => executeAction(token.id, "sell")}
-                    className="flex-1 h-10 rounded-full bg-amber-600/90 text-white text-sm font-medium hover:bg-amber-500"
-                  >
-                    Sell
-                  </button>
-                  <button
-                    onClick={() => executeAction(token.id, "trade")}
-                    className="flex-1 h-10 rounded-full bg-purple-600/90 text-white text-sm font-medium hover:bg-purple-500"
-                  >
-                    Trade
-                  </button>
+                {cluster.status === "settled" && cluster.artistPayout && (
+                  <div className="mb-5 p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40">
+                    <p className="text-xs text-emerald-400 mb-1">Simulated Settlement</p>
+                    <p className="text-lg font-semibold text-emerald-400">
+                      ${cluster.artistPayout.toFixed(2)} paid to {cluster.owner}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {cluster.tags?.map((tag: string, i: number) => (
+                    <span key={`${tag}-${i}`} className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  {cluster.status === "available" && (
+                    <button
+                      onClick={() => updateStatus(cluster.id, "reserved")}
+                      disabled={updating === cluster.id}
+                      className="flex-1 h-10 rounded-full bg-amber-600/90 text-white text-sm font-medium hover:bg-amber-500 disabled:opacity-50"
+                    >
+                      {updating === cluster.id ? "Reserving…" : "Reserve"}
+                    </button>
+                  )}
+                  {cluster.status === "reserved" && (
+                    <button
+                      onClick={() => updateStatus(cluster.id, "settled")}
+                      disabled={updating === cluster.id}
+                      className="flex-1 h-10 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 disabled:opacity-50"
+                    >
+                      {updating === cluster.id ? "Settling…" : "Settle"}
+                    </button>
+                  )}
+                  {cluster.status === "settled" && (
+                    <>
+                      <div className="flex-1 h-10 rounded-full border border-zinc-700 text-zinc-400 text-sm flex items-center justify-center">
+                        Settled
+                      </div>
+                      <button
+                        onClick={() => handleMint(cluster)}
+                        className="h-10 px-5 rounded-full bg-purple-600 text-white text-sm font-medium hover:bg-purple-500"
+                      >
+                        Mint as NFT
+                      </button>
+                    </>
+                  )}
+                  {cluster.status !== "available" && (
+                    <button
+                      onClick={() => updateStatus(cluster.id, "available")}
+                      disabled={updating === cluster.id}
+                      className="h-10 px-4 rounded-full border border-zinc-700 text-zinc-400 text-sm hover:border-zinc-500 hover:text-white disabled:opacity-50"
+                    >
+                      Reset
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
       </main>
+
+      {mintedNFT && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-purple-400">NFT Metadata (Simulated Mint)</h3>
+              <button onClick={() => setMintedNFT(null)} className="text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <pre className="text-xs text-zinc-300 bg-black/50 p-4 rounded-xl overflow-x-auto">
+              {JSON.stringify(mintedNFT, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {clientSecret && (
+        <StripePayment
+          clientSecret={clientSecret}
+          onSuccess={() => {
+            setClientSecret(null);
+            loadInventory();
+          }}
+          onCancel={() => setClientSecret(null)}
+        />
+      )}
     </div>
   );
 }

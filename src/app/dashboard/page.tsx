@@ -5,6 +5,7 @@ import Link from "next/link";
 
 type Domain =
   | "music"
+  | "music-video"
   | "visual"
   | "text"
   | "professional"
@@ -15,6 +16,7 @@ type Domain =
 
 const domainList: Domain[] = [
   "music",
+  "music-video",
   "visual",
   "text",
   "social-transmedia",
@@ -66,13 +68,15 @@ export default function DashboardPage() {
             </Link>
             <span className="text-zinc-500 text-sm">Dashboard</span>
           </div>
-
           <nav className="flex items-center gap-6">
             <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Marketplace
             </Link>
             <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Tokens
+            </Link>
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              Playlist
             </Link>
             <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors">
               My NFTs
@@ -128,9 +132,7 @@ export default function DashboardPage() {
           </div>
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
             <p className="text-sm text-zinc-400 mb-1">Model Provider</p>
-            <p className="text-lg font-semibold">
-              {data.model?.provider || "mock"}
-            </p>
+            <p className="text-lg font-semibold">{data.model?.provider || "mock"}</p>
             <p className="text-xs text-zinc-500 mt-1">
               Confidence: {data.model?.confidence ?? "—"}
             </p>
@@ -144,9 +146,7 @@ export default function DashboardPage() {
           </div>
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
             <p className="text-sm text-zinc-400 mb-1">Disagreement</p>
-            <p className="text-lg font-semibold">
-              {data.model?.disagreement ?? 0}
-            </p>
+            <p className="text-lg font-semibold">{data.model?.disagreement ?? 0}</p>
             <p className="text-xs text-zinc-500 mt-1">
               Outcomes: {data.self_improvement?.count ?? 0}
             </p>
@@ -154,22 +154,13 @@ export default function DashboardPage() {
         </div>
 
         <section>
-          <h2 className="text-lg font-semibold mb-6 text-emerald-400">
-            Miller Pyramid
-          </h2>
+          <h2 className="text-lg font-semibold mb-6 text-emerald-400">Miller Pyramid</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {data.pyramid &&
               Object.entries(data.pyramid).map(([key, value]: any) => (
-                <div
-                  key={key}
-                  className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6"
-                >
-                  <h3 className="text-sm font-medium text-emerald-400 mb-1">
-                    {value.level}
-                  </h3>
-                  <p className="text-xs text-zinc-500 mb-4">
-                    {value.description}
-                  </p>
+                <div key={key} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
+                  <h3 className="text-sm font-medium text-emerald-400 mb-1">{value.level}</h3>
+                  <p className="text-xs text-zinc-500 mb-4">{value.description}</p>
                   <div className="text-sm text-zinc-300 space-y-1.5">
                     {value.content &&
                       Object.entries(value.content).map(([k, v]) => (
@@ -194,15 +185,10 @@ export default function DashboardPage() {
               Tags: {data.cluster?.tags?.join(" · ")}
             </p>
           </div>
-
           <div className="bg-zinc-900/60 border border-purple-900/30 rounded-2xl p-6">
-            <h3 className="text-sm font-medium text-purple-400 mb-3">
-              Policy Extension
-            </h3>
+            <h3 className="text-sm font-medium text-purple-400 mb-3">Policy Extension</h3>
             <p className="font-semibold">{data.policyExtension?.policy_name}</p>
-            <p className="text-sm text-zinc-400 mt-2">
-              {data.policyExtension?.action}
-            </p>
+            <p className="text-sm text-zinc-400 mt-2">{data.policyExtension?.action}</p>
           </div>
         </div>
       </main>

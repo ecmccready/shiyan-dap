@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-type InputDomain = "social-transmedia" | "music";
+type InputDomain = "social-transmedia" | "music" | "music-video";
 
 export default function SocialTransmediaHome() {
   const [input, setInput] = useState("");
@@ -108,6 +108,9 @@ export default function SocialTransmediaHome() {
             <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Tokens
             </Link>
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              Playlist
+            </Link>
             <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Grok Bot
             </Link>
@@ -128,7 +131,7 @@ export default function SocialTransmediaHome() {
           </p>
         </div>
 
-        <div className="flex gap-3 mb-6">
+        <div className="flex flex-wrap gap-3 mb-6">
           <button
             onClick={() => setDomain("music")}
             className={`px-4 h-9 rounded-full text-sm transition-colors ${
@@ -138,6 +141,16 @@ export default function SocialTransmediaHome() {
             }`}
           >
             Music
+          </button>
+          <button
+            onClick={() => setDomain("music-video")}
+            className={`px-4 h-9 rounded-full text-sm transition-colors ${
+              domain === "music-video"
+                ? "bg-emerald-600 text-white"
+                : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white"
+            }`}
+          >
+            Music Video
           </button>
           <button
             onClick={() => setDomain("social-transmedia")}
@@ -158,6 +171,8 @@ export default function SocialTransmediaHome() {
             placeholder={
               domain === "music"
                 ? "Share a lyric, hook, playlist idea, or AI-generated track concept..."
+                : domain === "music-video"
+                ? "Share a song + picture / sequence idea for the music video single..."
                 : "Share a story, scene, campaign fragment, or transmedia idea..."
             }
             rows={4}
@@ -199,7 +214,7 @@ export default function SocialTransmediaHome() {
             )}
             {result.token && (
               <p className="text-xs text-emerald-400 mb-2">
-                Music token created: {result.token.symbol} · ${result.token.price}
+                Token created: {result.token.symbol} · ${result.token.price}
               </p>
             )}
             {result.playlist && (
@@ -221,6 +236,12 @@ export default function SocialTransmediaHome() {
                 Open Tokens
               </Link>
               <Link
+                href="/playlist"
+                className="h-9 px-4 rounded-full bg-zinc-800 text-white text-xs font-medium flex items-center"
+              >
+                Open Playlist
+              </Link>
+              <Link
                 href="/bot"
                 className="h-9 px-4 rounded-full bg-zinc-800 text-white text-xs font-medium flex items-center"
               >
@@ -233,16 +254,6 @@ export default function SocialTransmediaHome() {
             <p className="text-sm text-zinc-300">
               <span className="text-zinc-500">Action:</span> {result.policy?.action}
             </p>
-            <div className="flex flex-wrap gap-2 mt-4">
-              {result.cluster?.tags?.map((tag: string, i: number) => (
-                <span
-                  key={i}
-                  className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
           </div>
         )}
 

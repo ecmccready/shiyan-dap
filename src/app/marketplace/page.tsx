@@ -27,6 +27,7 @@ export default function MarketplacePage() {
   useEffect(() => {
     const domains = [
       "music",
+      "music-video",
       "visual",
       "social-transmedia",
       "blockchain-games",
@@ -59,7 +60,6 @@ export default function MarketplacePage() {
         body: JSON.stringify({ id, status }),
       });
       const data = await res.json();
-
       if (data.success) {
         if (data.payment?.clientSecret) {
           setClientSecret(data.payment.clientSecret);
@@ -75,7 +75,6 @@ export default function MarketplacePage() {
 
   const handleMint = async (cluster: any) => {
     const metadata = clusterToNFTMetadata(cluster);
-
     try {
       const res = await fetch("/api/nft", {
         method: "POST",
@@ -86,7 +85,6 @@ export default function MarketplacePage() {
           clusterId: cluster.id,
         }),
       });
-
       const data = await res.json();
       setMintedNFT(data.success ? data.nft.metadata : metadata);
     } catch (err) {
@@ -114,33 +112,20 @@ export default function MarketplacePage() {
             <span className="text-zinc-500 text-sm">Marketplace</span>
           </div>
           <nav className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Dashboard
-            </Link>
-            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Tokens
-            </Link>
-            <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              My NFTs
-            </Link>
-            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Grok Bot
-            </Link>
-            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Home
-            </Link>
-            <Link href="/measurements" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Measurements
-            </Link>
+            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">Dashboard</Link>
+            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">Tokens</Link>
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white transition-colors">Playlist</Link>
+            <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors">My NFTs</Link>
+            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">Grok Bot</Link>
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">Home</Link>
+            <Link href="/measurements" className="text-sm text-zinc-400 hover:text-white transition-colors">Measurements</Link>
           </nav>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
-            Missing Middle Marketplace
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Missing Middle Marketplace</h1>
           <p className="text-zinc-400">
             Living clusters as inventory — creator-owned data, founder-owned protocol.
           </p>
@@ -153,10 +138,7 @@ export default function MarketplacePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {inventory.map((cluster) => (
-              <div
-                key={cluster.id}
-                className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6"
-              >
+              <div key={cluster.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h2 className="text-lg font-semibold">{cluster.name}</h2>
@@ -165,8 +147,7 @@ export default function MarketplacePage() {
                     </p>
                     {cluster.sovereignty && (
                       <p className="text-xs text-zinc-500 mt-1">
-                        User keeps data · Protocol owned by{" "}
-                        {cluster.sovereignty.protocolOwner}
+                        User keeps data · Protocol owned by {cluster.sovereignty.protocolOwner}
                       </p>
                     )}
                   </div>
@@ -198,20 +179,14 @@ export default function MarketplacePage() {
                   </div>
                   <div>
                     <p className="text-zinc-500 text-xs">Attention</p>
-                    <p className="font-medium">
-                      {cluster.adSignal?.attentionScore ?? "—"}
-                    </p>
-                    <p className="text-[10px] uppercase text-zinc-500">
-                      {cluster.adSignal?.label || ""}
-                    </p>
+                    <p className="font-medium">{cluster.adSignal?.attentionScore ?? "—"}</p>
+                    <p className="text-[10px] uppercase text-zinc-500">{cluster.adSignal?.label || ""}</p>
                   </div>
                 </div>
 
                 {cluster.status === "settled" && cluster.artistPayout && (
                   <div className="mb-5 p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40">
-                    <p className="text-xs text-emerald-400 mb-1">
-                      Simulated Settlement
-                    </p>
+                    <p className="text-xs text-emerald-400 mb-1">Simulated Settlement</p>
                     <p className="text-lg font-semibold text-emerald-400">
                       ${cluster.artistPayout.toFixed(2)} paid to {cluster.owner}
                     </p>
@@ -220,10 +195,7 @@ export default function MarketplacePage() {
 
                 <div className="flex flex-wrap gap-2 mb-5">
                   {cluster.tags?.map((tag: string, i: number) => (
-                    <span
-                      key={`${tag}-${i}`}
-                      className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300"
-                    >
+                    <span key={`${tag}-${i}`} className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300">
                       {tag}
                     </span>
                   ))}
@@ -239,7 +211,6 @@ export default function MarketplacePage() {
                       {updating === cluster.id ? "Reserving…" : "Reserve"}
                     </button>
                   )}
-
                   {cluster.status === "reserved" && (
                     <button
                       onClick={() => updateStatus(cluster.id, "settled")}
@@ -249,7 +220,6 @@ export default function MarketplacePage() {
                       {updating === cluster.id ? "Settling…" : "Settle"}
                     </button>
                   )}
-
                   {cluster.status === "settled" && (
                     <>
                       <div className="flex-1 h-10 rounded-full border border-zinc-700 text-zinc-400 text-sm flex items-center justify-center">
@@ -263,7 +233,6 @@ export default function MarketplacePage() {
                       </button>
                     </>
                   )}
-
                   {cluster.status !== "available" && (
                     <button
                       onClick={() => updateStatus(cluster.id, "available")}
@@ -284,15 +253,8 @@ export default function MarketplacePage() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
           <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-purple-400">
-                NFT Metadata (Simulated Mint)
-              </h3>
-              <button
-                onClick={() => setMintedNFT(null)}
-                className="text-zinc-400 hover:text-white"
-              >
-                ✕
-              </button>
+              <h3 className="text-lg font-semibold text-purple-400">NFT Metadata (Simulated Mint)</h3>
+              <button onClick={() => setMintedNFT(null)} className="text-zinc-400 hover:text-white">✕</button>
             </div>
             <pre className="text-xs text-zinc-300 bg-black/50 p-4 rounded-xl overflow-x-auto">
               {JSON.stringify(mintedNFT, null, 2)}

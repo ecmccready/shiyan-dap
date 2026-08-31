@@ -3,7 +3,6 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
       <header className="border-b border-zinc-800/80">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="font-semibold tracking-tight text-lg">
@@ -11,53 +10,34 @@ export default function HomePage() {
           </Link>
 
           <nav className="flex items-center gap-6">
-            <Link
-              href="/dashboard"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Dashboard
             </Link>
-            <Link
-              href="/marketplace"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Marketplace
             </Link>
-            <Link
-              href="/tokens"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Tokens
             </Link>
-            <Link
-              href="/nfts"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              Playlist
+            </Link>
+            <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors">
               My NFTs
             </Link>
-            <Link
-              href="/bot"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Grok Bot
             </Link>
-            <Link
-              href="/home"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Home
             </Link>
-            <Link
-              href="/measurements"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
+            <Link href="/measurements" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Measurements
             </Link>
           </nav>
         </div>
       </header>
 
-      {/* Hero */}
       <main className="max-w-4xl mx-auto px-6 pt-24 pb-20 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 leading-tight">
           Upload your song or AI content.
@@ -89,10 +69,10 @@ export default function HomePage() {
             View Marketplace
           </Link>
           <Link
-            href="/bot"
+            href="/playlist"
             className="h-12 px-8 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium hover:border-zinc-500 hover:text-white transition-colors flex items-center"
           >
-            Talk to Grok Bot
+            Open Playlist
           </Link>
         </div>
       </main>
