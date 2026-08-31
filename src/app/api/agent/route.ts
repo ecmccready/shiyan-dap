@@ -142,7 +142,7 @@ async function runAgent(
 
   let token = null;
   let playlist = null;
-  if (domainId === "music") {
+    if (domainId === "music" || domainId === "music-video") {
     token = createToken({
       symbol: "MUSIC",
       name: cluster.name,
