@@ -8,6 +8,7 @@ import { routeModels, RoutePath } from "@/lib/router";
 import { createSovereigntyRecord } from "@/lib/sovereignty";
 import { calibratePolicy } from "@/lib/policy";
 import { addClusterToPlaylist } from "@/lib/playlist";
+import { computeEmergence } from "@/lib/emergence";
 
 async function runAgent(
   domainId: Domain = "music",
@@ -49,7 +50,7 @@ async function runAgent(
 
   const zPolicy = calibratePolicy({
     x: pi_inv,
-    z: domainId === "music" ? 1.2 : 1,
+    z: domainId === "music" || domainId === "music-video" ? 1.2 : 1,
     C: 0.05,
   });
 
@@ -92,7 +93,7 @@ async function runAgent(
       level: "Does",
       description: "Actionable outcome",
       content: {
-        action: "Ready for marketplace, tokens, and ad-based extension",
+        action: "Ready for marketplace, tokens, playlist settlement, and ad-based extension",
         pi_inv,
         y: zPolicy.y,
       },
@@ -115,9 +116,15 @@ async function runAgent(
     domain: domain.label,
   });
 
+  const emergence = computeEmergence({
+    attention: adSignal.attentionScore,
+    z: domainId === "music" || domainId === "music-video" ? 1.2 : 1,
+    C: 0.05,
+  });
+
   const policyExtension = {
     policy_name: `${domain.label} Value Extension`,
-    action: "Extend into marketplace inventory, tokens, and ad-based pipelines",
+    action: "Acquire on Social Transmedia, retain in Marketplace, transfer on Playlist",
     similarity_score: cluster.similarity,
     y: zPolicy.y,
     z: zPolicy.z,
@@ -138,15 +145,16 @@ async function runAgent(
     adSignal,
     sovereignty,
     zPolicy,
+    emergence,
   } as any);
 
   let token = null;
   let playlist = null;
-    if (domainId === "music" || domainId === "music-video") {
+  if (domainId === "music" || domainId === "music-video") {
     token = createToken({
-      symbol: "MUSIC",
+      symbol: domainId === "music-video" ? "MVID" : "MUSIC",
       name: cluster.name,
-      domain: "music",
+      domain: domainId,
       owner: seed.artist,
       initialSupply: 1000,
       price: Number((1 + cluster.similarity).toFixed(2)),
@@ -164,13 +172,14 @@ async function runAgent(
 
   return {
     success: true,
-    message: "Full GTP loop complete (with sovereignty, z-policy, and playlist)",
+    message: "Emergent Slice v1 loop complete",
     domain: domain.label,
     title: seed.title,
     artist: seed.artist,
     pyramid,
     cluster,
     adSignal,
+    emergence,
     policyExtension,
     model: modelInfo,
     token,
