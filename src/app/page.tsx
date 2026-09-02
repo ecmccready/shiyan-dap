@@ -8,32 +8,12 @@ export default function HomePage() {
           <Link href="/" className="font-semibold tracking-tight text-lg">
             Shiyan Yishu
           </Link>
-
           <nav className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Dashboard
-            </Link>
-            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Marketplace
-            </Link>
-            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Tokens
-            </Link>
-            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Playlist
-            </Link>
-            <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              My NFTs
-            </Link>
-            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Grok Bot
-            </Link>
-            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Home
-            </Link>
-            <Link href="/measurements" className="text-sm text-zinc-400 hover:text-white transition-colors">
-              Measurements
-            </Link>
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white">Home</Link>
+            <Link href="/single" className="text-sm text-zinc-400 hover:text-white">Single</Link>
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white">Playlist</Link>
+            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white">Marketplace</Link>
+            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white">Grok Bot</Link>
           </nav>
         </div>
       </header>
@@ -46,33 +26,16 @@ export default function HomePage() {
           <br />
           Get paid.
         </h1>
-
         <p className="text-zinc-400 text-lg max-w-2xl mx-auto mb-12 leading-relaxed">
-          Shiyan Yishu is a decentralized music marketplace and advertising
-          engine built for artists and AI creators. It turns every song + story
-          — whether human-made or AI-generated — into an owned digital asset
-          that can be discovered, clustered, and monetized while the creator
-          keeps control of the data and the revenue.
+          Shiyan Yishu turns every song + story into an owned digital asset.
+          Social Transmedia acquires. Marketplace retains. Playlist transfers.
         </p>
-
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/home"
-            className="h-12 px-8 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors flex items-center"
-          >
-            Enter Social Transmedia
+          <Link href="/single" className="h-12 px-8 rounded-full bg-emerald-600 text-white text-sm font-medium flex items-center">
+            Open First Single
           </Link>
-          <Link
-            href="/marketplace"
-            className="h-12 px-8 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium hover:border-zinc-500 hover:text-white transition-colors flex items-center"
-          >
-            View Marketplace
-          </Link>
-          <Link
-            href="/playlist"
-            className="h-12 px-8 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium hover:border-zinc-500 hover:text-white transition-colors flex items-center"
-          >
-            Open Playlist
+          <Link href="/home" className="h-12 px-8 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium flex items-center">
+            Submit a story
           </Link>
         </div>
       </main>
