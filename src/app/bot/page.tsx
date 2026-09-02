@@ -1,99 +1,158 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
-export default function MyNFTsPage() {
-  const [nfts, setNfts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+interface Message {
+  role: "user" | "bot";
+  content: string;
+  suggestedActions?: string[];
+  transaction?: {
+    action: string;
+    amount: number;
+    total: number;
+    status?: string;
+  } | null;
+}
 
-  useEffect(() => {
-    fetch("/api/nft")
-      .then((res) => res.json())
-      .then((data) => {
-        setNfts(data.nfts || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+export default function BotPage() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "bot",
+      content:
+        "I’m the Grok Bot sitting on top of your Clusters. I can help you Explore, Buy, Sell, or Trade Music and AI content. What would you like to do?",
+      suggestedActions: ["Explore Clusters", "Buy", "Sell", "Trade"],
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-zinc-400">Loading your NFTs…</p>
-      </div>
-    );
-  }
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return;
+
+    const userMessage: Message = { role: "user", content: text };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/bot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          domain: "music",
+          mode: "simulated",
+        }),
+      });
+
+      const data = await res.json();
+
+      const botMessage: Message = {
+        role: "bot",
+        content: data.reply || "I didn’t catch that.",
+        suggestedActions: data.suggestedActions,
+        transaction: data.transaction || null,
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", content: "Something went wrong. Please try again." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(input);
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white flex flex-col">
       <header className="border-b border-zinc-800/80">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="font-semibold tracking-tight text-lg">
               Shiyan Yishu
             </Link>
-            <span className="text-zinc-500 text-sm">My NFTs</span>
+            <span className="text-zinc-500 text-sm">Grok Bot</span>
           </div>
           <nav className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">Dashboard</Link>
-            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white transition-colors">Marketplace</Link>
-            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">Tokens</Link>
-            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white transition-colors">Playlist</Link>
-            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">Grok Bot</Link>
-            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">Home</Link>
-            <Link href="/measurements" className="text-sm text-zinc-400 hover:text-white transition-colors">Measurements</Link>
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white">Home</Link>
+            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white">Marketplace</Link>
+            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white">Tokens</Link>
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white">Playlist</Link>
+            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white">Dashboard</Link>
           </nav>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-12">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">My NFTs</h1>
-          <p className="text-zinc-400">
-            Clusters you have minted from the Missing Middle Marketplace.
-          </p>
+      <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-8 flex flex-col">
+        <div className="flex-1 space-y-6 overflow-y-auto mb-6">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`max-w-[80%] rounded-2xl px-5 py-3 ${
+                  msg.role === "user"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-zinc-900 border border-zinc-800 text-zinc-100"
+                }`}
+              >
+                <p className="text-sm leading-relaxed">{msg.content}</p>
+                {msg.transaction && (
+                  <div className="mt-3 rounded-xl bg-emerald-950/40 border border-emerald-800/40 p-3">
+                    <p className="text-xs text-emerald-400 mb-1">Transaction executed</p>
+                    <p className="text-sm font-medium">
+                      {msg.transaction.action.toUpperCase()} · {msg.transaction.amount} tokens · $
+                      {msg.transaction.total}
+                    </p>
+                  </div>
+                )}
+                {msg.suggestedActions && msg.suggestedActions.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {msg.suggestedActions.map((action) => (
+                      <button
+                        key={action}
+                        onClick={() => sendMessage(action)}
+                        className="text-xs px-3 py-1.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+                      >
+                        {action}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl px-5 py-3">
+                <p className="text-sm text-zinc-400">Thinking…</p>
+              </div>
+            </div>
+          )}
         </div>
 
-        {nfts.length === 0 ? (
-          <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-12 text-center">
-            <p className="text-zinc-400 mb-4">No NFTs minted yet.</p>
-            <Link
-              href="/marketplace"
-              className="inline-block px-6 h-11 leading-[44px] rounded-full bg-purple-600 text-white text-sm font-medium hover:bg-purple-500 transition-colors"
-            >
-              Go to Marketplace
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {nfts.map((nft) => (
-              <div key={nft.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <h2 className="text-lg font-semibold">
-                    {nft.metadata?.name || "Unnamed Cluster"}
-                  </h2>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-purple-900/50 text-purple-300">
-                    {nft.status}
-                  </span>
-                </div>
-                <p className="text-sm text-zinc-400 mb-4 line-clamp-2">
-                  {nft.metadata?.description}
-                </p>
-                <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                  <div>
-                    <p className="text-zinc-500 text-xs">Domain</p>
-                    <p>{nft.metadata?.properties?.domain || nft.domain}</p>
-                  </div>
-                  <div>
-                    <p className="text-zinc-500 text-xs">Owner</p>
-                    <p>{nft.owner}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="flex gap-3">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Try acquire, retain, transfer, or buy…"
+            className="flex-1 h-12 rounded-full bg-zinc-900 border border-zinc-800 px-5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600"
+          />
+          <button
+            type="submit"
+            disabled={loading || !input.trim()}
+            className="h-12 px-6 rounded-full bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 disabled:opacity-50"
+          >
+            Send
+          </button>
+        </form>
       </main>
     </div>
   );

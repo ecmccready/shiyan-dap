@@ -3,9 +3,9 @@ export type DomainId =
   | "music-video"
   | "visual"
   | "text"
-  | "professional"
+  | "esports"
   | "social-transmedia"
-  | "blockchain-games"
+  | "gameplay"
   | "animation"
   | "real-estate";
 
@@ -58,14 +58,14 @@ export const domains: Record<DomainId, DomainConfig> = {
     evidence: ["prose", "dialogue", "structure"],
     approach: "Structured narrative extraction",
   },
-  professional: {
-    id: "professional",
-    label: "Professional / Competency",
-    description: "Skills, process, and outcome networks",
+  esports: {
+    id: "esports",
+    label: "eSports",
+    description: "Competitive play, teams, audiences, and performance networks",
     defaultArtist: "ECMcCready",
-    themes: ["competency", "process", "outcome", "compliance"],
-    evidence: ["credentials", "process logs", "results"],
-    approach: "Competency networks as tradable clusters",
+    themes: ["competition", "audience", "performance", "league"],
+    evidence: ["match record", "team structure", "audience signal", "outcome"],
+    approach: "Cluster competitive performance into owned, transferable value",
   },
   "social-transmedia": {
     id: "social-transmedia",
@@ -84,14 +84,14 @@ export const domains: Record<DomainId, DomainConfig> = {
     approach:
       "Treat every narrative fragment as a node in a living storyworld that can be clustered, owned, and monetized",
   },
-  "blockchain-games": {
-    id: "blockchain-games",
-    label: "Blockchain Games",
-    description: "Playable economies, on-chain assets, and game narratives",
+  gameplay: {
+    id: "gameplay",
+    label: "Gameplay",
+    description: "Playable systems, rules, sessions, and in-world economies",
     defaultArtist: "ECMcCready",
-    themes: ["play-to-own", "on-chain economy", "game narrative", "asset utility"],
-    evidence: ["game state", "asset ownership", "player actions", "economy signals"],
-    approach: "Clusters of game assets and narratives that carry real economic weight",
+    themes: ["play", "rules", "session", "in-world economy"],
+    evidence: ["game state", "player actions", "session log", "economy signals"],
+    approach: "Cluster playable systems into owned narrative-economic objects",
   },
   animation: {
     id: "animation",

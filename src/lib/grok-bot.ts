@@ -1,92 +1,110 @@
-export type BotMode = "simulated" | "grok";
-
 export interface BotContext {
+  message: string;
   clusterId?: string;
   domain?: string;
   userId?: string;
-  action?: "buy" | "sell" | "trade" | "explore" | "explain";
-  message: string;
 }
 
 export interface BotResponse {
   reply: string;
-  mode: BotMode;
+  mode: "simulated" | "live";
   suggestedActions?: string[];
   clusterId?: string;
   confidence: number;
 }
 
-/**
- * Portable Grok Bot
- * Sits on top of Clusters and supports Buy / Sell / Trade containers.
- * Currently runs in simulated mode. Real Grok integration can be swapped in later.
- */
 export async function runGrokBot(
   context: BotContext,
-  mode: BotMode = "simulated"
+  mode: "simulated" | "live" = "simulated"
 ): Promise<BotResponse> {
-  // ----- SIMULATED BOT (always available) -----
-  if (mode === "simulated") {
-    const lower = context.message.toLowerCase();
+  const lower = String(context.message || "").toLowerCase();
 
-    if (lower.includes("buy")) {
-      return {
-        reply: `I can help you Buy into this cluster${context.clusterId ? ` (${context.clusterId})` : ""}. In simulated mode I’m confirming the intent. Ready to prepare a Buy container.`,
-        mode: "simulated",
-        suggestedActions: ["Confirm Buy", "View Cluster", "Check Balance"],
-        clusterId: context.clusterId,
-        confidence: 0.88,
-      };
-    }
-
-    if (lower.includes("sell")) {
-      return {
-        reply: `Sell request noted for cluster${context.clusterId ? ` ${context.clusterId}` : ""}. I can prepare the Sell container and show you the current implied value.`,
-        mode: "simulated",
-        suggestedActions: ["Confirm Sell", "View Valuation", "Cancel"],
-        clusterId: context.clusterId,
-        confidence: 0.87,
-      };
-    }
-
-    if (lower.includes("trade")) {
-      return {
-        reply: `Trade intent received. I can help you swap value between clusters or domains while keeping ownership clear.`,
-        mode: "simulated",
-        suggestedActions: ["Start Trade", "View Open Clusters", "Explain Terms"],
-        clusterId: context.clusterId,
-        confidence: 0.86,
-      };
-    }
-        if (
-      lower.includes("refine") ||
-      lower.includes("analyze") ||
-      lower.includes("deep") ||
-      lower.includes("hy4") ||
-      lower.includes("attention")
-    ) {
-      return {
-        reply: `Deep path engaged. I’m comparing Grok with Hy4 on this cluster and feeding the disagreement into Attention so the next token can mint from a stronger signal.`,
-        mode: "simulated",
-        suggestedActions: ["Show Disagreement", "View Cluster", "Buy"],
-        clusterId: context.clusterId,
-        confidence: 0.91,
-      };
-    }
+  if (
+    lower.includes("acquire") ||
+    lower.includes("transmedia") ||
+    lower.includes("retain") ||
+    lower.includes("marketplace") ||
+    lower.includes("transfer") ||
+    lower.includes("playlist") ||
+    lower.includes("settle")
+  ) {
     return {
-      reply: `I’m the Grok Bot sitting on top of your Clusters. I can help you explore, Buy, Sell, or Trade. What would you like to do?`,
-      mode: "simulated",
-      suggestedActions: ["Explore Clusters", "Buy", "Sell", "Trade"],
+      reply:
+        "x acquires on Social Transmedia. y retains in the Marketplace. z transfers on the Playlist rail. I can Buy, Sell, or Trade without making the user touch the chain.",
+      mode,
+      suggestedActions: ["Acquire", "Retain", "Transfer", "Buy"],
+      clusterId: context.clusterId,
+      confidence: 0.93,
+    };
+  }
+
+  if (
+    lower.includes("refine") ||
+    lower.includes("analyze") ||
+    lower.includes("deep") ||
+    lower.includes("hy4") ||
+    lower.includes("attention")
+  ) {
+    return {
+      reply:
+        "Deep path engaged. I’m comparing Grok with Hy4 on this cluster and feeding the disagreement into Attention so the next token can mint from a stronger signal.",
+      mode,
+      suggestedActions: ["Show Disagreement", "View Cluster", "Buy"],
+      clusterId: context.clusterId,
+      confidence: 0.91,
+    };
+  }
+
+  if (lower.includes("buy")) {
+    return {
+      reply:
+        "I can help you Buy into this cluster. In simulated mode I’m confirming the intent. Ready to prepare a Buy container.",
+      mode,
+      suggestedActions: ["Confirm Buy", "View Cluster", "Check Balance"],
       clusterId: context.clusterId,
       confidence: 0.9,
     };
   }
 
-  // ----- REAL GROK MODE (stubbed for now) -----
+  if (lower.includes("sell")) {
+    return {
+      reply:
+        "Sell is available on the Marketplace retention layer. I can prepare a Sell container while you keep ownership of the source data.",
+      mode,
+      suggestedActions: ["Confirm Sell", "View Cluster", "Check Balance"],
+      clusterId: context.clusterId,
+      confidence: 0.9,
+    };
+  }
+
+  if (lower.includes("trade")) {
+    return {
+      reply:
+        "Trade moves value across domains on the Playlist settlement rail. I can prepare a Trade container now.",
+      mode,
+      suggestedActions: ["Confirm Trade", "Open Playlist", "Check Balance"],
+      clusterId: context.clusterId,
+      confidence: 0.9,
+    };
+  }
+
+  if (lower.includes("explore") || lower.includes("cluster")) {
+    return {
+      reply:
+        "I can explore current clusters and route you to acquire, retain, or transfer. Music remains the cash-flow domain.",
+      mode,
+      suggestedActions: ["Acquire", "Retain", "Transfer", "Buy"],
+      clusterId: context.clusterId,
+      confidence: 0.88,
+    };
+  }
+
   return {
-    reply: "Real Grok Bot mode is not yet active. Falling back to simulated response.",
-    mode: "simulated",
-    suggestedActions: ["Try again in simulated mode"],
-    confidence: 0.5,
+    reply:
+      "I’m the Grok Bot sitting on top of your Clusters. I can help you Explore, Buy, Sell, or Trade Music and AI content. What would you like to do?",
+    mode,
+    suggestedActions: ["Explore Clusters", "Buy", "Sell", "Trade"],
+    clusterId: context.clusterId,
+    confidence: 0.86,
   };
 }

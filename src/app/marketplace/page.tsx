@@ -25,15 +25,15 @@ export default function MarketplacePage() {
   };
 
   useEffect(() => {
-    const domains = [
+        const domains = [
       "music",
       "music-video",
       "visual",
       "social-transmedia",
-      "blockchain-games",
+      "gameplay",
       "animation",
       "real-estate",
-      "professional",
+      "esports",
     ];
 
     fetch("/api/marketplace/clear", { method: "POST" })
