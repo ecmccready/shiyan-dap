@@ -25,7 +25,7 @@ export default function MarketplacePage() {
   };
 
   useEffect(() => {
-        const domains = [
+    const domains = [
       "music",
       "music-video",
       "visual",
@@ -112,23 +112,34 @@ export default function MarketplacePage() {
             <span className="text-zinc-500 text-sm">Marketplace</span>
           </div>
           <nav className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">Dashboard</Link>
-            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white transition-colors">Tokens</Link>
-            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white transition-colors">Playlist</Link>
-            <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white transition-colors">My NFTs</Link>
-            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white transition-colors">Grok Bot</Link>
-            <Link href="/home" className="text-sm text-zinc-400 hover:text-white transition-colors">Home</Link>
-            <Link href="/measurements" className="text-sm text-zinc-400 hover:text-white transition-colors">Measurements</Link>
+            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white">Dashboard</Link>
+            <Link href="/tokens" className="text-sm text-zinc-400 hover:text-white">Tokens</Link>
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white">Playlist</Link>
+            <Link href="/single" className="text-sm text-zinc-400 hover:text-white">Single</Link>
+            <Link href="/nfts" className="text-sm text-zinc-400 hover:text-white">My NFTs</Link>
+            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white">Grok Bot</Link>
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white">Home</Link>
           </nav>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-10">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Missing Middle Marketplace</h1>
-          <p className="text-zinc-400">
-            Living clusters as inventory — creator-owned data, founder-owned protocol.
+          <h1 className="text-3xl font-bold tracking-tight mb-2">
+            Missing Middle Marketplace
+          </h1>
+          <p className="text-zinc-400 max-w-2xl">
+            y-axis retention. Clusters become inventory. Creators keep the data.
+            Settlement completes on the Playlist rail.
           </p>
+          <div className="flex flex-wrap gap-3 mt-5">
+            <Link href="/single" className="h-9 px-4 rounded-full bg-emerald-600 text-white text-xs font-medium flex items-center">
+              First Single
+            </Link>
+            <Link href="/playlist" className="h-9 px-4 rounded-full bg-amber-600 text-white text-xs font-medium flex items-center">
+              Playlist checkout
+            </Link>
+          </div>
         </div>
 
         {inventory.length === 0 ? (
