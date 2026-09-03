@@ -1,8 +1,18 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function SinglePackagePage() {
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/agent?domain=music-video&path=fast")
+      .then((res) => res.json())
+      .then(setData)
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="border-b border-zinc-800/80">
@@ -23,64 +33,59 @@ export default function SinglePackagePage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-sm text-emerald-400 mb-3">Launch vehicle · in development</p>
+        <p className="text-sm text-emerald-400 mb-3">Launch vehicle · Music cash-flow</p>
         <h1 className="text-4xl font-bold tracking-tight mb-4">
           Shiyan Yishu — First Single
         </h1>
         <p className="text-zinc-400 text-lg max-w-2xl mb-10 leading-relaxed">
-          A song + story can become an owned asset before the finished audio
-          exists. You keep the data. The protocol may learn. You own the asset.
-          Settlement happens on the playlist, not on a streaming middleman.
+          The single can sell before the finished audio exists. You keep the
+          data. Ads pay you and the engine. Playlist is the checkout.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5">
             <p className="text-xs text-zinc-500 mb-1">x Acquire</p>
             <p className="font-semibold">Social Transmedia</p>
-            <p className="text-sm text-zinc-400 mt-2">Share the song + story.</p>
           </div>
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5">
             <p className="text-xs text-zinc-500 mb-1">y Retain</p>
             <p className="font-semibold">Marketplace</p>
-            <p className="text-sm text-zinc-400 mt-2">Cluster becomes inventory.</p>
           </div>
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5">
             <p className="text-xs text-zinc-500 mb-1">z Transfer</p>
             <p className="font-semibold">Playlist rail</p>
-            <p className="text-sm text-zinc-400 mt-2">The playlist is the checkout.</p>
           </div>
         </div>
 
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div>
-              <p className="text-zinc-500 mb-1">What this is</p>
-              <p>A pre-production single package that can be listed, tokenized, and settled.</p>
-            </div>
-            <div>
-              <p className="text-zinc-500 mb-1">Who owns the data</p>
-              <p>The creator. Protocol owner: ECMcCready.</p>
-            </div>
-            <div>
-              <p className="text-zinc-500 mb-1">How money moves</p>
-              <p>Attention writes. Grok Bot can Buy / Sell / Trade. Playlist settles.</p>
-            </div>
-            <div>
-              <p className="text-zinc-500 mb-1">Status</p>
-              <p>Public protocol proof. Not a finished store yet.</p>
-            </div>
-          </div>
+          <p className="text-sm text-emerald-400 mb-4">Live cluster</p>
+          <p className="text-xl font-semibold mb-2">
+            {data?.cluster?.name || "Music Video × music video"}
+          </p>
+          <p className="text-sm text-zinc-400 mb-2">
+            Owner: {data?.artist || "ECMcCready"} · Token: {data?.token?.symbol || "MVID"}
+          </p>
+          {data?.adPayout && (
+            <p className="text-sm text-emerald-400 mb-2">
+              Ad pay · User ${data.adPayout.userPayout} · Engine ${data.adPayout.enginePayout}
+            </p>
+          )}
+          {data?.playlist && (
+            <p className="text-sm text-zinc-400">
+              Settles on: {data.playlist.name}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-3">
           <Link href="/home" className="h-11 px-6 rounded-full bg-emerald-600 text-white text-sm font-medium flex items-center">
-            Add a song or story
+            Add lyrics / hook
           </Link>
           <Link href="/playlist" className="h-11 px-6 rounded-full bg-amber-600 text-white text-sm font-medium flex items-center">
-            Open Playlist
+            Settle on Playlist
           </Link>
           <Link href="/marketplace" className="h-11 px-6 rounded-full bg-zinc-800 text-white text-sm font-medium flex items-center">
-            View Marketplace
+            List in Marketplace
           </Link>
         </div>
       </main>

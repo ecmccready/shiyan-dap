@@ -147,8 +147,8 @@ export default function MarketplacePage() {
           </h1>
           <p className="text-zinc-400 max-w-2xl">
             y-axis retention. Clusters contain user Homes. Ads pay the user and
-            the engine. C2C nodes feed B2C, then B2B. Playlist is the transfer
-            rail: \(x,y + x,y = z\).
+            the engine. C2C feeds B2C, then B2B. Playlist is the transfer rail:
+            x,y + x,y = z.
           </p>
           <div className="flex flex-wrap gap-3 mt-5">
             <Link
