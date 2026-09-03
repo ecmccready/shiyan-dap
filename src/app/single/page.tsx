@@ -24,16 +24,29 @@ export default function SinglePackagePage() {
             <span className="text-zinc-500 text-sm">First Single</span>
           </div>
           <nav className="flex items-center gap-6">
-            <Link href="/home" className="text-sm text-zinc-400 hover:text-white">Home</Link>
-            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white">Playlist</Link>
-            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white">Marketplace</Link>
-            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white">Grok Bot</Link>
+            <Link href="/home" className="text-sm text-zinc-400 hover:text-white">
+              Home
+            </Link>
+            <Link href="/upload" className="text-sm text-zinc-400 hover:text-white">
+              Upload
+            </Link>
+            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white">
+              Playlist
+            </Link>
+            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white">
+              Marketplace
+            </Link>
+            <Link href="/bot" className="text-sm text-zinc-400 hover:text-white">
+              Grok Bot
+            </Link>
           </nav>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-sm text-emerald-400 mb-3">Launch vehicle · Music cash-flow</p>
+        <p className="text-sm text-emerald-400 mb-3">
+          Launch vehicle · Music cash-flow
+        </p>
         <h1 className="text-4xl font-bold tracking-tight mb-4">
           Shiyan Yishu — First Single
         </h1>
@@ -63,11 +76,13 @@ export default function SinglePackagePage() {
             {data?.cluster?.name || "Music Video × music video"}
           </p>
           <p className="text-sm text-zinc-400 mb-2">
-            Owner: {data?.artist || "ECMcCready"} · Token: {data?.token?.symbol || "MVID"}
+            Owner: {data?.artist || "ECMcCready"} · Token:{" "}
+            {data?.token?.symbol || "MVID"}
           </p>
           {data?.adPayout && (
             <p className="text-sm text-emerald-400 mb-2">
-              Ad pay · User ${data.adPayout.userPayout} · Engine ${data.adPayout.enginePayout}
+              Ad pay · User ${data.adPayout.userPayout} · Engine $
+              {data.adPayout.enginePayout}
             </p>
           )}
           {data?.playlist && (
@@ -77,14 +92,38 @@ export default function SinglePackagePage() {
           )}
         </div>
 
+        <div className="bg-zinc-900/60 border border-dashed border-zinc-700 rounded-2xl p-8 mb-8">
+          <p className="text-sm text-zinc-400 mb-3">Audio</p>
+          <p className="text-lg font-semibold mb-2">No master attached yet</p>
+          <p className="text-sm text-zinc-500 mb-5">
+            Guitar Pro / Cubase can land here later. The package is live
+            without the file.
+          </p>
+          <Link
+            href="/upload"
+            className="h-10 px-5 rounded-full bg-zinc-800 text-white text-sm font-medium inline-flex items-center"
+          >
+            Open Upload
+          </Link>
+        </div>
+
         <div className="flex flex-wrap gap-3">
-          <Link href="/home" className="h-11 px-6 rounded-full bg-emerald-600 text-white text-sm font-medium flex items-center">
+          <Link
+            href="/home"
+            className="h-11 px-6 rounded-full bg-emerald-600 text-white text-sm font-medium flex items-center"
+          >
             Add lyrics / hook
           </Link>
-          <Link href="/playlist" className="h-11 px-6 rounded-full bg-amber-600 text-white text-sm font-medium flex items-center">
+          <Link
+            href="/playlist"
+            className="h-11 px-6 rounded-full bg-amber-600 text-white text-sm font-medium flex items-center"
+          >
             Settle on Playlist
           </Link>
-          <Link href="/marketplace" className="h-11 px-6 rounded-full bg-zinc-800 text-white text-sm font-medium flex items-center">
+          <Link
+            href="/marketplace"
+            className="h-11 px-6 rounded-full bg-zinc-800 text-white text-sm font-medium flex items-center"
+          >
             List in Marketplace
           </Link>
         </div>
