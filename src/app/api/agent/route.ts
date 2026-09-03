@@ -9,6 +9,7 @@ import { createSovereigntyRecord } from "@/lib/sovereignty";
 import { calibratePolicy } from "@/lib/policy";
 import { addClusterToPlaylist } from "@/lib/playlist";
 import { computeEmergence } from "@/lib/emergence";
+import { splitAdValue, containHomePage } from "@/lib/economy";
 
 async function runAgent(
   domainId: Domain = "music",
@@ -93,7 +94,8 @@ async function runAgent(
       level: "Does",
       description: "Actionable outcome",
       content: {
-        action: "Ready for marketplace, tokens, playlist settlement, and ad-based extension",
+        action:
+          "Ready for marketplace, tokens, playlist settlement, and ad-based extension",
         pi_inv,
         y: zPolicy.y,
       },
@@ -122,9 +124,16 @@ async function runAgent(
     C: 0.05,
   });
 
+  const adPayout = splitAdValue(adSignal.attentionScore);
+  const containedHome = containHomePage({
+    clusterId: cluster.id,
+    owner: seed.artist,
+  });
+
   const policyExtension = {
     policy_name: `${domain.label} Value Extension`,
-    action: "Acquire on Social Transmedia, retain in Marketplace, transfer on Playlist",
+    action:
+      "Acquire on Social Transmedia, retain in Marketplace, transfer on Playlist",
     similarity_score: cluster.similarity,
     y: zPolicy.y,
     z: zPolicy.z,
@@ -143,6 +152,8 @@ async function runAgent(
     createdAt: new Date().toISOString(),
     lastUpdated: new Date().toISOString(),
     adSignal,
+    adPayout,
+    containedHome,
     sovereignty,
     zPolicy,
     emergence,
@@ -179,6 +190,8 @@ async function runAgent(
     pyramid,
     cluster,
     adSignal,
+    adPayout,
+    containedHome,
     emergence,
     policyExtension,
     model: modelInfo,
