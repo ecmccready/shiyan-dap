@@ -107,10 +107,20 @@ export default function PlaylistPage() {
               </span>
             </div>
 
-            <p className="text-sm text-emerald-400 mb-4">
+                        <p className="text-sm text-emerald-400 mb-3">
               {playlist.clusterIds?.length || 0} packaged cluster
               {playlist.clusterIds?.length === 1 ? "" : "s"}
             </p>
+            <div className="space-y-2 mb-5">
+              {(playlist.clusterIds || []).map((id: string) => (
+                <div
+                  key={id}
+                  className="text-xs px-3 py-2 rounded-lg bg-zinc-800 text-zinc-300"
+                >
+                  {id}
+                </div>
+              ))}
+            </div>
 
             <div className="space-y-2 mb-5">
               {(playlist.attribution || []).map((row: any) => (
