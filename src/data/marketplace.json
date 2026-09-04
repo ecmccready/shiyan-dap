@@ -1,0 +1,994 @@
+[
+  {
+    "id": "cl_real-estate_1788555505535",
+    "name": "Real Estate × property",
+    "domain": "Real Estate",
+    "size": 1,
+    "tags": [
+      "property",
+      "ownership",
+      "spatial",
+      "development"
+    ],
+    "similarity": 0.858,
+    "pi_inv": 0.836,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:58:25.535Z",
+    "lastUpdated": "2026-09-04T20:58:25.535Z",
+    "adSignal": {
+      "attentionScore": 0.759,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.31,
+      "enginePayout": 2.28,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_real-estate_1788555505535",
+      "owner": "ECMcCready",
+      "clusterId": "cl_real-estate_1788555505535",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.468,
+      "z": 1,
+      "x": 0.836,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.759,
+      "y": 0.429,
+      "z": 1,
+      "attention": 0.759,
+      "value": 0.429,
+      "accumulated": 0.182
+    }
+  },
+  {
+    "id": "cl_esports_1788555501679",
+    "name": "eSports × competition",
+    "domain": "eSports",
+    "size": 1,
+    "tags": [
+      "competition",
+      "audience",
+      "performance",
+      "league"
+    ],
+    "similarity": 0.899,
+    "pi_inv": 0.837,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:58:21.679Z",
+    "lastUpdated": "2026-09-04T20:58:21.679Z",
+    "adSignal": {
+      "attentionScore": 0.772,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.4,
+      "enginePayout": 2.32,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_esports_1788555501679",
+      "owner": "ECMcCready",
+      "clusterId": "cl_esports_1788555501679",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.468,
+      "z": 1,
+      "x": 0.837,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.772,
+      "y": 0.436,
+      "z": 1,
+      "attention": 0.772,
+      "value": 0.436,
+      "accumulated": 0.188
+    }
+  },
+  {
+    "id": "cl_visual_1788555488782",
+    "name": "Visual / Generative Art × generative",
+    "domain": "Visual / Generative Art",
+    "size": 1,
+    "tags": [
+      "generative",
+      "aesthetic",
+      "narrative image",
+      "style transfer"
+    ],
+    "similarity": 0.879,
+    "pi_inv": 0.849,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:58:08.782Z",
+    "lastUpdated": "2026-09-04T20:58:08.782Z",
+    "adSignal": {
+      "attentionScore": 0.773,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.41,
+      "enginePayout": 2.32,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_visual_1788555488782",
+      "owner": "ECMcCready",
+      "clusterId": "cl_visual_1788555488782",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.474,
+      "z": 1,
+      "x": 0.849,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.773,
+      "y": 0.436,
+      "z": 1,
+      "attention": 0.773,
+      "value": 0.436,
+      "accumulated": 0.188
+    }
+  },
+  {
+    "id": "cl_esports_1788555488774",
+    "name": "eSports × competition",
+    "domain": "eSports",
+    "size": 1,
+    "tags": [
+      "competition",
+      "audience",
+      "performance",
+      "league"
+    ],
+    "similarity": 0.867,
+    "pi_inv": 0.807,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:58:08.774Z",
+    "lastUpdated": "2026-09-04T20:58:08.774Z",
+    "adSignal": {
+      "attentionScore": 0.744,
+      "label": "low",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.21,
+      "enginePayout": 2.23,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_esports_1788555488774",
+      "owner": "ECMcCready",
+      "clusterId": "cl_esports_1788555488774",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.454,
+      "z": 1,
+      "x": 0.807,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.744,
+      "y": 0.422,
+      "z": 1,
+      "attention": 0.744,
+      "value": 0.422,
+      "accumulated": 0.176
+    }
+  },
+  {
+    "id": "cl_music-video_1788555488054",
+    "name": "Music Video × music video",
+    "domain": "Music Video",
+    "size": 1,
+    "tags": [
+      "music video",
+      "playlist",
+      "visual narrative",
+      "single"
+    ],
+    "similarity": 0.856,
+    "pi_inv": 0.82,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:58:08.054Z",
+    "lastUpdated": "2026-09-04T20:58:08.054Z",
+    "adSignal": {
+      "attentionScore": 0.749,
+      "label": "low",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.24,
+      "enginePayout": 2.25,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_music-video_1788555488054",
+      "owner": "ECMcCready",
+      "clusterId": "cl_music-video_1788555488054",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.542,
+      "z": 1.2,
+      "x": 0.82,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.749,
+      "y": 0.499,
+      "z": 1.2,
+      "attention": 0.749,
+      "value": 0.499,
+      "accumulated": 0.206
+    }
+  },
+  {
+    "id": "cl_gameplay_1788555487704",
+    "name": "Gameplay × play",
+    "domain": "Gameplay",
+    "size": 1,
+    "tags": [
+      "play",
+      "rules",
+      "session",
+      "in-world economy"
+    ],
+    "similarity": 0.852,
+    "pi_inv": 0.805,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:58:07.705Z",
+    "lastUpdated": "2026-09-04T20:58:07.705Z",
+    "adSignal": {
+      "attentionScore": 0.739,
+      "label": "low",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.17,
+      "enginePayout": 2.22,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_gameplay_1788555487704",
+      "owner": "ECMcCready",
+      "clusterId": "cl_gameplay_1788555487704",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.453,
+      "z": 1,
+      "x": 0.805,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.739,
+      "y": 0.419,
+      "z": 1,
+      "attention": 0.739,
+      "value": 0.419,
+      "accumulated": 0.173
+    }
+  },
+  {
+    "id": "cl_music_1788555483812",
+    "name": "Music × playlist",
+    "domain": "Music",
+    "size": 1,
+    "tags": [
+      "playlist",
+      "music video",
+      "independent",
+      "generative"
+    ],
+    "similarity": 0.869,
+    "pi_inv": 0.819,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:58:03.812Z",
+    "lastUpdated": "2026-09-04T20:58:03.812Z",
+    "adSignal": {
+      "attentionScore": 0.802,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.61,
+      "enginePayout": 2.41,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_music_1788555483812",
+      "owner": "ECMcCready",
+      "clusterId": "cl_music_1788555483812",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.541,
+      "z": 1.2,
+      "x": 0.819,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.802,
+      "y": 0.531,
+      "z": 1.2,
+      "attention": 0.802,
+      "value": 0.531,
+      "accumulated": 0.233
+    }
+  },
+  {
+    "id": "cl_social-transmedia_1788555478022",
+    "name": "Social Transmedia × transmedia",
+    "domain": "Social Transmedia",
+    "size": 1,
+    "tags": [
+      "transmedia",
+      "storyworld",
+      "cross-platform",
+      "audience participation"
+    ],
+    "similarity": 0.9,
+    "pi_inv": 0.841,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:58.022Z",
+    "lastUpdated": "2026-09-04T20:57:58.022Z",
+    "adSignal": {
+      "attentionScore": 0.775,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.42,
+      "enginePayout": 2.32,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_social-transmedia_1788555478022",
+      "owner": "ECMcCready",
+      "clusterId": "cl_social-transmedia_1788555478022",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.47,
+      "z": 1,
+      "x": 0.841,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.775,
+      "y": 0.438,
+      "z": 1,
+      "attention": 0.775,
+      "value": 0.438,
+      "accumulated": 0.189
+    }
+  },
+  {
+    "id": "cl_animation_1788555476594",
+    "name": "Animation × storyworld",
+    "domain": "Animation",
+    "size": 1,
+    "tags": [
+      "storyworld",
+      "character systems",
+      "feature pipeline",
+      "transmedia animation"
+    ],
+    "similarity": 0.934,
+    "pi_inv": 0.828,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:56.594Z",
+    "lastUpdated": "2026-09-04T20:57:56.594Z",
+    "adSignal": {
+      "attentionScore": 0.777,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.44,
+      "enginePayout": 2.33,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_animation_1788555476594",
+      "owner": "ECMcCready",
+      "clusterId": "cl_animation_1788555476594",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.464,
+      "z": 1,
+      "x": 0.828,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.777,
+      "y": 0.439,
+      "z": 1,
+      "attention": 0.777,
+      "value": 0.439,
+      "accumulated": 0.19
+    }
+  },
+  {
+    "id": "cl_real-estate_1788555469525",
+    "name": "Real Estate × property",
+    "domain": "Real Estate",
+    "size": 1,
+    "tags": [
+      "property",
+      "ownership",
+      "spatial",
+      "development"
+    ],
+    "similarity": 0.894,
+    "pi_inv": 0.819,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:49.525Z",
+    "lastUpdated": "2026-09-04T20:57:49.525Z",
+    "adSignal": {
+      "attentionScore": 0.76,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.32,
+      "enginePayout": 2.28,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_real-estate_1788555469525",
+      "owner": "ECMcCready",
+      "clusterId": "cl_real-estate_1788555469525",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.459,
+      "z": 1,
+      "x": 0.819,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.76,
+      "y": 0.43,
+      "z": 1,
+      "attention": 0.76,
+      "value": 0.43,
+      "accumulated": 0.182
+    }
+  },
+  {
+    "id": "cl_music-video_1788555467081",
+    "name": "Music Video × music video",
+    "domain": "Music Video",
+    "size": 1,
+    "tags": [
+      "music video",
+      "playlist",
+      "visual narrative",
+      "single"
+    ],
+    "similarity": 0.875,
+    "pi_inv": 0.837,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:47.081Z",
+    "lastUpdated": "2026-09-04T20:57:47.081Z",
+    "adSignal": {
+      "attentionScore": 0.765,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.35,
+      "enginePayout": 2.29,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_music-video_1788555467081",
+      "owner": "ECMcCready",
+      "clusterId": "cl_music-video_1788555467081",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.552,
+      "z": 1.2,
+      "x": 0.837,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.765,
+      "y": 0.509,
+      "z": 1.2,
+      "attention": 0.765,
+      "value": 0.509,
+      "accumulated": 0.214
+    }
+  },
+  {
+    "id": "cl_gameplay_1788555464512",
+    "name": "Gameplay × play",
+    "domain": "Gameplay",
+    "size": 1,
+    "tags": [
+      "play",
+      "rules",
+      "session",
+      "in-world economy"
+    ],
+    "similarity": 0.875,
+    "pi_inv": 0.819,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:44.512Z",
+    "lastUpdated": "2026-09-04T20:57:44.512Z",
+    "adSignal": {
+      "attentionScore": 0.754,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.28,
+      "enginePayout": 2.26,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_gameplay_1788555464512",
+      "owner": "ECMcCready",
+      "clusterId": "cl_gameplay_1788555464512",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.459,
+      "z": 1,
+      "x": 0.819,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.754,
+      "y": 0.427,
+      "z": 1,
+      "attention": 0.754,
+      "value": 0.427,
+      "accumulated": 0.18
+    }
+  },
+  {
+    "id": "cl_music_1788555459082",
+    "name": "Music × playlist",
+    "domain": "Music",
+    "size": 1,
+    "tags": [
+      "playlist",
+      "music video",
+      "independent",
+      "generative"
+    ],
+    "similarity": 0.935,
+    "pi_inv": 0.84,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:39.082Z",
+    "lastUpdated": "2026-09-04T20:57:39.082Z",
+    "adSignal": {
+      "attentionScore": 0.835,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.84,
+      "enginePayout": 2.5,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_music_1788555459082",
+      "owner": "ECMcCready",
+      "clusterId": "cl_music_1788555459082",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.554,
+      "z": 1.2,
+      "x": 0.84,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.835,
+      "y": 0.551,
+      "z": 1.2,
+      "attention": 0.835,
+      "value": 0.551,
+      "accumulated": 0.251
+    }
+  },
+  {
+    "id": "cl_social-transmedia_1788555457746",
+    "name": "Social Transmedia × transmedia",
+    "domain": "Social Transmedia",
+    "size": 1,
+    "tags": [
+      "transmedia",
+      "storyworld",
+      "cross-platform",
+      "audience participation"
+    ],
+    "similarity": 0.881,
+    "pi_inv": 0.826,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:37.746Z",
+    "lastUpdated": "2026-09-04T20:57:37.746Z",
+    "adSignal": {
+      "attentionScore": 0.76,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.32,
+      "enginePayout": 2.28,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_social-transmedia_1788555457746",
+      "owner": "ECMcCready",
+      "clusterId": "cl_social-transmedia_1788555457746",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.463,
+      "z": 1,
+      "x": 0.826,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.76,
+      "y": 0.43,
+      "z": 1,
+      "attention": 0.76,
+      "value": 0.43,
+      "accumulated": 0.182
+    }
+  },
+  {
+    "id": "cl_animation_1788555455702",
+    "name": "Animation × storyworld",
+    "domain": "Animation",
+    "size": 1,
+    "tags": [
+      "storyworld",
+      "character systems",
+      "feature pipeline",
+      "transmedia animation"
+    ],
+    "similarity": 0.854,
+    "pi_inv": 0.819,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:35.702Z",
+    "lastUpdated": "2026-09-04T20:57:35.702Z",
+    "adSignal": {
+      "attentionScore": 0.748,
+      "label": "low",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.24,
+      "enginePayout": 2.24,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_animation_1788555455702",
+      "owner": "ECMcCready",
+      "clusterId": "cl_animation_1788555455702",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.459,
+      "z": 1,
+      "x": 0.819,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.748,
+      "y": 0.424,
+      "z": 1,
+      "attention": 0.748,
+      "value": 0.424,
+      "accumulated": 0.177
+    }
+  },
+  {
+    "id": "cl_visual_1788555453551",
+    "name": "Visual / Generative Art × generative",
+    "domain": "Visual / Generative Art",
+    "size": 1,
+    "tags": [
+      "generative",
+      "aesthetic",
+      "narrative image",
+      "style transfer"
+    ],
+    "similarity": 0.924,
+    "pi_inv": 0.803,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-04T20:57:33.552Z",
+    "lastUpdated": "2026-09-04T20:57:33.552Z",
+    "adSignal": {
+      "attentionScore": 0.759,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.31,
+      "enginePayout": 2.28,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_visual_1788555453551",
+      "owner": "ECMcCready",
+      "clusterId": "cl_visual_1788555453551",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.452,
+      "z": 1,
+      "x": 0.803,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.759,
+      "y": 0.429,
+      "z": 1,
+      "attention": 0.759,
+      "value": 0.429,
+      "accumulated": 0.182
+    }
+  }
+]
