@@ -4,7 +4,10 @@
     "name": "Shiyan Yishu Label Playlist",
     "owner": "ECMcCready",
     "domain": "music",
-    "clusterIds": [],
+    "clusterIds": [
+      "cl_music_1788552907747",
+      "cl_music_1788552919692"
+    ],
     "productType": "sync",
     "license": "sync",
     "attribution": [
