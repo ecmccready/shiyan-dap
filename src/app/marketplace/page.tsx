@@ -37,15 +37,22 @@ export default function MarketplacePage() {
       "esports",
     ];
 
-    fetch("/api/marketplace/clear", { method: "POST" })
-      .then(() =>
-        Promise.all(
+    fetch("/api/marketplace")
+      .then((res) => res.json())
+      .then(async (data) => {
+        if (data.inventory?.length) {
+          setInventory(data.inventory);
+          setLoading(false);
+          return;
+        }
+
+        await Promise.all(
           domains.map((domain) =>
             fetch(`/api/agent?domain=${domain}`).then((res) => res.json())
           )
-        )
-      )
-      .then(() => loadInventory())
+        );
+        await loadInventory();
+      })
       .catch(() => {
         setLoading(false);
         loadInventory();
