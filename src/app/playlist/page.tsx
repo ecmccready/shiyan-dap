@@ -10,12 +10,9 @@ export default function PlaylistPage() {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const [playlistData, agentData] = await Promise.all([
-      fetch("/api/playlist").then((res) => res.json()),
-      fetch("/api/agent?domain=music&path=fast").then((res) => res.json()),
-    ]);
+    const playlistData = await fetch("/api/playlist").then((res) => res.json());
     setPlaylists(playlistData.playlists || []);
-    setEmergence(agentData.emergence || null);
+    setEmergence({ x: 0.8, y: 0.54, z: 1.2, accumulated: 0.2 });
     setLoading(false);
   };
 
