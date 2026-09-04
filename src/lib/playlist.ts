@@ -18,30 +18,38 @@ export interface Playlist {
   createdAt: string;
 }
 
-const playlists: Playlist[] = [
-  {
-    id: "pl_label_001",
-    name: "Shiyan Yishu Label Playlist",
-    owner: "ECMcCready",
-    domain: "music",
-    clusterIds: [],
-    productType: "label",
-    license: "commercial",
-    attribution: [{ owner: "ECMcCready", share: 1 }],
-    b2bReady: true,
-    createdAt: new Date().toISOString(),
-  },
-];
+const g = globalThis as any;
+
+if (!g.__shiyanPlaylists) {
+  g.__shiyanPlaylists = [
+    {
+      id: "pl_label_001",
+      name: "Shiyan Yishu Label Playlist",
+      owner: "ECMcCready",
+      domain: "music",
+      clusterIds: [],
+      productType: "label",
+      license: "commercial",
+      attribution: [{ owner: "ECMcCready", share: 1 }],
+      b2bReady: true,
+      createdAt: new Date().toISOString(),
+    },
+  ] as Playlist[];
+}
+
+function store(): Playlist[] {
+  return g.__shiyanPlaylists as Playlist[];
+}
 
 function rebuildAttribution(playlist: Playlist) {
   const owners = ["ECMcCready"];
   const share = Number((1 / owners.length).toFixed(3));
   playlist.attribution = owners.map((owner) => ({ owner, share }));
-  playlist.b2bReady = playlist.clusterIds.length > 0;
+  playlist.b2bReady = playlist.clusterIds.length > 0 || playlist.license !== "personal";
 }
 
 export function addClusterToPlaylist(clusterId: string): Playlist {
-  const playlist = playlists[0];
+  const playlist = store()[0];
   if (!playlist.clusterIds.includes(clusterId)) {
     playlist.clusterIds.push(clusterId);
   }
@@ -50,14 +58,15 @@ export function addClusterToPlaylist(clusterId: string): Playlist {
 }
 
 export function getPlaylists(): Playlist[] {
-  return playlists;
+  return store();
 }
 
 export function licensePlaylist(id: string, use: BundleUse = "sync") {
-  const playlist = playlists.find((item) => item.id === id) || playlists[0];
+  const playlist = store().find((item) => item.id === id) || store()[0];
   playlist.productType = use;
   playlist.license = use === "label" ? "commercial" : "sync";
   playlist.b2bReady = true;
+  rebuildAttribution(playlist);
   return {
     success: true,
     playlist,
