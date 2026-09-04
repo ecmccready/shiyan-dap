@@ -1,0 +1,19 @@
+[
+  {
+    "id": "pl_label_001",
+    "name": "Shiyan Yishu Label Playlist",
+    "owner": "ECMcCready",
+    "domain": "music",
+    "clusterIds": [],
+    "productType": "sync",
+    "license": "sync",
+    "attribution": [
+      {
+        "owner": "ECMcCready",
+        "share": 1
+      }
+    ],
+    "b2bReady": true,
+    "createdAt": "2026-09-04T19:55:18.196Z"
+  }
+]

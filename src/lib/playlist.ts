@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 export type BundleUse = "sync" | "game" | "label" | "transmedia";
 
 export interface AttributionSplit {
@@ -18,42 +21,68 @@ export interface Playlist {
   createdAt: string;
 }
 
+const file = path.join(process.cwd(), "src/data/playlist.json");
 const g = globalThis as any;
 
-if (!g.__shiyanPlaylists) {
-  g.__shiyanPlaylists = [
-    {
-      id: "pl_label_001",
-      name: "Shiyan Yishu Label Playlist",
-      owner: "ECMcCready",
-      domain: "music",
-      clusterIds: [],
-      productType: "label",
-      license: "commercial",
-      attribution: [{ owner: "ECMcCready", share: 1 }],
-      b2bReady: true,
-      createdAt: new Date().toISOString(),
-    },
-  ] as Playlist[];
+const fallback: Playlist[] = [
+  {
+    id: "pl_label_001",
+    name: "Shiyan Yishu Label Playlist",
+    owner: "ECMcCready",
+    domain: "music",
+    clusterIds: [],
+    productType: "label",
+    license: "commercial",
+    attribution: [{ owner: "ECMcCready", share: 1 }],
+    b2bReady: true,
+    createdAt: new Date().toISOString(),
+  },
+];
+
+function readDisk(): Playlist[] | null {
+  try {
+    if (!fs.existsSync(file)) return null;
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function writeDisk(playlists: Playlist[]) {
+  try {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify(playlists, null, 2));
+  } catch {
+    // Vercel is read-only; memory still holds for the warm instance.
+  }
 }
 
 function store(): Playlist[] {
+  if (!g.__shiyanPlaylists) {
+    g.__shiyanPlaylists = readDisk() || fallback;
+  }
   return g.__shiyanPlaylists as Playlist[];
 }
 
+function save(playlists: Playlist[]) {
+  g.__shiyanPlaylists = playlists;
+  writeDisk(playlists);
+}
+
 function rebuildAttribution(playlist: Playlist) {
-  const owners = ["ECMcCready"];
-  const share = Number((1 / owners.length).toFixed(3));
-  playlist.attribution = owners.map((owner) => ({ owner, share }));
-  playlist.b2bReady = playlist.clusterIds.length > 0 || playlist.license !== "personal";
+  playlist.attribution = [{ owner: playlist.owner || "ECMcCready", share: 1 }];
+  playlist.b2bReady =
+    playlist.clusterIds.length > 0 || playlist.license !== "personal";
 }
 
 export function addClusterToPlaylist(clusterId: string): Playlist {
-  const playlist = store()[0];
+  const playlists = store();
+  const playlist = playlists[0];
   if (!playlist.clusterIds.includes(clusterId)) {
     playlist.clusterIds.push(clusterId);
   }
   rebuildAttribution(playlist);
+  save(playlists);
   return playlist;
 }
 
@@ -62,11 +91,13 @@ export function getPlaylists(): Playlist[] {
 }
 
 export function licensePlaylist(id: string, use: BundleUse = "sync") {
-  const playlist = store().find((item) => item.id === id) || store()[0];
+  const playlists = store();
+  const playlist = playlists.find((item) => item.id === id) || playlists[0];
   playlist.productType = use;
   playlist.license = use === "label" ? "commercial" : "sync";
   playlist.b2bReady = true;
   rebuildAttribution(playlist);
+  save(playlists);
   return {
     success: true,
     playlist,
