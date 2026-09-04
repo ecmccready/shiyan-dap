@@ -1,3 +1,4 @@
+import { persistPut } from "@/lib/persist";
 import fs from "node:fs";
 import path from "node:path";
 import { promoteLayer } from "@/lib/economy";
@@ -48,6 +49,7 @@ function store(): MarketplaceCluster[] {
 function save(inventory: MarketplaceCluster[]) {
   g.__shiyanMarketplace = inventory;
   writeDisk(inventory);
+  void persistPut("marketplace.json", inventory);
 }
 
 export function getInventory() {

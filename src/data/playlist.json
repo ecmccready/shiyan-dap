@@ -6,7 +6,15 @@
     "domain": "music",
     "clusterIds": [
       "cl_music_1788552907747",
-      "cl_music_1788552919692"
+      "cl_music_1788552919692",
+      "cl_music-video_1788554104900",
+      "cl_music_1788554105092",
+      "cl_music-video_1788554122502",
+      "cl_music_1788554124447",
+      "cl_music_1788555459082",
+      "cl_music-video_1788555467081",
+      "cl_music_1788555483812",
+      "cl_music-video_1788555488054"
     ],
     "productType": "sync",
     "license": "sync",

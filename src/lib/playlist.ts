@@ -1,3 +1,4 @@
+import { persistPut } from "@/lib/persist";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -67,6 +68,7 @@ function store(): Playlist[] {
 function save(playlists: Playlist[]) {
   g.__shiyanPlaylists = playlists;
   writeDisk(playlists);
+  void persistPut("playlist.json", playlists);
 }
 
 function rebuildAttribution(playlist: Playlist) {
