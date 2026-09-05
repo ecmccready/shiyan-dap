@@ -146,8 +146,8 @@ export default function MarketplacePage() {
           </h1>
           <p className="text-zinc-400 max-w-2xl">
             y-axis retention. Clusters contain user Homes. Ads pay the user and
-            the engine. C2C feeds B2C, then B2B. Playlist is the transfer rail:
-            x,y + x,y = z.
+            the engine. Capital splits without caring which model ran.
+            Playlist is the transfer rail: x,y + x,y = z.
           </p>
           <div className="flex flex-wrap gap-3 mt-5">
             <Link href="/single" className="h-9 px-4 rounded-full bg-emerald-600 text-white text-xs font-medium flex items-center">
@@ -215,6 +215,14 @@ export default function MarketplacePage() {
                       <p className="text-xs text-emerald-400 mt-1">
                         Ad pay · User ${cluster.adPayout.userPayout} · Engine $
                         {cluster.adPayout.enginePayout} · later {cluster.adPayout.later}
+                      </p>
+                    )}
+                    {cluster.capital?.split && (
+                      <p className="text-xs text-amber-400 mt-1">
+                        Capital · User ${cluster.capital.split.user} · Engine $
+                        {cluster.capital.split.engine} · Token $
+                        {cluster.capital.split.tokenReserve} · Crypto $
+                        {cluster.capital.split.laterCrypto}
                       </p>
                     )}
                     {cluster.emergence && (

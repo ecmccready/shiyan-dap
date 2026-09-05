@@ -132,6 +132,10 @@ async function runAgent(
     owner: seed.artist,
   });
 
+  const capital = allocateCapital({
+    attention: adSignal.attentionScore,
+  });
+
   const policyExtension = {
     policy_name: `${domain.label} Value Extension`,
     action:
@@ -159,6 +163,7 @@ async function runAgent(
     sovereignty,
     zPolicy,
     emergence,
+    capital,
   } as any);
 
   let token = null;
@@ -174,11 +179,6 @@ async function runAgent(
     });
     playlist = addClusterToPlaylist(cluster.id);
   }
-
-  const capital = allocateCapital({
-    attention: adSignal.attentionScore,
-    tokenPrice: token?.price,
-  });
 
   const hf = await emitTrainingRecord({
     clusterId: cluster.id,
