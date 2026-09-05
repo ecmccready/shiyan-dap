@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1127.0",
     "@stripe/react-stripe-js": "^6.8.1",
     "@stripe/stripe-js": "^9.13.0",
     "next": "16.3.0",
