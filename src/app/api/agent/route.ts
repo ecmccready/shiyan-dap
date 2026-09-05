@@ -10,6 +10,7 @@ import { calibratePolicy } from "@/lib/policy";
 import { addClusterToPlaylist } from "@/lib/playlist";
 import { computeEmergence } from "@/lib/emergence";
 import { splitAdValue, containHomePage } from "@/lib/economy";
+import { allocateCapital } from "@/lib/capital";
 
 async function runAgent(
   domainId: Domain = "music",
@@ -173,6 +174,11 @@ async function runAgent(
     playlist = addClusterToPlaylist(cluster.id);
   }
 
+  const capital = allocateCapital({
+    attention: adSignal.attentionScore,
+    tokenPrice: token?.price,
+  });
+
   recordOutcome({
     domain: domain.label,
     pi_inv,
@@ -193,6 +199,7 @@ async function runAgent(
     adPayout,
     containedHome,
     emergence,
+    capital,
     policyExtension,
     model: modelInfo,
     token,
