@@ -1,5 +1,129 @@
 [
   {
+    "id": "cl_music_1788643363871",
+    "name": "Music × playlist",
+    "domain": "Music",
+    "size": 1,
+    "tags": [
+      "playlist",
+      "music video",
+      "independent",
+      "generative"
+    ],
+    "similarity": 0.938,
+    "pi_inv": 0.829,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-05T21:22:43.872Z",
+    "lastUpdated": "2026-09-05T21:22:43.872Z",
+    "adSignal": {
+      "attentionScore": 0.829,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.8,
+      "enginePayout": 2.49,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_music_1788643363871",
+      "owner": "ECMcCready",
+      "clusterId": "cl_music_1788643363871",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.547,
+      "z": 1.2,
+      "x": 0.829,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.829,
+      "y": 0.547,
+      "z": 1.2,
+      "attention": 0.829,
+      "value": 0.547,
+      "accumulated": 0.248
+    }
+  },
+  {
+    "id": "cl_music_1788641692706",
+    "name": "Music × playlist",
+    "domain": "Music",
+    "size": 1,
+    "tags": [
+      "playlist",
+      "music video",
+      "independent",
+      "generative"
+    ],
+    "similarity": 0.949,
+    "pi_inv": 0.826,
+    "status": "available",
+    "owner": "ECMcCready",
+    "createdAt": "2026-09-05T20:54:52.708Z",
+    "lastUpdated": "2026-09-05T20:54:52.708Z",
+    "adSignal": {
+      "attentionScore": 0.83,
+      "label": "medium",
+      "source": "cluster"
+    },
+    "adPayout": {
+      "userShare": 0.7,
+      "engineShare": 0.3,
+      "userPayout": 5.81,
+      "enginePayout": 2.49,
+      "currency": "USD",
+      "rail": "playlist",
+      "later": "crypto"
+    },
+    "containedHome": {
+      "href": "/home?cluster=cl_music_1788641692706",
+      "owner": "ECMcCready",
+      "clusterId": "cl_music_1788641692706",
+      "layer": "C2C"
+    },
+    "sovereignty": {
+      "dataOwner": "ECMcCready",
+      "protocolOwner": "ECMcCready",
+      "assetOwner": "ECMcCready",
+      "trainingGranted": true,
+      "userKeepsData": true,
+      "protocolLearnsFromInput": true,
+      "directBlockchainAccess": false
+    },
+    "zPolicy": {
+      "y": 0.546,
+      "z": 1.2,
+      "x": 0.826,
+      "C": 0.05,
+      "formula": "y(x) = (z/2)x + C"
+    },
+    "emergence": {
+      "x": 0.83,
+      "y": 0.548,
+      "z": 1.2,
+      "attention": 0.83,
+      "value": 0.548,
+      "accumulated": 0.248
+    }
+  },
+  {
     "id": "cl_real-estate_1788555505535",
     "name": "Real Estate × property",
     "domain": "Real Estate",
