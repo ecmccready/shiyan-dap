@@ -11,6 +11,7 @@ import { addClusterToPlaylist } from "@/lib/playlist";
 import { computeEmergence } from "@/lib/emergence";
 import { splitAdValue, containHomePage } from "@/lib/economy";
 import { allocateCapital } from "@/lib/capital";
+import { emitTrainingRecord } from "@/lib/huggingface";
 
 async function runAgent(
   domainId: Domain = "music",
@@ -179,6 +180,13 @@ async function runAgent(
     tokenPrice: token?.price,
   });
 
+  const hf = await emitTrainingRecord({
+    clusterId: cluster.id,
+    domain: domain.label,
+    input: seed.rawInput || seed.description,
+    cleaned: modelInfo.raw?.cleanedText,
+  });
+
   recordOutcome({
     domain: domain.label,
     pi_inv,
@@ -200,6 +208,7 @@ async function runAgent(
     containedHome,
     emergence,
     capital,
+    hf,
     policyExtension,
     model: modelInfo,
     token,
