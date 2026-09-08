@@ -57,7 +57,7 @@ export default function HomePage() {
           Release. Learn.
         </h1>
         <p className="text-zinc-300 text-lg md:text-xl max-w-4xl mt-8 leading-relaxed">
-          Shiyan AI Assist is a creator operating system that turns a creative work into a living project. Start with a song, idea, or work in progress.
+          Shiyan AI Assist-the AI system that helps an independent creator take a creation to release, audience response and next best action.
         </p>
         <p className="text-zinc-500 mt-4 max-w-4xl">
           Every song + story becomes an owned digital asset. Music is the wedge. The rails are Marketplace, Playlists, Songs, and AI Content.
@@ -83,3 +83,4 @@ export default function HomePage() {
     </div>
   );
 }
+
