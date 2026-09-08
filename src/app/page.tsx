@@ -58,10 +58,7 @@ export default function HomePage() {
         <p className="text-zinc-300 text-lg md:text-xl max-w-4xl mt-8 leading-relaxed">
           Shiyan AI Assist is a creator operating system that turns a creative work into a living project. Start with a song, idea, or work in progress.
         </p>
-        <p className="text-zinc-500 mt-4 max-w-4xl">
-          I am using my first single "Shiyan Yishu" to build and prove Shiyan AI Assist — the AI system that helps an independent creator take a creation to release, audience response, and the next best action.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
+                <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/upload" className="h-11 px-6 rounded-full bg-emerald-600 text-white text-sm font-medium inline-flex items-center">Upload</Link>
           <Link href="/marketplace" className="h-11 px-6 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Marketplace</Link>
           <Link href="/playlist" className="h-11 px-6 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Playlist</Link>
@@ -86,3 +83,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+
