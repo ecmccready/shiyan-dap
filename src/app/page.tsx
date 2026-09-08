@@ -3,7 +3,6 @@ import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { setLocalAttention } from "@/lib/emergence";
-import { FIRST_SINGLE_URL, proofSingle, proofPlaylist } from "@/lib/proof-catalog";
 
 export default function HomePage() {
   const [input, setInput] = useState("");
@@ -67,7 +66,7 @@ export default function HomePage() {
           <Link href="/marketplace" className="h-11 px-6 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Marketplace</Link>
           <Link href="/playlist" className="h-11 px-6 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Playlist</Link>
           <Link href="/bot" className="h-11 px-6 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Grok Bot</Link>
-          <a href={FIRST_SINGLE_URL} target="_blank" rel="noreferrer" className="h-11 px-6 rounded-full border border-emerald-800 text-emerald-300 text-sm font-medium inline-flex items-center">Listen to Shiyan Yishu</a>
+          <Link href="/single" className="h-11 px-6 rounded-full border border-emerald-800 text-emerald-300 text-sm font-medium inline-flex items-center">Songs</Link>
         </div>
         <form onSubmit={handleSubmit} className="mt-12 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
           <p className="text-sm text-emerald-400 mb-3">C2C Assist · Grok fast · Hy4 deep</p>
@@ -83,18 +82,6 @@ export default function HomePage() {
             <Link href="/bot" className="h-10 px-5 rounded-full bg-emerald-600 text-white text-sm font-medium inline-flex items-center">Act in Grok Bot</Link>
           </div>
         )}
-        <section className="mt-12 grid md:grid-cols-2 gap-5">
-          <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-7">
-            <p className="text-xs text-emerald-400 mb-2">PROOF · FIRST SINGLE</p>
-            <h2 className="text-2xl font-semibold mb-2">{proofSingle.name}</h2>
-            <Link href="/single" className="text-sm text-emerald-400">Open package</Link>
-          </article>
-          <article className="rounded-2xl border border-amber-900/40 bg-zinc-900/40 p-7">
-            <p className="text-xs text-amber-400 mb-2">B2B · PLAYLIST RAIL</p>
-            <h2 className="text-2xl font-semibold mb-2">{proofPlaylist.name}</h2>
-            <Link href="/playlist" className="text-sm text-amber-400">License playlist</Link>
-          </article>
-        </section>
       </main>
     </div>
   );
