@@ -1,8 +1,51 @@
-﻿import Link from "next/link";
+﻿"use client";
+import { useState } from "react";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import { setLocalAttention } from "@/lib/emergence";
 import { FIRST_SINGLE_URL, proofSingle, proofPlaylist } from "@/lib/proof-catalog";
 
 export default function HomePage() {
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [refining, setRefining] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    const currentInput = input;
+    setLoading(true);
+    setRefining(false);
+    setResult(null);
+    try {
+      const fastRes = await fetch("/api/agent?domain=music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: currentInput, path: "fast" }),
+      });
+      const fastData = await fastRes.json();
+      if (fastData.adSignal?.attentionScore) setLocalAttention(fastData.adSignal.attentionScore);
+      setResult({ ...fastData, pathLabel: "Grok fast" });
+      setInput("");
+      setLoading(false);
+      setRefining(true);
+      const deepRes = await fetch("/api/agent?domain=music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: currentInput, path: "deep" }),
+      });
+      const deepData = await deepRes.json();
+      if (deepData.adSignal?.attentionScore) setLocalAttention(deepData.adSignal.attentionScore);
+      setResult({ ...fastData, ...deepData, pathLabel: "Hy4 deep" });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setRefining(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader />
@@ -14,34 +57,41 @@ export default function HomePage() {
           Release. Learn.
         </h1>
         <p className="text-zinc-300 text-lg md:text-xl max-w-4xl mt-8 leading-relaxed">
-          I am using my first single "Shiyan Yishu" to build and prove Shiyan AI Assist —
-          the AI system that helps an independent creator take a creation to release,
-          audience response, and the next best action.
+          Shiyan AI Assist is a creator operating system that turns a creative work into a living project. Start with a song, idea, or work in progress.
         </p>
-        <p className="text-zinc-500 mt-4 max-w-3xl">
-          Class: the protocol we already built. Pivot: the public statement. Function: emergent technology.
-          y,x + y,x = z. When y(x) == 1 the First Single is the proof.
+        <p className="text-zinc-500 mt-4 max-w-4xl">
+          I am using my first single "Shiyan Yishu" to build and prove Shiyan AI Assist — the AI system that helps an independent creator take a creation to release, audience response, and the next best action.
         </p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link href="/home" className="h-12 px-7 rounded-full bg-emerald-600 text-white text-sm font-medium inline-flex items-center">C2C Assist</Link>
-          <Link href="/upload" className="h-12 px-7 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Upload</Link>
-          <Link href="/marketplace" className="h-12 px-7 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">B2B Marketplace</Link>
-          <Link href="/playlist" className="h-12 px-7 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">B2B Playlist</Link>
-          <a href={FIRST_SINGLE_URL} target="_blank" rel="noreferrer" className="h-12 px-7 rounded-full border border-emerald-800 text-emerald-300 text-sm font-medium inline-flex items-center">Listen to Shiyan Yishu</a>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/upload" className="h-11 px-6 rounded-full bg-emerald-600 text-white text-sm font-medium inline-flex items-center">Upload</Link>
+          <Link href="/marketplace" className="h-11 px-6 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Marketplace</Link>
+          <Link href="/playlist" className="h-11 px-6 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Playlist</Link>
+          <Link href="/bot" className="h-11 px-6 rounded-full border border-zinc-700 text-zinc-300 text-sm font-medium inline-flex items-center">Grok Bot</Link>
+          <a href={FIRST_SINGLE_URL} target="_blank" rel="noreferrer" className="h-11 px-6 rounded-full border border-emerald-800 text-emerald-300 text-sm font-medium inline-flex items-center">Listen to Shiyan Yishu</a>
         </div>
-        <section className="mt-16 grid md:grid-cols-2 gap-5">
+        <form onSubmit={handleSubmit} className="mt-12 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
+          <p className="text-sm text-emerald-400 mb-3">C2C Assist · Grok fast · Hy4 deep</p>
+          <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Paste the song, hook, or what is missing..." rows={4} className="w-full rounded-2xl bg-black border border-zinc-800 px-5 py-4 text-sm mb-4" />
+          <button type="submit" disabled={loading || !input.trim()} className="h-11 px-8 rounded-full bg-emerald-600 text-white text-sm font-medium disabled:opacity-50">
+            {loading ? "Grok analyzing..." : refining ? "Hy4 refining..." : "Analyze project"}
+          </button>
+        </form>
+        {result && (
+          <div className="mt-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
+            <p className="text-emerald-400 text-sm mb-2">{result.pathLabel} {refining ? "· Hy4 running" : ""}</p>
+            <p className="text-lg font-semibold mb-2">{result.cluster?.name || "Project cluster"}</p>
+            <Link href="/bot" className="h-10 px-5 rounded-full bg-emerald-600 text-white text-sm font-medium inline-flex items-center">Act in Grok Bot</Link>
+          </div>
+        )}
+        <section className="mt-12 grid md:grid-cols-2 gap-5">
           <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-7">
             <p className="text-xs text-emerald-400 mb-2">PROOF · FIRST SINGLE</p>
             <h2 className="text-2xl font-semibold mb-2">{proofSingle.name}</h2>
-            <p className="text-sm text-zinc-400 mb-4">Owner {proofSingle.owner} · {proofSingle.status}</p>
-            <p className="text-sm text-zinc-500 mb-5">Every song + story becomes an owned digital asset. Music is the wedge.</p>
             <Link href="/single" className="text-sm text-emerald-400">Open package</Link>
           </article>
           <article className="rounded-2xl border border-amber-900/40 bg-zinc-900/40 p-7">
             <p className="text-xs text-amber-400 mb-2">B2B · PLAYLIST RAIL</p>
             <h2 className="text-2xl font-semibold mb-2">{proofPlaylist.name}</h2>
-            <p className="text-sm text-zinc-400 mb-4">{proofPlaylist.license} · ready</p>
-            <p className="text-sm text-zinc-500 mb-5">Marketplace retains. Playlist transfers. Grok Bot executes.</p>
             <Link href="/playlist" className="text-sm text-amber-400">License playlist</Link>
           </article>
         </section>
