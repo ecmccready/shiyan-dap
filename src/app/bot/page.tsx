@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -14,7 +14,7 @@ export default function BotPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "bot",
-      content: "I’m the Grok Bot sitting on top of your Clusters. I can help you Explore, Buy, Sell, or Trade Music and AI content.",
+      content: "Iâ€™m the Grok Bot sitting on top of your Clusters. I can help you Explore, Buy, Sell, or Trade Music and AI content.",
       suggestedActions: ["Acquire", "Retain", "Transfer", "Buy"],
     },
   ]);
@@ -37,7 +37,7 @@ export default function BotPage() {
         ...prev,
         {
           role: "bot",
-          content: data.reply || "I didn’t catch that.",
+          content: data.reply || "I didnâ€™t catch that.",
           suggestedActions: data.suggestedActions,
           transaction: data.transaction || null,
         },
@@ -60,7 +60,7 @@ export default function BotPage() {
           <nav className="flex items-center gap-6">
             <Link href="/home" className="text-sm text-zinc-400 hover:text-white">Home</Link>
             <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white">Playlist</Link>
-            <Link href="/single" className="text-sm text-zinc-400 hover:text-white">Single</Link>
+            <Link href="/single" className="text-sm text-zinc-400 hover:text-white">Songs</Link>
             <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white">Marketplace</Link>
           </nav>
         </div>
@@ -73,7 +73,7 @@ export default function BotPage() {
                 <p className="text-sm">{msg.content}</p>
                 {msg.transaction && (
                   <p className="text-xs text-emerald-400 mt-2">
-                    {msg.transaction.action.toUpperCase()} · {msg.transaction.amount} · ${msg.transaction.total}
+                    {msg.transaction.action.toUpperCase()} Â· {msg.transaction.amount} Â· ${msg.transaction.total}
                   </p>
                 )}
                 {msg.suggestedActions && (
@@ -96,7 +96,7 @@ export default function BotPage() {
           }}
           className="flex gap-3"
         >
-          <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Try acquire, retain, transfer, or buy…" className="flex-1 h-12 rounded-full bg-zinc-900 border border-zinc-800 px-5 text-sm" />
+          <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Try acquire, retain, transfer, or buyâ€¦" className="flex-1 h-12 rounded-full bg-zinc-900 border border-zinc-800 px-5 text-sm" />
           <button disabled={loading || !input.trim()} className="h-12 px-6 rounded-full bg-emerald-600 text-sm disabled:opacity-50">Send</button>
         </form>
       </main>
