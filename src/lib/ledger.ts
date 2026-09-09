@@ -1,4 +1,7 @@
-﻿export type LedgerAsset = {
+﻿
+
+
+export type LedgerAsset = {
   id: string;
   title: string;
   creator: string;
