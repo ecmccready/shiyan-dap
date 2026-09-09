@@ -1,4 +1,5 @@
 ﻿import { redirect } from "next/navigation";
-export default function AssistRedirect() {
+
+export default function HomeAlias() {
   redirect("/");
 }

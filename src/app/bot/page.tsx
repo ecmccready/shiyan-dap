@@ -1,106 +1,83 @@
 ﻿"use client";
-
 import { useState } from "react";
 import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
+import RailLinks from "@/components/RailLinks";
 
-interface Message {
-  role: "user" | "bot";
-  content: string;
-  suggestedActions?: string[];
-  transaction?: { action: string; amount: number; total: number } | null;
-}
+const chips = ["Acquire Shiyan Yishu", "Retain", "Transfer", "Buy"];
 
 export default function BotPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "bot",
-      content: "Iâ€™m the Grok Bot sitting on top of your Clusters. I can help you Explore, Buy, Sell, or Trade Music and AI content.",
-      suggestedActions: ["Acquire", "Retain", "Transfer", "Buy"],
-    },
-  ]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState(
+    [{ role: "bot", text: "I am the Grok Bot. Explore, Buy, Sell, or Trade Music and AI content." }]
+  );
+  const [busy, setBusy] = useState(false);
 
-  const sendMessage = async (text: string) => {
-    if (!text.trim()) return;
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
+  const send = async (text: string) => {
+    const message = text.trim();
+    if (!message || busy) return;
+    setBusy(true);
+    setMessages((prev) => [...prev, { role: "user", text: message }]);
     setInput("");
-    setLoading(true);
     try {
       const res = await fetch("/api/bot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, domain: "music", mode: "simulated" }),
+        body: JSON.stringify({ message, domain: "music" }),
       });
       const data = await res.json();
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "bot",
-          content: data.reply || "I didnâ€™t catch that.",
-          suggestedActions: data.suggestedActions,
-          transaction: data.transaction || null,
-        },
-      ]);
+      setMessages((prev) => [...prev, { role: "bot", text: data.reply || "Acquired on the ledger." }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "bot", content: "Something went wrong." }]);
-    } finally {
-      setLoading(false);
+      setMessages((prev) => [...prev, { role: "bot", text: "Open /nfts to acquire on the ledger." }]);
     }
+    setBusy(false);
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      <header className="border-b border-zinc-800/80">
-        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="font-semibold tracking-tight text-lg">Shiyan Yishu</Link>
-            <span className="text-zinc-500 text-sm">Grok Bot</span>
-          </div>
-          <nav className="flex items-center gap-6">
-            <Link href="/home" className="text-sm text-zinc-400 hover:text-white">Home</Link>
-            <Link href="/playlist" className="text-sm text-zinc-400 hover:text-white">Playlist</Link>
-            <Link href="/single" className="text-sm text-zinc-400 hover:text-white">Songs</Link>
-            <Link href="/marketplace" className="text-sm text-zinc-400 hover:text-white">Marketplace</Link>
-          </nav>
+    <div className="min-h-screen bg-black text-white">
+      <SiteHeader section="Act" />
+      <main className="max-w-4xl mx-auto px-6 py-12">
+        <p className="text-emerald-400 mb-3">Grok Bot</p>
+        <h1 className="text-3xl font-bold mb-3">Act</h1>
+        <p className="text-zinc-400 mb-8">Explore, Buy, Sell, or Trade Music and AI content.</p>
+        <div className="mb-8">
+          <RailLinks />
         </div>
-      </header>
-      <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-8 flex flex-col">
-        <div className="flex-1 space-y-6 mb-6">
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[80%] rounded-2xl px-5 py-3 ${msg.role === "user" ? "bg-emerald-600" : "bg-zinc-900 border border-zinc-800"}`}>
-                <p className="text-sm">{msg.content}</p>
-                {msg.transaction && (
-                  <p className="text-xs text-emerald-400 mt-2">
-                    {msg.transaction.action.toUpperCase()} Â· {msg.transaction.amount} Â· ${msg.transaction.total}
-                  </p>
-                )}
-                {msg.suggestedActions && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {msg.suggestedActions.map((action) => (
-                      <button key={action} onClick={() => sendMessage(action)} className="text-xs px-3 py-1.5 rounded-full bg-zinc-800">
-                        {action}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+        <div className="space-y-4 mb-8">
+          {messages.map((m, i) => (
+            <div key={i} className={"max-w-xl rounded-2xl p-4 " + (m.role === "user" ? "ml-auto bg-emerald-600" : "bg-zinc-900 border border-zinc-800")}>
+              <p className="text-sm">{m.text}</p>
             </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2 mb-6">
+          {chips.map((chip) => (
+            <button key={chip} onClick={() => send(chip)} className="h-9 px-4 rounded-full border border-zinc-700 text-sm">
+              {chip}
+            </button>
           ))}
         </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            sendMessage(input);
+            send(input);
           }}
           className="flex gap-3"
         >
-          <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Try acquire, retain, transfer, or buyâ€¦" className="flex-1 h-12 rounded-full bg-zinc-900 border border-zinc-800 px-5 text-sm" />
-          <button disabled={loading || !input.trim()} className="h-12 px-6 rounded-full bg-emerald-600 text-sm disabled:opacity-50">Send</button>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Try acquire, retain, transfer, or buy"
+            className="flex-1 h-11 rounded-full bg-zinc-900 border border-zinc-800 px-5 text-sm"
+          />
+          <button disabled={busy} className="h-11 px-6 rounded-full bg-emerald-600 text-sm">
+            Send
+          </button>
         </form>
+        <Link href="/nfts" className="inline-block mt-8 text-sm text-zinc-500">
+          Ledger is the proof
+        </Link>
       </main>
     </div>
   );
 }
-
