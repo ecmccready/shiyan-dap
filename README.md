@@ -19,8 +19,8 @@ Music is the wedge. Every song + story becomes an owned digital asset. Video, wr
 | Surface | URL | Role |
 |---|---|---|
 | Assist / AI Content | `/` | C2C. Grok fast, then Hy4 deep |
-| Create | `/upload` | File optional |
-| Prove | `/nfts` | Ledger. Acquire and Buy |
+| Create | `/upload` | Title becomes a ledger asset. File optional |
+| Prove | `/nfts` | Acquire and Buy |
 | Release / Songs | `/single` | First Single |
 | Marketplace | `/marketplace` | Shelf |
 | Playlist | `/playlist` | Transfer |
@@ -39,16 +39,18 @@ Founder asset ID: `cl_shiyan_yishu_001`
 ## What is proven
 
 - First Single exists as a public ledger record
+- Upload with no file writes a creator card to the ledger
 - Acquire reserves the asset in this browser
-- Buy opens a PayPal hosted checkout titled Shiyan Yishu — First Single
-- Founder signal file: https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_shiyan_yishu_001.json
+- Buy opens Stripe Checkout for $1.00 Shiyan Yishu — First Single
+- Sandbox payment succeeded: `pi_3UEGUPIuGDsvKC7N0hQ71L5g`
+- Founder signal: https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_shiyan_yishu_001.json
 
 ## What is not claimed
 
-- No paid buyer until PayPal money lands
+- No live paid buyer. Stripe is still test mode
 - No on-chain ERC-721 / ERC-1155 / SPL mint yet
-- Product-market fit is a later decision from ledger data: uploads, acquires, and non-founder paid signals
-- Founder click is a signal, not fit
+- Product-market fit is a later decision from ledger data: uploads, acquires, and non-founder live payments
+- Founder sandbox checkout is a signal, not fit
 
 ## Founder Model z
 
