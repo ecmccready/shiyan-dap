@@ -24,7 +24,10 @@ export async function POST() {
           price_data: {
             currency: "usd",
             unit_amount: 100,
-            product_data: { name: "Shiyan Yishu — First Single" },
+            product_data: {
+              name: "Shiyan Yishu — First Single",
+              tax_code: "txcd_10401200",
+            },
           },
         },
       ],
