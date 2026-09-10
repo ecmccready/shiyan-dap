@@ -27,11 +27,17 @@ export default function ProvePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: "Acquire " + asset.title, domain: "music" }),
       });
+      await fetch("/api/memory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetId: asset.id, title: asset.title, action: "acquire" }),
+      });
     } catch {}
     markAcquired(asset.id);
     setAssets((prev) =>
       prev.map((a) => (a.id === asset.id ? { ...a, buyer: "This session", state: "reserved" } : a))
     );
+    setNote("Acquire sent to ledger and Hugging Face memory.");
     setBusy(null);
   };
 
