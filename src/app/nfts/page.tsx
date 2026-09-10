@@ -4,10 +4,6 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, markAcquired, readLedger, wasAcquired } from "@/lib/ledger";
 
-const PAYPAL =
-  process.env.NEXT_PUBLIC_PAYPAL_URL ||
-  "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=56KA7MBVYM9KJ";
-
 export default function ProvePage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
@@ -19,6 +15,9 @@ export default function ProvePage() {
         wasAcquired(a.id) ? { ...a, buyer: "This session", state: "reserved" } : a
       )
     );
+    const paid = new URLSearchParams(window.location.search).get("paid");
+    if (paid === "1") setNote("Stripe returned success. Mark paid on Hugging Face after you confirm the charge.");
+    if (paid === "0") setNote("Checkout canceled.");
   }, []);
 
   const acquire = async (asset: LedgerAsset) => {
@@ -39,13 +38,22 @@ export default function ProvePage() {
     setAssets((prev) =>
       prev.map((a) => (a.id === asset.id ? { ...a, buyer: "This session", state: "reserved" } : a))
     );
-    setNote("Acquire sent to ledger and Hugging Face memory.");
     setBusy(null);
   };
 
-  const buy = (asset: LedgerAsset) => {
-    window.open(PAYPAL, "_blank", "noopener,noreferrer");
-    setNote("Checkout opened for " + asset.title + ". Paid stays 0 until the payment lands.");
+  const buy = async (asset: LedgerAsset) => {
+    setNote("Opening Stripe for " + asset.title);
+    try {
+      const res = await fetch("/api/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      setNote(data.error || "Checkout failed");
+    } catch {
+      setNote("Checkout failed");
+    }
   };
 
   return (
@@ -54,9 +62,7 @@ export default function ProvePage() {
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 mb-3">Prove</p>
         <h1 className="text-3xl font-bold mb-3">Tokenized assets</h1>
-        <p className="text-zinc-400 mb-8">
-          Reserve with Acquire. Pay with Buy. Music first. Fiat first.
-        </p>
+        <p className="text-zinc-400 mb-8">Reserve with Acquire. Pay with Buy on Stripe. Fiat first.</p>
         <div className="space-y-6">
           {assets.map((asset) => (
             <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
