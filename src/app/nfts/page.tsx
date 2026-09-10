@@ -4,7 +4,9 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, markAcquired, readLedger, wasAcquired } from "@/lib/ledger";
 
-const PAYPAL = "https://www.paypal.com/paypalme/ecmccready";
+const PAYPAL =
+  process.env.NEXT_PUBLIC_PAYPAL_URL ||
+  "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=56KA7MBVYM9KJ";
 
 export default function ProvePage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
