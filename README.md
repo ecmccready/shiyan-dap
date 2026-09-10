@@ -6,7 +6,7 @@ The first single **Shiyan Yishu** is the founder proof. Other users use the same
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap  
-Memory target: https://huggingface.co/shiyan-dap
+Memory: https://huggingface.co/datasets/shiyan-dap/founder-z
 
 ## Statement
 
@@ -19,43 +19,42 @@ Music is the wedge. Every song + story becomes an owned digital asset. Video, wr
 | Surface | URL | Role |
 |---|---|---|
 | Assist / AI Content | `/` | C2C. Grok fast, then Hy4 deep |
-| Create | `/upload` | File optional. Guitar Pro 8 MIDI and Cubase stems can attach later |
-| Prove | `/nfts` | Tokenized ledger. One-click acquire |
-| Release / Songs | `/single` | First Single release surface |
-| Marketplace | `/marketplace` | B2B shelf. Song, Playlist, Video + live ledger |
-| Playlist | `/playlist` | Transfer rail. Sync, games, labels |
-| Measure | `/measurements` | Assets, acquires, paid buyers |
-| Learn | `/dashboard` | Next best action. Founder Model z |
-| Act | `/bot` | Grok Bot. Explore, Buy, Sell, or Trade Music and AI content |
+| Create | `/upload` | File optional |
+| Prove | `/nfts` | Ledger. Acquire and Buy |
+| Release / Songs | `/single` | First Single |
+| Marketplace | `/marketplace` | Shelf |
+| Playlist | `/playlist` | Transfer |
+| Measure | `/measurements` | Assets, acquires, fit from data |
+| Learn | `/dashboard` | Next best action |
+| Track | `/track` | Audience response |
+| Act | `/bot` | Grok Bot |
+| Protocol | `/tokens` | Tokenize later. Fiat first |
 
 ## Proof loop
 
-Upload → Prove → Marketplace → Playlist → Songs
+Upload → Prove → Buy → Marketplace → Playlist → Songs
 
-Same asset ID across those pages. Founder asset is `cl_shiyan_yishu_001`.
-
-The single can sell before the master exists.
+Founder asset ID: `cl_shiyan_yishu_001`
 
 ## What is proven
 
-- First Single exists as a public record
-- Other users can open a project with no file
-- Acquire changes buyer and state in this browser
-- Marketplace and Playlist show the same ledger
-- Traction counts assets and acquires, not social metrics
+- First Single exists as a public ledger record
+- Acquire reserves the asset in this browser
+- Buy opens a PayPal hosted checkout titled Shiyan Yishu — First Single
+- Founder signal file: https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_shiyan_yishu_001.json
 
 ## What is not claimed
 
-- No paid buyer yet
+- No paid buyer until PayPal money lands
 - No on-chain ERC-721 / ERC-1155 / SPL mint yet
-- No product-market fit
-- Hugging Face `shiyan-dap` is the memory destination and is empty
+- Product-market fit is a later decision from ledger data: uploads, acquires, and non-founder paid signals
+- Founder click is a signal, not fit
 
 ## Founder Model z
 
-`y,x` Grok fast + `y,x` Hy4 deep = `z` next best action.
+`y,x` Grok fast + `y,x` Hy4 deep = `z` next action.
 
-Capital-allocation stays model-agnostic. Events should later write to `shiyan-dap/founder-z` on Hugging Face when `HF_TOKEN` exists.
+Capital-allocation stays model-agnostic. Memory destination: `shiyan-dap/founder-z`.
 
 ## Local
 
