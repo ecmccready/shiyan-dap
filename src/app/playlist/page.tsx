@@ -34,22 +34,26 @@ export default function PlaylistPage() {
               <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
               <p className="text-sm text-zinc-500 mb-1">Buyer {asset.buyer}</p>
               <p className="text-sm text-zinc-500 mb-4">State {asset.state}</p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => run(asset.id, "EXECUTE_SETTLEMENT")}
-                  disabled={asset.state !== "escrow"}
-                  className="h-11 px-5 rounded-full bg-emerald-600 text-sm disabled:opacity-40"
-                >
-                  Settle
-                </button>
-                <button
-                  onClick={() => run(asset.id, "ABORT")}
-                  disabled={asset.state !== "escrow"}
-                  className="h-11 px-5 rounded-full border border-zinc-700 text-sm disabled:opacity-40"
-                >
-                  Abort
-                </button>
-              </div>
+              {asset.state === "settled" ? (
+                <p className="text-sm text-emerald-400">Settled. Open Tokenize to queue a mint.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => run(asset.id, "EXECUTE_SETTLEMENT")}
+                    disabled={asset.state !== "escrow"}
+                    className="h-11 px-5 rounded-full bg-emerald-600 text-sm disabled:opacity-40"
+                  >
+                    Settle
+                  </button>
+                  <button
+                    onClick={() => run(asset.id, "ABORT")}
+                    disabled={asset.state !== "escrow"}
+                    className="h-11 px-5 rounded-full border border-zinc-700 text-sm disabled:opacity-40"
+                  >
+                    Abort
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

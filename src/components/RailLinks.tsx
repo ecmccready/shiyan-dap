@@ -4,6 +4,7 @@ const rails = [
   { href: "/marketplace", label: "Marketplace · KNOW" },
   { href: "/playlist", label: "Playlist · KNOW HOW" },
   { href: "/single", label: "Songs · SHOW" },
+  { href: "/tokens", label: "Tokenize" },
   { href: "/bot", label: "Grok Bot · DO" },
 ];
 
