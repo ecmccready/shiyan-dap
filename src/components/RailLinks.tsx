@@ -1,11 +1,11 @@
 ﻿import Link from "next/link";
 
 const rails = [
-  { href: "/marketplace", label: "Marketplace · KNOW" },
-  { href: "/playlist", label: "Playlist · KNOW HOW" },
-  { href: "/single", label: "Songs · SHOW" },
+  { href: "/marketplace", label: "Marketplace" },
+  { href: "/playlist", label: "Playlist" },
+  { href: "/single", label: "Songs" },
   { href: "/tokens", label: "Tokenize" },
-  { href: "/bot", label: "Grok Bot · DO" },
+  { href: "/bot", label: "Grok Bot" },
 ];
 
 export default function RailLinks() {

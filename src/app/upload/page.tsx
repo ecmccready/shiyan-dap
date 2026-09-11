@@ -2,7 +2,6 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
-import RailLinks from "@/components/RailLinks";
 import { writeExtra } from "@/lib/ledger";
 
 export default function UploadPage() {
@@ -10,14 +9,11 @@ export default function UploadPage() {
   const [title, setTitle] = useState("");
   const [story, setStory] = useState("");
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState("");
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const name = title.trim() || "Untitled project";
     setBusy(true);
-    const license = "Personal listen. Sync and labels stay on /playlist.";
-    const narrative = story.trim() || "Draft story. Assist can deepen this later.";
 
     writeExtra({
       id: "cl_" + Date.now(),
@@ -25,9 +21,9 @@ export default function UploadPage() {
       creator: "Creator",
       owner: "Creator",
       buyer: "None yet",
-      state: "available",
+      source: story.trim() || "creator project",
+      state: "listed",
       founder: false,
-      status: "production available",
     });
 
     try {
@@ -38,7 +34,6 @@ export default function UploadPage() {
       });
     } catch {}
 
-    setNote(license + " " + narrative);
     setBusy(false);
     router.push("/nfts");
   };
@@ -52,9 +47,6 @@ export default function UploadPage() {
         <p className="text-zinc-400 mb-8">
           File is optional. Title becomes a ledger asset. No crypto screen.
         </p>
-        <div className="mb-8">
-          <RailLinks />
-        </div>
         <form onSubmit={submit} className="space-y-5 max-w-xl">
           <input
             value={title}
@@ -73,7 +65,6 @@ export default function UploadPage() {
             {busy ? "Opening ledger..." : "Put on the ledger"}
           </button>
         </form>
-        {note && <p className="mt-6 text-sm text-zinc-500">{note}</p>}
       </main>
     </div>
   );
