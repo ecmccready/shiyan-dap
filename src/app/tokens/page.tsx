@@ -14,16 +14,10 @@ export default function TokensPage() {
 
   const queue = (asset: LedgerAsset, standard: MintStandard) => {
     queueMint(asset.id, standard);
-    fetch("/api/memory", {
+    fetch("/api/mint", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        assetId: asset.id,
-        title: asset.title,
-        action: "mint_queued",
-        standard,
-        paid: false,
-      }),
+      body: JSON.stringify({ assetId: asset.id, title: asset.title, standard }),
     }).catch(() => {});
     setNote(asset.title + " queued as " + standard + ". No chain tx.");
     setAssets(readLedger());
@@ -43,12 +37,14 @@ export default function TokensPage() {
         </div>
         <div className="space-y-4">
           {assets.map((asset) => {
-            const mint = typeof window === "undefined" ? { status: "not_minted", standard: "erc721" } : readMint(asset.id);
+            const mint = readMint(asset.id);
             return (
               <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
                 <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
                 <p className="text-sm text-zinc-500 mb-1">Trade state {asset.state}</p>
-                <p className="text-sm text-zinc-500 mb-4">Mint {mint.status} · {mint.standard} · chain none</p>
+                <p className="text-sm text-zinc-500 mb-4">
+                  Mint {mint.status} · {mint.standard} · chain none
+                </p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => queue(asset, "erc721")}
