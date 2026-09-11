@@ -1,39 +1,31 @@
 # Shiyan DAP
 
+Shiyan is AI infrastructure for turning creative work into market action.
+
 Shiyan AI Assist is the AI system that helps an independent creator take a creation to release, audience response and next best action.
 
-The first single **Shiyan Yishu** and the second single **Sleep Terrors** are the founder proof. Other users use the same rails without those master files.
+Music is the first vertical.
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap  
 Memory: https://huggingface.co/datasets/shiyan-dap/founder-z
 
-## Statement
+## Acquisition loop
 
-I am using my first single "Shiyan Yishu" to build and prove Shiyan AI Assist.
+Create → Prove → Learn → Act
 
-Music is the wedge. Every song + story becomes an owned digital asset. Video, writing, and other AI-native work can use the same ledger later.
+| Step | URL |
+|---|---|
+| Create | `/upload` |
+| Prove | `/nfts` |
+| Learn | `/dashboard` |
+| Act | `/bot` |
 
-## Rails
+Everything else supports that loop: Marketplace, Playlist, Songs, Tokenize, Measure.
 
-| Surface | URL | Role |
-|---|---|---|
-| Assist / AI Content | `/` | C2C. Grok fast, then Hy4 deep |
-| Create | `/upload` | Title becomes a ledger asset. File optional |
-| Prove | `/nfts` | Acquire and Buy |
-| Release / Songs | `/single` | SHOW |
-| Marketplace | `/marketplace` | KNOW |
-| Playlist | `/playlist` | KNOW HOW |
-| Tokenize | `/tokens` | Internal mint queue |
-| Measure | `/measurements` | Assets, acquires, fit from data |
-| Learn | `/dashboard` | Next best action |
-| Track | `/track` | Audience response |
-| Act | `/bot` | DO. Grok Bot |
-| Protocol | `/tokens` | Tokenize later. Fiat first |
+Landing `/` only shows the four verbs. First visitor path is Upload a song.
 
-## Proof loop
-
-Upload → Prove → Buy → Marketplace → Playlist → Songs → Tokenize
+## Founder catalog
 
 | Asset | ID |
 |---|---|
@@ -53,21 +45,20 @@ Internal ledger. Not a chain.
 | EXECUTE_SETTLEMENT | escrow → settled |
 | ABORT | escrow → cancelled |
 
-KNOW = `/marketplace`. KNOW HOW = `/playlist`. SHOW = `/single`. DO = `/bot`.
-
 Settled assets can queue ERC-721, ERC-1155, or SPL on `/tokens`. Queue is not a mint.
 
 ## What is proven
 
+- Landing is Create → Prove → Learn → Act
 - Two official singles on the public ledger
 - Upload with no file writes a creator card
 - Acquire is INITIATE_TRADE
 - Buy opens Stripe Checkout at $1.00 per single
-- Three sandbox payments succeeded on Shiyan Yishu sandbox
+- Sandbox payments succeeded on Shiyan Yishu sandbox
 - Both official singles can settle on the internal P2P machine
 - Both official singles are mint-queued as ERC-721 with chain none and tx null
 - `/tokens` will not queue the same asset twice
-- A/B memory files:
+- A/B memory:
   - https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_shiyan_yishu_001.json
   - https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_sleep_terrors_001.json
 - Guitar Pro 8 / Cubase stems can arrive later. Listing does not wait on the WAV
@@ -75,10 +66,10 @@ Settled assets can queue ERC-721, ERC-1155, or SPL on `/tokens`. Queue is not a 
 ## What is not claimed
 
 - No live paid buyer. Stripe is still test mode
-- No on-chain ERC-721 / ERC-1155 / SPL mint yet. `/tokens` only queues an internal mint record after settlement
+- No on-chain ERC-721 / ERC-1155 / SPL mint yet
 - Product-market fit is a later decision from ledger data: uploads, acquires, and non-founder live payments
 - Founder sandbox checkout is a signal, not fit
-- Two founder test purchases are not a third-person P2P market
+- The product does not yet learn which actions improve creative-market outcomes. Next action is Grok fast + Hy4 deep, not a trained outcome model
 
 ## Founder Model z
 
