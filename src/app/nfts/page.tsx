@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { LedgerAsset, markAcquired, readLedger } from "@/lib/ledger";
+import { LedgerAsset, applyEvent, markAcquired, readLedger } from "@/lib/ledger";
 
 export default function ProvePage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
@@ -10,10 +10,20 @@ export default function ProvePage() {
   const [note, setNote] = useState("");
 
   useEffect(() => {
-    setAssets(readLedger());
-    const paid = new URLSearchParams(window.location.search).get("paid");
-    if (paid === "1") setNote("Stripe returned success. Live paid is still false until sk_live.");
+    const params = new URLSearchParams(window.location.search);
+    const paid = params.get("paid");
+    const asset = params.get("asset");
+    if (paid === "1" && asset) {
+      applyEvent(asset, "EXECUTE_SETTLEMENT");
+      fetch("/api/memory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetId: asset, action: "EXECUTE_SETTLEMENT", paid: false }),
+      }).catch(() => {});
+      setNote("Settled in this browser. Live paid stays false until Stripe is live.");
+    }
     if (paid === "0") setNote("Checkout canceled.");
+    setAssets(readLedger());
   }, []);
 
   const acquire = async (asset: LedgerAsset) => {
@@ -31,9 +41,14 @@ export default function ProvePage() {
   };
 
   const buy = async (asset: LedgerAsset) => {
+    if (asset.state === "listed") markAcquired(asset.id);
     setNote("Opening Stripe for " + asset.title);
     try {
-      const res = await fetch("/api/checkout", { method: "POST" });
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetId: asset.id, title: asset.title }),
+      });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -52,7 +67,7 @@ export default function ProvePage() {
         <p className="text-emerald-400 mb-3">Prove</p>
         <h1 className="text-3xl font-bold mb-3">Tokenized assets</h1>
         <p className="text-zinc-400 mb-8">
-          First Single and Sleep Terrors. Acquire is INITIATE_TRADE. Buy is Stripe. MIDI can come later.
+          First Single and Sleep Terrors. Acquire is INITIATE_TRADE. Buy is Stripe.
         </p>
         <div className="space-y-6">
           {assets.map((asset) => (
