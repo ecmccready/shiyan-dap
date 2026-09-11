@@ -1,10 +1,9 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
-import RailLinks from "@/components/RailLinks";
 import { LedgerAsset, readLedger, readMint } from "@/lib/ledger";
 
-export default function MeasurePage() {
+export default function LearnPage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
 
   useEffect(() => {
@@ -19,14 +18,13 @@ export default function MeasurePage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Measure" />
+      <SiteHeader section="Learn" />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">Measure</p>
-        <h1 className="text-3xl font-bold mb-3">Ledger</h1>
-        <p className="text-zinc-400 mb-8">Counts from this browser. Fit stays false until a non-founder live payment.</p>
-        <div className="mb-8">
-          <RailLinks />
-        </div>
+        <p className="text-emerald-400 mb-3">Learn</p>
+        <h1 className="text-3xl font-bold mb-3">Learn</h1>
+        <p className="text-zinc-400 mb-8">
+          Counts from this browser. Fit stays false until a non-founder live payment.
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5">
             <p className="text-xs text-zinc-500 mb-1">Official singles</p>
