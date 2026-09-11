@@ -53,6 +53,10 @@ export function nextState(state: TradeState, event: TradeEvent): TradeState | nu
   return ALLOWED[state][event] || null;
 }
 
+function stateKey(id: string) {
+  return "shiyan-state-" + id;
+}
+
 function normalize(a: Partial<LedgerAsset> & { id: string; title: string }): LedgerAsset {
   const legacy = (a as { state?: string }).state;
   const state: TradeState =
@@ -74,8 +78,13 @@ function normalize(a: Partial<LedgerAsset> & { id: string; title: string }): Led
 
 function hydrate(base: LedgerAsset): LedgerAsset {
   if (typeof window === "undefined") return base;
-  const acquired = window.localStorage.getItem("shiyan-acquired-" + base.id) === "1";
-  return acquired ? { ...base, buyer: USER_B, state: "escrow" } : base;
+  const stored = window.localStorage.getItem(stateKey(base.id)) as TradeState | null;
+  if (stored === "settled") return { ...base, buyer: USER_B, owner: USER_B, state: "settled" };
+  if (stored === "escrow" || window.localStorage.getItem("shiyan-acquired-" + base.id) === "1") {
+    return { ...base, buyer: USER_B, state: "escrow" };
+  }
+  if (stored === "cancelled") return { ...base, state: "cancelled" };
+  return base;
 }
 
 export function readLedger(): LedgerAsset[] {
@@ -91,10 +100,7 @@ export function readLedger(): LedgerAsset[] {
 }
 
 function persist(assets: LedgerAsset[]) {
-  window.localStorage.setItem(
-    KEY,
-    JSON.stringify(assets.filter((a) => !OFFICIAL.includes(a.id)))
-  );
+  window.localStorage.setItem(KEY, JSON.stringify(assets.filter((a) => !OFFICIAL.includes(a.id))));
 }
 
 export function writeExtra(asset: LedgerAsset) {
@@ -113,10 +119,11 @@ export function applyEvent(id: string, event: TradeEvent) {
   const updated: LedgerAsset = {
     ...current,
     state: next,
-    buyer: event === "INITIATE_TRADE" ? USER_B : current.buyer,
+    buyer: event === "INITIATE_TRADE" || event === "EXECUTE_SETTLEMENT" ? USER_B : current.buyer,
     owner: event === "EXECUTE_SETTLEMENT" ? USER_B : current.owner,
   };
   if (OFFICIAL.includes(id)) {
+    window.localStorage.setItem(stateKey(id), next);
     window.localStorage.setItem("shiyan-acquired-" + id, next === "escrow" || next === "settled" ? "1" : "0");
   }
   persist(all.filter((a) => !OFFICIAL.includes(a.id)).map((a) => (a.id === id ? updated : a)));
