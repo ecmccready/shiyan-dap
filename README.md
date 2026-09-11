@@ -69,7 +69,7 @@ KNOW = `/marketplace`. KNOW HOW = `/playlist`. SHOW = `/single`. DO = `/bot`.
 ## What is not claimed
 
 - No live paid buyer. Stripe is still test mode
-- No on-chain ERC-721 / ERC-1155 / SPL mint yet
+- No on-chain ERC-721 / ERC-1155 / SPL mint yet. `/tokens` only queues an internal mint record after settlement
 - Product-market fit is a later decision from ledger data: uploads, acquires, and non-founder live payments
 - Founder sandbox checkout is a signal, not fit
 - Two founder test purchases are not a third-person P2P market

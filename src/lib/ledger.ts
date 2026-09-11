@@ -138,3 +138,34 @@ export function wasAcquired(id: string) {
   if (typeof window === "undefined") return false;
   return window.localStorage.getItem("shiyan-acquired-" + id) === "1";
 }
+export type MintStandard = "erc721" | "erc1155" | "spl";
+
+export function mintKey(id: string) {
+  return "shiyan-mint-" + id;
+}
+
+export function readMint(id: string) {
+  if (typeof window === "undefined") return { status: "not_minted", standard: "erc721" as MintStandard };
+  try {
+    const raw = window.localStorage.getItem(mintKey(id));
+    return raw ? JSON.parse(raw) : { status: "not_minted", standard: "erc721" };
+  } catch {
+    return { status: "not_minted", standard: "erc721" };
+  }
+}
+
+export function queueMint(id: string, standard: MintStandard) {
+  if (typeof window === "undefined") return;
+  const asset = readLedger().find((a) => a.id === id);
+  if (!asset || asset.state !== "settled") return;
+  window.localStorage.setItem(
+    mintKey(id),
+    JSON.stringify({
+      status: "queued",
+      standard,
+      chain: "none",
+      tx: null,
+      at: new Date().toISOString(),
+    })
+  );
+}
