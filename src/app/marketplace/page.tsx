@@ -3,54 +3,48 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import RailLinks from "@/components/RailLinks";
-import { LedgerAsset, readLedger, wasAcquired } from "@/lib/ledger";
+import { LedgerAsset, applyEvent, readLedger } from "@/lib/ledger";
 
-const classes = [
-  { title: "Song", href: "/single", note: "Music wedge" },
-  { title: "Playlist", href: "/playlist", note: "Transfer rail" },
-  { title: "Video", href: "/single", note: "Same asset, new surface" },
-];
-
-export default function MarketplacePage() {
+export default function MarketPage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
 
   useEffect(() => {
-    setAssets(
-      readLedger().map((a) =>
-        wasAcquired(a.id) ? { ...a, buyer: "This session", state: "reserved" } : a
-      )
-    );
+    setAssets(readLedger());
   }, []);
+
+  const list = (id: string) => {
+    applyEvent(id, "LIST");
+    setAssets(readLedger());
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Marketplace" />
-      <main className="max-w-6xl mx-auto px-6 py-12">
+      <SiteHeader section="Market" />
+      <main className="max-w-4xl mx-auto px-6 py-12">
+        <p className="text-emerald-400 mb-3">KNOW</p>
         <h1 className="text-3xl font-bold mb-3">Music Marketplace</h1>
-        <p className="text-zinc-400 max-w-3xl mb-8">
-          Creators put work on the ledger. Buyers acquire it. Music is first. The same rails can carry video, writing, and other AI-native work later.
+        <p className="text-zinc-400 mb-8">
+          Internal ledger. User A lists. User B acquires. No chain.
         </p>
-        <div className="mb-10">
+        <div className="mb-8">
           <RailLinks />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {classes.map((item) => (
-            <Link key={item.title} href={item.href} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-8 hover:border-emerald-700">
-              <h2 className="text-2xl font-semibold">{item.title}</h2>
-              <p className="text-sm text-zinc-500 mt-2">{item.note}</p>
-            </Link>
-          ))}
-        </div>
-        <h2 className="text-lg font-semibold mb-4">On the shelf</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {assets.map((asset) => (
             <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-              <p className="text-xs text-emerald-400 mb-2">{asset.founder ? "Founder proof" : "Creator project"}</p>
-              <h3 className="text-xl font-semibold mb-2">{asset.title}</h3>
-              <p className="text-sm text-zinc-400">{asset.creator} · {asset.state}</p>
-              <Link href="/nfts" className="inline-flex mt-5 h-10 px-5 rounded-full bg-emerald-600 text-white text-sm items-center">
-                {asset.state === "reserved" ? "View proof" : "Acquire"}
-              </Link>
+              <p className="text-xs text-emerald-400 mb-2">{asset.founder ? "User A · founder" : "User B · creator"}</p>
+              <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
+              <p className="text-sm text-zinc-500 mb-1">Owner {asset.owner}</p>
+              <p className="text-sm text-zinc-500 mb-4">State {asset.state}</p>
+              {asset.state === "unlisted" || asset.state === "cancelled" ? (
+                <button onClick={() => list(asset.id)} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
+                  LIST
+                </button>
+              ) : (
+                <Link href="/nfts" className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center">
+                  Prove
+                </Link>
+              )}
             </div>
           ))}
         </div>

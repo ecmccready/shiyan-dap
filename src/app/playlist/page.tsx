@@ -1,49 +1,58 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import RailLinks from "@/components/RailLinks";
-import { LedgerAsset, readLedger, wasAcquired } from "@/lib/ledger";
+import { LedgerAsset, applyEvent, readLedger } from "@/lib/ledger";
 
 export default function PlaylistPage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
-  const [note, setNote] = useState("");
 
   useEffect(() => {
-    setAssets(
-      readLedger().map((a) =>
-        wasAcquired(a.id) ? { ...a, buyer: "This session", state: "reserved" } : a
-      )
-    );
+    setAssets(readLedger());
   }, []);
+
+  const run = (id: string, event: "EXECUTE_SETTLEMENT" | "ABORT") => {
+    applyEvent(id, event);
+    setAssets(readLedger());
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Playlist" />
       <main className="max-w-4xl mx-auto px-6 py-12">
+        <p className="text-emerald-400 mb-3">KNOW HOW</p>
         <h1 className="text-3xl font-bold mb-3">Playlist</h1>
-        <p className="text-zinc-400 mb-8 max-w-3xl">
-          Transfer rail. The same assets from Upload and Marketplace move here for sync, games, and labels.
+        <p className="text-zinc-400 mb-8">
+          Transfer is settlement. Abort returns the asset. Internal P2P only.
         </p>
-        <div className="mb-10">
+        <div className="mb-8">
           <RailLinks />
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4">
           {assets.map((asset) => (
             <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-              <p className="text-xs text-emerald-400 mb-2">{asset.founder ? "Founder proof" : "Creator project"}</p>
-              <h2 className="text-xl font-semibold mb-2">{asset.title}</h2>
-              <p className="text-sm text-zinc-400 mb-5">{asset.id} · {asset.state}</p>
+              <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
+              <p className="text-sm text-zinc-500 mb-1">Buyer {asset.buyer}</p>
+              <p className="text-sm text-zinc-500 mb-4">State {asset.state}</p>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => setNote("Licensed " + asset.title + " for sync")} className="h-10 px-4 rounded-full border border-zinc-700 text-sm">Sync</button>
-                <button onClick={() => setNote("Licensed " + asset.title + " for games")} className="h-10 px-4 rounded-full border border-zinc-700 text-sm">Games</button>
-                <button onClick={() => setNote("Licensed " + asset.title + " for labels")} className="h-10 px-4 rounded-full border border-zinc-700 text-sm">Labels</button>
-                <Link href="/nfts" className="h-10 px-4 rounded-full bg-emerald-600 text-white text-sm inline-flex items-center">Acquire</Link>
+                <button
+                  onClick={() => run(asset.id, "EXECUTE_SETTLEMENT")}
+                  disabled={asset.state !== "escrow"}
+                  className="h-11 px-5 rounded-full bg-emerald-600 text-sm disabled:opacity-40"
+                >
+                  Settle
+                </button>
+                <button
+                  onClick={() => run(asset.id, "ABORT")}
+                  disabled={asset.state !== "escrow"}
+                  className="h-11 px-5 rounded-full border border-zinc-700 text-sm disabled:opacity-40"
+                >
+                  Abort
+                </button>
               </div>
             </div>
           ))}
         </div>
-        {note && <p className="mt-6 text-sm text-emerald-400">{note}</p>}
       </main>
     </div>
   );

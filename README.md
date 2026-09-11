@@ -54,7 +54,25 @@ Founder asset ID: `cl_shiyan_yishu_001`
 
 ## Founder Model z
 
+## P2P state machine
+
+Internal ledger. Not a chain.
+
+User A = ECMcCready. User B = this session.
+
+| Event | Transition |
+|---|---|
+| LIST | unlisted → listed |
+| INITIATE_TRADE | listed → escrow |
+| EXECUTE_SETTLEMENT | escrow → settled |
+| ABORT | escrow → cancelled |
+
+KNOW = `/marketplace`. KNOW HOW = `/playlist`. SHOW = `/single`. DO = `/bot`.
+
+Primary later signal is a non-founder User A → User B live payment. Sandbox $1 is not that signal.
+
 `y,x` Grok fast + `y,x` Hy4 deep = `z` next action.
+
 
 Capital-allocation stays model-agnostic. Memory destination: `shiyan-dap/founder-z`.
 
