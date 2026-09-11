@@ -24,6 +24,7 @@ Music is the wedge. Every song + story becomes an owned digital asset. Video, wr
 | Release / Songs | `/single` | SHOW |
 | Marketplace | `/marketplace` | KNOW |
 | Playlist | `/playlist` | KNOW HOW |
+| Tokenize | `/tokens` | Internal mint queue |
 | Measure | `/measurements` | Assets, acquires, fit from data |
 | Learn | `/dashboard` | Next best action |
 | Track | `/track` | Audience response |
@@ -32,7 +33,7 @@ Music is the wedge. Every song + story becomes an owned digital asset. Video, wr
 
 ## Proof loop
 
-Upload → Prove → Buy → Marketplace → Playlist → Songs
+Upload → Prove → Buy → Marketplace → Playlist → Songs → Tokenize
 
 | Asset | ID |
 |---|---|
@@ -54,6 +55,8 @@ Internal ledger. Not a chain.
 
 KNOW = `/marketplace`. KNOW HOW = `/playlist`. SHOW = `/single`. DO = `/bot`.
 
+Settled assets can queue ERC-721, ERC-1155, or SPL on `/tokens`. Queue is not a mint.
+
 ## What is proven
 
 - Two official singles on the public ledger
@@ -61,6 +64,9 @@ KNOW = `/marketplace`. KNOW HOW = `/playlist`. SHOW = `/single`. DO = `/bot`.
 - Acquire is INITIATE_TRADE
 - Buy opens Stripe Checkout at $1.00 per single
 - Three sandbox payments succeeded on Shiyan Yishu sandbox
+- Both official singles can settle on the internal P2P machine
+- Both official singles are mint-queued as ERC-721 with chain none and tx null
+- `/tokens` will not queue the same asset twice
 - A/B memory files:
   - https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_shiyan_yishu_001.json
   - https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_sleep_terrors_001.json
