@@ -76,6 +76,10 @@ Primary later signal is a non-founder User A → User B live payment. Sandbox $1
 
 Capital-allocation stays model-agnostic. Memory destination: `shiyan-dap/founder-z`.
 
+- Second official single on the ledger: Sleep Terrors — `cl_sleep_terrors_001`
+- Guitar Pro 8 / Cubase stems are production later. Listing does not wait on the WAV
+- Live Stripe is next after account review and `sk_live_`. Sandbox $1 is still testPaid
+
 ## Local
 
 ```bash

@@ -26,8 +26,20 @@ export const FOUNDER: LedgerAsset = {
   founder: true,
 };
 
+export const SLEEP: LedgerAsset = {
+  id: "cl_sleep_terrors_001",
+  title: "Sleep Terrors — Second Single",
+  creator: USER_A,
+  owner: USER_A,
+  buyer: "None yet",
+  source: "second single · GP8 / Cubase later",
+  state: "listed",
+  founder: true,
+};
+
 const KEY = "shiyan-ledger-v2";
 const OLD = "shiyan-ledger-v1";
+const OFFICIAL = [FOUNDER.id, SLEEP.id];
 
 const ALLOWED: Record<TradeState, Partial<Record<TradeEvent, TradeState>>> = {
   unlisted: { LIST: "listed" },
@@ -46,7 +58,7 @@ function normalize(a: Partial<LedgerAsset> & { id: string; title: string }): Led
   const state: TradeState =
     legacy === "available" || legacy === "listed" ? "listed" :
     legacy === "reserved" || legacy === "escrow" ? "escrow" :
-    legacy === "settled" || legacy === "cancelled" || legacy === "unlisted" ? legacy :
+    legacy === "settled" || legacy === "cancelled" || legacy === "unlisted" ? (legacy as TradeState) :
     "listed";
   return {
     id: a.id,
@@ -60,28 +72,34 @@ function normalize(a: Partial<LedgerAsset> & { id: string; title: string }): Led
   };
 }
 
+function hydrate(base: LedgerAsset): LedgerAsset {
+  if (typeof window === "undefined") return base;
+  const acquired = window.localStorage.getItem("shiyan-acquired-" + base.id) === "1";
+  return acquired ? { ...base, buyer: USER_B, state: "escrow" } : base;
+}
+
 export function readLedger(): LedgerAsset[] {
-  if (typeof window === "undefined") return [FOUNDER];
+  if (typeof window === "undefined") return [FOUNDER, SLEEP];
   try {
     const raw = window.localStorage.getItem(KEY) || window.localStorage.getItem(OLD);
     const extra: LedgerAsset[] = raw ? JSON.parse(raw).map(normalize) : [];
-    const others = extra.filter((a) => a.id !== FOUNDER.id);
-    const founder = window.localStorage.getItem("shiyan-acquired-" + FOUNDER.id) === "1"
-      ? { ...FOUNDER, buyer: USER_B, state: "escrow" as const }
-      : FOUNDER;
-    return [founder, ...others];
+    const others = extra.filter((a) => !OFFICIAL.includes(a.id) && a.title !== "Untitled project");
+    return [hydrate(FOUNDER), hydrate(SLEEP), ...others];
   } catch {
-    return [FOUNDER];
+    return [FOUNDER, SLEEP];
   }
 }
 
 function persist(assets: LedgerAsset[]) {
-  window.localStorage.setItem(KEY, JSON.stringify(assets.filter((a) => !a.founder)));
+  window.localStorage.setItem(
+    KEY,
+    JSON.stringify(assets.filter((a) => !OFFICIAL.includes(a.id)))
+  );
 }
 
 export function writeExtra(asset: LedgerAsset) {
   if (typeof window === "undefined") return;
-  const all = readLedger().filter((a) => !a.founder && a.id !== asset.id);
+  const all = readLedger().filter((a) => !OFFICIAL.includes(a.id) && a.id !== asset.id);
   persist([...all, normalize(asset)]);
 }
 
@@ -98,10 +116,10 @@ export function applyEvent(id: string, event: TradeEvent) {
     buyer: event === "INITIATE_TRADE" ? USER_B : current.buyer,
     owner: event === "EXECUTE_SETTLEMENT" ? USER_B : current.owner,
   };
-  if (updated.founder) {
+  if (OFFICIAL.includes(id)) {
     window.localStorage.setItem("shiyan-acquired-" + id, next === "escrow" || next === "settled" ? "1" : "0");
   }
-  persist(all.filter((a) => !a.founder).map((a) => (a.id === id ? updated : a)));
+  persist(all.filter((a) => !OFFICIAL.includes(a.id)).map((a) => (a.id === id ? updated : a)));
   return updated;
 }
 
