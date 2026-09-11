@@ -2,7 +2,7 @@
 
 Shiyan AI Assist is the AI system that helps an independent creator take a creation to release, audience response and next best action.
 
-The first single **Shiyan Yishu** is the founder proof. Other users use the same rails without that master file.
+The first single **Shiyan Yishu** and the second single **Sleep Terrors** are the founder proof. Other users use the same rails without those master files.
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap  
@@ -21,44 +21,29 @@ Music is the wedge. Every song + story becomes an owned digital asset. Video, wr
 | Assist / AI Content | `/` | C2C. Grok fast, then Hy4 deep |
 | Create | `/upload` | Title becomes a ledger asset. File optional |
 | Prove | `/nfts` | Acquire and Buy |
-| Release / Songs | `/single` | First Single |
-| Marketplace | `/marketplace` | Shelf |
-| Playlist | `/playlist` | Transfer |
+| Release / Songs | `/single` | SHOW |
+| Marketplace | `/marketplace` | KNOW |
+| Playlist | `/playlist` | KNOW HOW |
 | Measure | `/measurements` | Assets, acquires, fit from data |
 | Learn | `/dashboard` | Next best action |
 | Track | `/track` | Audience response |
-| Act | `/bot` | Grok Bot |
+| Act | `/bot` | DO. Grok Bot |
 | Protocol | `/tokens` | Tokenize later. Fiat first |
 
 ## Proof loop
 
 Upload → Prove → Buy → Marketplace → Playlist → Songs
 
-Founder asset ID: `cl_shiyan_yishu_001`
+| Asset | ID |
+|---|---|
+| Shiyan Yishu — First Single | `cl_shiyan_yishu_001` |
+| Sleep Terrors — Second Single | `cl_sleep_terrors_001` |
 
-## What is proven
-
-- First Single exists as a public ledger record
-- Upload with no file writes a creator card to the ledger
-- Acquire reserves the asset in this browser
-- Buy opens Stripe Checkout for $1.00 Shiyan Yishu — First Single
-- Sandbox payment succeeded: `pi_3UEGUPIuGDsvKC7N0hQ71L5g`
-- Founder signal: https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_shiyan_yishu_001.json
-
-## What is not claimed
-
-- No live paid buyer. Stripe is still test mode
-- No on-chain ERC-721 / ERC-1155 / SPL mint yet
-- Product-market fit is a later decision from ledger data: uploads, acquires, and non-founder live payments
-- Founder sandbox checkout is a signal, not fit
-
-## Founder Model z
+User A = ECMcCready. User B = this session.
 
 ## P2P state machine
 
 Internal ledger. Not a chain.
-
-User A = ECMcCready. User B = this session.
 
 | Event | Transition |
 |---|---|
@@ -69,16 +54,33 @@ User A = ECMcCready. User B = this session.
 
 KNOW = `/marketplace`. KNOW HOW = `/playlist`. SHOW = `/single`. DO = `/bot`.
 
-Primary later signal is a non-founder User A → User B live payment. Sandbox $1 is not that signal.
+## What is proven
+
+- Two official singles on the public ledger
+- Upload with no file writes a creator card
+- Acquire is INITIATE_TRADE
+- Buy opens Stripe Checkout at $1.00 per single
+- Three sandbox payments succeeded on Shiyan Yishu sandbox
+- A/B memory files:
+  - https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_shiyan_yishu_001.json
+  - https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_sleep_terrors_001.json
+- Guitar Pro 8 / Cubase stems can arrive later. Listing does not wait on the WAV
+
+## What is not claimed
+
+- No live paid buyer. Stripe is still test mode
+- No on-chain ERC-721 / ERC-1155 / SPL mint yet
+- Product-market fit is a later decision from ledger data: uploads, acquires, and non-founder live payments
+- Founder sandbox checkout is a signal, not fit
+- Two founder test purchases are not a third-person P2P market
+
+## Founder Model z
 
 `y,x` Grok fast + `y,x` Hy4 deep = `z` next action.
 
+First Single checkout + Sleep Terrors checkout = two settled test rows. That is the loop working. It is not fit.
 
 Capital-allocation stays model-agnostic. Memory destination: `shiyan-dap/founder-z`.
-
-- Second official single on the ledger: Sleep Terrors — `cl_sleep_terrors_001`
-- Guitar Pro 8 / Cubase stems are production later. Listing does not wait on the WAV
-- Live Stripe is next after account review and `sk_live_`. Sandbox $1 is still testPaid
 
 ## Local
 
