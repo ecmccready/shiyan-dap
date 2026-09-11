@@ -1,11 +1,19 @@
 ﻿"use client";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import RailLinks from "@/components/RailLinks";
 
-const chips = ["LIST First Single", "INITIATE_TRADE", "Settle", "Abort", "Songs"];
+const chips = [
+  { label: "Buy", href: "/nfts" },
+  { label: "Sell", href: "/marketplace" },
+  { label: "Trade", href: "/playlist" },
+  { label: "Music", href: "/single" },
+  { label: "AI Content", href: "/#ai-content" },
+];
 
 export default function BotPage() {
+  const router = useRouter();
   const [input, setInput] = useState("");
   const [log, setLog] = useState<string[]>([
     "I am the Grok Bot. Explore, Buy, Sell, or Trade Music and AI content.",
@@ -24,9 +32,9 @@ export default function BotPage() {
         body: JSON.stringify({ message, domain: "music" }),
       });
       const data = await res.json();
-      setLog((prev) => [...prev, data.reply || "Next: Marketplace → Playlist → Songs."]);
+      setLog((prev) => [...prev, data.reply || "Next: Buy on Prove. Sell on Marketplace. Trade on Playlist."]);
     } catch {
-      setLog((prev) => [...prev, "KNOW Marketplace. KNOW HOW Playlist. SHOW Songs."]);
+      setLog((prev) => [...prev, "Buy /nfts. Sell /marketplace. Trade /playlist. Music /single. AI Content /."]);
     }
   };
 
@@ -52,13 +60,24 @@ export default function BotPage() {
         </div>
         <div className="flex flex-wrap gap-2 mb-6">
           {chips.map((chip) => (
-            <button key={chip} onClick={() => send(chip)} className="h-10 px-4 rounded-full border border-zinc-700 text-sm">
-              {chip}
+            <button
+              key={chip.label}
+              onClick={() => {
+                send(chip.label);
+                router.push(chip.href);
+              }}
+              className="h-10 px-4 rounded-full border border-zinc-700 text-sm"
+            >
+              {chip.label}
             </button>
           ))}
         </div>
         <form onSubmit={onSubmit} className="flex gap-2">
-          <input value={input} onChange={(e) => setInput(e.target.value)} className="flex-1 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 px-4" />
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="flex-1 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 px-4"
+          />
           <button className="h-12 px-6 rounded-full bg-emerald-600 text-sm">Send</button>
         </form>
       </main>
