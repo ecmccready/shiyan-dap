@@ -38,6 +38,7 @@ export default function TokensPage() {
         <div className="space-y-4">
           {assets.map((asset) => {
             const mint = readMint(asset.id);
+            const queued = mint.status === "queued";
             return (
               <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
                 <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
@@ -45,29 +46,33 @@ export default function TokensPage() {
                 <p className="text-sm text-zinc-500 mb-4">
                   Mint {mint.status} · {mint.standard} · chain none
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => queue(asset, "erc721")}
-                    disabled={asset.state !== "settled"}
-                    className="h-11 px-5 rounded-full bg-emerald-600 text-sm disabled:opacity-40"
-                  >
-                    Queue ERC-721
-                  </button>
-                  <button
-                    onClick={() => queue(asset, "erc1155")}
-                    disabled={asset.state !== "settled"}
-                    className="h-11 px-5 rounded-full border border-zinc-700 text-sm disabled:opacity-40"
-                  >
-                    Queue ERC-1155
-                  </button>
-                  <button
-                    onClick={() => queue(asset, "spl")}
-                    disabled={asset.state !== "settled"}
-                    className="h-11 px-5 rounded-full border border-zinc-700 text-sm disabled:opacity-40"
-                  >
-                    Queue SPL
-                  </button>
-                </div>
+                {queued ? (
+                  <p className="text-sm text-emerald-400">Queued. A later chain deploy can write a tx hash.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => queue(asset, "erc721")}
+                      disabled={asset.state !== "settled"}
+                      className="h-11 px-5 rounded-full bg-emerald-600 text-sm disabled:opacity-40"
+                    >
+                      Queue ERC-721
+                    </button>
+                    <button
+                      onClick={() => queue(asset, "erc1155")}
+                      disabled={asset.state !== "settled"}
+                      className="h-11 px-5 rounded-full border border-zinc-700 text-sm disabled:opacity-40"
+                    >
+                      Queue ERC-1155
+                    </button>
+                    <button
+                      onClick={() => queue(asset, "spl")}
+                      disabled={asset.state !== "settled"}
+                      className="h-11 px-5 rounded-full border border-zinc-700 text-sm disabled:opacity-40"
+                    >
+                      Queue SPL
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
