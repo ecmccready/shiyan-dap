@@ -2,12 +2,7 @@
 
 const links = [
   { href: "/upload", label: "Create" },
-  { href: "/home", label: "Assist" },
-  { href: "/single", label: "Release" },
   { href: "/nfts", label: "Prove" },
-  { href: "/marketplace", label: "Market" },
-  { href: "/playlist", label: "Playlist" },
-  { href: "/measurements", label: "Measure" },
   { href: "/dashboard", label: "Learn" },
   { href: "/bot", label: "Act" },
 ];
@@ -18,11 +13,11 @@ export default function SiteHeader({ section }: { section?: string }) {
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 min-w-0">
           <Link href="/" className="font-semibold tracking-tight text-lg shrink-0">
-            Shiyan Yishu
+            Shiyan
           </Link>
           {section ? <span className="text-zinc-500 text-sm truncate">{section}</span> : null}
         </div>
-        <nav className="hidden lg:flex items-center gap-4">
+        <nav className="hidden sm:flex items-center gap-5">
           {links.map((link) => (
             <Link key={link.href} href={link.href} className="text-sm text-zinc-400 hover:text-white">
               {link.label}
