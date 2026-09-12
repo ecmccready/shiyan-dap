@@ -1,8 +1,9 @@
 ﻿"use client";
+
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
-import { readZ } from "@/lib/outcome";
+import { readZ } from "@/lib/outcomes";
 
 const chips = [
   { label: "Buy", href: "/nfts" },
@@ -57,7 +58,9 @@ export default function BotPage() {
         </div>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 mb-6 space-y-2">
           {log.map((line, i) => (
-            <p key={i} className="text-sm text-zinc-300">{line}</p>
+            <p key={i} className="text-sm text-zinc-300">
+              {line}
+            </p>
           ))}
         </div>
         <form onSubmit={send} className="flex gap-3">
