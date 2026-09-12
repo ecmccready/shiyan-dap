@@ -69,6 +69,8 @@ export default function LearnPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Learn" />
+      <main className="max-w-5xl mx-auto px-6 py-12">
+        <h1 className="text-3xl font-bold mb-8">Learn</h1>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-start mb-8">
           <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6">
             <p className="text-xs text-emerald-400 mb-2">A cluster · Music · founder agent</p>
