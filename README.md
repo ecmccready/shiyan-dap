@@ -1,28 +1,116 @@
 # Shiyan DAP
 
-Portable Generative Transform Protocol.
+Creator operating system. Music is the first vertical.
 
-Shiyan is creator-market intelligence infrastructure. Agents recommend and execute actions. The product records outcome transitions.
+Live: https://shiyan-dap.vercel.app  
+Repo: https://github.com/ecmccready/shiyan-dap  
+Memory: https://huggingface.co/shiyan-dap
 
 Shiyan AI Assist helps an independent creator take a creation to release, audience response, and the next best action.
 
-Live instance (music vertical): https://shiyan-dap.vercel.app  
-Protocol repo: https://github.com/ecmccready/shiyan-dap  
-Memory: https://huggingface.co/datasets/shiyan-dap/founder-z
+## Loop
 
-## SaaS status
+Create → Prove → Learn → Act
 
-| Layer | Status |
-|---|---|
-| Protocol | Public Next.js repo. Domain-agnostic. |
-| Dedicated app | Music vertical on Vercel. |
-| Creator CRM loop | Create → Prove → Learn → Act |
-| P2P ledger | Internal state machine. Not a chain. |
-| OutcomeTransition | First-class in `src/lib/outcome.ts` |
-| A/B signal | Founder singles are User A / User B simulation |
-| Agent layer | Grok fast + Hy4 deep consume z. They do not own z. |
-| Enterprise acquisition | Thesis only. Not a sold seat. |
+| Verb | Route | Job |
+|---|---|---|
+| Create | /upload | ingest a work |
+| Prove | /nfts | list / acquire |
+| Learn | /measurements | record OutcomeTransition, Simulate A/B |
+| Act | /bot | consume z |
 
-Do not market Shiyan as a music AI tool. Music is the first vertical.
+Places:
 
-## Root pipeline
+- Marketplace `/marketplace`
+- Playlist `/playlist`
+- Songs `/single`
+
+## Domains
+
+Header dropdown:
+
+- Music
+- AI Content
+- Animation
+- Games
+- eSports
+- Real Estate
+
+Music is live. The others are domain references for A/B simulation. Simulation is not live demand.
+
+## P2P State Machine
+
+Internal ledger only:
+
+unlisted → listed → escrow → settled | cancelled
+
+Triggers:
+
+- LIST
+- INITIATE_TRADE
+- EXECUTE_SETTLEMENT
+- ABORT
+
+Learn runs Simulate A/B as Agent A · ECMcCready and Agent B · this session. Those rows are marked `simulated: true`.
+
+## OutcomeTransition
+
+Single source of truth in `src/lib/outcomes.ts`.
+
+Y is a vector:
+
+- settlement
+- acquisition
+- audience_response
+- conversion
+- revenue
+- retention
+
+Honest bits today:
+
+- settlement = 1 only when ledger state is `settled`
+- acquisition = 1 when `escrow` or `settled`
+- audience_response, conversion, revenue stay 0 until a measured event exists
+
+Each record stores:
+
+- y_before
+- y_after
+- delta_y
+- transition_class (`positive` | `negative` | `no_movement` | `maintained`)
+- action, vertical, agent, simulated
+- z via `nextAction`
+
+`getSelfImprovementMetrics()` stays exported so existing API routes compile. It is a count over stored transitions. It is not a trained model.
+
+## Founder catalog
+
+- Shiyan Yishu — First Single
+- Sleep Terrors — Second Single
+
+Stripe sandbox charges are signals. Product-market fit stays false until a non-founder live payment.
+
+Mint queue is internal after settlement. No on-chain ERC-721 / ERC-1155 / SPL tx is claimed.
+
+## What is proven
+
+- Next.js app on Vercel
+- Header: Marketplace, Playlist, Songs, Create, Prove, Learn, Act
+- Domain dropdown
+- Learn records OutcomeTransition
+- Act reads z
+- Two official singles can sit in settled / mint queued in this browser
+
+## What is not claimed
+
+- no trained creative-market model
+- no live non-founder buyer
+- no on-chain mint
+- no live demand from Simulate A/B
+- Brand is not a domain
+
+## Local
+
+```bash
+npm install
+npm run dev
