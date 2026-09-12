@@ -42,7 +42,7 @@ export default function SiteHeader({ section }: { section?: string }) {
             {section ? <span className="text-zinc-500 text-sm">{section}</span> : null}
           </div>
           <label className="flex items-center gap-2 text-sm text-zinc-400">
-            Domain
+            Domains
             <select
               value={vertical}
               onChange={(e) => {
