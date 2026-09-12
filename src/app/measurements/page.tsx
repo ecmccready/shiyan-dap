@@ -69,12 +69,6 @@ export default function LearnPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Learn" />
-      <main className="max-w-5xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">Agentic AI API · Generative Transform Protocol</p>
-        <h1 className="text-3xl font-bold mb-3">y(A, x) + y(B, x) = z</h1>
-        <p className="text-zinc-400 mb-8">
-          Y is the vector. x is the transition 0→1 or 1→0. z is the next best CRM action.
-        </p>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-start mb-8">
           <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6">
             <p className="text-xs text-emerald-400 mb-2">A cluster · Music · founder agent</p>
