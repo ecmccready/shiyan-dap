@@ -51,13 +51,13 @@ export default function HomePage() {
       <main className="max-w-4xl mx-auto px-6 pt-16 pb-20">
         <p className="text-xs tracking-[0.28em] uppercase text-emerald-400 mb-5">Shiyan</p>
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-          Creative work into market action.
+          Creator work into market action.
         </h1>
         <p className="text-zinc-300 text-lg mt-8 leading-relaxed">
           Shiyan AI Assist — the AI system that helps an independent creator take a creation to release, audience response and next best action.
         </p>
         <p className="text-zinc-500 mt-4">
-          Music is the first vertical. Create → Prove → Learn → Act.
+          Creator SaaS. Music is the first vertical. Create → Prove → Learn → Act.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/upload" className="h-11 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center">
@@ -66,7 +66,7 @@ export default function HomePage() {
           <Link href="/nfts" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
             Prove
           </Link>
-          <Link href="/dashboard" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
+          <Link href="/measurements" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
             Learn
           </Link>
           <Link href="/bot" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
@@ -78,7 +78,7 @@ export default function HomePage() {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Paste the song, hook, or work in progress..."
+            placeholder="Paste the work, hook, or project..."
             rows={4}
             className="w-full rounded-2xl bg-black border border-zinc-800 px-5 py-4 text-sm mb-4"
           />

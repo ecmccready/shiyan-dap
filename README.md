@@ -1,14 +1,30 @@
 # Shiyan DAP
 
-Shiyan is AI infrastructure for turning creative work into market action.
+Shiyan is a creator SaaS platform. It turns creative work into market action.
 
 Shiyan AI Assist is the AI system that helps an independent creator take a creation to release, audience response and next best action.
 
-Music is the first vertical.
+Music is the first vertical, not the category.
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap  
 Memory: https://huggingface.co/datasets/shiyan-dap/founder-z
+
+## Position
+
+| Dimension | Current state |
+|---|---|
+| Creator SaaS architecture | Yes |
+| Creator asset system | Yes |
+| AI workflow | Yes |
+| Marketplace infrastructure | Early / prototype |
+| Transaction loop | Proven in Stripe sandbox |
+| Network effects | Not yet |
+| SaaS PMF | Not established |
+| Acquisition-worthy thesis | Yes |
+| Acquisition-ready business | Not yet |
+
+Do not market Shiyan primarily as a music AI tool.
 
 ## Acquisition loop
 
@@ -18,12 +34,10 @@ Create → Prove → Learn → Act
 |---|---|
 | Create | `/upload` |
 | Prove | `/nfts` |
-| Learn | `/dashboard` |
+| Learn | `/measurements` |
 | Act | `/bot` |
 
-Everything else supports that loop: Marketplace, Playlist, Songs, Tokenize, Measure.
-
-Landing `/` only shows the four verbs. First visitor path is Upload a song.
+`/dashboard` redirects to `/measurements`. Marketplace, Playlist, Songs, and Tokenize support the loop. They are not the first screen.
 
 ## Founder catalog
 
@@ -57,25 +71,21 @@ Settled assets can queue ERC-721, ERC-1155, or SPL on `/tokens`. Queue is not a 
 - Sandbox payments succeeded on Shiyan Yishu sandbox
 - Both official singles can settle on the internal P2P machine
 - Both official singles are mint-queued as ERC-721 with chain none and tx null
-- `/tokens` will not queue the same asset twice
-- A/B memory:
-  - https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_shiyan_yishu_001.json
-  - https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/events/cl_sleep_terrors_001.json
+- Learn is `/measurements`. `/dashboard` redirects there
 - Guitar Pro 8 / Cubase stems can arrive later. Listing does not wait on the WAV
 
 ## What is not claimed
 
 - No live paid buyer. Stripe is still test mode
 - No on-chain ERC-721 / ERC-1155 / SPL mint yet
-- Product-market fit is a later decision from ledger data: uploads, acquires, and non-founder live payments
-- Founder sandbox checkout is a signal, not fit
-- The product does not yet learn which actions improve creative-market outcomes. Next action is Grok fast + Hy4 deep, not a trained outcome model
+- Product-market fit is not established
+- Network effects are not yet
+- Acquisition-ready business is not yet
+- The product does not yet learn which actions improve creative-market outcomes. Next action is Grok fast + Hy4 deep
 
 ## Founder Model z
 
 `y,x` Grok fast + `y,x` Hy4 deep = `z` next action.
-
-First Single checkout + Sleep Terrors checkout = two settled test rows. That is the loop working. It is not fit.
 
 Capital-allocation stays model-agnostic. Memory destination: `shiyan-dap/founder-z`.
 
