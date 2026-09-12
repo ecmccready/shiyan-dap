@@ -12,17 +12,7 @@ Memory: https://huggingface.co/datasets/shiyan-dap/founder-z
 
 ## Position
 
-| Dimension | Current state |
-|---|---|
-| Creator SaaS architecture | Yes |
-| Creator asset system | Yes |
-| AI workflow | Yes |
-| Marketplace infrastructure | Early / prototype |
-| Transaction loop | Proven in Stripe sandbox |
-| Network effects | Not yet |
-| SaaS PMF | Not established |
-| Acquisition-worthy thesis | Yes |
-| Acquisition-ready business | Not yet |
+Creator SaaS. Asset ledger. Transaction loop. Outcome loop.
 
 Do not market Shiyan primarily as a music AI tool.
 
@@ -37,7 +27,36 @@ Create → Prove → Learn → Act
 | Learn | `/measurements` |
 | Act | `/bot` |
 
-`/dashboard` redirects to `/measurements`. Marketplace, Playlist, Songs, and Tokenize support the loop. They are not the first screen.
+`/dashboard` redirects to `/measurements`.
+
+## Optimize this
+
+Learn stores a first-class `OutcomeTransition`:
+
+- `y_before`
+- `y_after`
+- `delta_y = y_after - y_before`
+- `transition_class` (`c`)
+- `action`
+- `asset_id`
+- `timestamp`
+- `measurement_id`
+- `confidence`
+
+`y` is 1 when the asset is settled, else 0.
+
+| Transition | Class |
+|---|---|
+| 0 → 1 | positive |
+| 1 → 0 | negative |
+| 0 → 0 | no_movement |
+| 1 → 1 | maintained |
+
+`z` is the next action from the last `c`.
+
+CREATE → MEASURE → x → ACT → MEASURE AGAIN → y_before → y_after → Δy → c → LEARN → Grok + Hy4 → z → ACT
+
+That dataset is the product. Not another model feature. Not a fit slogan.
 
 ## Founder catalog
 
@@ -45,8 +64,6 @@ Create → Prove → Learn → Act
 |---|---|
 | Shiyan Yishu — First Single | `cl_shiyan_yishu_001` |
 | Sleep Terrors — Second Single | `cl_sleep_terrors_001` |
-
-User A = ECMcCready. User B = this session.
 
 ## P2P state machine
 
@@ -64,30 +81,26 @@ Settled assets can queue ERC-721, ERC-1155, or SPL on `/tokens`. Queue is not a 
 ## What is proven
 
 - Landing is Create → Prove → Learn → Act
-- Two official singles on the public ledger
-- Upload with no file writes a creator card
-- Acquire is INITIATE_TRADE
-- Buy opens Stripe Checkout at $1.00 per single
-- Sandbox payments succeeded on Shiyan Yishu sandbox
-- Both official singles can settle on the internal P2P machine
-- Both official singles are mint-queued as ERC-721 with chain none and tx null
-- Learn is `/measurements`. `/dashboard` redirects there
-- Guitar Pro 8 / Cubase stems can arrive later. Listing does not wait on the WAV
+- Two official singles on the internal ledger
+- Stripe sandbox checkout works
+- Learn records `y_before`, `y_after`, `delta_y`, `c`, and `z`
+- Mint queue exists. Chain tx does not
 
 ## What is not claimed
 
-- No live paid buyer. Stripe is still test mode
-- No on-chain ERC-721 / ERC-1155 / SPL mint yet
-- Product-market fit is not established
+- No live paid buyer
+- No on-chain mint
+- No trained outcome model over many creators
 - Network effects are not yet
 - Acquisition-ready business is not yet
-- The product does not yet learn which actions improve creative-market outcomes. Next action is Grok fast + Hy4 deep
+
+Fit is not the narrative. The narrative is accumulating outcome transitions.
 
 ## Founder Model z
 
 `y,x` Grok fast + `y,x` Hy4 deep = `z` next action.
 
-Capital-allocation stays model-agnostic. Memory destination: `shiyan-dap/founder-z`.
+Memory destination: `shiyan-dap/founder-z`.
 
 ## Local
 
