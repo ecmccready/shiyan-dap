@@ -1,4 +1,5 @@
 ﻿"use client";
+
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
@@ -37,14 +38,9 @@ export default function HomePage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader />
       <main className="max-w-4xl mx-auto px-6 py-16">
-        <p className="text-emerald-400 mb-4">
-          A/B Agents · P2P State Machine · All Domains
-        </p>
-        <h1 className="text-4xl font-bold mb-4">
-          Creator work into market action.
-        </h1>
+        <h1 className="text-4xl font-bold mb-4">Creator work into market action.</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
-          Shiyan AI Assist is the AI system that helps an independent creator take a creation to release, audience response and next best action. Music is the first vertical. A/B agents simulate P2P signals across domains. Y stays a vector.
+          Shiyan AI Assist is the AI system that helps an independent creator take a creation to release, audience response and next best action. Music is the first vertical.
         </p>
         <div className="flex flex-wrap gap-3 mb-12">
           {rails.map((rail) => (

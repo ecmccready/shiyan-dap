@@ -41,20 +41,23 @@ export default function SiteHeader({ section }: { section?: string }) {
             </Link>
             {section ? <span className="text-zinc-500 text-sm">{section}</span> : null}
           </div>
-          <select
-            value={vertical}
-            onChange={(e) => {
-              setVertical(e.target.value);
-              writeVertical(e.target.value);
-            }}
-            className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm"
-          >
-            {VERTICALS.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.label}
-              </option>
-            ))}
-          </select>
+          <label className="flex items-center gap-2 text-sm text-zinc-400">
+            Domain
+            <select
+              value={vertical}
+              onChange={(e) => {
+                setVertical(e.target.value);
+                writeVertical(e.target.value);
+              }}
+              className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
+            >
+              {VERTICALS.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <nav className="flex flex-wrap items-center gap-2">
             {rails.map((rail) => (
               <Link key={rail.href} href={rail.href} className="text-sm text-zinc-300 px-2">

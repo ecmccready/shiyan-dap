@@ -7,27 +7,25 @@ export type Vertical = {
 };
 
 export const VERTICALS: Vertical[] = [
-  { id: "music", label: "Music", asset: "Single / playlist", firstY: "settlement", actions: ["INITIATE_TRADE", "playlist_push", "release"] },
-  { id: "video", label: "Video", asset: "Cut / channel", firstY: "audience_response", actions: ["publish_cut", "thumbnail_change"] },
-  { id: "writing", label: "Writing", asset: "Essay / issue", firstY: "conversion", actions: ["publish_issue", "paywall"] },
-  { id: "visual", label: "Visual", asset: "Drop / edition", firstY: "settlement", actions: ["list_edition", "INITIATE_TRADE"] },
-  { id: "live", label: "Live", asset: "Show / ticket", firstY: "revenue", actions: ["announce_date", "ticket_drop"] },
-  { id: "education", label: "Education", asset: "Course / cohort", firstY: "retention", actions: ["open_cohort", "lesson_push"] },
-  { id: "brand", label: "Brand", asset: "Campaign / SKU", firstY: "conversion", actions: ["launch_sku", "ad_push"] },
-  { id: "agency", label: "Agency", asset: "Client / brief", firstY: "revenue", actions: ["accept_brief", "deliver"] },
+  { id: "music", label: "Music", asset: "song", firstY: "settlement", actions: ["INITIATE_TRADE", "playlist_push", "release"] },
+  { id: "ai-content", label: "AI Content", asset: "model", firstY: "acquisition", actions: ["INITIATE_TRADE", "license", "release"] },
+  { id: "animation", label: "Animation", asset: "clip", firstY: "audience_response", actions: ["INITIATE_TRADE", "premiere", "release"] },
+  { id: "games", label: "Games", asset: "title", firstY: "conversion", actions: ["INITIATE_TRADE", "playtest", "release"] },
+  { id: "esports", label: "eSports", asset: "event", firstY: "audience_response", actions: ["INITIATE_TRADE", "broadcast", "release"] },
+  { id: "real-estate", label: "Real Estate", asset: "listing", firstY: "conversion", actions: ["INITIATE_TRADE", "showing", "close"] },
 ];
 
 export const AGENT_A = "Agent A · ECMcCready";
 export const AGENT_B = "Agent B · this session";
 
-const VKEY = "shiyan-vertical";
+const KEY = "shiyan-vertical";
 
 export function readVertical() {
   if (typeof window === "undefined") return "music";
-  return window.localStorage.getItem(VKEY) || "music";
+  return window.localStorage.getItem(KEY) || "music";
 }
 
 export function writeVertical(id: string) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(VKEY, id);
+  window.localStorage.setItem(KEY, id);
 }
