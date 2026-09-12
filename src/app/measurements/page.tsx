@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { LedgerAsset, readLedger, readMint } from "@/lib/ledger";
+import { LedgerAsset, readLedger } from "@/lib/ledger";
 import {
   OutcomeTransition,
   nextAction,
@@ -19,7 +19,6 @@ export default function LearnPage() {
   const [vertical, setVertical] = useState("music");
   const [action, setAction] = useState("INITIATE_TRADE");
   const [z, setZ] = useState("");
-  const [minted, setMinted] = useState(0);
 
   const selected = VERTICALS.find((v) => v.id === vertical) || VERTICALS[0];
   const official = assets.filter((a) => a.id.startsWith("cl_"));
@@ -27,22 +26,15 @@ export default function LearnPage() {
   const settled = assets.filter((a) => a.state === "settled").length;
 
   useEffect(() => {
-    const current = readVertical();
-    setVertical(current);
+    setVertical(readVertical());
     const rows = readOutcomes();
-    const list = readLedger();
-    setAssets(list);
+    setAssets(readLedger());
     setOutcomes(rows);
     setZ(nextAction(rows));
-    try {
-      setMinted(list.filter((a) => Boolean(readMint(a.id))).length);
-    } catch {
-      setMinted(0);
-    }
   }, []);
 
   useEffect(() => {
-    setAction(selected.actions[0]);
+    if (selected?.actions?.[0]) setAction(selected.actions[0]);
   }, [selected]);
 
   const refresh = () => {
@@ -80,7 +72,7 @@ export default function LearnPage() {
             ["Official singles", official.length],
             ["Escrow", escrow],
             ["Settled", settled],
-            ["Mint queued", minted],
+            ["Mint queued", assets.filter((a) => a.state === "settled").length],
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-2xl border border-zinc-800 p-5">
               <p className="text-xs text-zinc-500 mb-2">{label}</p>
@@ -97,7 +89,7 @@ export default function LearnPage() {
               onChange={(e) => setAction(e.target.value)}
               className="h-11 rounded-full bg-zinc-900 border border-zinc-800 px-4"
             >
-              {selected.actions.map((a) => (
+              {(selected.actions || ["INITIATE_TRADE"]).map((a) => (
                 <option key={a} value={a}>{a}</option>
               ))}
             </select>
@@ -115,29 +107,24 @@ export default function LearnPage() {
             </Link>
           </div>
           <p className="text-sm text-zinc-500 mt-4">
-            Domain: {selected.label}. First Y: {selected.firstY}. Simulation is not live demand.
+            Domain: {selected.label}. Simulation is not live demand.
           </p>
         </div>
         <div className="space-y-4 mb-10">
-          {assets.map((asset) => {
-            const y = yFromAsset(asset.state);
-            return (
-              <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-                <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
-                <p className="text-sm text-zinc-500 mb-4">
-                  {asset.state} · settlement {y.settlement} · acquisition {y.acquisition} · audience {y.audience_response} · conversion {y.conversion} · revenue {y.revenue} · retention {y.retention}
-                </p>
-                <button onClick={() => measure(asset)} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
-                  Measure again
-                </button>
-              </div>
-            );
-          })}
+          {assets.map((asset) => (
+            <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
+              <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
+              <p className="text-sm text-zinc-500 mb-4">{asset.state}</p>
+              <button onClick={() => measure(asset)} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
+                Measure again
+              </button>
+            </div>
+          ))}
         </div>
         <div className="space-y-3">
           {outcomes.slice().reverse().map((row) => (
             <p key={row.measurement_id} className="text-sm text-zinc-400">
-              {row.vertical} · {row.agent} · {row.action} · {row.y_before.settlement}→{row.y_after.settlement} · {row.transition_class}
+              {row.vertical} · {row.agent} · {row.action} · {row.transition_class}
               {row.simulated ? " · sim" : ""}
             </p>
           ))}
