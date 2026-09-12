@@ -1,96 +1,157 @@
-export interface OutcomeRecord {
-  id: string;
-  domain: string;
-  pi_inv: number;
-  ell: number;
-  clusterId?: string;
+export type Bit = 0 | 1;
+
+export type YVector = {
+  settlement: Bit;
+  acquisition: Bit;
+  audience_response: Bit;
+  conversion: Bit;
+  revenue: Bit;
+  retention: Bit;
+};
+
+export type TransitionClass = "positive" | "negative" | "no_movement" | "maintained";
+
+export type OutcomeTransition = {
+  measurement_id: string;
+  asset_id: string;
+  action: string;
+  vertical: string;
+  agent: string;
+  simulated: boolean;
+  y_before: YVector;
+  y_after: YVector;
+  delta_y: Record<keyof YVector, number>;
+  transition_class: TransitionClass;
+  confidence: number;
+  causal_confidence: number;
+  measurement_window: string;
+  baseline: string;
   timestamp: string;
-  modelProvider?: string;
-}
+};
 
-// In-memory store of outcomes
-let outcomes: OutcomeRecord[] = [];
+const KEY = "shiyan-outcomes-v1";
+const LAST = "shiyan-z";
 
-/**
- * Record a new outcome from the agent loop
- */
-export function recordOutcome(record: Omit<OutcomeRecord, "id" | "timestamp">) {
-  const entry: OutcomeRecord = {
-    id: `out_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    timestamp: new Date().toISOString(),
-    ...record,
-  };
-  outcomes.push(entry);
-  return entry;
-}
+const ZERO: YVector = {
+  settlement: 0,
+  acquisition: 0,
+  audience_response: 0,
+  conversion: 0,
+  revenue: 0,
+  retention: 0,
+};
 
-/**
- * Basic self-improvement metrics
- */
-export function getSelfImprovementMetrics(domain?: string) {
-  const filtered = domain
-    ? outcomes.filter((o) => o.domain === domain)
-    : outcomes;
-
-  if (filtered.length === 0) {
-    return {
-      count: 0,
-      avg_pi_inv: null,
-      avg_ell: null,
-      latest_pi_inv: null,
-      trend: "insufficient_data",
-      domains: {},
-    };
-  }
-
-  const avg_pi_inv =
-    filtered.reduce((sum, o) => sum + o.pi_inv, 0) / filtered.length;
-  const avg_ell =
-    filtered.reduce((sum, o) => sum + o.ell, 0) / filtered.length;
-  const latest_pi_inv = filtered[filtered.length - 1].pi_inv;
-
-  // Simple trend: compare last 3 vs previous 3 if possible
-  let trend: "improving" | "declining" | "stable" | "insufficient_data" =
-    "insufficient_data";
-
-  if (filtered.length >= 6) {
-    const recent = filtered.slice(-3);
-    const previous = filtered.slice(-6, -3);
-    const recentAvg =
-      recent.reduce((s, o) => s + o.pi_inv, 0) / recent.length;
-    const previousAvg =
-      previous.reduce((s, o) => s + o.pi_inv, 0) / previous.length;
-
-    if (recentAvg > previousAvg + 0.01) trend = "improving";
-    else if (recentAvg < previousAvg - 0.01) trend = "declining";
-    else trend = "stable";
-  }
-
-  // Per-domain breakdown
-  const domains: Record<string, { count: number; avg_pi_inv: number }> = {};
-  for (const o of outcomes) {
-    if (!domains[o.domain]) {
-      domains[o.domain] = { count: 0, avg_pi_inv: 0 };
-    }
-    domains[o.domain].count += 1;
-    domains[o.domain].avg_pi_inv += o.pi_inv;
-  }
-  for (const d of Object.keys(domains)) {
-    domains[d].avg_pi_inv = Number(
-      (domains[d].avg_pi_inv / domains[d].count).toFixed(3)
-    );
-  }
-
+export function yFromAsset(state: string): YVector {
+  const settled = state === "settled";
+  const acquired = state === "escrow" || settled;
   return {
-    count: filtered.length,
-    avg_pi_inv: Number(avg_pi_inv.toFixed(3)),
-    avg_ell: Number(avg_ell.toFixed(3)),
-    latest_pi_inv: Number(latest_pi_inv.toFixed(3)),
-    trend,
-    domains,
+    settlement: settled ? 1 : 0,
+    acquisition: acquired ? 1 : 0,
+    audience_response: 0,
+    conversion: 0,
+    revenue: 0,
+    retention: settled ? 1 : 0,
   };
 }
 
-export function getAllOutcomes() {
-  return [...outcomes];
+export function classify(before: Bit, after: Bit): TransitionClass {
+  if (before === 0 && after === 1) return "positive";
+  if (before === 1 && after === 0) return "negative";
+  if (before === 0 && after === 0) return "no_movement";
+  return "maintained";
+}
+
+function delta(before: YVector, after: YVector) {
+  return {
+    settlement: after.settlement - before.settlement,
+    acquisition: after.acquisition - before.acquisition,
+    audience_response: after.audience_response - before.audience_response,
+    conversion: after.conversion - before.conversion,
+    revenue: after.revenue - before.revenue,
+    retention: after.retention - before.retention,
+  };
+}
+
+export function readOutcomes(): OutcomeTransition[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(window.localStorage.getItem(KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function nextAction(outcomes: OutcomeTransition[]): string {
+  const last = outcomes[outcomes.length - 1];
+  if (!last) return "Create, then Prove.";
+  if (last.transition_class === "negative") {
+    return "Do not repeat " + last.action + " in " + last.vertical + ".";
+  }
+  if (last.transition_class === "positive") {
+    return "Repeat " + last.action + " on the next " + last.vertical + " asset.";
+  }
+  if (last.transition_class === "maintained") {
+    return "Hold. Measure " + last.vertical + " again after Act.";
+  }
+  return "Act on Prove. Settlement is y.settlement = 1.";
+}
+
+export function recordOutcome(input: {
+  asset_id: string;
+  action: string;
+  y_before: YVector;
+  y_after: YVector;
+  vertical?: string;
+  agent?: string;
+  simulated?: boolean;
+}): OutcomeTransition {
+  const row: OutcomeTransition = {
+    measurement_id: "m_" + Date.now(),
+    asset_id: input.asset_id,
+    action: input.action,
+    vertical: input.vertical || "music",
+    agent: input.agent || "Agent B · this session",
+    simulated: input.simulated ?? false,
+    y_before: input.y_before,
+    y_after: input.y_after,
+    delta_y: delta(input.y_before, input.y_after),
+    transition_class: classify(input.y_before.settlement, input.y_after.settlement),
+    confidence: 1,
+    causal_confidence: input.simulated ? 0.1 : 0.2,
+    measurement_window: "session",
+    baseline: "previous_session",
+    timestamp: new Date().toISOString(),
+  };
+  const all = [...readOutcomes(), row];
+  window.localStorage.setItem(KEY, JSON.stringify(all));
+  window.localStorage.setItem(LAST, nextAction(all));
+  return row;
+}
+
+export function readZ() {
+  if (typeof window === "undefined") return "Measure an asset.";
+  return window.localStorage.getItem(LAST) || "Measure an asset.";
+}
+
+export function simulatePair(vertical: string, action: string, assetId: string) {
+  const afterA: YVector = { ...ZERO, acquisition: 1 };
+  const afterB: YVector = { ...afterA, settlement: 1 };
+  recordOutcome({
+    asset_id: assetId + ":a",
+    action,
+    y_before: ZERO,
+    y_after: afterA,
+    vertical,
+    agent: "Agent A · ECMcCready",
+    simulated: true,
+  });
+  recordOutcome({
+    asset_id: assetId + ":b",
+    action,
+    y_before: afterA,
+    y_after: afterB,
+    vertical,
+    agent: "Agent B · this session",
+    simulated: true,
+  });
 }
