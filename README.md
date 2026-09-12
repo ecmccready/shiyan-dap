@@ -1,34 +1,28 @@
 # Shiyan DAP
 
-Shiyan is creator-market intelligence infrastructure.
+Portable Generative Transform Protocol.
 
-It recommends and executes actions while recording outcome transitions.
+Shiyan is creator-market intelligence infrastructure. Agents recommend and execute actions. The product records outcome transitions.
 
-Shiyan AI Assist is the AI system that helps an independent creator take a creation to release, audience response and next best action.
+Shiyan AI Assist helps an independent creator take a creation to release, audience response, and the next best action.
 
-Music is the first vertical, not the category.
-
-Live: https://shiyan-dap.vercel.app  
-Repo: https://github.com/ecmccready/shiyan-dap  
+Live instance (music vertical): https://shiyan-dap.vercel.app  
+Protocol repo: https://github.com/ecmccready/shiyan-dap  
 Memory: https://huggingface.co/datasets/shiyan-dap/founder-z
 
-## Loop
+## SaaS status
 
-Create → Prove → Learn → Act
+| Layer | Status |
+|---|---|
+| Protocol | Public Next.js repo. Domain-agnostic. |
+| Dedicated app | Music vertical on Vercel. |
+| Creator CRM loop | Create → Prove → Learn → Act |
+| P2P ledger | Internal state machine. Not a chain. |
+| OutcomeTransition | First-class in `src/lib/outcome.ts` |
+| A/B signal | Founder singles are User A / User B simulation |
+| Agent layer | Grok fast + Hy4 deep consume z. They do not own z. |
+| Enterprise acquisition | Thesis only. Not a sold seat. |
 
-ACTION → MEASUREMENT → OUTCOME → TRANSITION → EVIDENCE → NEXT ACTION
+Do not market Shiyan as a music AI tool. Music is the first vertical.
 
-| Step | URL | Job |
-|---|---|---|
-| Create | `/upload` | Write an asset |
-| Prove | `/nfts` | Act / trade |
-| Learn | `/measurements` | Authoritative OutcomeTransition |
-| Act | `/bot` | Consume z |
-
-`/dashboard` redirects to `/measurements`. Grok and Hy4 sit on top of the dataset. They are not the product.
-
-## OutcomeTransition
-
-Source of truth: `src/lib/outcome.ts`
-
-Y is a vector. Do not start with a composite score.
+## Root pipeline
