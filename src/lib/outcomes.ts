@@ -61,7 +61,7 @@ export function classify(before: Bit, after: Bit): TransitionClass {
   return "maintained";
 }
 
-function delta(before: YVector, after: YVector) {
+export function delta(before: YVector, after: YVector) {
   return {
     settlement: after.settlement - before.settlement,
     acquisition: after.acquisition - before.acquisition,
@@ -123,8 +123,10 @@ export function recordOutcome(input: {
     timestamp: new Date().toISOString(),
   };
   const all = [...readOutcomes(), row];
-  window.localStorage.setItem(KEY, JSON.stringify(all));
-  window.localStorage.setItem(LAST, nextAction(all));
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(KEY, JSON.stringify(all));
+    window.localStorage.setItem(LAST, nextAction(all));
+  }
   return row;
 }
 
@@ -154,4 +156,16 @@ export function simulatePair(vertical: string, action: string, assetId: string) 
     agent: "Agent B · this session",
     simulated: true,
   });
+}
+
+export function getSelfImprovementMetrics() {
+  const rows = readOutcomes();
+  return {
+    count: rows.length,
+    positive: rows.filter((r) => r.transition_class === "positive").length,
+    negative: rows.filter((r) => r.transition_class === "negative").length,
+    maintained: rows.filter((r) => r.transition_class === "maintained").length,
+    no_movement: rows.filter((r) => r.transition_class === "no_movement").length,
+    z: nextAction(rows),
+  };
 }
