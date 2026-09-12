@@ -2,17 +2,8 @@ export type Vertical = {
   id: string;
   label: string;
   asset: string;
-  firstY: keyof typeof emptyY;
+  firstY: "settlement" | "acquisition" | "audience_response" | "conversion" | "revenue" | "retention";
   actions: string[];
-};
-
-export const emptyY = {
-  settlement: 0,
-  acquisition: 0,
-  audience_response: 0,
-  conversion: 0,
-  revenue: 0,
-  retention: 0,
 };
 
 export const VERTICALS: Vertical[] = [
@@ -28,3 +19,15 @@ export const VERTICALS: Vertical[] = [
 
 export const AGENT_A = "Agent A · ECMcCready";
 export const AGENT_B = "Agent B · this session";
+
+const VKEY = "shiyan-vertical";
+
+export function readVertical() {
+  if (typeof window === "undefined") return "music";
+  return window.localStorage.getItem(VKEY) || "music";
+}
+
+export function writeVertical(id: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(VKEY, id);
+}

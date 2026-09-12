@@ -11,7 +11,7 @@ import {
   simulatePair,
   yFromAsset,
 } from "@/lib/outcomes";
-import { VERTICALS } from "@/lib/verticles";
+import { VERTICALS, readVertical } from "@/lib/verticles";
 
 export default function LearnPage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
@@ -23,6 +23,8 @@ export default function LearnPage() {
   const selected = VERTICALS.find((v) => v.id === vertical) || VERTICALS[0];
 
   useEffect(() => {
+    const current = readVertical();
+    setVertical(current);
     const rows = readOutcomes();
     setAssets(readLedger());
     setOutcomes(rows);
@@ -67,7 +69,7 @@ export default function LearnPage() {
         <p className="text-emerald-400 mb-3">Learn</p>
         <h1 className="text-3xl font-bold mb-3">Learn</h1>
         <p className="text-zinc-400 mb-8">
-          CRM loop. Pick a vertical. A/B agents write simulated P2P signals. z is the next action.
+          CRM loop. Header picks the domain. A/B agents write simulated P2P signals. z is the next action.
         </p>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 mb-8">
           <p className="text-xs text-emerald-400 mb-2">z</p>
@@ -77,17 +79,6 @@ export default function LearnPage() {
           </Link>
         </div>
         <div className="flex flex-wrap gap-3 mb-6">
-          <select
-            value={vertical}
-            onChange={(e) => setVertical(e.target.value)}
-            className="h-12 rounded-2xl bg-zinc-900 border border-zinc-800 px-4"
-          >
-            {VERTICALS.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.label} · {v.asset}
-              </option>
-            ))}
-          </select>
           <select
             value={action}
             onChange={(e) => setAction(e.target.value)}
@@ -104,7 +95,7 @@ export default function LearnPage() {
           </button>
         </div>
         <p className="text-sm text-zinc-500 mb-8">
-          First Y for {selected.label}: {selected.firstY}. Simulation is not live demand.
+          Domain: {selected.label}. First Y: {selected.firstY}. Simulation is not live demand.
         </p>
         <div className="space-y-4 mb-10">
           {assets.map((asset) => {

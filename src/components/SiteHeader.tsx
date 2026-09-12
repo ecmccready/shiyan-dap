@@ -1,4 +1,7 @@
-﻿import Link from "next/link";
+﻿"use client";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
 
 const rails = [
   { href: "/upload", label: "Create" },
@@ -8,6 +11,12 @@ const rails = [
 ];
 
 export default function SiteHeader({ section }: { section?: string }) {
+  const [vertical, setVertical] = useState("music");
+
+  useEffect(() => {
+    setVertical(readVertical());
+  }, []);
+
   return (
     <header className="border-b border-zinc-800">
       <div className="max-w-5xl mx-auto px-6 py-4">
@@ -18,6 +27,20 @@ export default function SiteHeader({ section }: { section?: string }) {
           <Link href="/" className="font-semibold">
             Shiyan
           </Link>
+          <select
+            value={vertical}
+            onChange={(e) => {
+              setVertical(e.target.value);
+              writeVertical(e.target.value);
+            }}
+            className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm"
+          >
+            {VERTICALS.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.label}
+              </option>
+            ))}
+          </select>
           <nav className="flex flex-wrap gap-2">
             {rails.map((rail) => (
               <Link
@@ -25,9 +48,7 @@ export default function SiteHeader({ section }: { section?: string }) {
                 href={rail.href}
                 className={
                   "h-10 px-4 rounded-full text-sm inline-flex items-center " +
-                  (section === rail.label
-                    ? "bg-emerald-600"
-                    : "border border-zinc-700")
+                  (section === rail.label ? "bg-emerald-600" : "border border-zinc-700")
                 }
               >
                 {rail.label}
