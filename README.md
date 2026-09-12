@@ -15,8 +15,8 @@ Create → Prove → Learn → Act
 | Verb | Route | Job |
 |---|---|---|
 | Create | /upload | ingest a work |
-| Prove | /nfts | list / acquire |
-| Learn | /measurements | record OutcomeTransition, Simulate A/B |
+| Prove | /nfts | A container, acquire / buy |
+| Learn | /measurements | A/B clusters, OutcomeTransition, z |
 | Act | /bot | consume z |
 
 Places:
@@ -25,89 +25,67 @@ Places:
 - Playlist `/playlist`
 - Songs `/single`
 
+## A/B containers
+
+| Cluster | Container | Who | Status |
+|---|---|---|---|
+| cluster:A | container:founder-music | Agent A · ECMcCready | live founder catalog |
+| cluster:B | container:new-customer | Agent B · potential customer | placeholder |
+
+A holds both official singles:
+
+- `cl_shiyan_yishu_001` Shiyan Yishu — First Single
+- `cl_sleep_terrors_001` Sleep Terrors — Second Single
+
+B is a fictional CRM seat until a second live user Create → Prove → Learn → Act.
+
+Prove and Songs wrap A in one expandable box. Learn shows A and B as two squares. z is the next CRM action.
+
 ## Domains
 
-Header dropdown:
+Header dropdown: Music, AI Content, Animation, Games, eSports, Real Estate.
 
-- Music
-- AI Content
-- Animation
-- Games
-- eSports
-- Real Estate
-
-Music is live. The others are domain references for A/B simulation. Simulation is not live demand.
+Music is live. The others are simulation references only.
 
 ## P2P State Machine
 
-Internal ledger only:
-
 unlisted → listed → escrow → settled | cancelled
 
-Triggers:
+LIST · INITIATE_TRADE · EXECUTE_SETTLEMENT · ABORT
 
-- LIST
-- INITIATE_TRADE
-- EXECUTE_SETTLEMENT
-- ABORT
-
-Learn runs Simulate A/B as Agent A · ECMcCready and Agent B · this session. Those rows are marked `simulated: true`.
+Simulate A/B writes `simulated: true` rows. That is not a second user.
 
 ## OutcomeTransition
 
-Single source of truth in `src/lib/outcomes.ts`.
+`src/lib/outcomes.ts` is the source of truth.
 
-Y is a vector:
+Y vector: settlement, acquisition, audience_response, conversion, revenue, retention.
 
-- settlement
-- acquisition
-- audience_response
-- conversion
-- revenue
-- retention
+Honest bits now:
 
-Honest bits today:
-
-- settlement = 1 only when ledger state is `settled`
+- settlement = 1 only when state is `settled`
 - acquisition = 1 when `escrow` or `settled`
-- audience_response, conversion, revenue stay 0 until a measured event exists
+- audience_response, conversion, revenue stay 0
 
-Each record stores:
+x is the transition `Y 0→1` or `Y 1→0`. z comes from `nextAction`.
 
-- y_before
-- y_after
-- delta_y
-- transition_class (`positive` | `negative` | `no_movement` | `maintained`)
-- action, vertical, agent, simulated
-- z via `nextAction`
-
-`getSelfImprovementMetrics()` stays exported so existing API routes compile. It is a count over stored transitions. It is not a trained model.
-
-## Founder catalog
-
-- Shiyan Yishu — First Single
-- Sleep Terrors — Second Single
-
-Stripe sandbox charges are signals. Product-market fit stays false until a non-founder live payment.
-
-Mint queue is internal after settlement. No on-chain ERC-721 / ERC-1155 / SPL tx is claimed.
+`getSelfImprovementMetrics()` stays exported so Vercel can build. It is a count. It is not a trained model.
 
 ## What is proven
 
-- Next.js app on Vercel
-- Header: Marketplace, Playlist, Songs, Create, Prove, Learn, Act
-- Domain dropdown
-- Learn records OutcomeTransition
-- Act reads z
-- Two official singles can sit in settled / mint queued in this browser
+- Vercel production
+- Header: Marketplace, Playlist, Songs, Domains, Create, Prove, Learn, Act
+- A container on `/nfts` and `/single`
+- Learn A/B squares
+- Two founder singles can be settled in this browser
 
 ## What is not claimed
 
-- no trained creative-market model
+- no trained model
 - no live non-founder buyer
 - no on-chain mint
-- no live demand from Simulate A/B
-- Brand is not a domain
+- B is not a real customer
+- Simulate A/B is not demand
 
 ## Local
 
