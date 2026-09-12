@@ -14,12 +14,11 @@ import {
 } from "@/lib/outcomes";
 import { VERTICALS, readVertical } from "@/lib/verticles";
 
-const places = [
-  { href: "/upload", label: "Share files" },
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/playlist", label: "Playlist" },
-  { href: "/single", label: "Songs" },
-  { href: "/nfts", label: "Proven" },
+const crm = [
+  { href: "/upload", label: "Create", stage: "lead" },
+  { href: "/nfts", label: "Prove", stage: "qualify" },
+  { href: "/measurements", label: "Learn", stage: "measure" },
+  { href: "/bot", label: "Act", stage: "next" },
 ];
 
 export default function LearnPage() {
@@ -30,11 +29,7 @@ export default function LearnPage() {
   const [z, setZ] = useState("");
 
   const selected = VERTICALS.find((v) => v.id === vertical) || VERTICALS[0];
-  const official = assets.filter((a) => a.id.startsWith("cl_"));
-  const aAsset = official[0];
-  const bAsset = official[1] || official[0];
-  const yA = yFromAsset(aAsset?.state || "listed");
-  const yB = yFromAsset(bAsset?.state || "listed");
+  const founder = assets.filter((a) => a.id.startsWith("cl_"));
 
   useEffect(() => {
     setVertical(readVertical());
@@ -54,7 +49,7 @@ export default function LearnPage() {
     setZ(nextAction(rows));
   };
 
-  const measure = (asset: LedgerAsset, agent: string) => {
+  const measureA = (asset: LedgerAsset) => {
     const y_after = yFromAsset(asset.state);
     const prior = outcomes.filter((o) => o.asset_id === asset.id).pop();
     recordOutcome({
@@ -62,8 +57,8 @@ export default function LearnPage() {
       action,
       y_before: prior ? prior.y_after : y_after,
       y_after,
-      vertical: agent.startsWith("Agent A") ? "music" : vertical,
-      agent,
+      vertical: "music",
+      agent: "Agent A · ECMcCready",
       simulated: false,
     });
     refresh();
@@ -73,54 +68,71 @@ export default function LearnPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Learn" />
       <main className="max-w-5xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">P2P State Machine</p>
-        <h1 className="text-3xl font-bold mb-3">y(A, x) + y(B, x) = z</h1>
+        <p className="text-emerald-400 mb-3">P2P State Machine · CRM</p>
+        <h1 className="text-3xl font-bold mb-3">y(A, Music) + y(B, placeholder) = z</h1>
         <p className="text-zinc-400 mb-8">
-          A is Music. B is the other square. Learn, share files, Marketplace, Playlist, Songs, Proven.
+          A is the founder in Music. B is a fictional peer until a second live user arrives. Agents are portable across models through the Generative Transform Protocol.
         </p>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-stretch mb-8">
-          <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6 min-h-56">
-            <p className="text-xs text-emerald-400 mb-2">A · x = Music</p>
+          <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6">
+            <p className="text-xs text-emerald-400 mb-2">A · Domain Music · founder</p>
             <h2 className="text-xl font-semibold mb-2">Agent A · ECMcCready</h2>
-            <p className="text-sm text-zinc-400 mb-4">
-              {aAsset?.title || "Shiyan Yishu — First Single"} · {aAsset?.state || "listed"}
-            </p>
-            <p className="text-sm text-zinc-500 mb-6">
-              y.settlement {yA.settlement} · y.acquisition {yA.acquisition}
-            </p>
-            {aAsset ? (
-              <button
-                onClick={() => measure(aAsset, "Agent A · ECMcCready")}
-                className="h-11 px-5 rounded-full bg-emerald-600 text-sm"
-              >
-                Measure A
-              </button>
-            ) : null}
+            <div className="space-y-3 mb-6">
+              {founder.map((asset) => {
+                const y = yFromAsset(asset.state);
+                return (
+                  <div key={asset.id} className="border border-zinc-800 rounded-xl p-4">
+                    <p className="font-medium">{asset.title}</p>
+                    <p className="text-sm text-zinc-500 mb-3">
+                      {asset.state} · settlement {y.settlement} · acquisition {y.acquisition}
+                    </p>
+                    <button
+                      onClick={() => measureA(asset)}
+                      className="h-10 px-4 rounded-full bg-emerald-600 text-sm"
+                    >
+                      Measure A
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           <div className="flex items-center justify-center text-2xl font-semibold text-zinc-500">+</div>
-          <div className="rounded-2xl border border-zinc-700 bg-zinc-900/60 p-6 min-h-56">
-            <p className="text-xs text-emerald-400 mb-2">B · x = {selected.label}</p>
-            <h2 className="text-xl font-semibold mb-2">Agent B · this session</h2>
+          <div className="rounded-2xl border border-dashed border-zinc-600 bg-zinc-900/40 p-6">
+            <p className="text-xs text-emerald-400 mb-2">B · placeholder · TODO</p>
+            <h2 className="text-xl font-semibold mb-2">Agent B · fictional peer</h2>
             <p className="text-sm text-zinc-400 mb-4">
-              {bAsset?.title || "Sleep Terrors — Second Single"} · {bAsset?.state || "listed"}
+              Second live user is not here. B stands in for the P2P CRM seat: lead, qualify, measure, next action.
             </p>
             <p className="text-sm text-zinc-500 mb-6">
-              y.settlement {yB.settlement} · y.acquisition {yB.acquisition}
+              y.settlement 0 · y.acquisition 0 · simulated only
             </p>
-            {bAsset ? (
-              <button
-                onClick={() => measure(bAsset, "Agent B · this session")}
-                className="h-11 px-5 rounded-full border border-zinc-600 text-sm"
-              >
-                Measure B
-              </button>
-            ) : null}
+            <div className="grid grid-cols-2 gap-2 mb-6">
+              {crm.map((step) => (
+                <Link
+                  key={step.href}
+                  href={step.href}
+                  className="h-10 px-3 rounded-full border border-zinc-700 text-xs inline-flex items-center justify-center"
+                >
+                  {step.label} · {step.stage}
+                </Link>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                simulatePair(vertical, action, "sim_placeholder_b");
+                refresh();
+              }}
+              className="h-11 px-5 rounded-full border border-zinc-600 text-sm"
+            >
+              Simulate B
+            </button>
           </div>
         </div>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 mb-8">
-          <p className="text-xs text-emerald-400 mb-2">z</p>
-          <p className="text-xl font-semibold mb-4">{z || "Measure A and B."}</p>
-          <div className="flex flex-wrap gap-3 mb-4">
+          <p className="text-xs text-emerald-400 mb-2">z · next CRM action</p>
+          <p className="text-xl font-semibold mb-4">{z || "Measure A. B stays placeholder."}</p>
+          <div className="flex flex-wrap gap-3">
             <select
               value={action}
               onChange={(e) => setAction(e.target.value)}
@@ -145,18 +157,9 @@ export default function LearnPage() {
               Act
             </Link>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {places.map((place) => (
-              <Link
-                key={place.href}
-                href={place.href}
-                className="h-10 px-4 rounded-full border border-zinc-700 text-sm inline-flex items-center"
-              >
-                {place.label}
-              </Link>
-            ))}
-          </div>
-          <p className="text-sm text-zinc-500 mt-4">Simulation is not live demand.</p>
+          <p className="text-sm text-zinc-500 mt-4">
+            Domain {selected.label}. Agents are model-agnostic. Simulation is not a second user.
+          </p>
         </div>
         <div className="space-y-3">
           {outcomes.slice().reverse().map((row) => (
