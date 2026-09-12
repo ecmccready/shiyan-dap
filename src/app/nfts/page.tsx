@@ -1,8 +1,13 @@
 ﻿"use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, applyEvent, markAcquired, readLedger } from "@/lib/ledger";
+
+const CLUSTER = "cluster:A";
+const CONTAINER = "container:founder-music";
+const AGENT = "Agent A · ECMcCready";
 
 export default function ProvePage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
@@ -18,12 +23,18 @@ export default function ProvePage() {
       fetch("/api/memory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetId: asset, action: "EXECUTE_SETTLEMENT", paid: false }),
+        body: JSON.stringify({
+          assetId: asset,
+          action: "EXECUTE_SETTLEMENT",
+          agent: AGENT,
+          cluster: CLUSTER,
+          paid: false,
+        }),
       }).catch(() => {});
       setNote("Settled in this browser. Live paid stays false until Stripe is live.");
     }
     if (paid === "0") setNote("Checkout canceled.");
-    setAssets(readLedger());
+    setAssets(readLedger().filter((row) => row.id.startsWith("cl_")));
   }, []);
 
   const acquire = async (asset: LedgerAsset) => {
@@ -32,11 +43,17 @@ export default function ProvePage() {
       await fetch("/api/memory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetId: asset.id, title: asset.title, action: "INITIATE_TRADE" }),
+        body: JSON.stringify({
+          assetId: asset.id,
+          title: asset.title,
+          action: "INITIATE_TRADE",
+          agent: AGENT,
+          cluster: CLUSTER,
+        }),
       });
     } catch {}
     markAcquired(asset.id);
-    setAssets(readLedger());
+    setAssets(readLedger().filter((row) => row.id.startsWith("cl_")));
     setBusy(null);
   };
 
@@ -47,7 +64,7 @@ export default function ProvePage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetId: asset.id, title: asset.title }),
+        body: JSON.stringify({ assetId: asset.id, title: asset.title, cluster: CLUSTER }),
       });
       const data = await res.json();
       if (data.url) {
@@ -64,39 +81,51 @@ export default function ProvePage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Prove" />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">Prove</p>
-        <h1 className="text-3xl font-bold mb-3">Tokenized assets</h1>
+        <p className="text-emerald-400 mb-3">A cluster · Music · founder</p>
+        <h1 className="text-3xl font-bold mb-3">Proven content</h1>
         <p className="text-zinc-400 mb-8">
-          First Single and Sleep Terrors. Acquire is INITIATE_TRADE. Buy is Stripe.
+          Contained as {CONTAINER}. Same IDs Learn measures as Agent A.
         </p>
         <div className="space-y-6">
           {assets.map((asset) => (
-            <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-              <p className="text-xs text-emerald-400 mb-2">{asset.founder ? "Official single" : "Creator project"}</p>
+            <div key={asset.id} className="bg-zinc-900/60 border border-emerald-800 rounded-2xl p-6">
+              <p className="text-xs text-emerald-400 mb-2">{CLUSTER} · official single</p>
               <h2 className="text-xl font-semibold mb-4">{asset.title}</h2>
-              <p className="text-sm text-zinc-400 mb-1">Asset ID {asset.id}</p>
-              <p className="text-sm text-zinc-400 mb-1">Creator {asset.creator}</p>
-              <p className="text-sm text-zinc-400 mb-1">Buyer {asset.buyer}</p>
-              <p className="text-sm text-zinc-400 mb-5">State {asset.state}</p>
+              <p className="text-sm text-zinc-400 mb-1">id {asset.id}</p>
+              <p className="text-sm text-zinc-400 mb-1">container {CONTAINER}</p>
+              <p className="text-sm text-zinc-400 mb-1">agent {AGENT}</p>
+              <p className="text-sm text-zinc-400 mb-1">domain Music</p>
+              <p className="text-sm text-zinc-400 mb-1">creator {asset.creator}</p>
+              <p className="text-sm text-zinc-400 mb-5">state {asset.state}</p>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => acquire(asset)}
                   disabled={busy === asset.id || asset.state === "escrow" || asset.state === "settled"}
                   className="h-11 px-6 rounded-full bg-emerald-600 text-sm disabled:opacity-50"
                 >
-                  {asset.state === "escrow" || asset.state === "settled" ? "Acquired" : busy === asset.id ? "Acquiring..." : "Acquire"}
+                  {asset.state === "escrow" || asset.state === "settled"
+                    ? "Acquired"
+                    : busy === asset.id
+                    ? "Acquiring..."
+                    : "Acquire"}
                 </button>
-                <button onClick={() => buy(asset)} className="h-11 px-6 rounded-full border border-zinc-700 text-sm">
+                <button
+                  onClick={() => buy(asset)}
+                  className="h-11 px-6 rounded-full border border-zinc-700 text-sm"
+                >
                   Buy
                 </button>
-                <Link href="/playlist" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
-                  Transfer
+                <Link
+                  href={"/measurements"}
+                  className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+                >
+                  Measure in A
                 </Link>
               </div>
             </div>
           ))}
         </div>
-        {note && <p className="mt-6 text-sm text-emerald-400">{note}</p>}
+        {note ? <p className="mt-6 text-sm text-emerald-400">{note}</p> : null}
       </main>
     </div>
   );
