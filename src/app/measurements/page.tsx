@@ -1,4 +1,5 @@
-﻿"use client";
+"use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
@@ -72,7 +73,7 @@ export default function LearnPage() {
             ["Official singles", official.length],
             ["Escrow", escrow],
             ["Settled", settled],
-            ["Mint queued", assets.filter((a) => a.state === "settled").length],
+            ["Mint queued", settled],
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-2xl border border-zinc-800 p-5">
               <p className="text-xs text-zinc-500 mb-2">{label}</p>
@@ -90,7 +91,9 @@ export default function LearnPage() {
               className="h-11 rounded-full bg-zinc-900 border border-zinc-800 px-4"
             >
               {(selected.actions || ["INITIATE_TRADE"]).map((a) => (
-                <option key={a} value={a}>{a}</option>
+                <option key={a} value={a}>
+                  {a}
+                </option>
               ))}
             </select>
             <button
@@ -102,7 +105,10 @@ export default function LearnPage() {
             >
               Simulate A/B
             </button>
-            <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
+            <Link
+              href="/bot"
+              className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center"
+            >
               Act
             </Link>
           </div>
@@ -115,7 +121,10 @@ export default function LearnPage() {
             <div key={asset.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
               <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
               <p className="text-sm text-zinc-500 mb-4">{asset.state}</p>
-              <button onClick={() => measure(asset)} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
+              <button
+                onClick={() => measure(asset)}
+                className="h-11 px-5 rounded-full bg-emerald-600 text-sm"
+              >
                 Measure again
               </button>
             </div>
