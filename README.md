@@ -8,6 +8,26 @@ Memory: https://huggingface.co/shiyan-dap
 
 Shiyan AI Assist helps an independent creator take a creation to release, audience response, and the next best action.
 
+## Whole system, mathematically
+
+Now:
+
+    Y_t  --x_t-->  Y_{t+1}
+    z_t  =  π(Y_t, x_t)
+
+Y is the outcome vector.  
+x is the action.  
+π is the current policy: `nextAction` / `pairZ`.  
+Target on settlement is f(x) → 1.
+
+Eventually:
+
+    z*_t  =  argmax_z  E[ U(Y_{t+1}) | Y_t, x_t, z ]
+
+That second line is not shipped. It is what Shiyan can become: a creator decision engine that learns which actions produce better measurable outcomes.
+
+That is a stronger SaaS thesis than “AI music tool.” It is why “creator operating system” is the right name only if OutcomeTransition records keep accumulating, including 1→0.
+
 ## Loop
 
 Create → Prove → Learn → Act
@@ -16,8 +36,8 @@ Create → Prove → Learn → Act
 |---|---|---|
 | Create | /upload | ingest a work |
 | Prove | /nfts | A container, acquire / buy |
-| Learn | /measurements | f(A), f(B), OutcomeTransition, z |
-| Act | /bot | consume z |
+| Learn | /measurements | record Y_t → Y_{t+1}, emit z_t |
+| Act | /bot | consume z_t |
 
 Places: Marketplace `/marketplace` · Playlist `/playlist` · Songs `/single`
 
@@ -25,25 +45,17 @@ Places: Marketplace `/marketplace` · Playlist `/playlist` · Songs `/single`
 
 P2P and A/B agents are one function.
 
-x is an agent.
-f(x) is Y.settlement.
-Target is 1.
-gap = 1 − f(x).
-
 | x | Cluster | Container | f(x) |
 |---|---|---|---|
 | A | cluster:A | container:founder-music | 1 after live $1 settle |
 | B | cluster:B | container:new-customer | 0 placeholder |
 
-Machine:
+Machine: unlisted → listed → escrow → settled | cancelled
 
-unlisted → listed → escrow → settled | cancelled
+f(x) = Y.settlement. f(x) = 1 only at `settled`.  
+gap = 1 − f(x).
 
-LIST · INITIATE_TRADE · EXECUTE_SETTLEMENT · ABORT
-
-f(x) = 1 only at `settled`.
-
-z = pairZ(f(A), f(B)):
+z_t = π(Y_t, x_t) today:
 
 - A=1 B=0 → next action is a real B payment
 - A=1 B=1 → hold
@@ -60,11 +72,10 @@ See `docs/SLICE_v5_emergent_transition.md`.
 
 ## Live payment (A)
 
-Stripe live account Shiyan Yishu took one **$1.00** successful payment on 13 Sep 2026.
+Stripe live account Shiyan Yishu took one $1.00 successful payment on 13 Sep 2026.
 
 - Production uses `sk_live_`
-- Checkout amount $1.00 USD
-- Payout **$0.67** expected **21 Sep 2026**
+- Payout $0.67 expected 21 Sep 2026
 - Buyer is the founder
 - Settle URL `/nfts?paid=1&asset=cl_shiyan_yishu_001`
 
@@ -78,7 +89,7 @@ Music is live. The others are simulation references.
 
 ## OutcomeTransition
 
-`src/lib/outcomes.ts` is the source of truth.
+`src/lib/outcomes.ts` is the source of truth for Y_t → Y_{t+1}.
 
 Y vector: settlement, acquisition, audience_response, conversion, revenue, retention.
 
@@ -88,11 +99,7 @@ Honest bits now:
 - acquisition = 1 when `escrow` or `settled`
 - audience_response, conversion, revenue stay 0 until a measured non-founder event exists
 
-x is `Y 0→1` or `Y 1→0`.
-f(x) is settlement.
-z is `nextAction` / `pairZ`.
-
-`getSelfImprovementMetrics()` stays exported so Vercel can build. It is a count. It is not a trained model.
+`getSelfImprovementMetrics()` stays exported so Vercel can build. It is a count. It is not z*.
 
 ## What is proven
 
@@ -101,11 +108,12 @@ z is `nextAction` / `pairZ`.
 - A container on `/nfts` and `/single`
 - Learn A/B squares
 - Live Stripe $1 on cluster A
-- Two founder singles can settle in this browser
+- Deterministic π: measure then name z_t
 
 ## What is not claimed
 
-- no trained model
+- no trained policy
+- no argmax / expected utility
 - no live non-founder buyer
 - no product-market fit
 - no on-chain mint
