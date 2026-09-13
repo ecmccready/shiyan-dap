@@ -6,13 +6,25 @@ import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, readLedger } from "@/lib/ledger";
 import {
   OutcomeTransition,
+  f,
+  gapToOne,
   nextAction,
+  pairZ,
   readOutcomes,
   recordOutcome,
   simulatePair,
   yFromAsset,
 } from "@/lib/outcomes";
 import { VERTICALS, readVertical } from "@/lib/verticles";
+
+const ZERO = {
+  settlement: 0 as const,
+  acquisition: 0 as const,
+  audience_response: 0 as const,
+  conversion: 0 as const,
+  revenue: 0 as const,
+  retention: 0 as const,
+};
 
 const crm = [
   { href: "/upload", label: "Create", stage: "lead" },
@@ -26,19 +38,23 @@ export default function LearnPage() {
   const [outcomes, setOutcomes] = useState<OutcomeTransition[]>([]);
   const [vertical, setVertical] = useState("music");
   const [action, setAction] = useState("INITIATE_TRADE");
-  const [z, setZ] = useState("");
+  const [liveB, setLiveB] = useState(false);
 
   const selected = VERTICALS.find((v) => v.id === vertical) || VERTICALS[0];
   const founder = assets.filter((a) => a.id.startsWith("cl_"));
   const clusterA = outcomes.filter((row) => row.agent.includes("Agent A"));
   const clusterB = outcomes.filter((row) => row.agent.includes("Agent B"));
+  const liveBRow = clusterB.filter((row) => !row.simulated && row.y_after.settlement === 1).pop();
+  const yA = yFromAsset(founder[0]?.state || "listed");
+  const yB = liveBRow ? liveBRow.y_after : ZERO;
+  const z = pairZ(yA, yB);
 
   useEffect(() => {
     setVertical(readVertical());
     const rows = readOutcomes();
     setAssets(readLedger());
     setOutcomes(rows);
-    setZ(nextAction(rows));
+    setLiveB(window.localStorage.getItem("shiyan-b-live") === "1");
   }, []);
 
   useEffect(() => {
@@ -46,9 +62,8 @@ export default function LearnPage() {
   }, [selected]);
 
   const refresh = () => {
-    const rows = readOutcomes();
-    setOutcomes(rows);
-    setZ(nextAction(rows));
+    setOutcomes(readOutcomes());
+    setLiveB(window.localStorage.getItem("shiyan-b-live") === "1");
   };
 
   const measureA = (asset: LedgerAsset) => {
@@ -73,8 +88,11 @@ export default function LearnPage() {
         <h1 className="text-3xl font-bold mb-8">Learn</h1>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-start mb-8">
           <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6">
-            <p className="text-xs text-emerald-400 mb-2">A cluster · Music · founder agent</p>
+            <p className="text-xs text-emerald-400 mb-2">A cluster · Music · founder</p>
             <h2 className="text-xl font-semibold mb-4">Agent A · ECMcCready</h2>
+            <p className="text-sm text-zinc-500 mb-4">
+              f(A) {f(yA)} · gap {gapToOne(yA)}
+            </p>
             <div className="space-y-3 mb-6">
               {founder.map((asset) => {
                 const y = yFromAsset(asset.state);
@@ -94,9 +112,8 @@ export default function LearnPage() {
                 );
               })}
             </div>
-            <p className="text-xs text-zinc-500 mb-2">x in this container</p>
             <div className="space-y-2">
-              {clusterA.slice(-6).reverse().map((row) => (
+              {clusterA.filter((row) => !row.simulated).slice(-6).reverse().map((row) => (
                 <p key={row.measurement_id} className="text-sm text-zinc-400">
                   Y {row.y_before.settlement}→{row.y_after.settlement} · {row.action} · {row.transition_class}
                 </p>
@@ -105,10 +122,12 @@ export default function LearnPage() {
           </div>
           <div className="flex items-center justify-center text-2xl font-semibold text-zinc-500 pt-24">+</div>
           <div className="rounded-2xl border border-dashed border-zinc-600 bg-zinc-900/40 p-6">
-            <p className="text-xs text-emerald-400 mb-2">B cluster · placeholder peer</p>
-            <h2 className="text-xl font-semibold mb-2">Agent B · fictional CRM seat</h2>
+            <p className="text-xs text-emerald-400 mb-2">
+              B cluster · {liveB || liveBRow ? "live payment seen" : "placeholder"}
+            </p>
+            <h2 className="text-xl font-semibold mb-2">Agent B · potential customer</h2>
             <p className="text-sm text-zinc-400 mb-4">
-              Portable agent. Not a second live user. CRM stages only.
+              f(B) {f(yB)} · gap {gapToOne(yB)}
             </p>
             <div className="grid grid-cols-2 gap-2 mb-6">
               {crm.map((step) => (
@@ -133,40 +152,20 @@ export default function LearnPage() {
             <div className="space-y-2">
               {clusterB.slice(-6).reverse().map((row) => (
                 <p key={row.measurement_id} className="text-sm text-zinc-500">
-                  Y {row.y_before.settlement}→{row.y_after.settlement} · {row.vertical} · sim
+                  Y {row.y_before.settlement}→{row.y_after.settlement} · {row.action}
+                  {row.simulated ? " · sim" : " · live"}
                 </p>
               ))}
             </div>
           </div>
         </div>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-          <p className="text-xs text-emerald-400 mb-2">z · next best action</p>
-          <p className="text-xl font-semibold mb-4">{z || "Measure the A cluster."}</p>
-          <div className="flex flex-wrap gap-3">
-            <select
-              value={action}
-              onChange={(e) => setAction(e.target.value)}
-              className="h-11 rounded-full bg-zinc-900 border border-zinc-800 px-4"
-            >
-              {(selected.actions || ["INITIATE_TRADE"]).map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => {
-                simulatePair(vertical, action, "sim_" + vertical);
-                refresh();
-              }}
-              className="h-11 px-5 rounded-full border border-zinc-700 text-sm"
-            >
-              Simulate A/B
-            </button>
-            <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
-              Act
-            </Link>
-          </div>
+          <p className="text-xs text-emerald-400 mb-2">z = π(Y, x) = pairZ(A, B)</p>
+          <p className="text-xl font-semibold mb-4">{z}</p>
+          <p className="text-sm text-zinc-500 mb-4">{nextAction(outcomes)}</p>
+          <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
+            Act
+          </Link>
         </div>
       </main>
     </div>
