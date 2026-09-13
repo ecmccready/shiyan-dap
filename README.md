@@ -16,48 +16,65 @@ Create → Prove → Learn → Act
 |---|---|---|
 | Create | /upload | ingest a work |
 | Prove | /nfts | A container, acquire / buy |
-| Learn | /measurements | A/B clusters, OutcomeTransition, z |
+| Learn | /measurements | f(A), f(B), OutcomeTransition, z |
 | Act | /bot | consume z |
 
 Places: Marketplace `/marketplace` · Playlist `/playlist` · Songs `/single`
 
-## A/B containers
+## f(x) → 1
 
-| Cluster | Container | Who | Status |
+P2P and A/B agents are one function.
+
+x is an agent.
+f(x) is Y.settlement.
+Target is 1.
+gap = 1 − f(x).
+
+| x | Cluster | Container | f(x) |
 |---|---|---|---|
-| cluster:A | container:founder-music | Agent A · ECMcCready | live founder catalog |
-| cluster:B | container:new-customer | Agent B · potential customer | placeholder |
+| A | cluster:A | container:founder-music | 1 after live $1 settle |
+| B | cluster:B | container:new-customer | 0 placeholder |
 
-A assets:
+Machine:
+
+unlisted → listed → escrow → settled | cancelled
+
+LIST · INITIATE_TRADE · EXECUTE_SETTLEMENT · ABORT
+
+f(x) = 1 only at `settled`.
+
+z = pairZ(f(A), f(B)):
+
+- A=1 B=0 → next action is a real B payment
+- A=1 B=1 → hold
+- A=0 B=0 → Prove, then Buy
+
+Simulate A/B writes `simulated: true`. That is not B.
+
+See `docs/SLICE_v5_emergent_transition.md`.
+
+## A catalog
 
 - `cl_shiyan_yishu_001` Shiyan Yishu — First Single
 - `cl_sleep_terrors_001` Sleep Terrors — Second Single
 
 ## Live payment (A)
 
-Stripe live account **Shiyan Yishu** took one **$1.00** successful payment on 13 Sep 2026.
+Stripe live account Shiyan Yishu took one **$1.00** successful payment on 13 Sep 2026.
 
-- Rails: live `sk_live_` on Vercel Production
-- Amount: $1.00 USD via `/api/checkout`
-- Payout: **$0.67** expected **21 Sep 2026**
-- Buyer: founder / Agent A
-- Site settle URL: `/nfts?paid=1&asset=cl_shiyan_yishu_001`
+- Production uses `sk_live_`
+- Checkout amount $1.00 USD
+- Payout **$0.67** expected **21 Sep 2026**
+- Buyer is the founder
+- Settle URL `/nfts?paid=1&asset=cl_shiyan_yishu_001`
 
-That proves the A checkout path. It does not prove B.
+This proves the A rail. It does not prove B or product-market fit.
 
 ## Domains
 
 Music, AI Content, Animation, Games, eSports, Real Estate.
 
 Music is live. The others are simulation references.
-
-## P2P State Machine
-
-unlisted → listed → escrow → settled | cancelled
-
-Simulate A/B writes `simulated: true`. That is not a second user.
-
-See `docs/SLICE_v5_emergent_transition.md` for what to implement next.
 
 ## OutcomeTransition
 
@@ -71,7 +88,9 @@ Honest bits now:
 - acquisition = 1 when `escrow` or `settled`
 - audience_response, conversion, revenue stay 0 until a measured non-founder event exists
 
-x is `Y 0→1` or `Y 1→0`. z is `nextAction`.
+x is `Y 0→1` or `Y 1→0`.
+f(x) is settlement.
+z is `nextAction` / `pairZ`.
 
 `getSelfImprovementMetrics()` stays exported so Vercel can build. It is a count. It is not a trained model.
 
@@ -94,3 +113,7 @@ x is `Y 0→1` or `Y 1→0`. z is `nextAction`.
 - Simulate A/B is not demand
 
 ## Local
+
+```bash
+npm install
+npm run dev
