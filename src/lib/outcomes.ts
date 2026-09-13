@@ -81,10 +81,11 @@ export function gapToOne(y: YVector): Bit {
   return f(y) === 1 ? 0 : 1;
 }
 
-export function pairZ(yA: YVector, yB: YVector): string {
+export function pairZ(yA: YVector, yB: YVector, returned = false): string {
   const a = f(yA);
   const b = f(yB);
-  if (a === 1 && b === 1) return "Both at 1. Hold.";
+  if (a === 1 && b === 1 && returned) return "B returned. Hold.";
+  if (a === 1 && b === 1) return "Both at 1. B should return and measure.";
   if (a === 1 && b === 0) return "A is 1. Next best action is a real B payment.";
   if (a === 0 && b === 1) return "B is 1. Measure A again.";
   return "Neither is 1. Prove, then Buy.";
@@ -102,6 +103,10 @@ export function readOutcomes(): OutcomeTransition[] {
 export function nextAction(outcomes: OutcomeTransition[]): string {
   const last = outcomes[outcomes.length - 1];
   if (!last) return "Create, then Prove.";
+  if (last.action === "RETURN") return "B returned. Hold.";
+  if (last.action === "EXECUTE_SETTLEMENT" && last.agent.includes("Agent B")) {
+    return "Both at 1. B should return and measure.";
+  }
   if (last.transition_class === "negative") {
     return "Do not repeat " + last.action + " in " + last.vertical + ".";
   }
@@ -146,6 +151,23 @@ export function recordOutcome(input: {
     window.localStorage.setItem(LAST, nextAction(all));
   }
   return row;
+}
+
+export function recordBReturn() {
+  const settled = yFromAsset("settled");
+  recordOutcome({
+    asset_id: "cl_sleep_terrors_001",
+    action: "RETURN",
+    y_before: settled,
+    y_after: settled,
+    vertical: "music",
+    agent: "Agent B · potential customer",
+    simulated: false,
+  });
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("shiyan-b-return", "1");
+    window.localStorage.setItem(LAST, "B returned. Hold.");
+  }
 }
 
 export function readZ() {

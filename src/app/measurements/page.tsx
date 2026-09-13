@@ -11,6 +11,7 @@ import {
   nextAction,
   pairZ,
   readOutcomes,
+  recordBReturn,
   recordOutcome,
   simulatePair,
   yFromAsset,
@@ -39,22 +40,25 @@ export default function LearnPage() {
   const [vertical, setVertical] = useState("music");
   const [action, setAction] = useState("INITIATE_TRADE");
   const [liveB, setLiveB] = useState(false);
+  const [returnedFlag, setReturnedFlag] = useState(false);
 
   const selected = VERTICALS.find((v) => v.id === vertical) || VERTICALS[0];
   const founder = assets.filter((a) => a.id.startsWith("cl_"));
   const clusterA = outcomes.filter((row) => row.agent.includes("Agent A"));
   const clusterB = outcomes.filter((row) => row.agent.includes("Agent B"));
   const liveBRow = clusterB.filter((row) => !row.simulated && row.y_after.settlement === 1).pop();
+  const returned =
+    returnedFlag || clusterB.some((row) => !row.simulated && row.action === "RETURN");
   const yA = yFromAsset(founder[0]?.state || "listed");
   const yB = liveBRow ? liveBRow.y_after : ZERO;
-  const z = pairZ(yA, yB);
+  const z = pairZ(yA, yB, returned);
 
   useEffect(() => {
     setVertical(readVertical());
-    const rows = readOutcomes();
     setAssets(readLedger());
-    setOutcomes(rows);
+    setOutcomes(readOutcomes());
     setLiveB(window.localStorage.getItem("shiyan-b-live") === "1");
+    setReturnedFlag(window.localStorage.getItem("shiyan-b-return") === "1");
   }, []);
 
   useEffect(() => {
@@ -64,6 +68,7 @@ export default function LearnPage() {
   const refresh = () => {
     setOutcomes(readOutcomes());
     setLiveB(window.localStorage.getItem("shiyan-b-live") === "1");
+    setReturnedFlag(window.localStorage.getItem("shiyan-b-return") === "1");
   };
 
   const measureA = (asset: LedgerAsset) => {
@@ -113,11 +118,15 @@ export default function LearnPage() {
               })}
             </div>
             <div className="space-y-2">
-              {clusterA.filter((row) => !row.simulated).slice(-6).reverse().map((row) => (
-                <p key={row.measurement_id} className="text-sm text-zinc-400">
-                  Y {row.y_before.settlement}→{row.y_after.settlement} · {row.action} · {row.transition_class}
-                </p>
-              ))}
+              {clusterA
+                .filter((row) => !row.simulated)
+                .slice(-6)
+                .reverse()
+                .map((row) => (
+                  <p key={row.measurement_id} className="text-sm text-zinc-400">
+                    Y {row.y_before.settlement}→{row.y_after.settlement} · {row.action} · {row.transition_class}
+                  </p>
+                ))}
             </div>
           </div>
           <div className="flex items-center justify-center text-2xl font-semibold text-zinc-500 pt-24">+</div>
@@ -140,15 +149,26 @@ export default function LearnPage() {
                 </Link>
               ))}
             </div>
-            <button
-              onClick={() => {
-                simulatePair(vertical, action, "sim_placeholder_b");
-                refresh();
-              }}
-              className="h-11 px-5 rounded-full border border-zinc-600 text-sm mb-6"
-            >
-              Simulate B
-            </button>
+            <div className="flex flex-wrap gap-2 mb-6">
+              <button
+                onClick={() => {
+                  simulatePair(vertical, action, "sim_placeholder_b");
+                  refresh();
+                }}
+                className="h-11 px-5 rounded-full border border-zinc-600 text-sm"
+              >
+                Simulate B
+              </button>
+              <button
+                onClick={() => {
+                  recordBReturn();
+                  refresh();
+                }}
+                className="h-11 px-5 rounded-full bg-emerald-600 text-sm"
+              >
+                B returned
+              </button>
+            </div>
             <div className="space-y-2">
               {clusterB.slice(-6).reverse().map((row) => (
                 <p key={row.measurement_id} className="text-sm text-zinc-500">
