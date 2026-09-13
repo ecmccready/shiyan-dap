@@ -19,13 +19,20 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const assetId = body.assetId || "cl_shiyan_yishu_001";
     const title = body.title || TITLES[assetId] || "Shiyan catalog";
+    const cluster = body.cluster === "B" ? "B" : "A";
 
     const stripe = new Stripe(key);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      success_url: app + "/nfts?paid=1&asset=" + assetId,
-      cancel_url: app + "/nfts?paid=0&asset=" + assetId,
-      metadata: { assetId, title, from: "ECMcCready", to: "This session" },
+      success_url: app + "/nfts?paid=1&asset=" + assetId + "&cluster=" + cluster,
+      cancel_url: app + "/nfts?paid=0&asset=" + assetId + "&cluster=" + cluster,
+      metadata: {
+        assetId,
+        title,
+        cluster,
+        from: cluster === "B" ? "potential-customer" : "ECMcCready",
+        to: cluster === "B" ? "Agent B" : "Agent A",
+      },
       line_items: [
         {
           quantity: 1,
@@ -33,7 +40,7 @@ export async function POST(req: NextRequest) {
             currency: "usd",
             unit_amount: 100,
             product_data: {
-              name: title,
+              name: title + (cluster === "B" ? " · B" : " · A"),
               tax_code: "txcd_10401200",
             },
           },

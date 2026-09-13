@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, applyEvent, markAcquired, readLedger } from "@/lib/ledger";
-import { yFromAsset } from "@/lib/outcomes";
+import { recordOutcome, yFromAsset } from "@/lib/outcomes";
 
 const CLUSTER_A = "cluster:A";
 const CLUSTER_B = "cluster:B";
@@ -18,27 +18,42 @@ export default function ProvePage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [openA, setOpenA] = useState(true);
-  const [openB, setOpenB] = useState(false);
+  const [openB, setOpenB] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const paid = params.get("paid");
     const asset = params.get("asset");
+    const cluster = params.get("cluster") || "A";
     if (paid === "1" && asset) {
       applyEvent(asset, "EXECUTE_SETTLEMENT");
+      recordOutcome({
+        asset_id: asset,
+        action: "EXECUTE_SETTLEMENT",
+        y_before: yFromAsset("escrow"),
+        y_after: yFromAsset("settled"),
+        vertical: "music",
+        agent: cluster === "B" ? AGENT_B : AGENT_A,
+        simulated: false,
+      });
       fetch("/api/memory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           assetId: asset,
           action: "EXECUTE_SETTLEMENT",
-          agent: AGENT_A,
-          cluster: CLUSTER_A,
-          paid: false,
+          agent: cluster === "B" ? AGENT_B : AGENT_A,
+          cluster: cluster === "B" ? CLUSTER_B : CLUSTER_A,
+          paid: true,
         }),
       }).catch(() => {});
-      setNote("Settled in this browser. Live paid stays false until Stripe is live.");
+      setNote(
+        cluster === "B"
+          ? "B settled in this browser. Fit still needs B to return."
+          : "A settled in this browser."
+      );
     }
+    if (paid === "0") setNote("Checkout canceled.");
     setAssets(readLedger().filter((row) => row.id.startsWith("cl_")));
   }, []);
 
@@ -62,14 +77,18 @@ export default function ProvePage() {
     setBusy(null);
   };
 
-  const buy = async (asset: LedgerAsset) => {
+  const buy = async (asset: LedgerAsset, cluster: "A" | "B") => {
     if (asset.state === "listed") markAcquired(asset.id);
-    setNote("Opening Stripe for " + asset.title);
+    setNote("Opening Stripe for " + asset.title + " · " + cluster);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetId: asset.id, title: asset.title, cluster: CLUSTER_A }),
+        body: JSON.stringify({
+          assetId: asset.id,
+          title: asset.title,
+          cluster,
+        }),
       });
       const data = await res.json();
       if (data.url) {
@@ -82,14 +101,23 @@ export default function ProvePage() {
     }
   };
 
+  const buyB = async () => {
+    const asset = assets[1] || assets[0];
+    if (!asset) {
+      setNote("No A catalog asset to buy as B.");
+      return;
+    }
+    await buy(asset, "B");
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Prove" />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">P2P State Machine · Y vector</p>
+        <p className="text-emerald-400 mb-3">P2P · f(x) → 1</p>
         <h1 className="text-3xl font-bold mb-3">Proven content</h1>
         <p className="text-zinc-400 mb-8">
-          Click a cluster to expand. A holds founder Music. B is the next customer seat.
+          A is founder Music. B is a different buyer. Same person is still A.
         </p>
         <button
           onClick={() => setOpenA((v) => !v)}
@@ -99,7 +127,7 @@ export default function ProvePage() {
             {CLUSTER_A} · {CONTAINER_A} · {openA ? "open" : "closed"}
           </p>
           <h2 className="text-2xl font-semibold mb-1">{AGENT_A}</h2>
-          <p className="text-sm text-zinc-500">Domain Music · {assets.length} contained assets</p>
+          <p className="text-sm text-zinc-500">{assets.length} contained assets</p>
         </button>
         {openA ? (
           <div className="space-y-4 mb-10 pl-2 border-l border-emerald-800">
@@ -111,7 +139,7 @@ export default function ProvePage() {
                   <p className="text-sm text-zinc-400 mb-1">id {asset.id}</p>
                   <p className="text-sm text-zinc-400 mb-1">state {asset.state}</p>
                   <p className="text-sm text-zinc-400 mb-5">
-                    Y settlement {y.settlement} · acquisition {y.acquisition} · audience {y.audience_response} · conversion {y.conversion} · revenue {y.revenue} · retention {y.retention}
+                    f(A) {y.settlement} · acquisition {y.acquisition}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -122,16 +150,16 @@ export default function ProvePage() {
                       {asset.state === "escrow" || asset.state === "settled" ? "Acquired" : "Acquire"}
                     </button>
                     <button
-                      onClick={() => buy(asset)}
+                      onClick={() => buy(asset, "A")}
                       className="h-11 px-6 rounded-full border border-zinc-700 text-sm"
                     >
-                      Buy
+                      Buy as A
                     </button>
                     <Link
                       href="/measurements"
                       className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
                     >
-                      Next B
+                      Learn
                     </Link>
                   </div>
                 </div>
@@ -147,17 +175,27 @@ export default function ProvePage() {
             {CLUSTER_B} · {CONTAINER_B} · {openB ? "open" : "closed"}
           </p>
           <h2 className="text-2xl font-semibold mb-1">{AGENT_B}</h2>
-          <p className="text-sm text-zinc-500">Placeholder. No second live customer yet.</p>
+          <p className="text-sm text-zinc-500">Live $1 only counts if the buyer is not A.</p>
         </button>
         {openB ? (
           <div className="mt-4 bg-zinc-900/40 border border-dashed border-zinc-700 rounded-2xl p-6">
             <p className="text-sm text-zinc-400 mb-4">
-              Next best B is the first non-founder user who Create → Prove → Learn → Act. Until then B stays simulated.
+              Buy as B opens live Stripe with metadata cluster=B. Use another email and browser.
             </p>
-            <p className="text-sm text-zinc-500 mb-4">Y 0→0 · no_movement · not a live buyer</p>
-            <Link href="/measurements" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
-              Open B on Learn
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={buyB}
+                className="h-11 px-6 rounded-full bg-emerald-600 text-sm"
+              >
+                Buy as B · $1
+              </button>
+              <Link
+                href="/measurements"
+                className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+              >
+                Open B on Learn
+              </Link>
+            </div>
           </div>
         ) : null}
         {note ? <p className="mt-6 text-sm text-emerald-400">{note}</p> : null}
