@@ -8,25 +8,47 @@ Memory: https://huggingface.co/shiyan-dap
 
 Shiyan AI Assist helps an independent creator take a creation to release, audience response, and the next best action.
 
-## Whole system, mathematically
+## Product
 
-Now:
+The product is not the song.
+
+The product is the decision loop:
 
     Y_t  --x_t-->  Y_{t+1}
     z_t  =  π(Y_t, x_t)
 
-Y is the outcome vector.  
-x is the action.  
-π is the current policy: `nextAction` / `pairZ`.  
-Target on settlement is f(x) → 1.
+A creator takes an action x, Shiyan records whether Y moved, then names z, the next best action.
 
-Eventually:
+Music is the first vertical used to prove that loop. Marketplace, Playlist, and Songs are places inside the loop, not the product.
+
+What exists now: deterministic π (`nextAction`, `pairZ`).  
+What it can become: a creator decision engine
 
     z*_t  =  argmax_z  E[ U(Y_{t+1}) | Y_t, x_t, z ]
 
-That second line is not shipped. It is what Shiyan can become: a creator decision engine that learns which actions produce better measurable outcomes.
+z* is not shipped.
 
-That is a stronger SaaS thesis than “AI music tool.” It is why “creator operating system” is the right name only if OutcomeTransition records keep accumulating, including 1→0.
+## Product-market fit
+
+Fit is not “the single sold.”  
+Fit is not founder $1.  
+Fit is not Simulate A/B.
+
+Fit for Shiyan:
+
+A person who is not Agent A uses Create → Prove → Learn → Act, pays, comes back, and a measured Y bit moves because of an action they took.
+
+Until that happens, product-market fit is false.
+
+| Test | Status |
+|---|---|
+| A live $1 on cluster A | proven 13 Sep 2026 |
+| B live payment | not proven |
+| B returns to Learn | not proven |
+| Non-founder Y bit besides settlement | not proven |
+| Learned z* beats guess | not proven |
+
+Music can stay the first vertical after fit. Fit still requires B.
 
 ## Loop
 
@@ -50,78 +72,4 @@ P2P and A/B agents are one function.
 | A | cluster:A | container:founder-music | 1 after live $1 settle |
 | B | cluster:B | container:new-customer | 0 placeholder |
 
-Machine: unlisted → listed → escrow → settled | cancelled
-
-f(x) = Y.settlement. f(x) = 1 only at `settled`.  
-gap = 1 − f(x).
-
-z_t = π(Y_t, x_t) today:
-
-- A=1 B=0 → next action is a real B payment
-- A=1 B=1 → hold
-- A=0 B=0 → Prove, then Buy
-
-Simulate A/B writes `simulated: true`. That is not B.
-
-See `docs/SLICE_v5_emergent_transition.md`.
-
-## A catalog
-
-- `cl_shiyan_yishu_001` Shiyan Yishu — First Single
-- `cl_sleep_terrors_001` Sleep Terrors — Second Single
-
-## Live payment (A)
-
-Stripe live account Shiyan Yishu took one $1.00 successful payment on 13 Sep 2026.
-
-- Production uses `sk_live_`
-- Payout $0.67 expected 21 Sep 2026
-- Buyer is the founder
-- Settle URL `/nfts?paid=1&asset=cl_shiyan_yishu_001`
-
-This proves the A rail. It does not prove B or product-market fit.
-
-## Domains
-
-Music, AI Content, Animation, Games, eSports, Real Estate.
-
-Music is live. The others are simulation references.
-
-## OutcomeTransition
-
-`src/lib/outcomes.ts` is the source of truth for Y_t → Y_{t+1}.
-
-Y vector: settlement, acquisition, audience_response, conversion, revenue, retention.
-
-Honest bits now:
-
-- settlement = 1 when state is `settled`
-- acquisition = 1 when `escrow` or `settled`
-- audience_response, conversion, revenue stay 0 until a measured non-founder event exists
-
-`getSelfImprovementMetrics()` stays exported so Vercel can build. It is a count. It is not z*.
-
-## What is proven
-
-- Vercel production
-- Header: Marketplace, Playlist, Songs, Domains, Create, Prove, Learn, Act
-- A container on `/nfts` and `/single`
-- Learn A/B squares
-- Live Stripe $1 on cluster A
-- Deterministic π: measure then name z_t
-
-## What is not claimed
-
-- no trained policy
-- no argmax / expected utility
-- no live non-founder buyer
-- no product-market fit
-- no on-chain mint
-- B is not a real customer
-- Simulate A/B is not demand
-
-## Local
-
-```bash
-npm install
-npm run dev
+Machine

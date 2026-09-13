@@ -1,4 +1,5 @@
 export type Bit = 0 | 1;
+export type AgentX = "A" | "B";
 
 export type YVector = {
   settlement: Bit;
@@ -72,6 +73,23 @@ export function delta(before: YVector, after: YVector) {
   };
 }
 
+export function f(y: YVector): Bit {
+  return y.settlement;
+}
+
+export function gapToOne(y: YVector): Bit {
+  return f(y) === 1 ? 0 : 1;
+}
+
+export function pairZ(yA: YVector, yB: YVector): string {
+  const a = f(yA);
+  const b = f(yB);
+  if (a === 1 && b === 1) return "Both at 1. Hold.";
+  if (a === 1 && b === 0) return "A is 1. Next best action is a real B payment.";
+  if (a === 0 && b === 1) return "B is 1. Measure A again.";
+  return "Neither is 1. Prove, then Buy.";
+}
+
 export function readOutcomes(): OutcomeTransition[] {
   if (typeof window === "undefined") return [];
   try {
@@ -93,7 +111,7 @@ export function nextAction(outcomes: OutcomeTransition[]): string {
   if (last.transition_class === "maintained") {
     return "Hold. Measure " + last.vertical + " again after Act.";
   }
-  return "Act on Prove. Settlement is y.settlement = 1.";
+  return "Act on Prove. f(x) target is 1.";
 }
 
 export function recordOutcome(input: {
