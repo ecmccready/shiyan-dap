@@ -36,6 +36,13 @@ export default function ProvePage() {
         agent: cluster === "B" ? AGENT_B : AGENT_A,
         simulated: false,
       });
+      if (cluster === "B") {
+        window.localStorage.setItem("shiyan-b-live", "1");
+        window.localStorage.setItem(
+          "shiyan-z",
+          "A is 1. B payment recorded. Fit needs B to return."
+        );
+      }
       fetch("/api/memory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -183,17 +190,14 @@ export default function ProvePage() {
               Buy as B opens live Stripe with metadata cluster=B. Use another email and browser.
             </p>
             <div className="flex flex-wrap gap-2">
-              <button
-                onClick={buyB}
-                className="h-11 px-6 rounded-full bg-emerald-600 text-sm"
-              >
+              <button onClick={buyB} className="h-11 px-6 rounded-full bg-emerald-600 text-sm">
                 Buy as B · $1
               </button>
               <Link
                 href="/measurements"
                 className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
               >
-                Open B on Learn
+                Prove z on Learn
               </Link>
             </div>
           </div>
