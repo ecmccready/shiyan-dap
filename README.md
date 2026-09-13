@@ -19,11 +19,7 @@ Create → Prove → Learn → Act
 | Learn | /measurements | A/B clusters, OutcomeTransition, z |
 | Act | /bot | consume z |
 
-Places:
-
-- Marketplace `/marketplace`
-- Playlist `/playlist`
-- Songs `/single`
+Places: Marketplace `/marketplace` · Playlist `/playlist` · Songs `/single`
 
 ## A/B containers
 
@@ -32,28 +28,36 @@ Places:
 | cluster:A | container:founder-music | Agent A · ECMcCready | live founder catalog |
 | cluster:B | container:new-customer | Agent B · potential customer | placeholder |
 
-A holds both official singles:
+A assets:
 
 - `cl_shiyan_yishu_001` Shiyan Yishu — First Single
 - `cl_sleep_terrors_001` Sleep Terrors — Second Single
 
-B is a fictional CRM seat until a second live user Create → Prove → Learn → Act.
+## Live payment (A)
 
-Prove and Songs wrap A in one expandable box. Learn shows A and B as two squares. z is the next CRM action.
+Stripe live account **Shiyan Yishu** took one **$1.00** successful payment on 13 Sep 2026.
+
+- Rails: live `sk_live_` on Vercel Production
+- Amount: $1.00 USD via `/api/checkout`
+- Payout: **$0.67** expected **21 Sep 2026**
+- Buyer: founder / Agent A
+- Site settle URL: `/nfts?paid=1&asset=cl_shiyan_yishu_001`
+
+That proves the A checkout path. It does not prove B.
 
 ## Domains
 
-Header dropdown: Music, AI Content, Animation, Games, eSports, Real Estate.
+Music, AI Content, Animation, Games, eSports, Real Estate.
 
-Music is live. The others are simulation references only.
+Music is live. The others are simulation references.
 
 ## P2P State Machine
 
 unlisted → listed → escrow → settled | cancelled
 
-LIST · INITIATE_TRADE · EXECUTE_SETTLEMENT · ABORT
+Simulate A/B writes `simulated: true`. That is not a second user.
 
-Simulate A/B writes `simulated: true` rows. That is not a second user.
+See `docs/SLICE_v5_emergent_transition.md` for what to implement next.
 
 ## OutcomeTransition
 
@@ -63,11 +67,11 @@ Y vector: settlement, acquisition, audience_response, conversion, revenue, reten
 
 Honest bits now:
 
-- settlement = 1 only when state is `settled`
+- settlement = 1 when state is `settled`
 - acquisition = 1 when `escrow` or `settled`
-- audience_response, conversion, revenue stay 0
+- audience_response, conversion, revenue stay 0 until a measured non-founder event exists
 
-x is the transition `Y 0→1` or `Y 1→0`. z comes from `nextAction`.
+x is `Y 0→1` or `Y 1→0`. z is `nextAction`.
 
 `getSelfImprovementMetrics()` stays exported so Vercel can build. It is a count. It is not a trained model.
 
@@ -77,18 +81,16 @@ x is the transition `Y 0→1` or `Y 1→0`. z comes from `nextAction`.
 - Header: Marketplace, Playlist, Songs, Domains, Create, Prove, Learn, Act
 - A container on `/nfts` and `/single`
 - Learn A/B squares
-- Two founder singles can be settled in this browser
+- Live Stripe $1 on cluster A
+- Two founder singles can settle in this browser
 
 ## What is not claimed
 
 - no trained model
 - no live non-founder buyer
+- no product-market fit
 - no on-chain mint
 - B is not a real customer
 - Simulate A/B is not demand
 
 ## Local
-
-```bash
-npm install
-npm run dev
