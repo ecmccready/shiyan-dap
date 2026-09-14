@@ -119,6 +119,15 @@ export function nextAction(outcomes: OutcomeTransition[]): string {
   return "Act on Prove. f(x) target is 1.";
 }
 
+export function persistOutcome(row: OutcomeTransition, z = "") {
+  if (typeof window === "undefined") return;
+  fetch("/api/memory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "outcome", z, ...row }),
+  }).catch(() => {});
+}
+
 export function recordOutcome(input: {
   asset_id: string;
   action: string;
@@ -146,16 +155,18 @@ export function recordOutcome(input: {
     timestamp: new Date().toISOString(),
   };
   const all = [...readOutcomes(), row];
+  const z = nextAction(all);
   if (typeof window !== "undefined") {
     window.localStorage.setItem(KEY, JSON.stringify(all));
-    window.localStorage.setItem(LAST, nextAction(all));
+    window.localStorage.setItem(LAST, z);
   }
+  persistOutcome(row, z);
   return row;
 }
 
 export function recordBReturn() {
   const settled = yFromAsset("settled");
-  recordOutcome({
+  const row = recordOutcome({
     asset_id: "cl_sleep_terrors_001",
     action: "RETURN",
     y_before: settled,
@@ -168,6 +179,7 @@ export function recordBReturn() {
     window.localStorage.setItem("shiyan-b-return", "1");
     window.localStorage.setItem(LAST, "B returned. Hold.");
   }
+  persistOutcome(row, "B returned. Hold.");
 }
 
 export function readZ() {
