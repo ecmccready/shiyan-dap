@@ -193,7 +193,6 @@ export default function LearnPage() {
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
           <p className="text-xs text-emerald-400 mb-2">z = π(Y, x) = pairZ(A, B) · Hub latest-z.json</p>
           <p className="text-xl font-semibold mb-4">{z}</p>
-          <p className="text-sm text-zinc-500 mb-4">{nextAction(outcomes)}</p>
           <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
             Act
           </Link>
