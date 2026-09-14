@@ -1,67 +1,53 @@
 # Shiyan DAP
 
-Creator operating system. Music is the first vertical.
+Creator operating system. Music is the first environment.
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap  
-Memory: https://huggingface.co/datasets/shiyan-dap/founder-z
+Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z
 
-Shiyan AI Assist helps an independent creator take a creation to release, audience response, and the next best action.
+Shiyan converts creative activity into measurable economic state transitions and uses those transitions to name the next action.
 
-## Product
+    creation → transaction → measurement → z → next action
+    x → f(x) → z → next action
 
-Shiyan names the next best action on a verified market-results chain:
+x is an agent. f(x) is settlement. Target is 1. gap = 1 − f(x).  
+z is the paired result of A and B.  
+f(x) = 1 only when the transaction reaches settled.  
+Simulate A/B ≠ B.
 
-    creation → asset → market activity → acquisition → payment
+## Control layer
 
-    Y_t  --x_t-->  Y_{t+1}
-    z_t  =  π(Y_t, x_t)
+`/measurements` is the experimental / control layer, not a dashboard.
 
-z is the next unpaid step. Fit is not the value proposition and is not a shipped metric.
+| Seat | Meaning | Status |
+|---|---|---|
+| A | known successful transaction | live $1 on 13 Sep 2026 |
+| B | independent test transaction | instrument live; independent buyer not proven |
+| z | observed relationship | Hub `latest-z.json` = B returned. Hold. |
 
-What exists now: deterministic π (`pairZ`) and durable z on Hugging Face.  
-What it can become: z* that picks the action with the highest expected movement along that chain. z* is not shipped.
+pairZ:
 
-## Verified market results
+- A=1 B=0 → next action is a real B payment
+- A=1 B=1 → hold
+- A=0 B=0 → Prove, then Buy
 
-| Rung | Route | Y bit | Status |
-|---|---|---|---|
-| creation | /upload | — | instrument live |
-| asset | /single | — | two founder assets live |
-| market activity | /marketplace /playlist | — | listed / trade instrument live |
-| acquisition | /nfts escrow | acquisition | instrument live |
-| payment | Stripe settled | settlement | A and B $1 proven 13 Sep 2026 |
-| return instrument | /measurements RETURN | retention | reference B row in founder-z |
-| durable z | latest-z.json + /bot | — | `B returned. Hold.` |
-
-Value is a measured step on that chain.
+Do not add features. Complete A → B → z with a real external buyer and preserve the evidence.
 
 ## Loop
 
-| Verb | Route | Job |
+| Layer | Route | Function |
 |---|---|---|
-| Create | /upload | creation |
-| Prove | /nfts | acquisition / payment |
-| Learn | /measurements | measure Y, emit z |
-| Act | /bot | speak Hub z |
-| Outcomes | /outcomes | persist ledger to Hub |
+| Create | /upload | ingest a work |
+| Prove | /nfts | acquire / buy |
+| Learn | /measurements | measure outcomes |
+| Act | /bot | consume z |
 
-Places: Marketplace `/marketplace` · Playlist `/playlist` · Songs `/single`
-
-## f(x) → 1
-
-| x | Cluster | f(x) |
-|---|---|---|
-| A | founder-music | 1 after live $1 |
-| B | new-customer reference | 1 after live B checkout |
-
-z = pairZ(A, B, returned). Current Hub z: `B returned. Hold.`
-
-Simulate A/B is not B.
+Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/latest-z.json
 
 ## What is not claimed
 
-- no trained policy z*
+- B is not yet a proven independent buyer
 - Fit is not a shipped metric
-- no on-chain mint
+- no trained policy z*
 - Simulate A/B is not demand

@@ -8,7 +8,6 @@ import {
   OutcomeTransition,
   f,
   gapToOne,
-  nextAction,
   pairZ,
   readOutcomes,
   recordBReturn,
@@ -101,10 +100,15 @@ export default function LearnPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Learn" />
       <main className="max-w-5xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold mb-8">Learn</h1>
+        <p className="text-xs text-emerald-400 mb-2">Experimental / control layer</p>
+        <h1 className="text-3xl font-bold mb-3">Learn</h1>
+        <p className="text-zinc-400 mb-8">
+          A is the known successful transaction. B is the independent test. z is the observed relationship.
+          Simulate A/B is not B.
+        </p>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-start mb-8">
           <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6">
-            <p className="text-xs text-emerald-400 mb-2">A cluster · Music · founder</p>
+            <p className="text-xs text-emerald-400 mb-2">Control · A · known successful</p>
             <h2 className="text-xl font-semibold mb-4">Agent A · ECMcCready</h2>
             <p className="text-sm text-zinc-500 mb-4">
               f(A) {f(yA)} · gap {gapToOne(yA)}
@@ -143,9 +147,9 @@ export default function LearnPage() {
           <div className="flex items-center justify-center text-2xl font-semibold text-zinc-500 pt-24">+</div>
           <div className="rounded-2xl border border-dashed border-zinc-600 bg-zinc-900/40 p-6">
             <p className="text-xs text-emerald-400 mb-2">
-              B cluster · {liveB || liveBRow ? "live payment seen" : "placeholder"}
+              Experiment · B · {liveB || liveBRow ? "reference payment seen" : "needs independent buyer"}
             </p>
-            <h2 className="text-xl font-semibold mb-2">Agent B · potential customer</h2>
+            <h2 className="text-xl font-semibold mb-2">Agent B · independent transaction</h2>
             <p className="text-sm text-zinc-400 mb-4">
               f(B) {f(yB)} · gap {gapToOne(yB)}
             </p>
@@ -191,11 +195,21 @@ export default function LearnPage() {
           </div>
         </div>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-          <p className="text-xs text-emerald-400 mb-2">z = π(Y, x) = pairZ(A, B) · Hub latest-z.json</p>
+          <p className="text-xs text-emerald-400 mb-2">z = observed relationship · evidence on Hub</p>
           <p className="text-xl font-semibold mb-4">{z}</p>
-          <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
-            Act
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
+              Act
+            </Link>
+            <a
+              href="https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/latest-z.json"
+              target="_blank"
+              rel="noreferrer"
+              className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+            >
+              Preserve evidence
+            </a>
+          </div>
         </div>
       </main>
     </div>
