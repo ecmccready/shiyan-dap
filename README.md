@@ -1,6 +1,6 @@
-# Shiyan DAP
+# Shiyan
 
-Creator operating system. Music is the first environment.
+Creator operating system. Music is the first vertical.
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap  
@@ -8,7 +8,15 @@ Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z
 
 Shiyan converts creative activity into measurable economic state transitions and uses those transitions to name the next action.
 
-    creation → transaction → measurement → z → next action
+The product is not the catalog. The product is the agentic pipeline:
+
+    creation → provenance → measurement → z → next market action
+
+Music is the first environment used to prove that pipeline. The same mechanics apply in any domain where an independent producer has to move a work from making it to market action.
+
+Current domain references: Music, AI Content, Animation, Games, eSports, Real Estate.  
+Only Music has live payment and measurement. The others are declared seats, not proven verticals.
+
     x → f(x) → z → next action
 
 ## Definition
@@ -40,7 +48,7 @@ z is the paired result of A and B.
 f(x) = 1 only when the transaction reaches settled.  
 Simulate A/B ≠ B.
 
-This does not say Shiyan predicts hits. It does not say Fit is proven. It does not say z* exists.
+This does not say Shiyan predicts hits. It does not say Fit is proven. It does not say z* exists. It does not say non-music domains are live.
 
 ## Control layer
 
@@ -48,7 +56,7 @@ This does not say Shiyan predicts hits. It does not say Fit is proven. It does n
 
 | Seat | Meaning | Status |
 |---|---|---|
-| A | known successful transaction | live $1 on 13 Sep 2026 |
+| A | known successful transaction | live $1 on 13 Sep 2026 · Music |
 | B | independent test transaction | instrument live; independent buyer not proven |
 | z | observed relationship | Hub `latest-z.json` = B returned. Hold. |
 
@@ -58,7 +66,7 @@ pairZ:
 - A=1 B=1 → hold
 - A=0 B=0 → Prove, then Buy
 
-Do not add features. Complete A → B → z with a real external buyer and preserve the evidence.
+Do not add features. Complete A → B → z with a real external buyer in Music and preserve the evidence. Other domains reuse the same Y and z when a live settlement exists there.
 
 ## Loop
 
@@ -77,3 +85,4 @@ Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/latest-
 - Fit is not a shipped metric
 - no trained policy z*
 - Simulate A/B is not demand
+- AI Content, Animation, Games, eSports, and Real Estate are not live markets
