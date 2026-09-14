@@ -41,6 +41,7 @@ export default function LearnPage() {
   const [action, setAction] = useState("INITIATE_TRADE");
   const [liveB, setLiveB] = useState(false);
   const [returnedFlag, setReturnedFlag] = useState(false);
+  const [remoteZ, setRemoteZ] = useState("");
 
   const selected = VERTICALS.find((v) => v.id === vertical) || VERTICALS[0];
   const founder = assets.filter((a) => a.id.startsWith("cl_"));
@@ -51,7 +52,8 @@ export default function LearnPage() {
     returnedFlag || clusterB.some((row) => !row.simulated && row.action === "RETURN");
   const yA = yFromAsset(founder[0]?.state || "listed");
   const yB = liveBRow ? liveBRow.y_after : ZERO;
-  const z = pairZ(yA, yB, returned);
+  const localZ = pairZ(yA, yB, returned);
+  const z = returned ? localZ : remoteZ || localZ;
 
   useEffect(() => {
     setVertical(readVertical());
@@ -59,6 +61,15 @@ export default function LearnPage() {
     setOutcomes(readOutcomes());
     setLiveB(window.localStorage.getItem("shiyan-b-live") === "1");
     setReturnedFlag(window.localStorage.getItem("shiyan-b-return") === "1");
+    fetch("/api/memory")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.z) {
+          setRemoteZ(data.z);
+          window.localStorage.setItem("shiyan-z", data.z);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -180,7 +191,7 @@ export default function LearnPage() {
           </div>
         </div>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-          <p className="text-xs text-emerald-400 mb-2">z = π(Y, x) = pairZ(A, B)</p>
+          <p className="text-xs text-emerald-400 mb-2">z = π(Y, x) = pairZ(A, B) · Hub latest-z.json</p>
           <p className="text-xl font-semibold mb-4">{z}</p>
           <p className="text-sm text-zinc-500 mb-4">{nextAction(outcomes)}</p>
           <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
