@@ -3,16 +3,38 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { OutcomeTransition, readOutcomes, readZ } from "@/lib/outcomes";
+import { OutcomeTransition, persistOutcome, readOutcomes, readZ } from "@/lib/outcomes";
 
 export default function OutcomesPage() {
   const [rows, setRows] = useState<OutcomeTransition[]>([]);
   const [z, setZ] = useState("");
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     setRows(readOutcomes());
     setZ(readZ());
   }, []);
+
+  const persist = async () => {
+    const row = rows.find((r) => !r.simulated) || rows[0];
+    if (!row) {
+      setNote("No row to persist.");
+      return;
+    }
+    setNote("Writing " + row.measurement_id);
+    persistOutcome(row, z);
+    try {
+      const res = await fetch("/api/memory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "outcome", z, ...row }),
+      });
+      const data = await res.json();
+      setNote(data.ok ? "Wrote " + data.url : "HF error: " + (data.error || res.status));
+    } catch {
+      setNote("HF request failed");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -30,6 +52,9 @@ export default function OutcomesPage() {
           >
             Learn
           </Link>
+          <button onClick={persist} className="h-11 px-5 rounded-full border border-zinc-700 text-sm">
+            Persist to Hugging Face
+          </button>
           <a
             href="https://huggingface.co/datasets/shiyan-dap/founder-z/tree/main"
             target="_blank"
@@ -39,6 +64,7 @@ export default function OutcomesPage() {
             Hugging Face files
           </a>
         </div>
+        {note ? <p className="text-sm text-emerald-400 mb-6">{note}</p> : null}
         <div className="space-y-3">
           {rows.slice().reverse().map((row) => (
             <p key={row.measurement_id} className="text-sm text-zinc-400">
