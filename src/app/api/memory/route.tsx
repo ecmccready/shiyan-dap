@@ -4,6 +4,23 @@ function ndjsonLine(key: string, value: unknown) {
   return JSON.stringify({ key, value }) + "\n";
 }
 
+export async function GET() {
+  const repo = process.env.HF_DATASET || "shiyan-dap/founder-z";
+  const token = process.env.HF_TOKEN;
+  const res = await fetch(
+    "https://huggingface.co/datasets/" + repo + "/resolve/main/latest-z.json",
+    {
+      cache: "no-store",
+      headers: token ? { Authorization: "Bearer " + token } : {},
+    }
+  );
+  if (!res.ok) {
+    return NextResponse.json({ ok: false, error: await res.text() }, { status: 500 });
+  }
+  const data = await res.json();
+  return NextResponse.json({ ok: true, ...data });
+}
+
 export async function POST(req: NextRequest) {
   const token = process.env.HF_TOKEN;
   const repo = process.env.HF_DATASET || "shiyan-dap/founder-z";
