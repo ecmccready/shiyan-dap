@@ -11,10 +11,36 @@ Shiyan converts creative activity into measurable economic state transitions and
     creation → transaction → measurement → z → next action
     x → f(x) → z → next action
 
+## Definition
+
+Creative activity is an action \(x\) a person takes on a work: upload, list, acquire, pay, return.
+
+An economic state is the vector \(Y\):
+
+    Y = (settlement, acquisition, audience_response, conversion, revenue, retention)
+
+Each coordinate is 0 or 1. Settlement is 1 only when a live payment reaches `settled`.
+
+A state transition is
+
+    Y_t  --x_t-->  Y_{t+1}
+
+It is measurable when both vectors are written as an OutcomeTransition and stored in the browser and in `founder-z`.
+
+The next action is
+
+    z_t = π(Y_t, x_t)
+
+π today is `pairZ(A, B, returned)`. It is a rule, not a trained model.
+
+x is what the creator or buyer does. Y is whether money and state moved. z is what to do next because of that movement.
+
 x is an agent. f(x) is settlement. Target is 1. gap = 1 − f(x).  
 z is the paired result of A and B.  
 f(x) = 1 only when the transaction reaches settled.  
 Simulate A/B ≠ B.
+
+This does not say Shiyan predicts hits. It does not say Fit is proven. It does not say z* exists.
 
 ## Control layer
 
