@@ -20,12 +20,26 @@ export default function BotPage() {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    const next = readZ();
-    setZ(next);
+    const local = readZ();
+    setZ(local);
     setLog([
       "I am the Grok Bot. Explore, Buy, Sell, or Trade Music and AI content.",
-      "z: " + next,
+      "B reference row is the non-founder RETURN in founder-z.",
+      "z: " + local,
     ]);
+    fetch("/api/memory")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data?.z) return;
+        setZ(data.z);
+        setLog([
+          "I am the Grok Bot. Explore, Buy, Sell, or Trade Music and AI content.",
+          "B reference row is the non-founder RETURN in founder-z.",
+          "z from Hub: " + data.z,
+        ]);
+        window.localStorage.setItem("shiyan-z", data.z);
+      })
+      .catch(() => {});
   }, []);
 
   const send = (e: FormEvent) => {
@@ -43,7 +57,7 @@ export default function BotPage() {
         <p className="text-emerald-400 mb-3">DO</p>
         <h1 className="text-3xl font-bold mb-3">Grok Bot</h1>
         <p className="text-zinc-400 mb-8">
-          Explore, Buy, Sell, or Trade Music and AI content. z comes from Learn.
+          Explore, Buy, Sell, or Trade Music and AI content. z comes from Learn and Hugging Face.
         </p>
         <div className="flex flex-wrap gap-2 mb-8">
           {chips.map((chip) => (
