@@ -1,19 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-async function upload(repo: string, token: string, path: string, body: unknown) {
-  const res = await fetch(
-    "https://huggingface.co/api/datasets/" + repo + "/upload/main/" + path,
-    {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body, null, 2),
-    }
-  );
-  const text = await res.text();
-  return { ok: res.ok, status: res.status, text, path };
+function ndjsonLine(key: string, value: unknown) {
+  return JSON.stringify({ key, value }) + "\n";
 }
 
 export async function POST(req: NextRequest) {
@@ -26,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}));
   const kind = body.kind === "outcome" ? "outcome" : "event";
-  const id = body.measurement_id || body.assetId || body.asset_id || "latest";
+  const id = String(body.measurement_id || body.assetId || body.asset_id || "latest");
 
   const payload = {
     kind,
@@ -43,23 +31,45 @@ export async function POST(req: NextRequest) {
   const file =
     kind === "outcome" ? "outcome-" + id + ".json" : "events/" + (payload.assetId || "latest") + ".json";
 
-  const wrote = await upload(repo, token, file, payload);
-  const latest = await upload(repo, token, "latest-z.json", {
-    z: payload.z,
-    action: payload.action,
-    agent: payload.agent,
-    at: payload.at,
+  const files = [
+    { path: file, content: JSON.stringify(payload, null, 2) },
+    {
+      path: "latest-z.json",
+      content: JSON.stringify(
+        { z: payload.z, action: payload.action, agent: payload.agent, at: payload.at },
+        null,
+        2
+      ),
+    },
+  ];
+
+  let ndjson = ndjsonLine("header", { summary: payload.action + " " + id });
+  for (const item of files) {
+    ndjson += ndjsonLine("file", {
+      path: item.path,
+      encoding: "base64",
+      content: Buffer.from(item.content, "utf8").toString("base64"),
+    });
+  }
+
+  const res = await fetch("https://huggingface.co/api/datasets/" + repo + "/commit/main", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/x-ndjson",
+    },
+    body: ndjson,
   });
 
-  if (!wrote.ok) {
-    return NextResponse.json({ ok: false, error: wrote.text || wrote.status }, { status: 500 });
+  const text = await res.text();
+  if (!res.ok) {
+    return NextResponse.json({ ok: false, error: text }, { status: 500 });
   }
 
   return NextResponse.json({
     ok: true,
     url: "https://huggingface.co/datasets/" + repo + "/blob/main/" + file,
-    latest: latest.ok
-      ? "https://huggingface.co/datasets/" + repo + "/blob/main/latest-z.json"
-      : latest.text,
+    latest: "https://huggingface.co/datasets/" + repo + "/blob/main/latest-z.json",
+    hub: text,
   });
 }
