@@ -11,26 +11,34 @@ export default function OutcomesPage() {
   const [note, setNote] = useState("");
 
   useEffect(() => {
-    setRows(readOutcomes());
-    setZ(readZ());
+    const all = readOutcomes();
+    setRows(all);
+    const returned = all.some((r) => !r.simulated && r.action === "RETURN");
+    setZ(returned ? "B returned. Hold." : readZ());
   }, []);
 
   const persist = async () => {
-    const row = rows.find((r) => !r.simulated) || rows[0];
+    const row =
+      rows.find((r) => !r.simulated && r.action === "RETURN") ||
+      rows.find((r) => !r.simulated) ||
+      rows[0];
     if (!row) {
       setNote("No row to persist.");
       return;
     }
-    setNote("Writing " + row.measurement_id);
-    persistOutcome(row, z);
+    const persistZ = rows.some((r) => !r.simulated && r.action === "RETURN")
+      ? "B returned. Hold."
+      : z;
+    persistOutcome(row, persistZ);
     try {
       const res = await fetch("/api/memory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: "outcome", z, ...row }),
+        body: JSON.stringify({ kind: "outcome", z: persistZ, ...row }),
       });
       const data = await res.json();
       setNote(data.ok ? "Wrote " + data.url : "HF error: " + (data.error || res.status));
+      setZ(persistZ);
     } catch {
       setNote("HF request failed");
     }
