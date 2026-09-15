@@ -176,9 +176,13 @@ export default function LearnPage() {
             </Link>
             <button
               onClick={() => {
-                const self = recordSelf();
-                setRemoteZ(self.z);
-                setOutcomes(readOutcomes());
+                try {
+                  recordSelf();
+                  setOutcomes(readOutcomes());
+                  window.location.href = "/outcomes";
+                } catch {
+                  window.location.href = "/outcomes";
+                }
               }}
               className="h-11 px-5 rounded-full border border-zinc-700 text-sm"
             >
