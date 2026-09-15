@@ -11,6 +11,7 @@ import {
   pairZ,
   readOutcomes,
   recordOutcome,
+  recordSelf,
   resolveB,
   yFromAsset,
 } from "@/lib/outcomes";
@@ -48,10 +49,7 @@ export default function LearnPage() {
   const yA = yFromAsset(founder[0]?.state || "listed");
   const yB = liveBRow ? liveBRow.y_after : ZERO;
   const localZ = pairZ(yA, yB, bState.returned);
-  const z =
-    bState.resolution === "resolved"
-      ? "B returned. Hold."
-      : remoteZ || localZ;
+  const z = bState.resolution === "resolved" ? "B returned. Hold." : remoteZ || localZ;
 
   useEffect(() => {
     setVertical(readVertical());
@@ -137,9 +135,7 @@ export default function LearnPage() {
           </div>
           <div className="flex items-center justify-center text-2xl font-semibold text-zinc-500 pt-24">+</div>
           <div className="rounded-2xl border border-dashed border-zinc-600 bg-zinc-900/40 p-6">
-            <p className="text-xs text-emerald-400 mb-2">
-              Experiment · B · {bState.resolution}
-            </p>
+            <p className="text-xs text-emerald-400 mb-2">Experiment · B · {bState.resolution}</p>
             <h2 className="text-xl font-semibold mb-2">Agent B · independent transaction</h2>
             <p className="text-sm text-zinc-400 mb-4">
               r 1 · y {f(yB)} · e {errorSignal(yB)} · B {bState.resolution}
@@ -172,12 +168,22 @@ export default function LearnPage() {
           </div>
         </div>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-          <p className="text-xs text-emerald-400 mb-2">z = π(Y, B) · no new stimulus</p>
+          <p className="text-xs text-emerald-400 mb-2">Self() · z is the product</p>
           <p className="text-xl font-semibold mb-4">{z}</p>
           <div className="flex flex-wrap gap-3">
             <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
               Act
             </Link>
+            <button
+              onClick={() => {
+                const self = recordSelf();
+                setRemoteZ(self.z);
+                setOutcomes(readOutcomes());
+              }}
+              className="h-11 px-5 rounded-full border border-zinc-700 text-sm"
+            >
+              Record Self()
+            </button>
             <a
               href="https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/latest-z.json"
               target="_blank"
