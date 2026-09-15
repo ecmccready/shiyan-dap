@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
-import { readZ } from "@/lib/outcomes";
+import { Self, readOutcomes, readZ } from "@/lib/outcomes";
 
 const chips = [
   { label: "Buy", href: "/nfts" },
@@ -20,25 +20,22 @@ export default function BotPage() {
   const [log, setLog] = useState<string[]>([]);
 
   useEffect(() => {
-    const local = readZ();
-    setZ(local);
-    setLog([
-      "I am the Grok Bot. Explore, Buy, Sell, or Trade Music and AI content.",
-      "B reference row is the non-founder RETURN in founder-z.",
-      "z: " + local,
-    ]);
+    const self = Self(readOutcomes());
+    const hubThen = (hub?: string) => {
+      const next = self.z || hub || readZ();
+      setZ(next);
+      setLog([
+        "Self() closed the loop from observed state.",
+        "A y=" + self.yA + " e=" + self.eA,
+        "B y=" + self.yB + " e=" + self.eB + " " + self.B,
+        "z: " + next,
+      ]);
+      window.localStorage.setItem("shiyan-z", next);
+    };
+    hubThen();
     fetch("/api/memory")
       .then((r) => r.json())
-      .then((data) => {
-        if (!data?.z) return;
-        setZ(data.z);
-        setLog([
-          "I am the Grok Bot. Explore, Buy, Sell, or Trade Music and AI content.",
-          "B reference row is the non-founder RETURN in founder-z.",
-          "z from Hub: " + data.z,
-        ]);
-        window.localStorage.setItem("shiyan-z", data.z);
-      })
+      .then((data) => hubThen(data?.z))
       .catch(() => {});
   }, []);
 
@@ -46,7 +43,8 @@ export default function BotPage() {
     e.preventDefault();
     const text = input.trim();
     if (!text) return;
-    setLog((rows) => [...rows, "You: " + text, "z: " + z]);
+    const self = Self(readOutcomes());
+    setLog((rows) => [...rows, "You: " + text, "Self() z: " + (self.z || z)]);
     setInput("");
   };
 
@@ -54,10 +52,10 @@ export default function BotPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Act" />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">DO</p>
+        <p className="text-emerald-400 mb-3">DO · Self()</p>
         <h1 className="text-3xl font-bold mb-3">Grok Bot</h1>
         <p className="text-zinc-400 mb-8">
-          Explore, Buy, Sell, or Trade Music and AI content. z comes from Learn and Hugging Face.
+          Next best action is the product of Self(). No new stimulus.
         </p>
         <div className="flex flex-wrap gap-2 mb-8">
           {chips.map((chip) => (

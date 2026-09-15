@@ -10,8 +10,22 @@ Shiyan is a closed-loop economic decision system for creative assets.
 
 It converts creative activity into measurable economic state transitions and uses those transitions to name the next action.
 
-Music is the first test environment, not the product boundary.  
+The product is z from Self(). Music is the first test environment, not the product boundary.  
 It is not a music-AI tool. It is not a SaaS dashboard.
+
+## Self()
+
+    Self() = π(Y, resolveB(history))
+
+Self() reads observed state only. It does not inject a market event.
+
+End to end from existing evidence:
+
+    A → payment → result
+    B → payment → returned result
+    measurement → internal resolution → Self() → z = Hold
+
+z is the next best action. Hold is a resolution.
 
 ## Feedback loop
 
@@ -26,8 +40,8 @@ It is not a music-AI tool. It is not a SaaS dashboard.
 | Measurement | OutcomeTransition |
 | Reference rₜ | settlement target = 1 |
 | Error eₜ | rₜ − yₜ = `errorSignal` |
-| Controller π | `pairZ` + `resolveB` |
-| Next action zₜ | π(Yₜ, Bₜ) |
+| Controller π | `Self()` |
+| Next action zₜ | Self().z |
 | Learning | not shipped |
 
 Causal order: Action → observed consequence. Not data → prediction.
@@ -40,7 +54,7 @@ The valuable asset is:
 
 | Level | Question | Status |
 |---|---|---|
-| 1 Mechanical | Can the loop run: action → measurement → e → z → next action? | Proven 15 Sep 2026. A e=0. B resolved from existing RETURN. z = Hold. No new stimulus. |
+| 1 Mechanical | Can the loop run: action → measurement → e → Self() → z? | Proven 15 Sep 2026. A e=0. B resolved from existing RETURN. z = Hold. No new stimulus. |
 | 2 Economic | Did a controlled action produce a real measurable economic consequence? | Partial. Founder-controlled live $1 settlements exist. A second non-payment Y bit is not yet independently observed. |
 | 3 Independent market | Does the loop work when the outcome is not under founder control? | Not proven. External B is not required to keep building Level 1–2. It is required to claim demand. |
 
@@ -49,7 +63,7 @@ Do not manufacture B. Simulate A/B is not Level 3.
 B is resolved when measured state produces a next action without a new external market event.
 
     B_{t+1} = f(B_t, ΔY)
-    z_t = π(Y_t, B_{t+1})
+    z_t = Self()
 
 | B state | Resolution | z |
 |---|---|---|
@@ -65,7 +79,7 @@ Hold is a resolution. Resolution is not success and is not independent demand.
 
 Not another page. Not a simulated buyer.
 
-Take the existing A transaction. Record a second genuine state transition under a controlled action. Write it to `founder-z`. Let z name the next action.
+Take the existing A transaction. Record a second genuine state transition under a controlled action. Write it to `founder-z`. Let Self() name z.
 
 That is Level 2. Level 3 waits for an outcome you do not control.
 
@@ -75,8 +89,8 @@ That is Level 2. Level 3 waits for an outcome you do not control.
 |---|---|---|
 | Create | /upload | ingest state |
 | Prove | /nfts | actuator / payment |
-| Learn | /measurements | sensor / error / resolve B / z |
-| Act | /bot | consume z |
+| Learn | /measurements | sensor / error / resolve B / Self() |
+| Act | /bot | speak Self().z |
 
     Y = (settlement, acquisition, audience_response, conversion, revenue, retention)
     y = f(Y) = settlement

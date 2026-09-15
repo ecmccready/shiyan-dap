@@ -1,6 +1,7 @@
 export type Bit = 0 | 1;
 export type AgentX = "A" | "B";
 export type BResolution = "resolved" | "unresolved" | "positive" | "negative" | "unknown";
+export type TransitionClass = "positive" | "negative" | "no_movement" | "maintained";
 
 export type YVector = {
   settlement: Bit;
@@ -18,8 +19,6 @@ export type BState = {
   resolution: BResolution;
   z: string;
 };
-
-export type TransitionClass = "positive" | "negative" | "no_movement" | "maintained";
 
 export type OutcomeTransition = {
   measurement_id: string;
@@ -141,6 +140,24 @@ export function pairZ(yA: YVector, yB: YVector, returned = false): string {
   return "Neither is 1. Prove, then Buy.";
 }
 
+export function Self(outcomes: OutcomeTransition[] = readOutcomes()) {
+  const b = resolveB(outcomes);
+  const liveA = outcomes.filter((row) => row.agent.includes("Agent A") && !row.simulated).pop();
+  const liveB = outcomes
+    .filter((row) => row.agent.includes("Agent B") && !row.simulated && row.y_after.settlement === 1)
+    .pop();
+  const yA = liveA?.y_after || ZERO;
+  const yB = liveB?.y_after || ZERO;
+  return {
+    yA: f(yA),
+    eA: errorSignal(yA),
+    yB: f(yB),
+    eB: errorSignal(yB),
+    B: b.resolution,
+    z: b.resolution === "resolved" ? "B returned. Hold." : pairZ(yA, yB, b.returned),
+  };
+}
+
 export function readOutcomes(): OutcomeTransition[] {
   if (typeof window === "undefined") return [];
   try {
@@ -151,9 +168,7 @@ export function readOutcomes(): OutcomeTransition[] {
 }
 
 export function nextAction(outcomes: OutcomeTransition[]): string {
-  return resolveB(outcomes).z === "Hold."
-    ? "B returned. Hold."
-    : pairZ(ZERO, ZERO, resolveB(outcomes).returned);
+  return Self(outcomes).z;
 }
 
 export function persistOutcome(row: OutcomeTransition, z = "") {
@@ -192,7 +207,7 @@ export function recordOutcome(input: {
     timestamp: new Date().toISOString(),
   };
   const all = [...readOutcomes(), row];
-  const z = pairZ(row.y_after, row.y_after, resolveB(all).returned);
+  const z = Self(all).z;
   if (typeof window !== "undefined") {
     window.localStorage.setItem(KEY, JSON.stringify(all));
     window.localStorage.setItem(LAST, z);
@@ -249,14 +264,14 @@ export function simulatePair(vertical: string, action: string, assetId: string) 
 
 export function getSelfImprovementMetrics() {
   const rows = readOutcomes();
-  const b = resolveB(rows);
+  const self = Self(rows);
   return {
     count: rows.length,
     positive: rows.filter((r) => r.transition_class === "positive").length,
     negative: rows.filter((r) => r.transition_class === "negative").length,
     maintained: rows.filter((r) => r.transition_class === "maintained").length,
     no_movement: rows.filter((r) => r.transition_class === "no_movement").length,
-    b_resolution: b.resolution,
-    z: b.resolution === "resolved" ? "B returned. Hold." : nextAction(rows),
+    b_resolution: self.B,
+    z: self.z,
   };
 }
