@@ -158,6 +158,25 @@ export function Self(outcomes: OutcomeTransition[] = readOutcomes()) {
   };
 }
 
+export function recordSelf() {
+  const self = Self();
+  const settled = yFromAsset("settled");
+  const row = recordOutcome({
+    asset_id: "self_loop",
+    action: "SELF",
+    y_before: settled,
+    y_after: settled,
+    vertical: "music",
+    agent: "Self()",
+    simulated: false,
+  });
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(LAST, self.z);
+  }
+  persistOutcome(row, self.z);
+  return self;
+}
+
 export function readOutcomes(): OutcomeTransition[] {
   if (typeof window === "undefined") return [];
   try {
