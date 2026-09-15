@@ -23,24 +23,41 @@ It is not a music-AI tool. It is not a SaaS dashboard. Music is the first enviro
 | Plant | real market / creative system |
 | Output yₜ | observed outcome |
 | Measurement | OutcomeTransition |
-| Reference rₜ | target; settlement target is 1 |
-| Error eₜ | rₜ − yₜ; shipped as `errorSignal` / `gapToOne` |
-| Controller π | pairZ(A, B, returned) |
-| Next action zₜ | π(Sₜ, uₜ, eₜ) |
-| Learning | not shipped; would update π from closed-loop history |
+| Reference rₜ | settlement target = 1 |
+| Error eₜ | rₜ − yₜ = `errorSignal` |
+| Controller π | `pairZ` + `resolveB` |
+| Next action zₜ | π(Yₜ, Bₜ) |
+| Learning | not shipped |
 
-Causal order:
-
-    Action → observed consequence
-
-not
-
-    data → prediction
-
-Shiyan measures whether successive actions reduce the distance between an asset's actual outcome and its reference.
+Causal order: Action → observed consequence. Not data → prediction.
 
     e = 1  substantial deviation
     e = 0  settlement reached reference
+
+## B resolution
+
+B is resolved when measured state produces a next action without a new external market event.
+
+    B_{t+1} = f(B_t, ΔY)
+    z_t = π(Y_t, B_{t+1})
+
+| B state | Resolution | z |
+|---|---|---|
+| returned + stable | resolved | Hold |
+| returned + incomplete | unresolved | Measure |
+| returned + improving | positive | Continue |
+| returned + deteriorating | negative | Correct |
+| no evidence | unknown | Observe |
+
+Hold is a resolution. Resolution is not success. Do not manufacture another B payment to move z.
+
+Proven 15 Sep 2026 on `/measurements` from existing RETURN + maintained + settlement 1:
+
+- A: r 1 · y 1 · e 0
+- B: r 1 · y 1 · e 0 · resolved
+- z: B returned. Hold.
+
+No new stimulus was injected.
 
 ## Definition
 
@@ -51,13 +68,9 @@ Settlement is 1 only when a live payment reaches `settled`.
     Y_t --x_t--> Y_{t+1}
     y_t = f(Y_t) = settlement
     e_t = 1 - y_t
-    z_t = pairZ(A, B, returned)
+    z_t = pairZ(A, resolveB(history))
 
-π is a rule. z* is not shipped.
-
-Simulate A/B ≠ B.
-
-The environment is not a thermostat. Same action does not guarantee the same outcome. The plant is unknown. The reference can change. Measurement can be delayed. Multiple actions interact. That is why B must be an independent transaction, not a simulation.
+π is a rule. z* is not shipped. Simulate A/B ≠ B.
 
 ## Control layer
 
@@ -66,18 +79,14 @@ The environment is not a thermostat. Same action does not guarantee the same out
 | Seat | Meaning | Status |
 |---|---|---|
 | A | known successful transaction | live $1 · Music · e=0 |
-| B | independent test transaction | instrument live; independent buyer not proven |
+| B | measured return state | resolved from existing evidence · 15 Sep 2026 |
 | z | observed relationship | latest-z.json = B returned. Hold. |
 
 pairZ:
 
 - A=1 B=0 → real B payment
-- A=1 B=1 → hold
+- A=1 B=1 + resolved → Hold
 - A=0 B=0 → Prove, then Buy
-
-The valuable asset is not the UI. It is the closed-loop record: asset → action → conditions → measurement → outcome → next action → whether e fell.
-
-Do not add features. Complete A → B → z with a real external buyer and preserve the evidence.
 
 ## Loop
 
@@ -85,15 +94,17 @@ Do not add features. Complete A → B → z with a real external buyer and prese
 |---|---|---|
 | Create | /upload | ingest state |
 | Prove | /nfts | actuator / payment |
-| Learn | /measurements | sensor / error / z |
+| Learn | /measurements | sensor / error / resolve B / z |
 | Act | /bot | consume z |
+
+Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/latest-z.json
 
 Domains declared: Music, AI Content, Animation, Games, eSports, Real Estate.  
 Only Music has live settlement.
 
 ## What is not claimed
 
-- B is not yet a proven independent buyer
+- B resolved ≠ independent non-founder identity proven
 - Fit is not a shipped metric
 - no trained controller z*
 - Simulate A/B is not demand
