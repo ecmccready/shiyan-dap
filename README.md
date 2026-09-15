@@ -8,80 +8,43 @@ Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z
 
 Shiyan is a closed-loop economic decision system for creative assets.
 
-It converts creative activity into measurable economic state transitions and uses those transitions to name the next action.
+You do not tell Shiyan what B is. computeB() does.  
+You do not tell it what happened. The measurement records z.  
+You do not tell it what to do next. The controller resolves the next action.  
+The market is a later reality check.
 
-The product is z from Self(). Music is the first test environment, not the product boundary.  
-It is not a music-AI tool. It is not a SaaS dashboard.
+The product is z from Self(). Music is the first test environment, not the product boundary.
 
-## Self()
+## Endogenous B
 
-    Self() = π(Y, resolveB(history))
+    A → measurement → z → e → B
+    B_{t+1} = controller(state_t, z_t, e_t)
 
-Self() reads observed state only. It does not inject a market event.
+You do not choose B₁ or B₂. Code does.
 
-    A → payment → result
-    B → payment → returned result
-    measurement → internal resolution → Self() → z = Hold
-
-## Feedback loop
-
-    State → Control input → Measurement → Output → Error → Next action
-
-| Control concept | Shiyan |
+| Milestone | Alone? |
 |---|---|
-| State Sₜ | asset + measured history |
-| Input uₜ | action taken before the next measurement |
-| Plant | real market / creative system |
-| Output yₜ | observed outcome |
-| Measurement | OutcomeTransition |
-| Reference rₜ | settlement target = 1 |
-| Error eₜ | rₜ − yₜ = `errorSignal` |
-| Controller π | `Self()` |
-| Next action zₜ | Self().z |
-| Learning | not shipped |
+| Deterministic B generation | Yes |
+| B generated from prior z | Yes |
+| Closed-loop iteration | Yes |
+| Automated next-action | Yes |
+| Experimental convergence | Yes |
+| Independent market validation | No |
+| Independent buyer | No |
 
-The valuable asset is:
-
-    asset → action → conditions → measurement → outcome → next action → whether e fell
+External $1 is a validation layer. The loop does not wait on it.
 
 ## Three proof levels
 
 | Level | Question | Status |
 |---|---|---|
-| 1 Mechanical | Can the loop run: action → measurement → e → Self() → z? | Proven 15 Sep 2026. SELF rows on Hub. z = Hold. |
-| 2 Economic | Did a controlled action produce a real measurable non-payment Y bit? | Proven 15 Sep 2026. Founder listen on Shiyan Yishu. audience_response 0→1. Settlement stayed 1. |
-| 3 Independent market | Does the loop work when the outcome is not under founder control? | Not proven. Do not manufacture B. |
+| 1 Mechanical | Can the loop run without a new event? | Proven. Self() → z = Hold. |
+| 2 Economic | Non-payment Y bit on existing A? | Proven. OBSERVE_AUDIENCE audience 0→1. |
+| 3 Independent market | Outcome you do not control? | Not proven. |
 
-Level 2 evidence:
+Level 2 file:
 
 https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/outcome-m_1789501359300.json
-
-    action: OBSERVE_AUDIENCE
-    asset: cl_shiyan_yishu_001
-    settlement: 1 → 1
-    audience_response: 0 → 1
-    simulated: false
-    z: B returned. Hold.
-
-A founder listen is Level 2. It is not independent demand.
-
-B is resolved when measured state produces a next action without a new external market event.
-
-| B state | Resolution | z |
-|---|---|---|
-| returned + stable | resolved | Hold |
-| returned + incomplete | unresolved | Measure |
-| returned + improving | positive | Continue |
-| returned + deteriorating | negative | Correct |
-| no evidence | unknown | Observe |
-
-Hold is a resolution. Resolution is not success and is not Level 3.
-
-## Next experiment
-
-Not another page. Not another listen. Not a simulated buyer.
-
-Level 3 waits for an outcome you do not control.
 
 ## Loop
 
@@ -89,18 +52,14 @@ Level 3 waits for an outcome you do not control.
 |---|---|---|
 | Create | /upload | ingest state |
 | Prove | /nfts | actuator / payment |
-| Learn | /measurements | sensor / Record listen / Record Self() |
+| Learn | /measurements | sensor / computeB / Self() |
 | Act | /bot | speak Self().z |
-| Outcomes | /outcomes | persist ledger to Hub |
+| Outcomes | /outcomes | persist to Hub |
 
     Y = (settlement, acquisition, audience_response, conversion, revenue, retention)
     y = f(Y) = settlement
     e = 1 − y
-
-Settlement is 1 only when a live payment reaches `settled`.
-
-Domains declared: Music, AI Content, Animation, Games, eSports, Real Estate.  
-Only Music has live settlement.
+    B = computeB(state, z, e)
 
 ## What is not claimed
 
@@ -109,4 +68,3 @@ Only Music has live settlement.
 - no trained controller z*
 - Simulate A/B is not demand
 - a founder listen is not audience demand
-- non-music domains are not live markets

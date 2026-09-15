@@ -20,6 +20,14 @@ export type BState = {
   z: string;
 };
 
+export type ComputedB = {
+  step: "B1" | "B2";
+  action: "HOLD" | "MEASURE" | "PROVE" | "WAIT_EXTERNAL";
+  e: Bit;
+  z: string;
+  source: string;
+};
+
 export type OutcomeTransition = {
   measurement_id: string;
   asset_id: string;
@@ -168,6 +176,23 @@ export function Self(outcomes: OutcomeTransition[] = readOutcomes()) {
   };
 }
 
+export function computeB(outcomes: OutcomeTransition[] = readOutcomes()): ComputedB {
+  const self = Self(outcomes);
+  const audience = outcomes.some((row) => !row.simulated && row.action === "OBSERVE_AUDIENCE");
+  const step: "B1" | "B2" = audience ? "B2" : "B1";
+
+  if (self.B === "resolved" && self.eA === 0) {
+    return { step, action: "HOLD", e: self.eA, z: self.z, source: "Self() + resolveB" };
+  }
+  if (self.eA === 0 && self.yB === 0) {
+    return { step, action: "WAIT_EXTERNAL", e: self.eA, z: self.z, source: "A=1 B unset" };
+  }
+  if (self.eA === 1) {
+    return { step, action: "PROVE", e: self.eA, z: self.z, source: "settlement off reference" };
+  }
+  return { step, action: "MEASURE", e: self.eA, z: self.z, source: "state incomplete" };
+}
+
 export function recordSelf() {
   const self = Self();
   const settled = yFromAsset("settled");
@@ -311,6 +336,7 @@ export function simulatePair(vertical: string, action: string, assetId: string) 
 export function getSelfImprovementMetrics() {
   const rows = readOutcomes();
   const self = Self(rows);
+  const b = computeB(rows);
   return {
     count: rows.length,
     positive: rows.filter((r) => r.transition_class === "positive").length,
@@ -318,6 +344,7 @@ export function getSelfImprovementMetrics() {
     maintained: rows.filter((r) => r.transition_class === "maintained").length,
     no_movement: rows.filter((r) => r.transition_class === "no_movement").length,
     b_resolution: self.B,
+    computed_b: b.action,
     z: self.z,
   };
 }

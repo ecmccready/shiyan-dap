@@ -6,6 +6,7 @@ import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, readLedger } from "@/lib/ledger";
 import {
   OutcomeTransition,
+  computeB,
   errorSignal,
   f,
   pairZ,
@@ -47,6 +48,7 @@ export default function LearnPage() {
   const clusterB = outcomes.filter((row) => row.agent.includes("Agent B"));
   const liveBRow = clusterB.filter((row) => !row.simulated && row.y_after.settlement === 1).pop();
   const bState = resolveB(outcomes);
+  const computed = computeB(outcomes);
   const yA = yFromAsset(founder[0]?.state || "listed");
   const yB = liveBRow ? liveBRow.y_after : ZERO;
   const localZ = pairZ(yA, yB, bState.returned);
@@ -93,8 +95,7 @@ export default function LearnPage() {
         <p className="text-xs text-emerald-400 mb-2">Experimental / control layer</p>
         <h1 className="text-3xl font-bold mb-3">Learn</h1>
         <p className="text-zinc-400 mb-8">
-          A is the known successful transaction. B is resolved from existing evidence.
-          Level 2 is one listen on Shiyan Yishu, not a new payment.
+          You do not choose B. computeB() does. External $1 is validation later.
         </p>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-start mb-8">
           <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6">
@@ -154,13 +155,15 @@ export default function LearnPage() {
           </div>
           <div className="flex items-center justify-center text-2xl font-semibold text-zinc-500 pt-24">+</div>
           <div className="rounded-2xl border border-dashed border-zinc-600 bg-zinc-900/40 p-6">
-            <p className="text-xs text-emerald-400 mb-2">Experiment · B · {bState.resolution}</p>
-            <h2 className="text-xl font-semibold mb-2">Agent B · independent transaction</h2>
+            <p className="text-xs text-emerald-400 mb-2">
+              Experiment · computed {computed.step} · {computed.action}
+            </p>
+            <h2 className="text-xl font-semibold mb-2">B from state, z, e</h2>
             <p className="text-sm text-zinc-400 mb-4">
-              r 1 · y {f(yB)} · e {errorSignal(yB)} · B {bState.resolution}
+              r 1 · y {f(yB)} · e {errorSignal(yB)} · {bState.resolution}
             </p>
             <p className="text-sm text-zinc-500 mb-6">
-              B is resolved from existing evidence. Do not inject another event.
+              You are the operator. Do not pick B manually.
             </p>
             <div className="grid grid-cols-2 gap-2 mb-6">
               {crm.map((step) => (
@@ -187,8 +190,14 @@ export default function LearnPage() {
           </div>
         </div>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-          <p className="text-xs text-emerald-400 mb-2">Self() · z is the product</p>
-          <p className="text-xl font-semibold mb-4">{z}</p>
+          <p className="text-xs text-emerald-400 mb-2">Self() · computeB() · operator view</p>
+          <p className="text-xl font-semibold mb-3">{z}</p>
+          <p className="text-sm text-zinc-400 mb-2">
+            Computed {computed.step}: {computed.action} · e {computed.e} · {computed.source}
+          </p>
+          <p className="text-sm text-zinc-500 mb-4">
+            Given current state and observed z, this is the next action.
+          </p>
           <div className="flex flex-wrap gap-3">
             <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
               Act
