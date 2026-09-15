@@ -70,6 +70,15 @@ export function classify(before: Bit, after: Bit): TransitionClass {
   return "maintained";
 }
 
+export function classifyVector(before: YVector, after: YVector): TransitionClass {
+  const settle = classify(before.settlement, after.settlement);
+  if (settle === "positive" || settle === "negative") return settle;
+  if (before.audience_response === 0 && after.audience_response === 1) return "positive";
+  if (before.audience_response === 1 && after.audience_response === 0) return "negative";
+  if (after.settlement === 1) return "maintained";
+  return "no_movement";
+}
+
 export function delta(before: YVector, after: YVector) {
   return {
     settlement: after.settlement - before.settlement,
@@ -153,6 +162,7 @@ export function Self(outcomes: OutcomeTransition[] = readOutcomes()) {
     eA: errorSignal(yA),
     yB: f(yB),
     eB: errorSignal(yB),
+    audience: yA.audience_response,
     B: b.resolution,
     z: b.resolution === "resolved" ? "B returned. Hold." : pairZ(yA, yB, b.returned),
   };
@@ -175,6 +185,23 @@ export function recordSelf() {
   }
   persistOutcome(row, self.z);
   return self;
+}
+
+export function recordAudience(asset_id: string) {
+  const prior = readOutcomes()
+    .filter((row) => row.asset_id === asset_id && !row.simulated)
+    .pop();
+  const before = prior?.y_after || yFromAsset("settled");
+  const after: YVector = { ...before, audience_response: 1 };
+  return recordOutcome({
+    asset_id,
+    action: "OBSERVE_AUDIENCE",
+    y_before: before,
+    y_after: after,
+    vertical: "music",
+    agent: "Agent A · ECMcCready",
+    simulated: false,
+  });
 }
 
 export function readOutcomes(): OutcomeTransition[] {
@@ -218,7 +245,7 @@ export function recordOutcome(input: {
     y_before: input.y_before,
     y_after: input.y_after,
     delta_y: delta(input.y_before, input.y_after),
-    transition_class: classify(input.y_before.settlement, input.y_after.settlement),
+    transition_class: classifyVector(input.y_before, input.y_after),
     confidence: 1,
     causal_confidence: input.simulated ? 0.1 : 0.2,
     measurement_window: "session",
