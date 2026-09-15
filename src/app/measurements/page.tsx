@@ -10,6 +10,7 @@ import {
   f,
   pairZ,
   readOutcomes,
+  recordAudience,
   recordOutcome,
   recordSelf,
   resolveB,
@@ -93,7 +94,7 @@ export default function LearnPage() {
         <h1 className="text-3xl font-bold mb-3">Learn</h1>
         <p className="text-zinc-400 mb-8">
           A is the known successful transaction. B is resolved from existing evidence.
-          Do not inject another event.
+          Level 2 is one listen on Shiyan Yishu, not a new payment.
         </p>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-start mb-8">
           <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6">
@@ -105,18 +106,32 @@ export default function LearnPage() {
             <div className="space-y-3 mb-6">
               {founder.map((asset) => {
                 const y = yFromAsset(asset.state);
+                const isFirst = asset.title.toLowerCase().includes("yishu");
                 return (
                   <div key={asset.id} className="border border-zinc-800 rounded-xl p-4">
                     <p className="font-medium">{asset.title}</p>
                     <p className="text-sm text-zinc-500 mb-3">
                       {asset.state} · Y {y.settlement}
                     </p>
-                    <button
-                      onClick={() => measureA(asset)}
-                      className="h-10 px-4 rounded-full bg-emerald-600 text-sm"
-                    >
-                      Measure A
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => measureA(asset)}
+                        className="h-10 px-4 rounded-full bg-emerald-600 text-sm"
+                      >
+                        Measure A
+                      </button>
+                      {isFirst ? (
+                        <button
+                          onClick={() => {
+                            recordAudience(asset.id);
+                            setOutcomes(readOutcomes());
+                          }}
+                          className="h-10 px-4 rounded-full border border-zinc-700 text-sm"
+                        >
+                          Record listen
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 );
               })}
@@ -124,11 +139,15 @@ export default function LearnPage() {
             <div className="space-y-2">
               {clusterA
                 .filter((row) => !row.simulated)
-                .slice(-6)
+                .slice(-8)
                 .reverse()
                 .map((row) => (
                   <p key={row.measurement_id} className="text-sm text-zinc-400">
-                    Y {row.y_before.settlement}→{row.y_after.settlement} · {row.action} · {row.transition_class}
+                    Y {row.y_before.settlement}→{row.y_after.settlement}
+                    {row.action === "OBSERVE_AUDIENCE"
+                      ? " · audience " + row.y_before.audience_response + "→" + row.y_after.audience_response
+                      : ""}{" "}
+                    · {row.action} · {row.transition_class}
                   </p>
                 ))}
             </div>
