@@ -1,5 +1,6 @@
 export type Bit = 0 | 1;
 export type AgentX = "A" | "B";
+export type BResolution = "resolved" | "unresolved" | "positive" | "negative" | "unknown";
 
 export type YVector = {
   settlement: Bit;
@@ -8,6 +9,14 @@ export type YVector = {
   conversion: Bit;
   revenue: Bit;
   retention: Bit;
+};
+
+export type BState = {
+  returned: boolean;
+  settlement: Bit;
+  class: TransitionClass | "none";
+  resolution: BResolution;
+  z: string;
 };
 
 export type TransitionClass = "positive" | "negative" | "no_movement" | "maintained";
@@ -81,13 +90,54 @@ export function gapToOne(y: YVector): Bit {
   return f(y) === 1 ? 0 : 1;
 }
 
+export function errorSignal(y: YVector, reference: Bit = 1): Bit {
+  return (reference - f(y) === 0 ? 0 : 1) as Bit;
+}
+
+export function resolveB(outcomes: OutcomeTransition[] = readOutcomes()): BState {
+  const live = outcomes.filter((row) => row.agent.includes("Agent B") && !row.simulated);
+  const returned =
+    live.some((row) => row.action === "RETURN") ||
+    (typeof window !== "undefined" && window.localStorage.getItem("shiyan-b-return") === "1");
+  const last = live[live.length - 1];
+
+  if (!last) {
+    return { returned: false, settlement: 0, class: "none", resolution: "unknown", z: "Observe." };
+  }
+
+  const settlement = last.y_after.settlement;
+  const cls = last.transition_class;
+
+  if (returned && settlement === 1 && cls === "maintained") {
+    return { returned: true, settlement, class: cls, resolution: "resolved", z: "Hold." };
+  }
+  if (returned && cls === "positive") {
+    return { returned: true, settlement, class: cls, resolution: "positive", z: "Continue." };
+  }
+  if (returned && cls === "negative") {
+    return { returned: true, settlement, class: cls, resolution: "negative", z: "Correct." };
+  }
+  if (returned) {
+    return { returned: true, settlement, class: cls, resolution: "unresolved", z: "Measure." };
+  }
+  if (settlement === 1) {
+    return { returned: false, settlement, class: cls, resolution: "unresolved", z: "Measure." };
+  }
+  return { returned: false, settlement, class: cls, resolution: "unknown", z: "Observe." };
+}
+
 export function pairZ(yA: YVector, yB: YVector, returned = false): string {
+  const b = resolveB();
+  if (b.resolution === "resolved") return "B returned. Hold.";
+  if (b.resolution === "positive") return "B improving. Continue.";
+  if (b.resolution === "negative") return "B deteriorating. Correct.";
+  if (b.resolution === "unresolved") return "B returned. Measure.";
   const a = f(yA);
-  const b = f(yB);
-  if (a === 1 && b === 1 && returned) return "B returned. Hold.";
-  if (a === 1 && b === 1) return "Both at 1. B should return and measure.";
-  if (a === 1 && b === 0) return "A is 1. Next best action is a real B payment.";
-  if (a === 0 && b === 1) return "B is 1. Measure A again.";
+  const liveB = f(yB);
+  if (a === 1 && liveB === 1 && returned) return "B returned. Hold.";
+  if (a === 1 && liveB === 1) return "Both at 1. Measure B from existing evidence.";
+  if (a === 1 && liveB === 0) return "A is 1. Next best action is a real B payment.";
+  if (a === 0 && liveB === 1) return "B is 1. Measure A again.";
   return "Neither is 1. Prove, then Buy.";
 }
 
@@ -101,22 +151,9 @@ export function readOutcomes(): OutcomeTransition[] {
 }
 
 export function nextAction(outcomes: OutcomeTransition[]): string {
-  const last = outcomes[outcomes.length - 1];
-  if (!last) return "Create, then Prove.";
-  if (last.action === "RETURN") return "B returned. Hold.";
-  if (last.action === "EXECUTE_SETTLEMENT" && last.agent.includes("Agent B")) {
-    return "Both at 1. B should return and measure.";
-  }
-  if (last.transition_class === "negative") {
-    return "Do not repeat " + last.action + " in " + last.vertical + ".";
-  }
-  if (last.transition_class === "positive") {
-    return "Repeat " + last.action + " on the next " + last.vertical + " asset.";
-  }
-  if (last.transition_class === "maintained") {
-    return "Hold. Measure " + last.vertical + " again after Act.";
-  }
-  return "Act on Prove. f(x) target is 1.";
+  return resolveB(outcomes).z === "Hold."
+    ? "B returned. Hold."
+    : pairZ(ZERO, ZERO, resolveB(outcomes).returned);
 }
 
 export function persistOutcome(row: OutcomeTransition, z = "") {
@@ -155,7 +192,7 @@ export function recordOutcome(input: {
     timestamp: new Date().toISOString(),
   };
   const all = [...readOutcomes(), row];
-  const z = nextAction(all);
+  const z = pairZ(row.y_after, row.y_after, resolveB(all).returned);
   if (typeof window !== "undefined") {
     window.localStorage.setItem(KEY, JSON.stringify(all));
     window.localStorage.setItem(LAST, z);
@@ -212,12 +249,14 @@ export function simulatePair(vertical: string, action: string, assetId: string) 
 
 export function getSelfImprovementMetrics() {
   const rows = readOutcomes();
+  const b = resolveB(rows);
   return {
     count: rows.length,
     positive: rows.filter((r) => r.transition_class === "positive").length,
     negative: rows.filter((r) => r.transition_class === "negative").length,
     maintained: rows.filter((r) => r.transition_class === "maintained").length,
     no_movement: rows.filter((r) => r.transition_class === "no_movement").length,
-    z: nextAction(rows),
+    b_resolution: b.resolution,
+    z: b.resolution === "resolved" ? "B returned. Hold." : nextAction(rows),
   };
 }

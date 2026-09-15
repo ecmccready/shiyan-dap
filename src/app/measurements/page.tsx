@@ -6,13 +6,12 @@ import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, readLedger } from "@/lib/ledger";
 import {
   OutcomeTransition,
+  errorSignal,
   f,
-  gapToOne,
   pairZ,
   readOutcomes,
-  recordBReturn,
   recordOutcome,
-  simulatePair,
+  resolveB,
   yFromAsset,
 } from "@/lib/outcomes";
 import { VERTICALS, readVertical } from "@/lib/verticles";
@@ -38,8 +37,6 @@ export default function LearnPage() {
   const [outcomes, setOutcomes] = useState<OutcomeTransition[]>([]);
   const [vertical, setVertical] = useState("music");
   const [action, setAction] = useState("INITIATE_TRADE");
-  const [liveB, setLiveB] = useState(false);
-  const [returnedFlag, setReturnedFlag] = useState(false);
   const [remoteZ, setRemoteZ] = useState("");
 
   const selected = VERTICALS.find((v) => v.id === vertical) || VERTICALS[0];
@@ -47,19 +44,19 @@ export default function LearnPage() {
   const clusterA = outcomes.filter((row) => row.agent.includes("Agent A"));
   const clusterB = outcomes.filter((row) => row.agent.includes("Agent B"));
   const liveBRow = clusterB.filter((row) => !row.simulated && row.y_after.settlement === 1).pop();
-  const returned =
-    returnedFlag || clusterB.some((row) => !row.simulated && row.action === "RETURN");
+  const bState = resolveB(outcomes);
   const yA = yFromAsset(founder[0]?.state || "listed");
   const yB = liveBRow ? liveBRow.y_after : ZERO;
-  const localZ = pairZ(yA, yB, returned);
-  const z = returned ? localZ : remoteZ || localZ;
+  const localZ = pairZ(yA, yB, bState.returned);
+  const z =
+    bState.resolution === "resolved"
+      ? "B returned. Hold."
+      : remoteZ || localZ;
 
   useEffect(() => {
     setVertical(readVertical());
     setAssets(readLedger());
     setOutcomes(readOutcomes());
-    setLiveB(window.localStorage.getItem("shiyan-b-live") === "1");
-    setReturnedFlag(window.localStorage.getItem("shiyan-b-return") === "1");
     fetch("/api/memory")
       .then((r) => r.json())
       .then((data) => {
@@ -75,12 +72,6 @@ export default function LearnPage() {
     if (selected?.actions?.[0]) setAction(selected.actions[0]);
   }, [selected]);
 
-  const refresh = () => {
-    setOutcomes(readOutcomes());
-    setLiveB(window.localStorage.getItem("shiyan-b-live") === "1");
-    setReturnedFlag(window.localStorage.getItem("shiyan-b-return") === "1");
-  };
-
   const measureA = (asset: LedgerAsset) => {
     const y_after = yFromAsset(asset.state);
     const prior = outcomes.filter((o) => o.asset_id === asset.id).pop();
@@ -93,7 +84,7 @@ export default function LearnPage() {
       agent: "Agent A · ECMcCready",
       simulated: false,
     });
-    refresh();
+    setOutcomes(readOutcomes());
   };
 
   return (
@@ -103,15 +94,15 @@ export default function LearnPage() {
         <p className="text-xs text-emerald-400 mb-2">Experimental / control layer</p>
         <h1 className="text-3xl font-bold mb-3">Learn</h1>
         <p className="text-zinc-400 mb-8">
-          A is the known successful transaction. B is the independent test. z is the observed relationship.
-          Simulate A/B is not B.
+          A is the known successful transaction. B is resolved from existing evidence.
+          Do not inject another event.
         </p>
         <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 items-start mb-8">
           <div className="rounded-2xl border border-emerald-700 bg-zinc-900/60 p-6">
             <p className="text-xs text-emerald-400 mb-2">Control · A · known successful</p>
             <h2 className="text-xl font-semibold mb-4">Agent A · ECMcCready</h2>
             <p className="text-sm text-zinc-500 mb-4">
-              f(A) {f(yA)} · gap {gapToOne(yA)}
+              r 1 · y {f(yA)} · e {errorSignal(yA)}
             </p>
             <div className="space-y-3 mb-6">
               {founder.map((asset) => {
@@ -147,11 +138,14 @@ export default function LearnPage() {
           <div className="flex items-center justify-center text-2xl font-semibold text-zinc-500 pt-24">+</div>
           <div className="rounded-2xl border border-dashed border-zinc-600 bg-zinc-900/40 p-6">
             <p className="text-xs text-emerald-400 mb-2">
-              Experiment · B · {liveB || liveBRow ? "reference payment seen" : "needs independent buyer"}
+              Experiment · B · {bState.resolution}
             </p>
             <h2 className="text-xl font-semibold mb-2">Agent B · independent transaction</h2>
             <p className="text-sm text-zinc-400 mb-4">
-              f(B) {f(yB)} · gap {gapToOne(yB)}
+              r 1 · y {f(yB)} · e {errorSignal(yB)} · B {bState.resolution}
+            </p>
+            <p className="text-sm text-zinc-500 mb-6">
+              B is resolved from existing evidence. Do not inject another event.
             </p>
             <div className="grid grid-cols-2 gap-2 mb-6">
               {crm.map((step) => (
@@ -164,38 +158,21 @@ export default function LearnPage() {
                 </Link>
               ))}
             </div>
-            <div className="flex flex-wrap gap-2 mb-6">
-              <button
-                onClick={() => {
-                  simulatePair(vertical, action, "sim_placeholder_b");
-                  refresh();
-                }}
-                className="h-11 px-5 rounded-full border border-zinc-600 text-sm"
-              >
-                Simulate B
-              </button>
-              <button
-                onClick={() => {
-                  recordBReturn();
-                  refresh();
-                }}
-                className="h-11 px-5 rounded-full bg-emerald-600 text-sm"
-              >
-                B returned
-              </button>
-            </div>
             <div className="space-y-2">
-              {clusterB.slice(-6).reverse().map((row) => (
-                <p key={row.measurement_id} className="text-sm text-zinc-500">
-                  Y {row.y_before.settlement}→{row.y_after.settlement} · {row.action}
-                  {row.simulated ? " · sim" : " · live"}
-                </p>
-              ))}
+              {clusterB
+                .filter((row) => !row.simulated)
+                .slice(-6)
+                .reverse()
+                .map((row) => (
+                  <p key={row.measurement_id} className="text-sm text-zinc-500">
+                    Y {row.y_before.settlement}→{row.y_after.settlement} · {row.action} · live
+                  </p>
+                ))}
             </div>
           </div>
         </div>
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-          <p className="text-xs text-emerald-400 mb-2">z = observed relationship · evidence on Hub</p>
+          <p className="text-xs text-emerald-400 mb-2">z = π(Y, B) · no new stimulus</p>
           <p className="text-xl font-semibold mb-4">{z}</p>
           <div className="flex flex-wrap gap-3">
             <Link href="/bot" className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
