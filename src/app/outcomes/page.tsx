@@ -19,6 +19,8 @@ export default function OutcomesPage() {
 
   const persist = async () => {
     const row =
+      rows.find((r) => !r.simulated && r.action === "OBSERVE_AUDIENCE") ||
+      rows.find((r) => !r.simulated && r.action === "SELF") ||
       rows.find((r) => !r.simulated && r.action === "RETURN") ||
       rows.find((r) => !r.simulated) ||
       rows[0];
@@ -74,12 +76,18 @@ export default function OutcomesPage() {
         </div>
         {note ? <p className="text-sm text-emerald-400 mb-6">{note}</p> : null}
         <div className="space-y-3">
-          {rows.slice().reverse().map((row) => (
-            <p key={row.measurement_id} className="text-sm text-zinc-400">
-              {row.agent} · {row.action} · Y {row.y_before.settlement}→{row.y_after.settlement}
-              {row.simulated ? " · sim" : " · live"}
-            </p>
-          ))}
+          {rows
+            .slice()
+            .reverse()
+            .map((row) => (
+              <p key={row.measurement_id} className="text-sm text-zinc-400">
+                {row.agent} · {row.action} · Y {row.y_before.settlement}→{row.y_after.settlement}
+                {row.action === "OBSERVE_AUDIENCE"
+                  ? " · audience " + row.y_before.audience_response + "→" + row.y_after.audience_response
+                  : ""}
+                {row.simulated ? " · sim" : " · live"}
+              </p>
+            ))}
         </div>
       </main>
     </div>
