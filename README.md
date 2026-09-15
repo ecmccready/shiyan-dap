@@ -8,81 +8,93 @@ Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z
 
 Shiyan converts creative activity into measurable economic state transitions and uses those transitions to name the next action.
 
-The product is not the catalog. The product is the agentic pipeline:
+Shiyan is a feedback system that connects assets to actions, measures the resulting outcomes, and uses those measurements to determine the next action.
 
-    creation → provenance → measurement → z → next market action
+It is not a music-AI tool. It is not a SaaS dashboard. Music is the first environment.
 
-Music is the first environment used to prove that pipeline. The same mechanics apply in any domain where an independent producer has to move a work from making it to market action.
+## Feedback loop
 
-Current domain references: Music, AI Content, Animation, Games, eSports, Real Estate.  
-Only Music has live payment and measurement. The others are declared seats, not proven verticals.
+    State → Control input → Measurement → Output → Error → Next action
 
-    x → f(x) → z → next action
+| Control concept | Shiyan |
+|---|---|
+| State Sₜ | asset + measured history |
+| Input uₜ | action taken before the next measurement |
+| Plant | real market / creative system |
+| Output yₜ | observed outcome |
+| Measurement | OutcomeTransition |
+| Reference rₜ | target; settlement target is 1 |
+| Error eₜ | rₜ − yₜ; shipped as `errorSignal` / `gapToOne` |
+| Controller π | pairZ(A, B, returned) |
+| Next action zₜ | π(Sₜ, uₜ, eₜ) |
+| Learning | not shipped; would update π from closed-loop history |
+
+Causal order:
+
+    Action → observed consequence
+
+not
+
+    data → prediction
+
+Shiyan measures whether successive actions reduce the distance between an asset's actual outcome and its reference.
+
+    e = 1  substantial deviation
+    e = 0  settlement reached reference
 
 ## Definition
 
-Creative activity is an action \(x\) a person takes on a work: upload, list, acquire, pay, return.
-
-An economic state is the vector \(Y\):
-
     Y = (settlement, acquisition, audience_response, conversion, revenue, retention)
 
-Each coordinate is 0 or 1. Settlement is 1 only when a live payment reaches `settled`.
+Settlement is 1 only when a live payment reaches `settled`.
 
-A state transition is
+    Y_t --x_t--> Y_{t+1}
+    y_t = f(Y_t) = settlement
+    e_t = 1 - y_t
+    z_t = pairZ(A, B, returned)
 
-    Y_t  --x_t-->  Y_{t+1}
+π is a rule. z* is not shipped.
 
-It is measurable when both vectors are written as an OutcomeTransition and stored in the browser and in `founder-z`.
-
-The next action is
-
-    z_t = π(Y_t, x_t)
-
-π today is `pairZ(A, B, returned)`. It is a rule, not a trained model.
-
-x is what the creator or buyer does. Y is whether money and state moved. z is what to do next because of that movement.
-
-x is an agent. f(x) is settlement. Target is 1. gap = 1 − f(x).  
-z is the paired result of A and B.  
-f(x) = 1 only when the transaction reaches settled.  
 Simulate A/B ≠ B.
 
-This does not say Shiyan predicts hits. It does not say Fit is proven. It does not say z* exists. It does not say non-music domains are live.
+The environment is not a thermostat. Same action does not guarantee the same outcome. The plant is unknown. The reference can change. Measurement can be delayed. Multiple actions interact. That is why B must be an independent transaction, not a simulation.
 
 ## Control layer
 
-`/measurements` is the experimental / control layer, not a dashboard.
+`/measurements` is the sensor. Prove is the actuator. Hub `founder-z` is the closed-loop history.
 
 | Seat | Meaning | Status |
 |---|---|---|
-| A | known successful transaction | live $1 on 13 Sep 2026 · Music |
+| A | known successful transaction | live $1 · Music · e=0 |
 | B | independent test transaction | instrument live; independent buyer not proven |
-| z | observed relationship | Hub `latest-z.json` = B returned. Hold. |
+| z | observed relationship | latest-z.json = B returned. Hold. |
 
 pairZ:
 
-- A=1 B=0 → next action is a real B payment
+- A=1 B=0 → real B payment
 - A=1 B=1 → hold
 - A=0 B=0 → Prove, then Buy
 
-Do not add features. Complete A → B → z with a real external buyer in Music and preserve the evidence. Other domains reuse the same Y and z when a live settlement exists there.
+The valuable asset is not the UI. It is the closed-loop record: asset → action → conditions → measurement → outcome → next action → whether e fell.
+
+Do not add features. Complete A → B → z with a real external buyer and preserve the evidence.
 
 ## Loop
 
 | Layer | Route | Function |
 |---|---|---|
-| Create | /upload | ingest a work |
-| Prove | /nfts | acquire / buy |
-| Learn | /measurements | measure outcomes |
+| Create | /upload | ingest state |
+| Prove | /nfts | actuator / payment |
+| Learn | /measurements | sensor / error / z |
 | Act | /bot | consume z |
 
-Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/latest-z.json
+Domains declared: Music, AI Content, Animation, Games, eSports, Real Estate.  
+Only Music has live settlement.
 
 ## What is not claimed
 
 - B is not yet a proven independent buyer
 - Fit is not a shipped metric
-- no trained policy z*
+- no trained controller z*
 - Simulate A/B is not demand
-- AI Content, Animation, Games, eSports, and Real Estate are not live markets
+- non-music domains are not live markets
