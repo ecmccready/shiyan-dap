@@ -30,6 +30,8 @@ The ecosystem is the loop plus the seats that can run it.
 | Grok fast | Low-latency orchestration and next-action language. |
 | Hy4 deep | Depth when the same Y, e, z need slower analysis. |
 | founder-z | Durable memory. Capital-allocation and model agnostic. |
+| Protocol | Native asset/measurement API. LangChain-shaped tools. No LangChain runtime. |
+| /protocol | Operator view of Y, e, B, z and the tool list. |
 
 Deterministic portability: Y, e, computeB, and z do not depend on which model is sitting in Act. Swap Grok fast or Hy4 deep. The ledger stays.
 
@@ -43,6 +45,7 @@ Multidomain capacity: the same controller is declared for Music, AI Content, Ani
 | B does not require manually supplied stimulus | Demonstrable now |
 | B feeds the next state/action | Demonstrable now |
 | z is derived from observed outcomes | Demonstrable |
+| Protocol asset record and native tools | Demonstrable now |
 | Outcomes reflect an independent market | Requires external validation |
 | The loop improves economic outcomes | Requires repeated evidence |
 | Grok / Hy4 as trained z* | Orchestration seats, not a shipped policy |
@@ -77,12 +80,31 @@ https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/outcome-m_1789501
 | Prove | /nfts | actuator / payment |
 | Learn | /measurements | sensor / computeB / Self() |
 | Act | /bot | Grok Bot · Grok fast / Hy4 deep seats |
-| Outcomes | /outcomes | persist to Hub |
+| Protocol | /protocol | operator view / tool list |
+| Outcomes | /api/memory | persist to Hub |
 
     Y = (settlement, acquisition, audience_response, conversion, revenue, retention)
     y = f(Y) = settlement
     e = 1 − y
     B = computeB(state, z, e)
+
+## Protocol
+
+Shiyan is the substrate. LangChain is an optional later adapter.
+
+    GET  /api/assets
+    GET  /api/assets/:id
+    GET  /api/assets/:id/history
+    POST /api/assets
+    POST /api/transactions
+    GET  /api/self
+    POST /api/self
+    GET  /api/tools
+    POST /api/tools
+
+Tools: register_asset, search_assets, inspect_asset, request_asset, execute_transaction, record_measurement, evaluate_outcome, observe_audience, self_loop.
+
+evaluate_outcome calls computeB(). Models do not name B.
 
 ## What is not claimed
 
@@ -92,3 +114,5 @@ https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/outcome-m_1789501
 - Simulate A/B is not demand
 - a founder listen is not audience demand
 - autonomy here means endogenous B-resolution, not an unsupervised market actor
+- LangChain is not the marketplace
+- /api/tools is not a trained policy
