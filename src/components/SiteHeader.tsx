@@ -15,6 +15,7 @@ const places = [
   { href: "/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
+  { href: "/protocol", label: "Protocol" },
 ];
 
 export default function SiteHeader({ section }: { section?: string }) {

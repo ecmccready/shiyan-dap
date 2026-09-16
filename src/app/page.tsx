@@ -40,9 +40,9 @@ export default function HomePage() {
       <main className="max-w-4xl mx-auto px-6 py-16">
         <h1 className="text-4xl font-bold mb-4">Creator work into market action.</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
-          Shiyan AI Assist is the AI system that helps an independent creator take a creation to release, audience response and next best action. Music is the first vertical.
+          Shiyan converts creative activity into measurable economic state transitions and uses those transitions to name the next action. Music is the first vertical. The product is z from Self().
         </p>
-        <div className="flex flex-wrap gap-3 mb-12">
+        <div className="flex flex-wrap gap-3 mb-6">
           {rails.map((rail) => (
             <Link
               key={rail.href}
@@ -52,6 +52,14 @@ export default function HomePage() {
               {rail.label}
             </Link>
           ))}
+        </div>
+        <div className="flex flex-wrap gap-3 mb-12">
+          <Link
+            href="/protocol"
+            className="h-12 px-6 rounded-full border border-emerald-700 text-sm inline-flex items-center"
+          >
+            Protocol
+          </Link>
         </div>
         <form onSubmit={send} className="flex flex-col sm:flex-row gap-3">
           <input
