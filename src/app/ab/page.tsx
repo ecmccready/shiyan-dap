@@ -29,26 +29,30 @@ export default function ABPage() {
     const result = runAB({ actor, action, asset_id: "ab_loop" });
     setZ(result.z);
     setBAction(result.computed_b.action);
-    setLog((rows) => [
-      `${actor} ${action} → z ${result.z} · B ${result.computed_b.action} · settlement unchanged`,
-      ...rows,
-    ].slice(0, 12));
+    setLog((rows) =>
+      [
+        `${actor} ${action} · seat ${result.seat} → z ${result.z} · computeB ${result.computed_b.action} · settlement unchanged · level3 false`,
+        ...rows,
+      ].slice(0, 12)
+    );
   };
 
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="A/B" />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">slice_v7 · architecture proof · not a market</p>
-        <h1 className="text-3xl font-bold mb-3">A acts. B responds.</h1>
+        <p className="text-emerald-400 mb-3">slice_v8 · controlled B · declared capacity</p>
+        <h1 className="text-3xl font-bold mb-3">A acts. Controlled B responds.</h1>
         <p className="text-zinc-400 mb-8">
-          Shiyan records the transition. Self() names z. Settlement stays off this page. Songs are not for sale here.
+          This seat can change z. It cannot write settlement. It is not an independent buyer. WAIT_EXTERNAL is correct while live B is unset.
         </p>
 
         <section className="bg-zinc-900/60 border border-emerald-800 rounded-2xl p-6 mb-6">
           <p className="text-xs text-emerald-400 mb-2">Self() · computeB()</p>
-          <p className="text-xl">{z || "Measure."}</p>
-          <p className="text-zinc-500 mt-2">Computed B {bAction} · level3 false</p>
+          <p className="text-xl">{z || "Observe."}</p>
+          <p className="text-zinc-500 mt-2">
+            Computed B {bAction} · live market B unset · level3 false
+          </p>
         </section>
 
         <div className="grid gap-6 md:grid-cols-2 mb-8">
@@ -67,7 +71,7 @@ export default function ABPage() {
             </div>
           </section>
           <section className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-            <p className="text-xs text-emerald-400 mb-2">Agent B · responds</p>
+            <p className="text-xs text-emerald-400 mb-2">Controlled B · session · not Level 3</p>
             <div className="flex flex-wrap gap-2">
               {B_BUTTONS.map((action) => (
                 <button
@@ -101,8 +105,8 @@ export default function ABPage() {
           <Link href="/protocol" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
             Protocol
           </Link>
-          <Link href="/bot" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
-            Act
+          <Link href="/nfts" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
+            Prove
           </Link>
         </div>
       </main>
