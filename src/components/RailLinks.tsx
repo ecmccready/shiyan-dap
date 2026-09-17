@@ -7,6 +7,8 @@ const rails = [
   { href: "/tokens", label: "Tokenize" },
   { href: "/protocol", label: "Protocol" },
   { href: "/ab", label: "A/B" },
+  { href: "/validation", label: "Validate" },
+  { href: "/ping", label: "Ping" },
   { href: "/bot", label: "Grok Bot" },
 ];
 
