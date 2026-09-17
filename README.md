@@ -12,8 +12,6 @@ Repo: https://github.com/ecmccready/shiyan-dap
 Evidence: https://huggingface.co/datasets/shiyan-dap/founder-z  
 Models: https://huggingface.co/shiyan-dap
 
-Shiyan converts creative activity into measurable economic state transitions and uses those transitions to name the next action.
-
 You do not tell Shiyan what B is. computeB() does.  
 You do not tell it what happened. The measurement records z.  
 You do not tell it what to do next. The controller resolves the next action.
@@ -21,125 +19,100 @@ You do not tell it what to do next. The controller resolves the next action.
 The product is z from Self().
 B is computed.
 Market validity of B is not demonstrated.
+External reality measures the result. It does not determine B.
+
+## What just landed
+
+Ping Reference is live.
+
+    PING absent  → observed = 0
+    PING received → observed = 1
+
+Create a reference on /ping. Open /api/ping/<id> from another tab or device.
+The server sets observed because the request arrived.
+The request cannot specify B, z, outcome, or settlement.
+
+Demonstrated on 17 September 2026:
+
+    PING-mu62v0yn-218bk9
+    observed 0 → 1
+    names_b false
+    level3 false
+    settlement_written false
+
+That is external event detection. It is not a buyer. It is not Level 3.
 
 ## Orchestration
 
-The ecosystem is the loop plus the seats that can run it.
-
 | Seat | Role |
 |---|---|
-| Self() | Deterministic local controller. Resolves B from history. No model required. |
-| Grok Bot | Act. Speaks Self().z. Does not name B. |
-| Grok fast | Low-latency orchestration and next-action language. |
-| Hy4 deep | Depth when the same Y, e, z need slower analysis. |
-| founder-z | Durable memory. Capital-allocation and model agnostic. |
-| Protocol | Native asset/measurement API. Tool schemas. No LangChain runtime. |
-| /protocol | Operator view of Y, e, B, z and the tool list. |
-| /ab | Controlled B bench. A acts. Session B responds. Settlement forbidden. Declared capacity, not a live market. |
+| Self() | Deterministic local controller. Resolves B from history. |
+| computeB() | Names B from state, z, e. Models do not. |
+| Grok Bot | Act. Speaks Self().z. |
+| Grok fast | Low-latency seat. |
+| Hy4 deep | Depth seat. |
+| founder-z | Durable memory. |
+| /protocol | Operator view of Y, e, B, z and tools. |
+| /ab | Controlled B bench. Declared capacity, not a live market. |
+| /validation | Adversarial sensor. Error against selected B. |
+| /ping | Ping Reference. External event detection. |
+| /nfts | Payment actuator. Only path that may write settlement. |
 
-Deterministic portability: Y, e, computeB, and z do not depend on which model is sitting in Act. Swap Grok fast or Hy4 deep. The ledger stays.
-
-Multidomain capacity: the same controller is declared for Music, AI Content, Animation, Games, eSports, and Real Estate. Only Music has live settlement rails. Other domains inherit the loop when a live Y exists there.
-
-Controlled B sits in that same bucket: declared capacity, not Level 3. When a real counterparty appears they occupy the same B seat. The claim flips from declared to live. The loop is not redesigned.
-
-## What is demonstrable now
-
-| Claim | Status |
-|---|---|
-| Shiyan can resolve B from history | Demonstrable now |
-| B does not require manually supplied stimulus | Demonstrable now |
-| B feeds the next state/action | Demonstrable now |
-| z is derived from observed outcomes | Demonstrable |
-| Protocol asset record and native tools | Demonstrable now |
-| A and B can transact inside Shiyan and change z without payment | Demonstrable now. Slice_v7. |
-| Controlled B as declared capacity | Demonstrable now. Slice_v8. Not a live market. |
-| Outcomes reflect an independent market | Requires external validation |
-| The loop improves economic outcomes | Requires repeated evidence |
-| Grok / Hy4 as trained z* | Orchestration seats, not a shipped policy |
-| Non-music domains live | Declared capacity, not live markets |
-| Songs ready to sell | Not claimed |
-
-B-resolution is demonstrated. Market validity of B is not yet demonstrated.
-
-    z₀ → resolveB(z₀) → B₁ → resolveB(z₁) → B₂ → resolveB(z₂)
-
-## Endogenous B
-
-    A → measurement → z → e → B
-    B_{t+1} = controller(state_t, z_t, e_t)
-
-You do not choose B₁ or B₂. Code does. An external $1 validates later. It does not generate B.
-
-Live market B rows are only:
-
-    agent contains "Agent B" AND agent contains "independent" AND simulated === false
-
-Controlled B, session B, and "potential customer" are not live B.
-simulatePair is not demand.
-
-## Proof levels
-
-| Level | Question | Status |
-|---|---|---|
-| 1 Mechanical | Can the loop run without a new event? | Demonstrated. Self() → z = Hold. |
-| 1b Architecture | Can A and B transact inside Shiyan and change z deterministically without payment? | Demonstrated. /ab. Settlement unchanged. |
-| 2 Economic | Non-payment Y bit on existing A? | Demonstrated. OBSERVE_AUDIENCE audience 0→1. |
-| 3 Independent market validation | Outcome you do not control, on a work you are willing to sell? | Not demonstrated. Songs not ready. |
-
-https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/outcome-m_1789501359300.json
-
-Level 1b is not Level 3.
-Controlled B is not an independent buyer.
-Free is not settlement.
-
-## Allowed now / not allowed to claim
-
-| Layer | Allowed now | Not allowed to claim |
-|---|---|---|
-| /ab A proposes, B responds | Yes | Marketplace |
-| Founder or session as B | Yes, as bench | Independent market validation |
-| computeB() → WAIT_EXTERNAL | Yes | That wait is "done" |
-| Settlement from controlled B | No | y = payment |
-| Real second party later | N option | Already shipped |
-
-WAIT_EXTERNAL when A is on reference and live B is unset is the correct next action, not a bug.
+Deterministic portability: Y, e, computeB, and z do not depend on which model sits in Act.
 
 ## Loop
 
-| Layer | Route | Function |
-|---|---|---|
-| Create | /upload | ingest state |
-| Prove | /nfts | actuator / payment |
-| Learn | /measurements | sensor / computeB / Self() |
-| Act | /bot | Grok Bot · Grok fast / Hy4 deep seats |
-| Protocol | /protocol | operator view / tool list |
-| A/B | /ab | A proposes. Controlled B responds. Measurement writes. Self() speaks. |
-| Outcomes | /api/memory | persist to Hub |
+    Action
+    → Ping Reference
+    → Observed 0 / 1
+    → Y
+    → e
+    → z
+    → computeB()
+    → next B
 
     Y = (settlement, acquisition, audience_response, conversion, revenue, retention)
     y = f(Y) = settlement
     e = 1 − y
     B = computeB(state, z, e)
 
-Settlement is 1 only when a live payment reaches settled. /ab cannot write that bit.
-POST /api/ab with settled=true or EXECUTE_SETTLEMENT returns 409.
+A received ping writes audience_response 0→1.
+It does not write settlement.
+y stays payment.
 
-Honest actions until live B exists:
+## Proof levels
 
-- HOLD when live B returned and eA = 0
-- WAIT_EXTERNAL when A = 1 and live yB = 0
-- PROVE when settlement is off reference
-- MEASURE when state is incomplete
+| Level | Question | Status |
+|---|---|---|
+| 1 Mechanical | Can the loop run without a new event? | Demonstrated |
+| 1b Architecture | Can A and B transact inside Shiyan and change z without payment? | Demonstrated |
+| 2 Economic | Non-payment Y bit on existing A? | Demonstrated. OBSERVE_AUDIENCE |
+| 2b Sensor | Can an external event score error against selected B without naming B? | Demonstrated. /validation |
+| 2c Detection | Create a reference, detect an outside hit, convert it to measurement? | Demonstrated. /ping |
+| 3 Independent market | Outcome you do not control, on a work you will sell? | Not demonstrated. Songs not ready |
+
+Level 2c is not Level 3.
+A ping is not demand.
+One trial does not establish improvement after successive B decisions.
+
+## Live market B
+
+Live market B rows are only:
+
+    agent contains "Agent B"
+    AND agent contains "independent"
+    AND simulated === false
+
+Controlled B, session B, potential customer, and Ping Reference are not live B.
+
+WAIT_EXTERNAL when A is on reference and live B is unset is correct.
 
 ## Protocol
 
-Shiyan is the substrate. An orchestration adapter is optional and later.
-
     GET  /api/assets
+    POST /api/assets
     GET  /api/assets/:id
     GET  /api/assets/:id/history
-    POST /api/assets
     POST /api/transactions
     GET  /api/self
     POST /api/self
@@ -147,34 +120,78 @@ Shiyan is the substrate. An orchestration adapter is optional and later.
     POST /api/tools
     GET  /api/ab
     POST /api/ab
+    GET  /api/validation
+    POST /api/validation
+    POST /api/ping
+    GET  /api/ping
+    GET  /api/ping/:id
 
-Tools: register_asset, search_assets, inspect_asset, request_asset, execute_transaction, record_measurement, evaluate_outcome, observe_audience, self_loop.
-
+POST /api/ping rejects b, z, outcome, and settled.
+GET /api/ping/:id is the observation.
 evaluate_outcome calls computeB(). Models do not name B.
 
-A actions on /ab: PROPOSE, LIST_INTENT, REQUEST_RESPONSE.  
-B actions on /ab: ACK, DECLINE, REQUEST, RETURN.  
-Bench B agent string: Controlled B · session.  
-Live B agent string: Agent B · independent.
+## Distribution: same sensor, other outside events
+
+Music is the first live vertical.
+The ping seat is the portable detector.
+
+Any later domain uses the same contract:
+
+    create a reference
+    wait for an event you did not invent inside computeB
+    observed = 0 or 1
+    feed Y
+    let computeB name the next B
+
+Declared event scope, not live markets:
+
+| Domain | Outside event the reference can wait for | Not claimed |
+|---|---|---|
+| Music | listen, checkout opened, ping hit, later a stranger $1 | product-market fit |
+| Delivery | scan at door, POD photo, courier GPS geofence enter | a delivery network |
+| Supply chain | ASN receipt, dock door read, warehouse scan, delay flag | an ERP |
+| Autonomous vehicles | trip complete, handoff, exception stop, charge dock arrive | a fleet |
+
+Those events are substitutes for "open the ping URL."
+They are not substitutes for settlement.
+They do not let a model name B.
+They do not make a domain live until a real Y exists there.
+
+Distribution, in this system, means: the same controller can sit behind more than one outside event.
+It does not mean Shiyan currently runs trucks, warehouses, or vehicles.
+
+When a delivery scan, a dock read, or a trip-complete signal can hit GET /api/ping/:id or POST /api/validation without sending B or z, that domain inherits the loop.
+Until then it stays declared capacity, the same way non-music verticals already do.
+
+## What is demonstrable now
+
+| Claim | Status |
+|---|---|
+| Shiyan can resolve B from history | Demonstrable now |
+| B does not require manually supplied stimulus | Demonstrable now |
+| A ping reference can be created and later observed | Demonstrable now |
+| The receive request cannot name B | Demonstrable now |
+| Controlled B as declared capacity | Demonstrable now |
+| Outcomes reflect an independent market | Not demonstrated |
+| Delivery / supply chain / AV live | Declared event scope only |
+| Songs ready to sell | Not claimed |
+| Trained z* | Not claimed |
 
 ## What is not claimed
 
-- independent market validation is not yet demonstrated
-- Fit is not a shipped metric
-- no trained controller z*
-- Simulate A/B is not demand
-- /ab is not a marketplace
-- a founder listen is not audience demand
-- founder-as-B is not an independent buyer
-- session B / potential customer is not Agent B · independent
-- Controlled B is declared capacity, like non-music domains
-- free is not settlement
-- autonomy here means endogenous B-resolution, not an unsupervised market actor
-- LangChain / LangGraph is not the marketplace
-- /api/tools is not a trained policy
+- independent market validation
+- Fit as a shipped metric
+- trained controller z*
+- /ab as a marketplace
+- founder-as-B as an independent buyer
+- ping as payment
+- free as settlement
+- LangChain / LangGraph as the marketplace
+- a live delivery, warehouse, or vehicle network
 
 ## Decision
 
-Keep B. Control the bench. Defer market B.
-Do not remove B. Do not invent B. Do not sell unfinished songs on a B you fully control.
-The bottleneck is economic, not missing architecture.
+Keep B. Control the bench. Detect outside events. Defer market B.
+Finish one official single before any $1 validation.
+The same ping contract can later listen to a scan, a dock read, or a trip-complete.
+That extends the sensor. It does not birth B.
