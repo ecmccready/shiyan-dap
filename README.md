@@ -5,6 +5,7 @@ Self-Sustaining Autonomous AI Agentic Ecosystem System.
 Grok fast, Hy4 deep, and Grok Bot orchestrate a deterministic, model-portable controller with multidomain capacity.
 
 Music is the first vertical, not the product boundary.
+Songs are not yet market objects.
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap  
@@ -30,12 +31,13 @@ The ecosystem is the loop plus the seats that can run it.
 | Grok fast | Low-latency orchestration and next-action language. |
 | Hy4 deep | Depth when the same Y, e, z need slower analysis. |
 | founder-z | Durable memory. Capital-allocation and model agnostic. |
-| Protocol | Native asset/measurement API. LangChain-shaped tools. No LangChain runtime. |
+| Protocol | Native asset/measurement API. Tool schemas. No LangChain runtime. |
 | /protocol | Operator view of Y, e, B, z and the tool list. |
+| /ab | Architecture bench. A acts. B responds. Settlement forbidden. |
 
 Deterministic portability: Y, e, computeB, and z do not depend on which model is sitting in Act. Swap Grok fast or Hy4 deep. The ledger stays.
 
-Multidomain capacity: the same controller is declared for Music, AI Content, Animation, Games, eSports, and Real Estate. Only Music has live settlement. Other domains inherit the loop when a live Y exists there.
+Multidomain capacity: the same controller is declared for Music, AI Content, Animation, Games, eSports, and Real Estate. Only Music has live settlement rails. Other domains inherit the loop when a live Y exists there.
 
 ## What is demonstrable now
 
@@ -46,10 +48,12 @@ Multidomain capacity: the same controller is declared for Music, AI Content, Ani
 | B feeds the next state/action | Demonstrable now |
 | z is derived from observed outcomes | Demonstrable |
 | Protocol asset record and native tools | Demonstrable now |
+| A and B can transact inside Shiyan and change z without payment | Demonstrable now. Slice_v7. |
 | Outcomes reflect an independent market | Requires external validation |
 | The loop improves economic outcomes | Requires repeated evidence |
 | Grok / Hy4 as trained z* | Orchestration seats, not a shipped policy |
 | Non-music domains live | Declared capacity, not live markets |
+| Songs ready to sell | Not claimed |
 
 B-resolution is demonstrated. Market validity of B is not yet demonstrated.
 
@@ -60,17 +64,20 @@ B-resolution is demonstrated. Market validity of B is not yet demonstrated.
     A → measurement → z → e → B
     B_{t+1} = controller(state_t, z_t, e_t)
 
-You do not choose B₁ or B₂. Code does. External $1 validates later. It does not generate B.
+You do not choose B₁ or B₂. Code does. An external $1 validates later. It does not generate B.
 
-## Three proof levels
+## Proof levels
 
 | Level | Question | Status |
 |---|---|---|
 | 1 Mechanical | Can the loop run without a new event? | Demonstrated. Self() → z = Hold. |
+| 1b Architecture | Can A and B transact inside Shiyan and change z deterministically without payment? | Demonstrated. /ab PROPOSE → ACK. Settlement unchanged. |
 | 2 Economic | Non-payment Y bit on existing A? | Demonstrated. OBSERVE_AUDIENCE audience 0→1. |
-| 3 Independent market validation | Outcome you do not control? | Not yet demonstrated. |
+| 3 Independent market validation | Outcome you do not control, on a work you are willing to sell? | Not demonstrated. Songs not ready. |
 
 https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/outcome-m_1789501359300.json
+
+Level 1b is not Level 3. Founder-as-B is not an independent buyer. Free is not settlement.
 
 ## Loop
 
@@ -81,6 +88,7 @@ https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/outcome-m_1789501
 | Learn | /measurements | sensor / computeB / Self() |
 | Act | /bot | Grok Bot · Grok fast / Hy4 deep seats |
 | Protocol | /protocol | operator view / tool list |
+| A/B | /ab | A proposes. B responds. Measurement writes. Self() speaks. |
 | Outcomes | /api/memory | persist to Hub |
 
     Y = (settlement, acquisition, audience_response, conversion, revenue, retention)
@@ -88,9 +96,11 @@ https://huggingface.co/datasets/shiyan-dap/founder-z/blob/main/outcome-m_1789501
     e = 1 − y
     B = computeB(state, z, e)
 
+Settlement is 1 only when a live payment reaches settled. /ab cannot write that bit.
+
 ## Protocol
 
-Shiyan is the substrate. LangChain is an optional later adapter.
+Shiyan is the substrate. An orchestration adapter is optional and later.
 
     GET  /api/assets
     GET  /api/assets/:id
@@ -101,10 +111,16 @@ Shiyan is the substrate. LangChain is an optional later adapter.
     POST /api/self
     GET  /api/tools
     POST /api/tools
+    GET  /api/ab
+    POST /api/ab
 
 Tools: register_asset, search_assets, inspect_asset, request_asset, execute_transaction, record_measurement, evaluate_outcome, observe_audience, self_loop.
 
 evaluate_outcome calls computeB(). Models do not name B.
+
+A actions on /ab: PROPOSE, LIST_INTENT, REQUEST_RESPONSE.  
+B actions on /ab: ACK, DECLINE, REQUEST, RETURN.  
+POST /api/ab with settled=true or EXECUTE_SETTLEMENT returns 409.
 
 ## What is not claimed
 
@@ -112,7 +128,10 @@ evaluate_outcome calls computeB(). Models do not name B.
 - Fit is not a shipped metric
 - no trained controller z*
 - Simulate A/B is not demand
+- /ab is not a marketplace
 - a founder listen is not audience demand
+- founder-as-B is not an independent buyer
+- free is not settlement
 - autonomy here means endogenous B-resolution, not an unsupervised market actor
-- LangChain is not the marketplace
+- LangChain / LangGraph is not the marketplace
 - /api/tools is not a trained policy
