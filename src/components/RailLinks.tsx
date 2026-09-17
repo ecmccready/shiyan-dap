@@ -6,6 +6,7 @@ const rails = [
   { href: "/single", label: "Songs" },
   { href: "/tokens", label: "Tokenize" },
   { href: "/protocol", label: "Protocol" },
+  { href: "/ab", label: "A/B" },
   { href: "/bot", label: "Grok Bot" },
 ];
 

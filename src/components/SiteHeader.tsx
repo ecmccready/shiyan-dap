@@ -16,6 +16,7 @@ const places = [
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
   { href: "/protocol", label: "Protocol" },
+  { href: "/ab", label: "A/B" },
 ];
 
 export default function SiteHeader({ section }: { section?: string }) {
