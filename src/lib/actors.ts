@@ -6,6 +6,7 @@ import {
   type OutcomeTransition,
   type YVector,
 } from "@/lib/outcomes";
+import { AGENT_A, CONTROLLED_B } from "@/lib/identity";
 
 export type Actor = "A" | "B";
 
@@ -13,8 +14,7 @@ export type ProposeAction = "PROPOSE" | "LIST_INTENT" | "REQUEST_RESPONSE";
 export type RespondAction = "ACK" | "DECLINE" | "REQUEST" | "RETURN";
 export type ABAction = ProposeAction | RespondAction;
 
-export const AGENT_A = "Agent A · ECMcCready";
-export const AGENT_B = "Agent B · counterparty";
+export { AGENT_A, CONTROLLED_B };
 
 const LAST_Y = "shiyan-ab-y";
 
@@ -57,7 +57,7 @@ export function runAB(input: {
     y_before: before,
     y_after: after,
     vertical: "music",
-    agent: actor === "A" ? AGENT_A : AGENT_B,
+    agent: actor === "A" ? AGENT_A : CONTROLLED_B,
     simulated: false,
   });
 
@@ -67,14 +67,16 @@ export function runAB(input: {
   const b = computeB();
 
   return {
-    protocol: "slice_v7",
+    protocol: "slice_v8",
     actor,
     action,
+    seat: actor === "A" ? "A" : "controlled-B",
     settlement_written: false,
+    level3: false,
     row,
     self,
     computed_b: b,
     z: self.z,
-    note: "Architecture proof. Settlement unchanged. Not Level 3.",
+    note: "Controlled B is declared capacity. Not live market B.",
   };
 }

@@ -1,3 +1,5 @@
+import { isLiveMarketB } from "@/lib/identity";
+
 export type Bit = 0 | 1;
 export type AgentX = "A" | "B";
 export type BResolution = "resolved" | "unresolved" | "positive" | "negative" | "unknown";
@@ -111,11 +113,9 @@ export function errorSignal(y: YVector, reference: Bit = 1): Bit {
 }
 
 export function resolveB(outcomes: OutcomeTransition[] = readOutcomes()): BState {
-  const live = outcomes.filter((row) => row.agent.includes("Agent B") && !row.simulated);
-  const returned =
-    live.some((row) => row.action === "RETURN") ||
-    (typeof window !== "undefined" && window.localStorage.getItem("shiyan-b-return") === "1");
+  const live = outcomes.filter((row) => isLiveMarketB(row.agent, row.simulated));
   const last = live[live.length - 1];
+  const returned = live.some((row) => row.action === "RETURN");
 
   if (!last) {
     return { returned: false, settlement: 0, class: "none", resolution: "unknown", z: "Observe." };
@@ -161,7 +161,7 @@ export function Self(outcomes: OutcomeTransition[] = readOutcomes()) {
   const b = resolveB(outcomes);
   const liveA = outcomes.filter((row) => row.agent.includes("Agent A") && !row.simulated).pop();
   const liveB = outcomes
-    .filter((row) => row.agent.includes("Agent B") && !row.simulated && row.y_after.settlement === 1)
+    .filter((row) => isLiveMarketB(row.agent, row.simulated) && row.y_after.settlement === 1)
     .pop();
   const yA = liveA?.y_after || ZERO;
   const yB = liveB?.y_after || ZERO;
@@ -265,7 +265,7 @@ export function recordOutcome(input: {
     asset_id: input.asset_id,
     action: input.action,
     vertical: input.vertical || "music",
-    agent: input.agent || "Agent B · this session",
+    agent: input.agent || "Controlled B · session",
     simulated: input.simulated ?? false,
     y_before: input.y_before,
     y_after: input.y_after,
@@ -295,14 +295,14 @@ export function recordBReturn() {
     y_before: settled,
     y_after: settled,
     vertical: "music",
-    agent: "Agent B · potential customer",
+    agent: "Controlled B · session",
     simulated: false,
   });
   if (typeof window !== "undefined") {
     window.localStorage.setItem("shiyan-b-return", "1");
-    window.localStorage.setItem(LAST, "B returned. Hold.");
+    window.localStorage.setItem(LAST, Self().z);
   }
-  persistOutcome(row, "B returned. Hold.");
+  persistOutcome(row, Self().z);
 }
 
 export function readZ() {
@@ -328,7 +328,7 @@ export function simulatePair(vertical: string, action: string, assetId: string) 
     y_before: afterA,
     y_after: afterB,
     vertical,
-    agent: "Agent B · this session",
+    agent: "Controlled B · session",
     simulated: true,
   });
 }
