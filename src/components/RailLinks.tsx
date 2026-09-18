@@ -2,6 +2,7 @@
 
 const rails = [
   { href: "/marketplace", label: "Marketplace" },
+  { href: "/trade", label: "Trade" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
   { href: "/tokens", label: "Tokenize" },
