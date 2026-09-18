@@ -8,12 +8,20 @@ function store() {
   return g.__shiyanTrades;
 }
 
+function closeOf(move: string): { state: TradeState; observed: 0 | 1 } | null {
+  if (move === "accept") return { state: "accepted", observed: 1 };
+  if (move === "reject") return { state: "rejected", observed: 0 };
+  if (move === "timeout") return { state: "timeout", observed: 0 };
+  return null;
+}
+
 export async function GET(
   _req: Request,
   ctx: { params: Promise<{ id: string; move: string }> }
 ) {
   const { id, move } = await ctx.params;
-  if (move !== "accept" && move !== "reject" && move !== "timeout") {
+  const closed = closeOf(move);
+  if (!closed) {
     return NextResponse.json({ ok: false, error: "accept | reject | timeout" }, { status: 400 });
   }
 
@@ -32,9 +40,8 @@ export async function GET(
     closed_at: null,
   };
 
-  const state = move as TradeState;
-  row.state = state;
-  row.observed = state === "accepted" ? 1 : 0;
+  row.state = closed.state;
+  row.observed = closed.observed;
   row.closed_at = new Date().toISOString();
   store().set(id, row);
 
@@ -54,7 +61,7 @@ export async function GET(
 
 export async function POST() {
   return NextResponse.json(
-    { ok: false, error: "close is GET. Do not post B, z, or settlement." },
+    { ok: false, error: "close is GET. Do not post B, z, or outcome." },
     { status: 405 }
   );
 }
