@@ -19,84 +19,139 @@ External reality measures the result. It does not determine B.
 
 ## Trajectory
 
-The long path is a buy / sell / trade P2P surface.
-This repo is the platform that surface will launch from.
-The live object now is the P2P state machine, not a store.
+This repo is the platform.
+A dedicated app will launch from it.
+The long path is a buy / sell / trade P2P surface with a Slack-class company shape: platform first, app second, enterprise seat later.
+
+That is trajectory, not a claim of arrival.
+
+    Enterprise scope: emerging / architecturally rooted
+    Enterprise product: not yet established
+    Enterprise proof: still needs external users, workloads, and operational evidence
+
+SaaS, angels, VC, acquisition, and unicorn language describe the destination theater.
+They do not describe the current object.
+The current object is a live state machine plus a founder who is also the first user.
+
+Works that can be sold are months out.
+Uploads can start now, inside that evolving scope.
+Founder songs are identity and test load. They are not the catalog.
+
+## What is live
 
     A owns / offers
     → A proposes
     → TRADE
     → B accepts or rejects
-    → external settlement / transfer
     → PING
     → z
     → computeB()
     → next state
 
-A does not ask an authority what B should be.
-A proposes. B accepts or rejects. The trade is the observable transition.
-Ping is the machine-readable confirmation of that transition.
+Binary close, demonstrated 18 September 2026:
 
-Binary close:
+    TRD-mu7cl0sv-5mnt · accepted · observed 1
+    TRD-mu7cww7t-75xw · rejected · observed 0
 
-    accept  → observed 1
-    reject  → observed 0
-    timeout → Hold
+Ping detection, demonstrated 17 September 2026:
 
-A bench accept is controlled B.
-An independent accept plus a work you will sell is Level 3, later.
+    PING-mu62v0yn-218bk9 · observed 0 → 1
 
-## Stack
-
-| Layer | Now | Later |
-|---|---|---|
-| Shiyan | state, measurement, computeB, z | same controller |
-| P2P machine | /trade offer-accept-reject-timeout | dedicated app |
-| Ping | /ping observed 0/1 | JIT confirm of transfer |
-| Prove | Stripe on /nfts | crypto point of purchase on the dedicated app |
-| Async channel | HTTP offer / accept URLs | Slack-like message bus under the machine, not Slack-the-product |
-| Orchestration | native tools | optional LangGraph adapter |
-| Domains | Music live rails | delivery, supply chain, AV as declared event scope |
-
-No Slack SDK. No LangGraph runtime. No crypto checkout in this slice.
-Those are declared seats. Adding them now would invert substrate and adapter.
+Accept is not settlement.
+A ping is not a buyer.
+A bench close is not Level 3.
 
 ## Seats
 
-| Seat | Role |
-|---|---|
-| /trade | P2P primitive. A offers. B closes. |
-| /ping | External event detection. |
-| /ab | Controlled B bench. |
-| /validation | Adversarial sensor. |
-| /nfts | Only path that may write settlement. |
-| /marketplace | Existing listing UI. Not the state machine. |
+| Seat | Role now | Role later |
+|---|---|---|
+| Self() / computeB() | Names B from history | Same controller under the app |
+| /trade | P2P primitive. A offers. B closes. | Offer rail for the dedicated app |
+| /ping | External event detection | JIT confirm of transfer, scan, dock, trip |
+| /ab | Controlled B bench | Retired as a market claim |
+| /validation | Sensor page, when present | Adversarial scoring |
+| /nfts | Only path that may write settlement | Crypto point of purchase attaches here, not to /trade |
+| /marketplace | Listing UI | Not the state machine |
+| /upload | Ingest | Founder and later users drop work |
+| founder-z | Durable memory | Capital-allocation log |
+
+No Slack SDK. No LangGraph runtime. No crypto checkout in the current slice.
+Async offer/accept is Slack-like as a message pattern, not Slack-the-product.
 
 ## Proof levels
 
-| Level | Status |
-|---|---|
-| 1 Mechanical | Demonstrated |
-| 1b Architecture | Demonstrated |
-| 2c Ping detection | Demonstrated. PING-mu62v0yn-218bk9 0→1 |
-| 2d Trade primitive | This slice. Accept is not a market. |
-| 3 Independent trade of real value | Not demonstrated. Songs not ready |
+| Level | Question | Status |
+|---|---|---|
+| 1 Mechanical | Loop without a new event? | Demonstrated |
+| 1b Architecture | A/B change z without payment? | Demonstrated |
+| 2c Detection | Create a reference, detect an outside hit? | Demonstrated |
+| 2d Trade primitive | Accept 1 / reject 0 without writing y? | Demonstrated |
+| 3 Independent market | Outcome you do not control, on a work you will sell? | Not demonstrated |
+| Enterprise product | Packaged SaaS others pay to run? | Not established |
+| Enterprise proof | External users, workloads, operational evidence? | Not demonstrated |
+
+Start little. Keep the machine live at every interim.
+Do not skip from a working primitive to a funded storefront.
+
+## Loop
+
+    Y = (settlement, acquisition, audience_response, conversion, revenue, retention)
+    y = f(Y) = settlement
+    e = 1 − y
+    B = computeB(state, z, e)
+
+Live market B rows are only:
+
+    agent contains "Agent B"
+    AND agent contains "independent"
+    AND simulated === false
+
+Controlled B, session B, Ping Reference, and /trade Accept are not live B.
 
 ## Protocol
 
-    POST /api/trade
-    GET  /api/trade
-    GET  /api/trade/:id/accept
-    GET  /api/trade/:id/reject
-    GET  /api/trade/:id/timeout
-    POST /api/ping
-    GET  /api/ping/:id
+    GET/POST /api/trade
+    GET      /api/trade/:id/accept
+    GET      /api/trade/:id/reject
+    GET      /api/trade/:id/timeout
+    POST     /api/ping
+    GET      /api/ping/:id
+    GET/POST /api/validation
+    GET/POST /api/self
+    GET/POST /api/tools
+    GET/POST /api/ab
 
 Trade and ping reject bodies that name B, z, or settlement.
 
+## Distribution, declared not live
+
+The same reference → observation → Y → e → z → computeB contract can later ingest:
+
+- listen / checkout opened
+- delivery scan / proof of delivery
+- warehouse dock read
+- vehicle trip-complete
+
+Those events extend the sensor.
+They do not make a domain a live market.
+They do not make Shiyan an enterprise product.
+
+## Founder rule
+
+The builder is also a user.
+That is useful load.
+It is not independent demand.
+
+A solo, AI-first path can carry the platform to a Slack-class outcome.
+It cannot declare that outcome early.
+Unicorn is a standard, not a status.
+
 ## Decision
 
-Keep the machine live at every interim.
-Ship the primitive. Do not ship a fake store.
-Crypto POP and a dedicated app attach to the same offer → close → ping → computeB loop.
-Until a stranger closes a trade on a work you will sell, Level 3 stays closed.
+Keep B. Keep the primitive. Keep uploads open.
+Do not sell unfinished work.
+Do not write settlement from /trade or /ping.
+Do not call this an enterprise product until someone outside this repo runs a workload and pays for the result.
+
+The next honest page is still small:
+one official single, or one outside user on the machine, not another bench button.
