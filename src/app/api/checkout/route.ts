@@ -20,16 +20,25 @@ export async function POST(req: NextRequest) {
     const assetId = body.assetId || "cl_shiyan_yishu_001";
     const title = body.title || TITLES[assetId] || "Shiyan catalog";
     const cluster = body.cluster === "B" ? "B" : "A";
+    const offerId = body.offerId || "OFFER-shiyan-yishu-001";
 
     const stripe = new Stripe(key);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      success_url: app + "/nfts?paid=1&asset=" + assetId + "&cluster=" + cluster,
-      cancel_url: app + "/nfts?paid=0&asset=" + assetId + "&cluster=" + cluster,
+      success_url:
+        app +
+        "/proof?session_id={CHECKOUT_SESSION_ID}&asset=" +
+        assetId +
+        "&cluster=" +
+        cluster,
+      cancel_url: app + "/offer?canceled=1&asset=" + assetId,
       metadata: {
         assetId,
         title,
         cluster,
+        offerId,
+        workspaceId: "WS-founder",
+        channelId: cluster === "B" ? "CH-b" : "CH-a",
         from: cluster === "B" ? "potential-customer" : "ECMcCready",
         to: cluster === "B" ? "Agent B" : "Agent A",
       },
