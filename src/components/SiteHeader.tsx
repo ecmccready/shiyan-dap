@@ -12,6 +12,7 @@ const rails = [
 ];
 
 const places = [
+  { href: "/workspace", label: "Workspace" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/trade", label: "Trade" },
   { href: "/playlist", label: "Playlist" },

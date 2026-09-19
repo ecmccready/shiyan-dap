@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 
 const rails = [
+  { href: "/workspace", label: "Workspace" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/trade", label: "Trade" },
   { href: "/playlist", label: "Playlist" },
@@ -8,7 +9,6 @@ const rails = [
   { href: "/tokens", label: "Tokenize" },
   { href: "/protocol", label: "Protocol" },
   { href: "/ab", label: "A/B" },
-  { href: "/validation", label: "Validate" },
   { href: "/ping", label: "Ping" },
   { href: "/bot", label: "Grok Bot" },
 ];
