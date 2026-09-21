@@ -1,88 +1,102 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
-import { WORKSPACE } from "@/lib/workspace";
-import { readTrades } from "@/lib/trade";
-import { readPings } from "@/lib/ping";
-import { computeB, Self, readOutcomes } from "@/lib/outcomes";
-import { readLedger } from "@/lib/ledger";
+
+const SAMPLE = `{
+  "proposal": "B",
+  "workspaceId": "WS-founder",
+  "channelId": "CH-b",
+  "predicted": { "scale": 0.72, "time": 0.81, "speed": 0.64 },
+  "weight": 0.71,
+  "external_event": { "price": 1.00, "source": "stripe", "authoritative": true },
+  "observed": { "settled_in_shiyan": false },
+  "z": "provisional — measurement pending independent B",
+  "next_action": "WAIT_EXTERNAL"
+}`;
 
 export default function WorkspacePage() {
-  const [trades, setTrades] = useState(0);
-  const [accepted, setAccepted] = useState(0);
-  const [rejected, setRejected] = useState(0);
-  const [pings, setPings] = useState(0);
-  const [assets, setAssets] = useState(0);
-  const [z, setZ] = useState("");
-  const [b, setB] = useState("");
-
-  useEffect(() => {
-    const rows = readTrades();
-    setTrades(rows.length);
-    setAccepted(rows.filter((row) => row.state === "accepted").length);
-    setRejected(rows.filter((row) => row.state === "rejected").length);
-    setPings(readPings().filter((row) => row.observed === 1).length);
-    setAssets(readLedger().length);
-    const outcomes = readOutcomes();
-    setZ(Self(outcomes).z);
-    setB(computeB(outcomes).action);
-  }, []);
-
   return (
-    <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Workspace" />
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">slice_v12 · container · not an enterprise product</p>
-        <h1 className="text-3xl font-bold mb-3">{WORKSPACE.label}</h1>
-        <p className="text-zinc-400 mb-8">
-          Workspace holds channels. Channels hold agents, assets, and trades. The ledger names z. computeB names the next action. This page does not write settlement.
-        </p>
+    <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-2xl mx-auto space-y-8">
+      <p className="text-xs uppercase tracking-widest text-emerald-400">
+        Workspace · $10 container · $1 is the instrument
+      </p>
+      <h1 className="text-2xl font-semibold">Workspace</h1>
+      <p className="text-sm text-zinc-400">
+        This is the environment a team would pay $10 / month to keep:
+        predicted transition versus observed transition, written to a
+        ledger, computed into z, which names the next action. The $1
+        Buy as B is not the product. It is the external calibration
+        point for B.
+      </p>
 
-        <section className="bg-zinc-900/60 border border-emerald-800 rounded-2xl p-6 mb-6">
-          <p className="text-xs text-emerald-400 mb-2">Global state · ledger</p>
-          <p className="text-xl">{z || "Observe."}</p>
-          <p className="text-zinc-500 mt-2">
-            Computed B {b} · assets {assets} · trades {trades} · accepted {accepted} · rejected {rejected} · pings {pings}
+      <section className="grid gap-3 sm:grid-cols-2">
+        <div className="border border-zinc-800 rounded-lg p-4">
+          <p className="text-xs text-emerald-400">Pays for the room</p>
+          <p className="text-lg">$10 / month</p>
+          <p className="text-xs text-zinc-500 mt-2">
+            Endogenous loop. Channels, ledger, z. Not billed in this
+            commit.
           </p>
-          <p className="text-zinc-600 text-sm mt-2">enterprise_product false · level3 false</p>
-        </section>
-
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          {WORKSPACE.channels.map((channel) => (
-            <section key={channel.id} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
-              <p className="text-xs text-emerald-400 mb-2">{channel.id}</p>
-              <h2 className="text-xl font-semibold mb-2">{channel.label}</h2>
-              <p className="text-sm text-zinc-400 mb-4">{channel.role}</p>
-              <p className="text-sm text-zinc-500">
-                {channel.id === "channel-a"
-                  ? `offers ${trades} · closes ${accepted + rejected}`
-                  : "live B unset · WAIT_EXTERNAL is correct"}
-              </p>
-            </section>
-          ))}
         </div>
+        <div className="border border-emerald-800 rounded-lg p-4">
+          <p className="text-xs text-emerald-400">Calibrates B</p>
+          <p className="text-lg">Buy as B · $1</p>
+          <p className="text-xs text-zinc-500 mt-2">
+            Exogenous observation. Authoritative when an independent
+            payer exists. Founder in this browser is still A.
+          </p>
+          <Link
+            href="/offer"
+            className="inline-block mt-3 text-sm underline"
+          >
+            Open offer
+          </Link>
+        </div>
+      </section>
 
-        <p className="text-sm text-zinc-500 mb-6">
-          Week of 6 October 2026 · Buy as B $1 on /nfts. Not on this page.
+      <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
+        {`WORKSPACE
+  State / Ledger     A → action → B
+  predict B          B_pred = f(S, T, V, C)
+  Buy as B = $1      external event (if present)
+  observe            success / failure / time
+  measure            E_B = B_observed - B_pred
+  z                  next action
+
+if externalB.exists
+  B = externalB.observed   // authoritative
+  z = measure(predictedB, B)
+else
+  B = endogenousB          // continuous, provisional
+  z = provisionalMeasure(B)`}
+      </pre>
+
+      <section className="space-y-2">
+        <h2 className="text-sm text-emerald-400">Ledger row (named)</h2>
+        <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
+          {SAMPLE}
+        </pre>
+        <p className="text-xs text-zinc-500">
+          settled_in_shiyan stays false until webhook observed=1 from
+          an independent B. Query string is not that row.
         </p>
+      </section>
 
-        <div className="flex flex-wrap gap-3">
-          <Link href="/trade" className="h-11 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center">
-            Trade
-          </Link>
-          <Link href="/ping" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
-            Ping
-          </Link>
-          <Link href="/nfts" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
-            Prove
-          </Link>
-          <Link href="/upload" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
-            Upload
-          </Link>
-        </div>
-      </main>
-    </div>
+      <nav className="flex flex-wrap gap-3 text-sm">
+        <Link className="underline" href="/offer">
+          Offer $1
+        </Link>
+        <Link className="underline" href="/proof">
+          Proof
+        </Link>
+        <Link className="underline" href="/loop">
+          Loop
+        </Link>
+        <Link className="underline" href="/validation">
+          Validate
+        </Link>
+        <Link className="underline" href="/nfts">
+          /nfts rail
+        </Link>
+      </nav>
+    </main>
   );
 }
