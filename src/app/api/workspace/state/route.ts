@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { measure, nextAction, predictB, rows, writeRow } from "@/lib/b-loop";
+import { measure, nextAction, predictB } from "@/lib/b-loop";
+import { appendRow, kvEnabled, loadRows } from "@/lib/ledger-store";
 
 export const runtime = "nodejs";
 
 export async function GET() {
+  const list = await loadRows();
   return NextResponse.json({
     workspaceId: "WS-founder",
     product: "z from Self(). B is computed.",
@@ -11,7 +13,9 @@ export async function GET() {
     price_usd_month: 10,
     calibration_usd: 1,
     independent_B: false,
-    rows: rows(),
+    kv: kvEnabled(),
+    settlement_written: false,
+    rows: list,
   });
 }
 
@@ -29,7 +33,7 @@ export async function POST(req: NextRequest) {
   const error = measure(predicted.weight, observed);
   const action = nextAction({ external, settled, error });
 
-  const row = writeRow({
+  const list = await appendRow({
     proposal: "B",
     workspaceId: "WS-founder",
     channelId: external ? "CH-b" : "CH-a",
@@ -51,8 +55,9 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
+    kv: kvEnabled(),
     settlement_written: false,
-    row: row[0],
-    rows: row,
+    row: list[0],
+    rows: list,
   });
 }

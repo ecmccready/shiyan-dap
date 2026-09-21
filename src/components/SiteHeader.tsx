@@ -6,21 +6,21 @@ import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
 
 const rails = [
   { href: "/upload", label: "Create" },
-  { href: "/nfts", label: "Prove" },
+  { href: "/offer", label: "Prove" },
   { href: "/measurements", label: "Learn" },
   { href: "/bot", label: "Act" },
 ];
 
 const places = [
   { href: "/workspace", label: "Workspace" },
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/trade", label: "Trade" },
-  { href: "/playlist", label: "Playlist" },
-  { href: "/single", label: "Songs" },
-  { href: "/protocol", label: "Protocol" },
-  { href: "/ab", label: "A/B" },
+  { href: "/workspace/channel", label: "Channel" },
+  { href: "/ledger", label: "Ledger" },
+  { href: "/loop", label: "Loop" },
+  { href: "/proof", label: "Proof" },
+  { href: "/nfts", label: "Rail" },
   { href: "/validation", label: "Validate" },
-  { href: "/ping", label: "Ping" },
+  { href: "/marketplace", label: "Marketplace" },
+  { href: "/protocol", label: "Protocol" },
 ];
 
 export default function SiteHeader({ section }: { section?: string }) {
