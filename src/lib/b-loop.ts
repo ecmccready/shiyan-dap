@@ -76,3 +76,11 @@ function clamp(n: number) {
   if (Number.isNaN(n)) return 0;
   return Math.max(0, Math.min(1, n));
 }
+export function snapshot() {
+  return {
+    kind: "shiyan-ledger-snapshot",
+    durable: false,
+    note: "instance memory + browser copy. not public settlement.",
+    rows: rows(),
+  };
+}
