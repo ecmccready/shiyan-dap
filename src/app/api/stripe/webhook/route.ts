@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import type { PingRecord } from "@/lib/ping";
+import { measure, nextAction, predictB, writeRow } from "@/lib/b-loop";
 
 export const runtime = "nodejs";
 
@@ -70,6 +71,35 @@ export async function POST(req: NextRequest) {
     source: "external",
     created_at: existing?.created_at || now,
     received_at: now,
+  });
+
+  const predicted = predictB({
+    scale: 0.72,
+    time: 0.81,
+    speed: 0.64,
+    confidence: 0.9,
+  });
+  const error = measure(predicted.weight, 1);
+  writeRow({
+    proposal: "B",
+    workspaceId: "WS-founder",
+    channelId: "CH-b",
+    predicted,
+    weight: predicted.weight,
+    external_event: {
+      price: 1,
+      source: "stripe",
+      authoritative: true,
+    },
+    observed: { settled_in_shiyan: false, ping_id: pingId },
+    error,
+    z: "external B observed, settlement not written",
+    next_action: nextAction({
+      external: true,
+      settled: false,
+      error,
+    }),
+    at: now,
   });
 
   return NextResponse.json({
