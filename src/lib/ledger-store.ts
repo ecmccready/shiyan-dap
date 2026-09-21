@@ -1,26 +1,17 @@
-import { createClient } from "redis";
+import { createClient, type RedisClientType } from "redis";
 import type { LedgerRow } from "@/lib/b-loop";
 import { rows as memRows, writeRow as memWrite } from "@/lib/b-loop";
 
 const KEY = "shiyan:ledger:rows";
 
-function redisUrl() {
-  return (
-    process.env.REDIS_URL ||
-    process.env.KV_REST_API_URL ||
-    process.env.UPSTASH_REDIS_REST_URL ||
-    ""
-  );
-}
-
 export function kvEnabled() {
-  return Boolean(redisUrl());
+  return Boolean(process.env.REDIS_URL);
 }
 
-async function withRedis<T>(fn: (c: ReturnType<typeof createClient>) => Promise<T>) {
+async function withRedis<T>(fn: (c: RedisClientType) => Promise<T>): Promise<T> {
   const url = process.env.REDIS_URL;
   if (!url) throw new Error("no REDIS_URL");
-  const client = createClient({ url });
+  const client: RedisClientType = createClient({ url });
   await client.connect();
   try {
     return await fn(client);
