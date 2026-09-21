@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import type { PingRecord } from "@/lib/ping";
-import { measure, nextAction, predictB, writeRow } from "@/lib/b-loop";
+import { measure, nextAction, predictB } from "@/lib/b-loop";
+import { appendRow } from "@/lib/ledger-store";
 
 export const runtime = "nodejs";
 
@@ -80,7 +81,8 @@ export async function POST(req: NextRequest) {
     confidence: 0.9,
   });
   const error = measure(predicted.weight, 1);
-  writeRow({
+
+  await appendRow({
     proposal: "B",
     workspaceId: "WS-founder",
     channelId: "CH-b",
