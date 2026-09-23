@@ -6,10 +6,6 @@ Around that core runs a decentralized marketplace where people and agents transa
 
 What it sells is the thing collaboration has never had: a shared memory that can't lie — so teams, creators, and agent networks pay to work inside the one place whose history is provable and whose next move is earned.
 
-## A and B
+## State
 
-- **Workspace A** — core. Founder sustains A. Agent of agents. Owns Self() and z.
-- **Workbench B** — agents run y. B is workbench state in the formula, not a buyer.
-- **Music** — first vertical. `/nfts` $1 is the launch object, not “Buy as B.”
-- **Misdiagnosis** — problem the workbench is built to measure later.
-- **Diagnostics valuation** — context map only. Nothing acquired.
+A is the autonomous controller. B is the workbench A acts on. B is not a customer and not an economic counterparty.
