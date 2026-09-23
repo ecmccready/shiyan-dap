@@ -9,7 +9,6 @@ type Row = {
   z: string;
   next_action: string;
   channelId: string;
-  external_event: { authoritative: boolean; price: number | null };
   at: string;
 };
 
@@ -45,78 +44,69 @@ export default function WorkspacePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-2xl mx-auto space-y-8">
+    <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-2xl mx-auto space-y-6">
       <p className="text-xs uppercase tracking-widest text-emerald-400">
-        Workspace · $10 container · $1 calibrates B
+        Workspace A · Self() · music first
       </p>
-      <h1 className="text-2xl font-semibold">Workspace</h1>
+      <h1 className="text-2xl font-semibold">Workspace A</h1>
       <p className="text-sm text-zinc-400">
-        Predict the transition. If an external B exists, it is
-        authoritative. Measure the error. z names the next action.
-        Founder click is still A. Independent $1 is not yet live.
+        The workspace is a measurable autonomous economic system:
+        actions generate state, state determines the next action,
+        external time can calibrate the system. Founder sustains A.
+        A is the agent of agents. B is the workbench, not a buyer.
       </p>
 
       <section className="grid gap-3 sm:grid-cols-2">
-        <div className="border border-zinc-800 rounded-lg p-4 space-y-2">
-          <p className="text-xs text-emerald-400">Endogenous</p>
-          <p className="text-lg">$10 / month room</p>
+        <div className="border border-emerald-800 rounded-lg p-4 space-y-2">
+          <p className="text-xs text-emerald-400">A</p>
+          <p className="text-lg">Compute provisional z</p>
           <button
             type="button"
             disabled={busy}
             onClick={() => run(false)}
             className="text-sm underline disabled:opacity-50"
           >
-            Compute provisional B
+            Run endogenous
           </button>
         </div>
-        <div className="border border-emerald-800 rounded-lg p-4 space-y-2">
-          <p className="text-xs text-emerald-400">Exogenous</p>
-          <p className="text-lg">Buy as B · $1</p>
+        <div className="border border-zinc-800 rounded-lg p-4 space-y-2">
+          <p className="text-xs text-emerald-400">B workbench</p>
+          <p className="text-lg">Observe intent</p>
           <button
             type="button"
             disabled={busy}
             onClick={() => run(true)}
             className="text-sm underline disabled:opacity-50"
           >
-            Record calibration intent
+            Record workbench intent
           </button>
-          <div>
-            <Link className="text-sm underline" href="/offer">
-              Pay $1 on offer
-            </Link>
-          </div>
+          <Link className="text-sm underline block" href="/workbench">
+            Workbench
+          </Link>
         </div>
       </section>
 
       <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
-        {`B_pred = f(S, T, V, C)
-E_B    = B_observed - B_pred
-S scale · T time · V speed · C ledger confidence
+        {`Workspace A → Self() → predict B → act y
+           → observe B → E_B → z → next
 
-if (externalB.exists) B = observed; z = measure(pred, B)
-else                  B = endogenous; z = provisional`}
+B_pred = f(S, T, V, C)
+T = time of external measurement
+E_B = B_observed - B_pred`}
       </pre>
 
       <section>
-        <h2 className="text-sm text-emerald-400 mb-2">
-          Ledger (memory, this instance)
-        </h2>
+        <h2 className="text-sm text-emerald-400 mb-2">Ledger</h2>
         {rows.length === 0 ? (
-          <p className="text-xs text-zinc-500">
-            No rows yet. Compute or calibrate.
-          </p>
+          <p className="text-xs text-zinc-500">No rows.</p>
         ) : (
-          <ul className="space-y-2 text-xs">
+          <ul className="space-y-2 text-xs font-mono">
             {rows.map((r) => (
-              <li
-                key={r.at}
-                className="border border-zinc-800 rounded-lg p-3 font-mono"
-              >
+              <li key={r.at} className="border border-zinc-800 rounded-lg p-3">
                 {r.at} · {r.channelId} · w={r.weight} · E_B=
                 {r.error ?? "n/a"} · {r.next_action}
                 <br />
                 {r.z}
-                {r.external_event.authoritative ? " · external" : " · endogenous"}
               </li>
             ))}
           </ul>
@@ -124,17 +114,17 @@ else                  B = endogenous; z = provisional`}
       </section>
 
       <nav className="flex flex-wrap gap-3 text-sm">
-        <Link className="underline" href="/offer">
-          Offer
+        <Link className="underline" href="/workbench">
+          Workbench
         </Link>
-        <Link className="underline" href="/proof">
-          Proof
+        <Link className="underline" href="/self">
+          Self()
         </Link>
-        <Link className="underline" href="/loop">
-          Loop
+        <Link className="underline" href="/nfts">
+          Music rail
         </Link>
-        <Link className="underline" href="/validation">
-          Validate
+        <Link className="underline" href="/ledger">
+          Ledger
         </Link>
       </nav>
     </main>
