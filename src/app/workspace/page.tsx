@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 function WorkspaceInner() {
@@ -16,11 +16,10 @@ function WorkspaceInner() {
       </p>
       <h1 className="text-2xl font-semibold">Workspace A</h1>
       <p className="text-sm text-zinc-400">
-        Shiyan is a self-measuring workspace. A owns Self() and z.
-        B is the workbench A acts on — not a customer. Music is the
-        first live vertical. Diagnostic safety is the evidence
-        workbench: prevent and detect diagnostic error, not emit a
-        hidden diagnosis.
+        Shiyan is this room. A owns Self() and z. B is the workbench
+        A opens — not a customer. Music stays the live vertical.
+        Diagnostic safety is created from the workbench, not emitted
+        as a diagnosis on this page.
       </p>
 
       <label className="block text-sm">
@@ -37,48 +36,39 @@ function WorkspaceInner() {
         </select>
       </label>
 
+      <section className="border border-emerald-800 rounded-lg p-4 space-y-2">
+        <p className="text-xs text-emerald-400">Option from A</p>
+        <p className="text-lg">Workbench B</p>
+        <Link className="text-sm underline" href="/workbench">
+          Open workbench
+        </Link>
+      </section>
+
       {domain === "music" ? (
         <nav className="flex flex-wrap gap-3 text-sm">
           <Link className="underline" href="/nfts">
             Music rail
           </Link>
-          <Link className="underline" href="/upload">
-            Create
-          </Link>
           <Link className="underline" href="/playlist">
             Playlist
           </Link>
+          <Link className="underline" href="/upload">
+            Create
+          </Link>
           <Link className="underline" href="/loop">
             Loop
-          </Link>
-          <Link className="underline" href="/proof">
-            Proof
           </Link>
         </nav>
       ) : (
         <nav className="flex flex-wrap gap-3 text-sm">
           <Link className="underline" href="/workbench">
+            Workbench
+          </Link>
+          <Link className="underline" href="/workbench/safety">
             Diagnostic Safety Workbench
-          </Link>
-          <Link className="underline" href="/agents">
-            Agents
-          </Link>
-          <Link className="underline" href="/validation">
-            Validation
-          </Link>
-          <Link className="underline" href="/self">
-            .self()
           </Link>
         </nav>
       )}
-
-      <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
-        {`A = Workspace (this page)
-B = Workbench (music rail or diagnostic evidence state)
-z = measured state, not a paid flag
-y ≠ diagnosis
-B generates and tests evidence. Conflict stays unresolved.`}
-      </pre>
     </main>
   );
 }
