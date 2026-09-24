@@ -13,14 +13,8 @@ const rails = [
 
 const places = [
   { href: "/workspace", label: "Workspace" },
-  { href: "/workspace/channel", label: "Channel" },
-  { href: "/ledger", label: "Ledger" },
-  { href: "/loop", label: "Loop" },
-  { href: "/proof", label: "Proof" },
-  { href: "/nfts", label: "Rail" },
-  { href: "/validation", label: "Validate" },
   { href: "/marketplace", label: "Marketplace" },
-  { href: "/protocol", label: "Protocol" },
+  { href: "/playlist", label: "Playlist" },
 ];
 
 export default function SiteHeader({ section }: { section?: string }) {
@@ -45,7 +39,9 @@ export default function SiteHeader({ section }: { section?: string }) {
             <Link href="/" className="font-semibold">
               Shiyan
             </Link>
-            {section ? <span className="text-zinc-500 text-sm">{section}</span> : null}
+            {section ? (
+              <span className="text-zinc-500 text-sm">{section}</span>
+            ) : null}
           </div>
           <label className="flex items-center gap-2 text-sm text-zinc-400">
             Domains
@@ -66,7 +62,11 @@ export default function SiteHeader({ section }: { section?: string }) {
           </label>
           <nav className="flex flex-wrap items-center gap-2">
             {rails.map((rail) => (
-              <Link key={rail.href} href={rail.href} className="text-sm text-zinc-300 px-2">
+              <Link
+                key={rail.href}
+                href={rail.href}
+                className="text-sm text-zinc-300 px-2"
+              >
                 {rail.label}
               </Link>
             ))}
