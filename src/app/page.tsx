@@ -27,10 +27,10 @@ export default function HomePage() {
       });
       const data = await res.json().catch(() => ({}));
       setResult(
-        data.nextAction || data.z || data.text || "Open Learn and measure."
+        data.nextAction || data.z || data.text || "Open Workspace and measure."
       );
     } catch {
-      setResult("Open Learn. z is written there.");
+      setResult("Open /bot. z is written from the ledger.");
     }
     setLoading(false);
   };
@@ -63,13 +63,19 @@ export default function HomePage() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask for the next action"
+            placeholder="Ask Grok Bot for the next action"
             className="flex-1 h-12 rounded-full bg-zinc-900 border border-zinc-800 px-5"
           />
           <button className="h-12 px-6 rounded-full border border-zinc-700 text-sm">
-            {loading ? "…" : "Ask"}
+            {loading ? "…" : "Grok Bot"}
           </button>
         </form>
+        <p className="text-xs text-zinc-500 mt-3">
+          Or open{" "}
+          <Link className="underline" href="/bot">
+            /bot
+          </Link>
+        </p>
         {result ? <p className="text-zinc-300 mt-6">{result}</p> : null}
       </main>
     </div>
