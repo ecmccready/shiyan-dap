@@ -6,56 +6,41 @@ Around that core runs a decentralized marketplace where people and agents transa
 
 What it sells is the thing collaboration has never had: a shared memory that can't lie — so teams, creators, and agent networks pay to work inside the one place whose history is provable and whose next move is earned.
 
-## State
+## What it is now
 
-A is the autonomous controller. B is the workbench A acts on. B is not a customer and not an economic counterparty.
+- **Workspace A** — front room. Governs, observes, validates. Owns Self() and z.
+- **Workbench B** — opened from A. Environment A acts on. Not a customer.
+- **Diagnostic Safety Workbench** — created from B. Holds a diagnostic *evidence* state. Does not emit y = diagnosis.
+- **Music** — first live vertical. Home rails Create → Prove → Learn → Act. `/nfts` is the $1 launch object.
 
-A_t      = .self(M_t, B_t)
-hatΔB_t  = P(A_t, M_t, B_t)
-y_t      = π(A_t, hatΔB_t)
-B_{t+1}  = W(B_t, y_t)
-e_t      = (B_{t+1} - B_t) - hatΔB_t
-z_t      = Φ(B_t, y_t, e_t, G_t)
-M_{t+1}  = M_t ⊕ z_t
-A_{t+1}  = .self(M_{t+1}, B_{t+1})
+Top nav: Workspace · Marketplace · Playlist. Protocol is not on `/`.
 
-
-Center formula:
-A_{t+1} = .self( M_t ⊕ Φ[ B_{t+1} - B_t - P(A_t, M_t, B_t) ], B_{t+1} )
-B_{t+1} = W(B_t, A_t)
+A_t = .self(M_t, B_t)
+B_{t+1} = W(B_t, y_t)
+e_t = ΔB_t - P(A_t, M_t, B_t)
+z_t = Φ(...)
+A_{t+1} = .self(M_t ⊕ z_t, B_{t+1})
 
 
-Observable stand-in, not a theorem:
-V_t = e_t²
-want V(M_{t+1}, B_{t+1}) < V(M_t, B_t) when e_t ≠ 0
-claimed_global_convergence = false
+On the safety workbench, z is evidence state (completeness, contradiction, missing, uncertainty). y is HOLD / CLINICIAN_REVIEW / ESCALATE. Validated → clinician. Unresolved → escalation. Second-order question: what could make this wrong?
 
-
-Hierarchy: Workspace contains workbench B. `.self(M,B)` is A. A1 planner, A2 executor, A3 evaluator emit y into B. Observe ΔB / e → z → M → `.self()` ↺
-
-Music is the first vertical (`/nfts`). Misdiagnosis / diagnostics is later domain context, not an owned asset.
+This does not eliminate misdiagnosis. It is not a cleared medical device. Clinical validation is not claimed.
 
 ## Live
 
 | Path | Role |
 |---|---|
-| [/workspace](https://shiyan-dap.vercel.app/workspace) | A. Step `.self()`. |
-| [/workbench](https://shiyan-dap.vercel.app/workbench) | B. W(B,y). |
-| [/self](https://shiyan-dap.vercel.app/self) | Operator. |
-| [/agents](https://shiyan-dap.vercel.app/agents) | A1 A2 A3. |
-| [/ledger](https://shiyan-dap.vercel.app/ledger) | Record. |
+| [/](https://shiyan-dap.vercel.app) | Home. Music rails. No extra Protocol pill. |
+| [/workspace](https://shiyan-dap.vercel.app/workspace) | A. Domain + open workbench. |
+| [/workbench](https://shiyan-dap.vercel.app/workbench) | B. Create safety workbench. Noise nav. |
+| [/workbench/safety](https://shiyan-dap.vercel.app/workbench/safety) | Evidence state instance. |
+| [/playlist](https://shiyan-dap.vercel.app/playlist) | Music playlist. |
+| [/marketplace](https://shiyan-dap.vercel.app/marketplace) | Marketplace. |
 | [/nfts](https://shiyan-dap.vercel.app/nfts) | Music $1 rail. |
 | [/proof](https://shiyan-dap.vercel.app/proof) | Return URL ≠ paid. |
-| [/api/workspace/step](https://shiyan-dap.vercel.app/api/workspace/step) | GET snapshot / POST one tick. |
-| [/api/workspace/state](https://shiyan-dap.vercel.app/api/workspace/state) | Ledger JSON. |
-| [/api/stripe/webhook](https://shiyan-dap.vercel.app/api/stripe/webhook) | Observe only. `settlement_written: false`. |
+| [/api/workbench/diagnostic](https://shiyan-dap.vercel.app/api/workbench/diagnostic) | Evidence JSON. |
+| [/api/stripe/webhook](https://shiyan-dap.vercel.app/api/stripe/webhook) | Observe only. |
 
 ## Not yet
 
-- Proven global convergence (Lyapunov V* )
-- Independent payer as market proof
-- Level 3
-- $10 / month billing
-- Diagnostics product
-- Any acquisition
-
+Independent payer as market proof, Level 3, $10 billing, proven global convergence, diagnostics product, any acquisition, error-elimination claim, device claim.
