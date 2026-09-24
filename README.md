@@ -128,6 +128,29 @@ Created from B. Holds evidence state (completeness, contradiction, missing, unce
 
 This does not eliminate misdiagnosis. It is not a cleared medical device. Clinical validation is not claimed.
 
+## Measured: does e shrink as M grows?
+
+Protocol: 12 seeds × 80 ticks. Same operator as `src/lib/control-loop.ts`. Process noise σ = 0.015.
+
+Result as implemented:
+
+- mean ||e|| at M 1–10: 0.034
+- mean ||e|| at M 71–80: 0.063
+- corr(||e||, |M|): +0.37
+- mean V: 3.14 → 0.08
+
+||e|| does not shrink as memory grows. V does. Current P() is almost static, so extra ledger rows do not improve the predictor. Late ticks also move into execute_task and [0,1] clipping, which raises model mismatch.
+
+||e|| shrinks with M only if P learns residuals from the ledger. A one-line bias update on each action, bias_y ← (1-η) bias_y + η (ΔB − P0), produced corr(||e||, |M|) = −0.17 and late mean ||e|| = 0.030.
+
+So today:
+
+- M improves action selection and B / V
+- M does not yet improve P
+- lim ||e_t|| = 0 remains an observation target, not a measured property
+
+Next proof for this claim: persist per-action residual in M and show late ||e|| < early ||e|| on the live /api/workbench/loop ledger, not only in this offline run.
+
 ## Code
 
 - `src/lib/control-loop.ts` — B, Self, P, W, e, Φ, M ⊕ z, V, ledger
