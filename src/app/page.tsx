@@ -4,11 +4,10 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
-const rails = [
-  { href: "/upload", label: "Create" },
-  { href: "/nfts", label: "Prove" },
-  { href: "/measurements", label: "Learn" },
-  { href: "/bot", label: "Act" },
+const places = [
+  { href: "/workspace", label: "Workspace" },
+  { href: "/marketplace", label: "Marketplace" },
+  { href: "/playlist", label: "Playlist" },
 ];
 
 export default function HomePage() {
@@ -46,17 +45,17 @@ export default function HomePage() {
         <p className="text-zinc-400 max-w-2xl mb-8">
           Shiyan is Workspace A: Self() writes z from the ledger and
           names the next action. Music is the first vertical. B is
-          the workbench, not a customer. Diagnostic safety lives on
-          the workbench, not on this home row.
+          the workbench, not a customer. Diagnostic safety is created
+          from the workbench.
         </p>
         <div className="flex flex-wrap gap-3 mb-12">
-          {rails.map((rail) => (
+          {places.map((place) => (
             <Link
-              key={rail.href}
-              href={rail.href}
+              key={place.href}
+              href={place.href}
               className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
             >
-              {rail.label}
+              {place.label}
             </Link>
           ))}
         </div>
