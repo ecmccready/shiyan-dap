@@ -19,9 +19,9 @@ type Snap = {
   B: number;
   z: number;
   cycles: Cycle[];
-  autonomy: boolean;
-  recursion: boolean;
-  convergence: boolean;
+  policy0: number | null;
+  policy_now?: { action: number; source: string };
+  experience_changed_policy: boolean;
   operator_chose_action: boolean;
 };
 
@@ -49,17 +49,18 @@ export default function WorkspacePage() {
   return (
     <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-3xl mx-auto space-y-6">
       <p className="text-xs uppercase tracking-widest text-emerald-400">
-        Proof · deterministic B · operator out after init
+        Proof · does experience change the next policy?
       </p>
       <h1 className="text-2xl font-semibold">Workspace A</h1>
       <p className="text-sm text-zinc-400">
-        Goal: drive |B| from 100 to 0. Actions {"{+10,+5,−5,−10}"}.
-        A is not told the optimum. z = |B'| is measured, not an LLM
-        opinion. After Initialize, Run is the system only.
+        Not “can an LLM produce an answer?” A acts on B, measures z,
+        writes E, Self() uses E, A selects the next y. Goal: |B| from
+        100 toward 0. Actions {"{+10,+5,−5,−10}"}. After Initialize,
+        the operator does not pick the action.
       </p>
       <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
-        {`A0(M0,B0) → y0 → B1=W(B0,y0) → z1=Φ → A1=.self(M0+z1,B1) → y1
-INPUT → PREDICT → ACT → MEASURE → z → .self() → …`}
+        {`A(M,B) → y → B'=W(B,y) → z=|B'| → Self(M⊕z,B') → y'
+probe policy at B=100 before E vs after E`}
       </pre>
 
       <div className="flex flex-wrap gap-4 text-sm">
@@ -92,9 +93,15 @@ INPUT → PREDICT → ACT → MEASURE → z → .self() → …`}
       {data && (
         <section className="text-xs font-mono space-y-2">
           <p>
-            {data.A} B={data.B} z={data.z} autonomy=
-            {String(data.autonomy)} recursion={String(data.recursion)}{" "}
-            convergence={String(data.convergence)} operator_chose_action=
+            question: Does experience change the next policy?
+            <br />
+            {data.A} B={data.B} z={data.z}
+            <br />
+            policy0={String(data.policy0)} policy_now=
+            {data.policy_now?.action} ({data.policy_now?.source})
+            <br />
+            experience_changed_policy=
+            {String(data.experience_changed_policy)} operator_chose_action=
             {String(data.operator_chose_action)}
           </p>
           <div className="overflow-x-auto border border-zinc-800 rounded-lg">
@@ -110,7 +117,7 @@ INPUT → PREDICT → ACT → MEASURE → z → .self() → …`}
                 </tr>
               </thead>
               <tbody>
-                {data.cycles.map((c) => (
+                {(data.cycles || []).map((c) => (
                   <tr key={c.cycle} className="border-t border-zinc-800">
                     <td className="p-2">{c.cycle}</td>
                     <td className="p-2">{c.prediction}</td>
@@ -128,7 +135,7 @@ INPUT → PREDICT → ACT → MEASURE → z → .self() → …`}
 
       <nav className="flex flex-wrap gap-3 text-sm">
         <Link className="underline" href="/workbench">
-          B
+          Workbench B
         </Link>
         <Link className="underline" href="/api/workspace/proof">
           JSON log
