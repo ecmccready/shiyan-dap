@@ -3,104 +3,87 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type Payload = {
+type Exp = {
+  task: string;
+  action: string;
+  predicted: number;
+  observed: number;
+  error: number;
+  successful: boolean;
+};
+
+type Snap = {
   next_task?: string;
   weakest?: string;
-  rec?: {
-    y: string;
-    e: number;
-    V: number;
-    z: string;
-    hatDelta: number;
-    delta: number;
-  };
-  latest?: { task: string; successful: boolean; error: number };
-  skills?: { tasks: Record<string, { n: number; meanAbsE: number }> };
+  B?: { s: number };
+  latest?: Exp;
+  experiences?: Exp[];
+  claimed_self_improving_ai?: boolean;
 };
 
 export default function WorkspacePage() {
-  const [data, setData] = useState<Payload | null>(null);
+  const [data, setData] = useState<Snap | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function load() {
-    const res = await fetch("/api/workspace/experience");
-    setData(await res.json());
+    setData(await (await fetch("/api/workspace/experience")).json());
   }
 
   useEffect(() => {
     load();
   }, []);
 
-  async function tick() {
+  async function run() {
     setBusy(true);
-    const res = await fetch("/api/workspace/experience", { method: "POST" });
-    setData(await res.json());
+    setData(await (await fetch("/api/workspace/experience", { method: "POST" })).json());
     setBusy(false);
   }
 
   return (
     <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-2xl mx-auto space-y-6">
       <p className="text-xs uppercase tracking-widest text-emerald-400">
-        Workspace A · learning controller · not weight training
+        Workspace A · Task · Policy · Evaluator · Memory · Self()
       </p>
       <h1 className="text-2xl font-semibold">Workspace A</h1>
       <p className="text-sm text-zinc-400">
-        A is the autonomous controller. B is the P2P state machine A
-        acts in. Ledger is experience memory. Self() revises policy
-        from E, not from a claim that the foundation model retrains.
-        Next task aims at the weakest skill.
+        Native loop: propose task, predict, act on P2P B, measure e,
+        write E, target weakest skill. Retrieval from similar states
+        drives P(), not a fixed table alone. Not SIMA 2. Not weight
+        training.
       </p>
-
       <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
-        {`A  Workspace = controller
-B  P2P State Machine = environment / workbench
-M  Ledger = persistent experience
-z  compressed state / next-action
-Self()  policy revision
-P()  prediction
-W()  world transition
-e  prediction error
-V  progress / value
-Task generator  what A learns next
-
-A → Task → Action → B' → Measure → E → A'
+        {`A → Task → Action → B' → Measure → E → A'
+P from similar E    W(B,y)    e = ΔB − hatΔB
+next T = weakest mean|e|
 claimed_self_improving_ai = false`}
       </pre>
-
       <button
         type="button"
         disabled={busy}
-        onClick={tick}
+        onClick={run}
         className="text-sm underline disabled:opacity-50"
       >
-        Write experience + next task
+        Execute task
       </button>
-
       {data && (
         <section className="text-xs font-mono border border-zinc-800 rounded-lg p-4 space-y-1">
-          <p>next_task: {data.next_task || data.weakest}</p>
-          <p>weakest: {data.weakest}</p>
-          {data.rec && (
-            <p>
-              y={data.rec.y} hatΔ={data.rec.hatDelta} Δ={data.rec.delta} e=
-              {data.rec.e} V={data.rec.V}
-            </p>
-          )}
+          <p>B.s={data.B?.s} next_task={data.next_task} weakest={data.weakest}</p>
           {data.latest && (
             <p>
-              last E: {data.latest.task} e={data.latest.error} ok=
+              y={data.latest.action} hat={data.latest.predicted} Δ=
+              {data.latest.observed} e={data.latest.error} ok=
               {String(data.latest.successful)}
             </p>
           )}
+          <p>E n={data.experiences?.length ?? 0}</p>
         </section>
       )}
-
       <nav className="flex flex-wrap gap-3 text-sm">
         <Link className="underline" href="/workbench">
-          Workbench B
+          P2P B
         </Link>
-        <Link className="underline" href="/ledger">
-          Ledger
+        <Link className="underline" href="/self">
+          Names
         </Link>
         <Link className="underline" href="/">
           Home
