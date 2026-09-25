@@ -3,87 +3,135 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type Exp = {
-  task: string;
-  action: string;
-  predicted: number;
-  observed: number;
-  error: number;
-  successful: boolean;
+type Cycle = {
+  cycle: number;
+  state: number;
+  prediction: number;
+  action: number;
+  result: number;
+  z: number;
+  next_self: string;
 };
 
 type Snap = {
-  next_task?: string;
-  weakest?: string;
-  B?: { s: number };
-  latest?: Exp;
-  experiences?: Exp[];
-  claimed_self_improving_ai?: boolean;
+  inited: boolean;
+  A: string;
+  B: number;
+  z: number;
+  cycles: Cycle[];
+  autonomy: boolean;
+  recursion: boolean;
+  convergence: boolean;
+  operator_chose_action: boolean;
 };
 
 export default function WorkspacePage() {
   const [data, setData] = useState<Snap | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function load() {
-    setData(await (await fetch("/api/workspace/experience")).json());
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  async function run() {
+  async function call(body: object) {
     setBusy(true);
-    setData(await (await fetch("/api/workspace/experience", { method: "POST" })).json());
+    const res = await fetch("/api/workspace/proof", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    setData(await res.json());
     setBusy(false);
   }
 
+  useEffect(() => {
+    fetch("/api/workspace/proof")
+      .then((r) => r.json())
+      .then(setData);
+  }, []);
+
   return (
-    <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-2xl mx-auto space-y-6">
+    <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-3xl mx-auto space-y-6">
       <p className="text-xs uppercase tracking-widest text-emerald-400">
-        Workspace A · Task · Policy · Evaluator · Memory · Self()
+        Proof · deterministic B · operator out after init
       </p>
       <h1 className="text-2xl font-semibold">Workspace A</h1>
       <p className="text-sm text-zinc-400">
-        Native loop: propose task, predict, act on P2P B, measure e,
-        write E, target weakest skill. Retrieval from similar states
-        drives P(), not a fixed table alone. Not SIMA 2. Not weight
-        training.
+        Goal: drive |B| from 100 to 0. Actions {"{+10,+5,−5,−10}"}.
+        A is not told the optimum. z = |B'| is measured, not an LLM
+        opinion. After Initialize, Run is the system only.
       </p>
       <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
-        {`A → Task → Action → B' → Measure → E → A'
-P from similar E    W(B,y)    e = ΔB − hatΔB
-next T = weakest mean|e|
-claimed_self_improving_ai = false`}
+        {`A0(M0,B0) → y0 → B1=W(B0,y0) → z1=Φ → A1=.self(M0+z1,B1) → y1
+INPUT → PREDICT → ACT → MEASURE → z → .self() → …`}
       </pre>
-      <button
-        type="button"
-        disabled={busy}
-        onClick={run}
-        className="text-sm underline disabled:opacity-50"
-      >
-        Execute task
-      </button>
+
+      <div className="flex flex-wrap gap-4 text-sm">
+        <button
+          type="button"
+          disabled={busy}
+          className="underline disabled:opacity-50"
+          onClick={() => call({ reset: true })}
+        >
+          Initialize A and B
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          className="underline disabled:opacity-50"
+          onClick={() => call({ run: true, n: 12 })}
+        >
+          Run 12 cycles
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          className="underline disabled:opacity-50"
+          onClick={() => call({})}
+        >
+          One cycle
+        </button>
+      </div>
+
       {data && (
-        <section className="text-xs font-mono border border-zinc-800 rounded-lg p-4 space-y-1">
-          <p>B.s={data.B?.s} next_task={data.next_task} weakest={data.weakest}</p>
-          {data.latest && (
-            <p>
-              y={data.latest.action} hat={data.latest.predicted} Δ=
-              {data.latest.observed} e={data.latest.error} ok=
-              {String(data.latest.successful)}
-            </p>
-          )}
-          <p>E n={data.experiences?.length ?? 0}</p>
+        <section className="text-xs font-mono space-y-2">
+          <p>
+            {data.A} B={data.B} z={data.z} autonomy=
+            {String(data.autonomy)} recursion={String(data.recursion)}{" "}
+            convergence={String(data.convergence)} operator_chose_action=
+            {String(data.operator_chose_action)}
+          </p>
+          <div className="overflow-x-auto border border-zinc-800 rounded-lg">
+            <table className="w-full text-left">
+              <thead className="text-emerald-400">
+                <tr>
+                  <th className="p-2">Cycle</th>
+                  <th className="p-2">A prediction</th>
+                  <th className="p-2">Action</th>
+                  <th className="p-2">B state</th>
+                  <th className="p-2">z</th>
+                  <th className="p-2">Next A</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.cycles.map((c) => (
+                  <tr key={c.cycle} className="border-t border-zinc-800">
+                    <td className="p-2">{c.cycle}</td>
+                    <td className="p-2">{c.prediction}</td>
+                    <td className="p-2">{c.action}</td>
+                    <td className="p-2">{c.result}</td>
+                    <td className="p-2">{c.z}</td>
+                    <td className="p-2">{c.next_self}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
+
       <nav className="flex flex-wrap gap-3 text-sm">
         <Link className="underline" href="/workbench">
-          P2P B
+          B
         </Link>
-        <Link className="underline" href="/self">
-          Names
+        <Link className="underline" href="/api/workspace/proof">
+          JSON log
         </Link>
         <Link className="underline" href="/">
           Home
