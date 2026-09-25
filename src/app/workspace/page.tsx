@@ -1,155 +1,111 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 
-type Snap = {
-  A?: {
-    confidence: number;
+type Payload = {
+  next_task?: string;
+  weakest?: string;
+  rec?: {
     y: string;
-    candidates: { action: string; score: number; locked: boolean }[];
-    locked: { execute_task: boolean };
+    e: number;
+    V: number;
+    z: string;
+    hatDelta: number;
+    delta: number;
   };
-  B?: Record<string, number>;
-  G?: Record<string, number>;
-  V?: number;
-  e_norm?: number | null;
-  last_z?: string | null;
-  ledger?: { dV: number }[];
+  latest?: { task: string; successful: boolean; error: number };
+  skills?: { tasks: Record<string, { n: number; meanAbsE: number }> };
 };
 
-function Meter({ label, v, invert }: { label: string; v: number; invert?: boolean }) {
-  const good = invert ? 1 - v : v;
-  return (
-    <p className="text-xs font-mono">
-      {label} {v.toFixed(3)}
-      <span className="ml-2 inline-block h-1 w-24 bg-zinc-800 align-middle">
-        <span
-          className="block h-1 bg-emerald-500"
-          style={{ width: `${Math.max(0, Math.min(100, good * 100))}%` }}
-        />
-      </span>
-    </p>
-  );
-}
-
-function WorkspaceInner() {
-  const router = useRouter();
-  const q = useSearchParams();
-  const domain = q.get("domain") === "safety" ? "safety" : "music";
-  const [snap, setSnap] = useState<Snap | null>(null);
+export default function WorkspacePage() {
+  const [data, setData] = useState<Payload | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function load() {
-    const r = await fetch("/api/workbench/loop", { cache: "no-store" });
-    setSnap(await r.json());
-  }
-  async function stepSelf() {
-    setBusy(true);
-    await fetch("/api/workbench/loop", { method: "POST", body: "{}" });
-    await load();
-    setBusy(false);
+    const res = await fetch("/api/workspace/experience");
+    setData(await res.json());
   }
 
   useEffect(() => {
     load();
   }, []);
 
-  const last = snap?.ledger?.slice(-1)[0];
+  async function tick() {
+    setBusy(true);
+    const res = await fetch("/api/workspace/experience", { method: "POST" });
+    setData(await res.json());
+    setBusy(false);
+  }
 
   return (
     <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-2xl mx-auto space-y-6">
       <p className="text-xs uppercase tracking-widest text-emerald-400">
-        Workspace A · governs / observes / validates
+        Workspace A · learning controller · not weight training
       </p>
       <h1 className="text-2xl font-semibold">Workspace A</h1>
       <p className="text-sm text-zinc-400">
-        A owns Self() and z. B is the workbench A opens — not a customer.
-        A page load is not a step. Step Self() writes e, z, V to the ledger.
+        A is the autonomous controller. B is the P2P state machine A
+        acts in. Ledger is experience memory. Self() revises policy
+        from E, not from a claim that the foundation model retrains.
+        Next task aims at the weakest skill.
       </p>
 
-      <label className="block text-sm">
-        <span className="text-xs text-emerald-400">Domain</span>
-        <select
-          className="mt-1 w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2"
-          value={domain}
-          onChange={(e) => router.push("/workspace?domain=" + e.target.value)}
-        >
-          <option value="music">Music</option>
-          <option value="safety">Diagnostic safety</option>
-        </select>
-      </label>
+      <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
+        {`A  Workspace = controller
+B  P2P State Machine = environment / workbench
+M  Ledger = persistent experience
+z  compressed state / next-action
+Self()  policy revision
+P()  prediction
+W()  world transition
+e  prediction error
+V  progress / value
+Task generator  what A learns next
 
-      <section className="border border-emerald-800 rounded-lg p-4 space-y-2">
-        <p className="text-xs text-emerald-400">Controller A</p>
-        <p className="font-mono text-sm">
-          y = {snap?.A?.y ?? "—"} · conf {snap?.A?.confidence?.toFixed(3) ?? "—"}
-        </p>
-        <p className="text-xs text-zinc-500">
-          execute_task {snap?.A?.locked.execute_task ? "LOCKED" : "open"}
-        </p>
-        <button
-          onClick={stepSelf}
-          disabled={busy}
-          className="text-sm underline disabled:text-zinc-600"
-        >
-          {busy ? "Stepping…" : "Step Self()"}
-        </button>
-        <Link className="ml-4 text-sm underline" href="/workbench">
-          Open workbench
-        </Link>
-      </section>
+A → Task → Action → B' → Measure → E → A'
+claimed_self_improving_ai = false`}
+      </pre>
 
-      <section className="border border-zinc-800 rounded-lg p-4 space-y-1">
-        <p className="text-xs text-emerald-400">Workbench B</p>
-        {snap?.B ? (
-          <>
-            <Meter label="completeness" v={snap.B.completeness} />
-            <Meter label="contradiction" v={snap.B.contradiction} invert />
-            <Meter label="missing" v={snap.B.missing} invert />
-            <Meter label="uncertainty" v={snap.B.uncertainty} invert />
-            <Meter label="useful" v={snap.B.useful} />
-          </>
-        ) : (
-          <p className="text-xs text-zinc-500">Loop API not loaded.</p>
-        )}
-      </section>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={tick}
+        className="text-sm underline disabled:opacity-50"
+      >
+        Write experience + next task
+      </button>
 
-      <section className="border border-zinc-800 rounded-lg p-4 space-y-1 font-mono text-xs">
-        <p className="text-emerald-400">z · e · V</p>
-        <p>{snap?.last_z ?? "No tick yet."}</p>
-        <p>e_norm {snap?.e_norm ?? "—"}</p>
-        <p>
-          V {snap?.V ?? "—"} · dV {last ? last.dV : "—"} ·{" "}
-          {last ? (last.dV < 0 ? "V fell" : "V did not fall") : "—"}
-        </p>
-        <p className="text-zinc-500">Observable, not theorem. No global convergence claim.</p>
-      </section>
-
-      {domain === "music" ? (
-        <nav className="flex flex-wrap gap-3 text-sm">
-          <Link className="underline" href="/nfts">Music rail</Link>
-          <Link className="underline" href="/playlist">Playlist</Link>
-          <Link className="underline" href="/upload">Create</Link>
-          <Link className="underline" href="/loop">Loop</Link>
-          <Link className="underline" href="/self">Self()</Link>
-        </nav>
-      ) : (
-        <nav className="flex flex-wrap gap-3 text-sm">
-          <Link className="underline" href="/workbench">Workbench</Link>
-          <Link className="underline" href="/workbench/safety">Diagnostic Safety Workbench</Link>
-          <Link className="underline" href="/self">Self()</Link>
-        </nav>
+      {data && (
+        <section className="text-xs font-mono border border-zinc-800 rounded-lg p-4 space-y-1">
+          <p>next_task: {data.next_task || data.weakest}</p>
+          <p>weakest: {data.weakest}</p>
+          {data.rec && (
+            <p>
+              y={data.rec.y} hatΔ={data.rec.hatDelta} Δ={data.rec.delta} e=
+              {data.rec.e} V={data.rec.V}
+            </p>
+          )}
+          {data.latest && (
+            <p>
+              last E: {data.latest.task} e={data.latest.error} ok=
+              {String(data.latest.successful)}
+            </p>
+          )}
+        </section>
       )}
-    </main>
-  );
-}
 
-export default function WorkspacePage() {
-  return (
-    <Suspense fallback={<main className="bg-black min-h-screen" />}>
-      <WorkspaceInner />
-    </Suspense>
+      <nav className="flex flex-wrap gap-3 text-sm">
+        <Link className="underline" href="/workbench">
+          Workbench B
+        </Link>
+        <Link className="underline" href="/ledger">
+          Ledger
+        </Link>
+        <Link className="underline" href="/">
+          Home
+        </Link>
+      </nav>
+    </main>
   );
 }
