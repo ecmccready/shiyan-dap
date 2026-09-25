@@ -6,51 +6,53 @@ Around that core runs a decentralized marketplace where people and agents transa
 
 What it sells is the thing collaboration has never had: a shared memory that can't lie — so teams, creators, and agent networks pay to work inside the one place whose history is provable and whose next move is earned.
 
-## Architecture
-Workspace A
-  Task · Policy · Evaluator · Memory · Self()
-        ↓
-P2P Workbench B
-        ↓
-   Experience
-        → A
+## Demonstration
 
+The question is not “can an LLM produce an answer?”
 
-- **Workspace A** — controller. Task setter and evaluator live inside A.
-- **P2P State Machine B** — environment that generates experience. Not a customer.
-- **Ledger** — experience memory `E`, not only an audit trail.
-- **z** — compressed state / next-action signal.
-- **Self()** — policy revision from `M ⊕ E`.
-- **P()** — prediction from retrieved similar `E`.
-- **W()** — world transition `B' = W(B,y)`.
-- **e** — `ΔB − hatΔB`.
-- **V** — `e²` progress stand-in.
-- **Task generator** — next `T` = weakest skill (highest mean `|e|`).
+The question is: can A act on B, measure the consequence, encode it into E/z, reconstruct itself through Self(), and autonomously select the next task/action?
 
-A_t → Task_t → Action_t → B_{t+1} → Measure → E_t → A_{t+1}
-A_{t+1} = Self(A_t, M_t ⊕ E_t, B_{t+1})
-B_{t+1} = W(B_t, y_t)
-T_{t+1} = Task(A_{t+1}, B_{t+1}, z_t)
+On `/workspace`:
 
+1. Initialize A and B (B₀ = 100, goal |B| → 0, actions {+10, +5, −5, −10}).
+2. Run cycles. The operator does not type y.
+3. First actions explore. Later P() uses measured E.
+4. Probe policy at the same state B=100 before E and after E.
 
-This is a SIMA-*like* experience loop. It is not SIMA 2. It is not foundation-model weight training. `claimed_self_improving_ai = false`.
+That is the demonstration: A acted on B, z entered E, Self() used E, next y was not typed by you.
 
-Music is the first vertical. Diagnostic Safety Workbench is created from B as evidence state, not as a diagnosis.
+Flags on the proof JSON:
+
+- `experience_changed_policy`
+- `operator_chose_action: false`
+- `claimed_llm_demo: false`
+- `claimed_self_improving_ai: false`
+
+Autonomy = system chose y. Recursion = later A sees prior z. Convergence = |B| moved off 100. Those are observations on a deterministic workbench, not a trained-weight or healthcare claim.
+
+## Names
+
+- **Workspace A** — controller (task, policy, evaluator, memory, Self()).
+- **P2P Workbench B** — environment that generates experience.
+- **Ledger / E** — experience memory.
+- **z** — measured |B'| (not an LLM opinion).
+- **Self()** — policy revision from M ⊕ E.
+- **P()** — prediction from retrieved E.
+- **W()** — B' = B + y.
+
+Music is the first vertical. Diagnostic safety is an evidence workbench created from B, not a diagnosis product.
 
 ## Live
 
 | Path | Role |
 |---|---|
 | [/](https://shiyan-dap.vercel.app) | Home. Workspace / Marketplace / Playlist. Grok Bot. |
-| [/workspace](https://shiyan-dap.vercel.app/workspace) | Execute task. Write E. Next weakest T. |
+| [/workspace](https://shiyan-dap.vercel.app/workspace) | Proof table. Initialize / run. |
 | [/workbench](https://shiyan-dap.vercel.app/workbench) | P2P B. |
-| [/workbench/safety](https://shiyan-dap.vercel.app/workbench/safety) | Diagnostic evidence state. |
-| [/architecture](https://shiyan-dap.vercel.app/architecture) | Correspondence table. |
-| [/self](https://shiyan-dap.vercel.app/self) | Names. |
-| [/api/workspace/experience](https://shiyan-dap.vercel.app/api/workspace/experience) | GET snapshot / POST tick. |
+| [/workbench/safety](https://shiyan-dap.vercel.app/workbench/safety) | Evidence state. |
+| [/api/workspace/proof](https://shiyan-dap.vercel.app/api/workspace/proof) | Cycle log. |
 | [/nfts](https://shiyan-dap.vercel.app/nfts) | Music $1 rail. |
 
 ## Not yet
 
-Self-improving AI claim, SIMA 2 reproduction, weight training, proven global convergence, independent payer proof, Level 3, $10 billing, diagnostics product, misdiagnosis elimination, device claim.
-
+Self-improving AI claim, SIMA 2 reproduction, foundation-model weight training, proven global convergence, independent payer as market proof, Level 3, $10 billing, diagnostics product, misdiagnosis elimination, device claim.
