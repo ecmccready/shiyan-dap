@@ -14,15 +14,23 @@ type Cycle = {
 };
 
 type Snap = {
-  inited: boolean;
   A: string;
   B: number;
   z: number;
   cycles: Cycle[];
   policy0: number | null;
   policy_now?: { action: number; source: string };
-  experience_changed_policy: boolean;
-  operator_chose_action: boolean;
+  experience_changed_policy?: boolean;
+  operator_chose_action?: boolean;
+  z_now?: number;
+  z_if_policy0?: number;
+  different_because_E?: boolean;
+  better_because_E?: boolean;
+  milestone?: string;
+  pass?: number;
+  trials?: number;
+  rate?: number;
+  toward_demonstrated_autonomous_ai?: boolean;
 };
 
 export default function WorkspacePage() {
@@ -49,69 +57,58 @@ export default function WorkspacePage() {
   return (
     <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-3xl mx-auto space-y-6">
       <p className="text-xs uppercase tracking-widest text-emerald-400">
-        Proof · does experience change the next policy?
+        Milestone · Aₜ₊₁ different/better because of E,z
       </p>
       <h1 className="text-2xl font-semibold">Workspace A</h1>
       <p className="text-sm text-zinc-400">
-        Not “can an LLM produce an answer?” A acts on B, measures z,
-        writes E, Self() uses E, A selects the next y. Goal: |B| from
-        100 toward 0. Actions {"{+10,+5,−5,−10}"}. After Initialize,
-        the operator does not pick the action.
+        You initialize. After that A selects y. Compare actual |B|
+        to the same number of steps frozen at policy0. If policy
+        changes and |B| is lower than that freeze, Aₜ₊₁ is
+        measurably different and better because of E and z.
       </p>
-      <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
-        {`A(M,B) → y → B'=W(B,y) → z=|B'| → Self(M⊕z,B') → y'
-probe policy at B=100 before E vs after E`}
-      </pre>
 
       <div className="flex flex-wrap gap-4 text-sm">
-        <button
-          type="button"
-          disabled={busy}
-          className="underline disabled:opacity-50"
-          onClick={() => call({ reset: true })}
-        >
-          Initialize A and B
+        <button type="button" disabled={busy} className="underline disabled:opacity-50" onClick={() => call({ reset: true })}>
+          Initialize
         </button>
-        <button
-          type="button"
-          disabled={busy}
-          className="underline disabled:opacity-50"
-          onClick={() => call({ run: true, n: 12 })}
-        >
-          Run 12 cycles
+        <button type="button" disabled={busy} className="underline disabled:opacity-50" onClick={() => call({ run: true, n: 12 })}>
+          Run 12
         </button>
-        <button
-          type="button"
-          disabled={busy}
-          className="underline disabled:opacity-50"
-          onClick={() => call({})}
-        >
-          One cycle
+        <button type="button" disabled={busy} className="underline disabled:opacity-50" onClick={() => call({ experiment: true, trials: 5, n: 12 })}>
+          Repeat 5×
         </button>
       </div>
 
       {data && (
         <section className="text-xs font-mono space-y-2">
           <p>
-            question: Does experience change the next policy?
-            <br />
             {data.A} B={data.B} z={data.z}
             <br />
-            policy0={String(data.policy0)} policy_now=
-            {data.policy_now?.action} ({data.policy_now?.source})
+            policy0={String(data.policy0)} now={data.policy_now?.action}{" "}
+            ({data.policy_now?.source})
             <br />
-            experience_changed_policy=
-            {String(data.experience_changed_policy)} operator_chose_action=
-            {String(data.operator_chose_action)}
+            z_now={data.z_now ?? data.z} z_if_policy0={String(data.z_if_policy0)}
+            <br />
+            different_because_E={String(data.different_because_E)} better_because_E=
+            {String(data.better_because_E)}
+            <br />
+            {data.trials != null && (
+              <>
+                pass={data.pass}/{data.trials} rate={data.rate} toward=
+                {String(data.toward_demonstrated_autonomous_ai)}
+                <br />
+              </>
+            )}
+            {data.milestone}
           </p>
           <div className="overflow-x-auto border border-zinc-800 rounded-lg">
             <table className="w-full text-left">
               <thead className="text-emerald-400">
                 <tr>
                   <th className="p-2">Cycle</th>
-                  <th className="p-2">A prediction</th>
-                  <th className="p-2">Action</th>
-                  <th className="p-2">B state</th>
+                  <th className="p-2">Pred</th>
+                  <th className="p-2">y</th>
+                  <th className="p-2">B</th>
                   <th className="p-2">z</th>
                   <th className="p-2">Next A</th>
                 </tr>
@@ -135,10 +132,10 @@ probe policy at B=100 before E vs after E`}
 
       <nav className="flex flex-wrap gap-3 text-sm">
         <Link className="underline" href="/workbench">
-          Workbench B
+          B
         </Link>
         <Link className="underline" href="/api/workspace/proof">
-          JSON log
+          JSON
         </Link>
         <Link className="underline" href="/">
           Home
