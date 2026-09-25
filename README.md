@@ -6,53 +6,43 @@ Around that core runs a decentralized marketplace where people and agents transa
 
 What it sells is the thing collaboration has never had: a shared memory that can't lie — so teams, creators, and agent networks pay to work inside the one place whose history is provable and whose next move is earned.
 
-## Demonstration
+## A and B
 
-The question is not “can an LLM produce an answer?”
+- **Workspace A** — controller. Task, policy, evaluator, memory, Self().
+- **P2P Workbench B** — environment A acts on. Not a customer.
+- **E** — experience memory.
+- **z** — measured |B'| after W(B,y). Not an LLM opinion.
 
-The question is: can A act on B, measure the consequence, encode it into E/z, reconstruct itself through Self(), and autonomously select the next task/action?
+## What /workspace demonstrated
 
-On `/workspace`:
+Question: can A act on B, measure z, write E, Self(), and choose the next y without the operator typing the action?
 
-1. Initialize A and B (B₀ = 100, goal |B| → 0, actions {+10, +5, −5, −10}).
-2. Run cycles. The operator does not type y.
-3. First actions explore. Later P() uses measured E.
-4. Probe policy at the same state B=100 before E and after E.
+Live run on [https://shiyan-dap.vercel.app/workspace](https://shiyan-dap.vercel.app/workspace):
+
+- B₀ = 100. Goal |B| → 0. Actions {+10, +5, −5, −10}.
+- Cycles 0–3 explored each action.
+- Then A selected −10 repeatedly. |B| fell (example: A12, B=20, z=20).
+- `operator_chose_action: false`.
 
 That is the demonstration: A acted on B, z entered E, Self() used E, next y was not typed by you.
 
-Flags on the proof JSON:
+That is an **autonomous controller on a 1-D workbench**. It is not a self-training LLM, not SIMA 2, not AGI, not a clinical product.
 
-- `experience_changed_policy`
-- `operator_chose_action: false`
-- `claimed_llm_demo: false`
-- `claimed_self_improving_ai: false`
+A → y → B' = W(B,y) → z = |B'| → Self(M ⊕ z) → y'
 
-Autonomy = system chose y. Recursion = later A sees prior z. Convergence = |B| moved off 100. Those are observations on a deterministic workbench, not a trained-weight or healthcare claim.
-
-## Names
-
-- **Workspace A** — controller (task, policy, evaluator, memory, Self()).
-- **P2P Workbench B** — environment that generates experience.
-- **Ledger / E** — experience memory.
-- **z** — measured |B'| (not an LLM opinion).
-- **Self()** — policy revision from M ⊕ E.
-- **P()** — prediction from retrieved E.
-- **W()** — B' = B + y.
-
-Music is the first vertical. Diagnostic safety is an evidence workbench created from B, not a diagnosis product.
 
 ## Live
 
 | Path | Role |
 |---|---|
 | [/](https://shiyan-dap.vercel.app) | Home. Workspace / Marketplace / Playlist. Grok Bot. |
-| [/workspace](https://shiyan-dap.vercel.app/workspace) | Proof table. Initialize / run. |
+| [/workspace](https://shiyan-dap.vercel.app/workspace) | Proof table. |
 | [/workbench](https://shiyan-dap.vercel.app/workbench) | P2P B. |
-| [/workbench/safety](https://shiyan-dap.vercel.app/workbench/safety) | Evidence state. |
-| [/api/workspace/proof](https://shiyan-dap.vercel.app/api/workspace/proof) | Cycle log. |
+| [/workbench/safety](https://shiyan-dap.vercel.app/workbench/safety) | Diagnostic evidence state. Not a diagnosis. |
+| [/api/workspace/proof](https://shiyan-dap.vercel.app/api/workspace/proof) | Cycle JSON. |
 | [/nfts](https://shiyan-dap.vercel.app/nfts) | Music $1 rail. |
+| [/proof](https://shiyan-dap.vercel.app/proof) | Stripe return ≠ paid. |
 
 ## Not yet
 
-Self-improving AI claim, SIMA 2 reproduction, foundation-model weight training, proven global convergence, independent payer as market proof, Level 3, $10 billing, diagnostics product, misdiagnosis elimination, device claim.
+Self-improving foundation model, SIMA 2, claimed autonomous AGI, proven global convergence, independent payer as market proof, Level 3, $10 billing, diagnostics product, misdiagnosis elimination, device claim.
