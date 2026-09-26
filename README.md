@@ -75,48 +75,6 @@ Experience is one ledger row per step:
 ```ts
 { t, y, predicted, z, e, V, path: "fast" | "deep" | "bot", operator_chose_action }
 
-FormulasA→yB′=W(B,y)→zSelf(M⊕z)→y′A \xrightarrow{y} B' = W(B, y) \xrightarrow{z} \mathrm{Self}(M \oplus z) \xrightarrow{y'}A \xrightarrow{y} B' = W(B, y) \xrightarrow{z} \mathrm{Self}(M \oplus z) \xrightarrow{y'}
-z^t=P(Mt−1,yt)\hat{z}_{t} = P(M_{t-1}, y_t)\hat{z}_{t} = P(M_{t-1}, y_t)
-zt=measure(Bt′)z_t = \mathrm{measure}(B'_t)z_t = \mathrm{measure}(B'_t)
-et=zt−z^te_t = z_t - \hat{z}_te_t = z_t - \hat{z}_t
-Vt={∣zt∣scalar plant∥zt∥quality plantV_t =
-\begin{cases}
-|z_t| & \text{scalar plant} \\
-\|z_t\| & \text{quality plant}
-\end{cases}V_t =
-\begin{cases}
-|z_t| & \text{scalar plant} \\
-\|z_t\| & \text{quality plant}
-\end{cases}
-yt+1=Self(Mt⊕zt,et)y_{t+1} = \mathrm{Self}(M_t \oplus z_t, e_t)y_{t+1} = \mathrm{Self}(M_t \oplus z_t, e_t)
-autonomous(t)  ⟺  operator_chose_action(t)=false\mathrm{autonomous}(t) \iff \mathrm{operator\_chose\_action}(t) = \mathrm{false}\mathrm{autonomous}(t) \iff \mathrm{operator\_chose\_action}(t) = \mathrm{false}
-Symbol
-Meaning
-(A)
-Workspace. Task, policy, predictor (P), evaluator, memory (M), Self()
-(y)
-Action written onto a workbench
-(B)
-Workbench / environment. Not a buyer
-(W)
-Plant map. Swap per domain
-(B')
-Environment after the action
-z^\hat{z}\hat{z}
-
-Predicted measurement
-(z)
-Measured state / residual / defects
-(e)
-Prediction error
-(V)
-Value attained this step
-(M)
-Portable memory. Ledger of experience
-Self\mathrm{Self}\mathrm{Self}
-
-Score (z) and (e), update (M), lock or revise (y')
-
 ScopeIn:Model-portable Workspace A
 Workbenches as environments
 Predict → act → measure → error → Self() → next y
