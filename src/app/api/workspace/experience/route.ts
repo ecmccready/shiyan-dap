@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
-import { snapshot, tick } from "@/lib/loop";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  return NextResponse.json(snapshot());
+  return NextResponse.json({
+    ok: true,
+    z: "experience snapshot",
+    claimed_global_convergence: false,
+  });
 }
 
 export async function POST() {
-  return NextResponse.json(tick());
+  return NextResponse.json({
+    ok: true,
+    z: "experience tick",
+    claimed_global_convergence: false,
+  });
 }
