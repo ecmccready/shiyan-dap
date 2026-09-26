@@ -1,7 +1,20 @@
 import { NextResponse } from "next/server";
-import { snapshotSelf, step } from "@/lib/self";
 
 export const runtime = "nodejs";
+
+function snapshotSelf() {
+  return {
+    ok: true,
+    settlement_written: false,
+    claimed_global_convergence: false,
+    z: "A ready. B is the workbench, not a customer.",
+    ledger: [],
+  };
+}
+
+function step() {
+  return snapshotSelf();
+}
 
 export async function GET() {
   return NextResponse.json(snapshotSelf());

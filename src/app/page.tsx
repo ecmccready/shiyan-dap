@@ -6,9 +6,9 @@ import SiteHeader from "@/components/SiteHeader";
 
 const places = [
   { href: "/workspace", label: "Workspace A" },
-  { href: "/workbench", label: "Workbench B" },
-  { href: "/nfts", label: "Prove" },
+  { href: "/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
+  { href: "/single", label: "Songs" },
 ];
 
 export default function HomePage() {
@@ -49,8 +49,8 @@ export default function HomePage() {
         <p className="text-zinc-400 max-w-2xl mb-8">
           Music is the first vertical, not the product boundary. A is the
           controller: Self() writes z from the ledger and names y. B is the
-          workbench A acts on, not a customer. Diagnostic safety is created
-          from the workbench. There is no Buy as B rail.
+          workbench A opens, not a customer. Marketplace, Playlist, and Songs
+          are music rails. There is no Buy as B rail.
         </p>
 
         <div className="flex flex-wrap gap-3 mb-12">

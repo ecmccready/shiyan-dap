@@ -12,13 +12,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Shiyan Yishu",
   description:
-    "Decentralized music marketplace and advertising engine. Upload a song or story. Keep ownership. Get paid.",
+    "Workspace A controller. Workbench B environment. Music is the first vertical.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
