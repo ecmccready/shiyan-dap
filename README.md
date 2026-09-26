@@ -1,4 +1,4 @@
-# Shiyan DAP
+# Shiyan
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap
