@@ -117,42 +117,6 @@ Self\mathrm{Self}\mathrm{Self}
 
 Score (z) and (e), update (M), lock or revise (y')
 
-Scalar proof plant:B0=100,W(B,y)=B+y,y∈{+10,+5,−5,−10}B_0 = 100,\quad W(B, y) = B + y,\quad y \in \{+10,+5,-5,-10\}B_0 = 100,\quad W(B, y) = B + y,\quad y \in \{+10,+5,-5,-10\}
-z=∣B′∣,V=zz = |B'|,\quad V = zz = |B'|,\quad V = z
-Quality evidence plant (not a diagnosis):B=(completeness,  contradiction,  missing,  uncertainty,  useful)B = (\mathrm{completeness},\;\mathrm{contradiction},\;\mathrm{missing},\;\mathrm{uncertainty},\;\mathrm{useful})B = (\mathrm{completeness},\;\mathrm{contradiction},\;\mathrm{missing},\;\mathrm{uncertainty},\;\mathrm{useful})
-z=defects(B′),V=∥z∥z = \mathrm{defects}(B'),\quad V = \|z\|z = \mathrm{defects}(B'),\quad V = \|z\|
-Do not claim global convergence. APIs return claimed_global_convergence: false.Model-portable WorkspaceKeep:Workspace A
-Self()
-Memory M (the ledger of y, z^\hat{z}\hat{z}
-, z, e, V)
-Grok fast / Hy4 deep / Grok Bot as the action oracles
-
-Swap:Workbench W (music, safety evidence, later weight / speed / 3-D map)
-measure() that produces z
-Predictor (P) if the new plant needs a different forecast
-
-To move hosts: ship A + M. The next workbench can be empty. A writes new z as soon as W exists.Deeming rulesClaim
-Allowed when
-A acted on B
-Ledger row: y applied, z recorded
-Experience written
-Row contains predicted, z, e
-Autonomous step
-operator_chose_action === false
-Value attained
-V_t stored on that row
-Fast vs deep
-path is "fast" or "deep"
-Bot orchestrated
-path === "bot" or the /bot rail named y
-Better than frozen policy
-Compare ∑V\sum V\sum V
- on the same plant, same horizon
-Safety signal
-/workbench/safety only. Not a diagnosis
-SIMA 2 / AGI / clinical
-Never
-
 ScopeIn:Model-portable Workspace A
 Workbenches as environments
 Predict → act → measure → error → Self() → next y

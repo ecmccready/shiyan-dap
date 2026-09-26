@@ -21,11 +21,5 @@ export async function GET() {
 }
 
 export async function POST() {
-  const out = step();
-  return NextResponse.json({
-    ok: true,
-    settlement_written: false,
-    claimed_global_convergence: false,
-    ...out,
-  });
+  return NextResponse.json(step());
 }
