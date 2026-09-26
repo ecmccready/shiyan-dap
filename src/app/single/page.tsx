@@ -6,11 +6,8 @@ import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, readLedger } from "@/lib/ledger";
 
 const CLUSTER_A = "cluster:A";
-const CLUSTER_B = "cluster:B";
 const CONTAINER_A = "container:founder-music";
-const CONTAINER_B = "container:new-customer";
 const AGENT_A = "Agent A · ECMcCready";
-const AGENT_B = "Agent B · potential customer";
 
 export default function SongsPage() {
   const [assets, setAssets] = useState<LedgerAsset[]>([]);
