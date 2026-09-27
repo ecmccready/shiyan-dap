@@ -12,7 +12,7 @@ type Row = {
 };
 
 export default function WorkspacePage() {
-  const [note, setNote] = useState("A is ready. Open B when you need the plant.");
+  const [note, setNote] = useState("A is ready. Buyer B is in scope.");
   const [rows, setRows] = useState<Row[]>([]);
 
   async function ping() {
@@ -22,7 +22,7 @@ export default function WorkspacePage() {
       setNote(data.z || data.last_z || JSON.stringify(data).slice(0, 180));
       if (Array.isArray(data.ledger)) setRows(data.ledger);
     } catch {
-      setNote("Controller snapshot unavailable. Workbench B still opens.");
+      setNote("Controller snapshot unavailable. Buyer B remains in scope.");
     }
   }
 
@@ -37,8 +37,9 @@ export default function WorkspacePage() {
         <p className="text-emerald-400 mb-3">Workspace A · controller</p>
         <h1 className="text-3xl font-bold mb-3">Workspace A</h1>
         <p className="text-zinc-400 mb-8">
-          Task, policy, evaluator, memory, Self(). Workbench B is the
-          environment A acts on. It is not a customer rail.
+          Task, policy, evaluator, memory, Self(). Workbench measurement still
+          produces z. You Buy as B. Potential customer B is in scope versus an
+          environment-only out-of-scope role.
         </p>
 
         <div className="flex flex-wrap gap-3 mb-8">
@@ -46,7 +47,13 @@ export default function WorkspacePage() {
             href="/workbench"
             className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
-            Open Workbench B
+            Open Workbench
+          </Link>
+          <Link
+            href="/offer"
+            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
+          >
+            Buy as B
           </Link>
           <Link
             href="/nfts"

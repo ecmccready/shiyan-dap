@@ -45,12 +45,13 @@ export default function OfferPage() {
   return (
     <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-2xl mx-auto space-y-6">
       <p className="text-xs uppercase tracking-widest text-emerald-400">
-        Commercial object · no fake $1
+        Buy as B · potential customer in scope
       </p>
       <h1 className="text-2xl font-semibold">Offer</h1>
       <p className="text-sm text-zinc-400">
-        This page names an offer. Stripe Checkout is external. Returning
-        with a query string does not settle Shiyan state.
+        You Buy as B. This page is the potential-customer rail and is in
+        scope versus an environment-only out-of-scope B. Stripe Checkout is
+        external. Returning with a query string does not settle Shiyan state.
       </p>
 
       <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">
@@ -61,6 +62,8 @@ export default function OfferPage() {
   assetId       ${OFFER.assetId}
   price         $${OFFER.priceUsd}
   phase         ${OFFER.phase}
+  buyer         B
+  inScope       true
 
 TRANSACTION     (Stripe Checkout — external)
 EXTERNAL EVENT  (webhook → /ping observed 1)
@@ -80,9 +83,12 @@ z`}
       {err ? <p className="text-sm text-red-400">{err}</p> : null}
 
       <p className="text-xs text-zinc-500">
-        Use another email and browser. Same person is still A. Live rail
-        remains <Link className="underline" href="/nfts">/nfts</Link>.
-        Observation is{" "}
+        Buyer B is in scope. Use another email and browser if A and B must
+        stay distinct. Prove rail remains{" "}
+        <Link className="underline" href="/nfts">
+          /nfts
+        </Link>
+        . Observation is{" "}
         <Link className="underline" href="/api/stripe/webhook">
           /api/stripe/webhook
         </Link>
