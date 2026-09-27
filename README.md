@@ -47,59 +47,93 @@ A Workspace that:
 
 Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Carry `M` to the next host. Keep B in scope as the buyer.
 
-## Live rails
+## Repo layout
 
-| Surface | Role |
-| --- | --- |
-| / | Home. Workspace A · Marketplace · Playlist · Songs |
-| /workspace | Controller A. Opens workbench measurement. Reads `z` |
-| /workbench | Measurable environment instantiated per domain |
-| /workbench/safety | Evidence gate. HOLD / CLINICIAN_REVIEW / ESCALATE. Not a diagnosis |
-| /offer | Buy as B rail. Potential customer in scope |
-| /single | Songs in cluster A |
-| /nfts | Prove rail |
-| /playlist /marketplace /upload /bot | Music rails and Grok Bot |
-
-## Orchestration
-
-| Path | Job |
-| --- | --- |
-| **Grok fast** | Name a cheap `y` from current `z` and last `M` |
-| **Hy4 deep** | Revise `y` when error is large or the plant is unfamiliar |
-| **Grok Bot** | Orchestrate. Choose fast or deep, write the action, return `z` |
-
-Bot is the switch. Fast is the default policy. Deep is the revision path.
-`Self()` is the lock: after explore, `operator_chose_action = false`.
-
-## Loop
-
-retrieve M
-→ predict ŷ / expected z
-→ act y
-→ measure z
-→ error e = z − predicted
-→ Self(M ⊕ z) selects or revises y'
+onrail/
+  onrail.code-workspace
+  README.md
+  platform/          # Workspace A — environment
+  customer-b/        # Workspace B — potential customer (Buy as B)
 
 
-## Scope
+## Pathways
 
-**In**
+- Healthcare: prior auth intake, care-ops handoff, audit trail, BAA-aware tenancy notes.
+- Enterprise agentic: goal → plan → tool calls → approval gate → result.
+- General-purpose SaaS: tenant isolation, customer workspace, subscription intent.
 
-- Model-portable Workspace A
-- Workbenches as measurable environments
-- Predict → act → measure → error → Self() → next `y`
-- Music as first vertical
-- Evidence gate on the workbench
-- Grok fast, Hy4 deep, Grok Bot as orchestrators
-- Buy as B / potential-customer pipeline
-- Healthcare commercial pathways
-- Enterprise agentic workflows
-- General-purpose SaaS pathways
+## Status
 
-**Out**
+Scaffold only. No production PHI, no live claims, no unsupervised clinical decisions.
+# Workspace A — Platform Environment
 
-- SIMA 2
-- AGI
-- Unsupervised clinical diagnosis or treatment
-- Treating Workspace B as environment-only / out of buyer scope
+This folder is the **vendor environment**.
 
+It is not the customer. It owns:
+
+- agent runtime
+- tenancy and SaaS control plane
+- healthcare / enterprise / general pathway adapters
+- what a buyer (Workspace B) purchases
+
+B evaluates A. A does not pretend to be B.
+
+# Scope: Buy as B must stay in
+
+## In scope
+- Workspace B is a potential customer.
+- Customer can buy healthcare, enterprise agentic, and general SaaS pathways.
+- Customer tenant is isolated from the platform environment.
+- Human approval gates on healthcare-facing and high-risk enterprise actions.
+- Commercial packaging: plan, seat, workflow pack.
+
+## Out of scope
+- Treating Workspace B as “just another environment.”
+- Shipping B’s files as if they were platform internals.
+- Unsupervised clinical diagnosis or treatment decisions.
+- Using real patient data in this scaffold.
+
+# Workspace B — Potential Customer
+
+**You Buy as B.**
+
+This workspace is a **potential customer**, not an environment.
+
+## In scope
+- I am the buyer.
+- I evaluate OnRail for commercial use.
+- I may purchase:
+  - healthcare pathways
+  - enterprise agentic workflows
+  - general-purpose SaaS pathways
+- My tenant, brand, users, and data boundary stay on the customer side.
+
+## Out of scope
+- Being treated as a second copy of the platform environment.
+- Sharing vendor secrets or platform-only config.
+- Running as if I were Workspace A.
+
+## What B needs from A
+- A provisioned customer workspace
+- Pathway catalog and pricing intent
+- Approval-gated agentic runs
+- Audit export
+- Healthcare: BAA / tenancy discussion before any PHI
+
+# Buy as B
+
+Workspace: B  
+Role: potential customer  
+Status: **IN SCOPE**
+
+## Buying situation
+New-task commercial evaluation of OnRail.
+
+## Must-have
+- Healthcare commercial pathway (ops / workflow, not unsupervised clinical care)
+- Enterprise agentic workflows with human gates
+- General-purpose SaaS tenancy I can actually buy
+
+## Must-not
+- “B is just an environment”
+- Demo-only identity that cannot become a paying tenant
