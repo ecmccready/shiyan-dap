@@ -1,7 +1,10 @@
 # Shiyan
 
-Live: https://shiyan-dap.vercel.app
+Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap
+
+**Generative Transform Protocol (GTP)** is the autonomous agentic AI controller in this repo.  
+**Generative Pretrained Transform (GPT)** is a portable model seat inside that controller. It names `y`. It does not name `z`. It does not sit outside the loop.
 
 One closed loop. Not three products.
 
@@ -23,6 +26,32 @@ Music is the first vertical rail (`/nfts`). Diagnostic safety is the first measu
 
 This is **not SIMA 2, not AGI, and not unsupervised clinical diagnosis or treatment**.
 
+---
+
+## Formula
+
+$$
+\begin{aligned}
+y_t &= \mathrm{Self}_A(z_t, M_t) \\
+B_{t+1} &= W(B_t, y_t) \\
+z_{t+1} &= \mu(B_{t+1}) \\
+e_t &= d\!\left(z_{t+1},\, z^{\star}\right) \\
+M_{t+1} &= \mathcal{M}(M_t,\, y_t,\, z_{t+1},\, e_t)
+\end{aligned}
+$$
+
+GTP closes that step. A GPT-class namer may propose `y`. The controller accepts or revises it. `W` and `μ` are not the model.
+
+$$
+Y = (\text{settlement},\;\text{acquisition},\;\text{audience\_response},\;\text{conversion},\;\text{revenue},\;\text{retention})
+$$
+
+`computeB()` names `B`. `Self()` selects the next `y` from `z` and `M`. The model does not invent `B` and does not name `z`.
+
+Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Swap the GPT. Carry `M` to the next host.
+
+---
+
 ## Live rails
 
 | Surface | Role in the one loop |
@@ -32,25 +61,32 @@ This is **not SIMA 2, not AGI, and not unsupervised clinical diagnosis or treatm
 | `/workspace` | A names y. Drop-in namers. |
 | `/workbench` | B runs W(B,y). Experience generator. |
 | `/workbench/safety` | Safety reference pack. HOLD / CLINICIAN_REVIEW / ESCALATE. |
-| `/architecture` | Spec for the triad. |
+| `/architecture` | Spec for the triad. GTP controller. GPT namer. |
+| `/protocol` | Operator view of slice_v6 tools. |
 | `/marketplace` | e listings + music ledger. |
 | `/nfts` | Music prove rail. |
 | `/bot` | Grok Bot as a namer of y. |
+
+---
 
 ## What it is
 
 A Workspace that:
 
-1. Uses one Workbench as the environment
-2. Turns actions `y` into measurable experience
-3. Maintains state `z`
-4. Predicts outcomes
-5. Measures error `e` against a reference
-6. Uses `Self()` to select or revise the next action
-7. Lists `e` when a second-order check exists
+1. Speaks GTP as the controller protocol
+2. Hosts a GPT-class model only as a namer of `y`
+3. Uses one Workbench as the environment
+4. Turns actions `y` into measurable experience
+5. Maintains state `z`
+6. Predicts outcomes
+7. Measures error `e` against a reference
+8. Uses `Self()` to select or revise the next action
+9. Lists `e` when a second-order check exists
 
-Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Carry `M` to the next host.
+---
 
 ## Status
 
-Scaffold only. No production PHI. No live claims. No unsupervised clinical decisions. Evidence gate only — not a diagnosis, not a device.
+Demonstrate that the same A architecture can enter a materially different B as a P2P real patient misdiagnostic data and understand its measurable state/action space, operate autonomously, accumulate experience, and improve its action selection without hard-coding the solution for that particular B, proof of autonomous control into evidence for a general-purpose agent architecture.
+
+This scaffold does not ingest production PHI, does not emit a diagnosis, and does not treat. Gates remain HOLD / CLINICIAN_REVIEW / ESCALATE. Evidence gate only — not a device.
