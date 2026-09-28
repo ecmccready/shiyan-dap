@@ -6,161 +6,118 @@ import SiteHeader from "@/components/SiteHeader";
 import {
   LoopPlant,
   Namer,
-  YAction,
-  Y_ACTIONS,
   freshPlant,
   namerLabel,
   persistPlant,
   readPersistedPlant,
 } from "@/lib/closed-loop";
 
-export default function WorkspacePage() {
+export default function HomePage() {
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState("");
   const [plant, setPlant] = useState<LoopPlant | null>(null);
-  const [namer, setNamer] = useState<Namer>("grok_fast");
-  const [note, setNote] = useState("A is ready. Open Workbench B when you need the plant.");
+  const [namer, setNamer] = useState<Namer>("grok_bot");
 
   useEffect(() => {
     setPlant(readPersistedPlant() || freshPlant());
   }, []);
 
-  async function nameY(y?: YAction) {
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/agent?domain=music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input, path: "fast" }),
+      });
+      const data = await res.json();
+      setResult(
+        data.text || data.z || data.message || "A named the next action from z."
+      );
+    } catch {
+      setResult("A could not reach the agent rail.");
+    }
+    setLoading(false);
+  };
+
+  async function act() {
     if (!plant) return;
     const res = await fetch("/api/loop/step", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plant,
-        namer: y ? "operator" : namer,
-        y,
-      }),
+      body: JSON.stringify({ plant, namer }),
     });
     const data = await res.json();
-    setPlant(data.plant); persistPlant(data.plant);
-    setNote(
-      `Self() via ${namerLabel(data.named_by)} wrote y=${data.rec.y}. Measured ${data.rec.z}. e ${data.rec.e} → ${data.rec.e_next}.`
-    );
+    setPlant(data.plant);
+    persistPlant(data.plant);
   }
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Workspace" />
+      <SiteHeader />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 mb-3">Workspace A · controller</p>
         <h1 className="text-3xl font-bold mb-3">Workspace A</h1>
-        <p className="text-zinc-400 mb-8">
-          Task, policy, evaluator, memory, Self(). Workbench B is the
-          environment A acts on. Music is the first vertical. Open
-          Workbench from here.
+        <p className="text-zinc-400 max-w-2xl mb-8">
+          model-portable autonomous Workspace that uses Workbenches as
+          environments, turns actions into measurable experience, maintains a
+          state z, predicts outcomes, measures error, and uses Self() to
+          select/revise the next action: Grok fast, Hy4 deep, and Grok Bot
+          orchestrate.
         </p>
 
         <div className="flex flex-wrap gap-3 mb-8">
           <Link
-            href="/workbench"
+            href="/workspace"
             className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
-            Open Workbench
-          </Link>
-          <Link
-            href="/workbench/safety"
-            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
-          >
-            Safety plant
-          </Link>
-          <Link
-            href="/nfts"
-            className="h-12 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
-          >
-            Music rail
-          </Link>
-          <Link
-            href="/single"
-            className="h-12 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
-          >
-            Songs
+            Workspace
           </Link>
           <Link
             href="/playlist"
-            className="h-12 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
             Playlist
           </Link>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-6">
-          {(["grok_fast", "hy4_deep", "grok_bot"] as Namer[]).map((id) => (
-            <button
-              key={id}
-              onClick={() => setNamer(id)}
-              className={`h-10 px-4 rounded-full text-sm border ${
-                namer === id
-                  ? "bg-emerald-600 border-emerald-600"
-                  : "border-zinc-700"
-              }`}
-            >
-              {namerLabel(id)}
-            </button>
-          ))}
-          <button
-            onClick={() => nameY()}
-            className="h-10 px-5 rounded-full bg-white text-black text-sm"
+          <Link
+            href="/single"
+            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
-            Self() names y
+            Songs
+          </Link>
+        </div>
+
+        <form onSubmit={send} className="flex flex-col sm:flex-row gap-3">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask Grok Bot for the next action"
+            className="flex-1 h-12 rounded-full bg-zinc-900 border border-zinc-800 px-5"
+          />
+          <button
+            type="submit"
+            className="h-12 px-6 rounded-full border border-zinc-700 text-sm"
+          >
+            {loading ? "…" : "Grok Bot"}
           </button>
-        </div>
+        </form>
 
-        <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 mb-6">
-          <p className="text-sm text-zinc-300 mb-3">{note}</p>
-          <p className="text-xs text-zinc-500 font-mono">
-            last_z={plant?.M.last_z ?? "—"} · last_e={plant?.M.last_e ?? "—"} ·
-            t={plant?.t ?? 0}
-          </p>
-        </div>
-
-        <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
-          Operator may override y
+        <p className="text-xs text-zinc-500 mt-3">
+          First vertical is music. Workbench opens from Workspace, not from
+          this home rail.
         </p>
-        <div className="flex flex-wrap gap-2 mb-8">
-          {Y_ACTIONS.map((y) => (
-            <button
-              key={y}
-              onClick={() => nameY(y)}
-              className="h-10 px-4 rounded-full border border-zinc-700 text-sm"
-            >
-              {y}
-            </button>
-          ))}
-        </div>
 
-        {plant && plant.M.ledger.length > 0 ? (
-          <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-zinc-500">
-                  <th className="text-left py-2">t</th>
-                  <th className="text-left py-2">namer</th>
-                  <th className="text-left py-2">y</th>
-                  <th className="text-left py-2">e→</th>
-                  <th className="text-left py-2">Δe</th>
-                  <th className="text-left py-2">z</th>
-                </tr>
-              </thead>
-              <tbody>
-                {plant.M.ledger.map((r) => (
-                  <tr key={r.t} className="border-t border-zinc-800">
-                    <td className="py-2">{r.t}</td>
-                    <td className="py-2">{r.namer}</td>
-                    <td className="py-2">{r.y}</td>
-                    <td className="py-2">
-                      {r.e}→{r.e_next}
-                    </td>
-                    <td className="py-2">{r.reduced}</td>
-                    <td className="py-2 font-mono text-xs">{r.z}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
+        {result ? <p className="text-zinc-300 mt-6">{result}</p> : null}
+
+        <button
+          onClick={act}
+          className="mt-8 text-xs text-zinc-600 underline"
+        >
+          {namerLabel(namer)} step
+        </button>
       </main>
     </div>
   );

@@ -7,7 +7,6 @@ import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
 const NAV = [
   { href: "/", label: "Home" },
   { href: "/workspace", label: "Workspace" },
-  { href: "/workbench", label: "Workbench" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
 ];
@@ -28,9 +27,7 @@ export default function SiteHeader({ section }: { section?: string }) {
           </Link>
           {section ? (
             <span className="text-zinc-500 text-sm">{section}</span>
-          ) : (
-            <span className="text-zinc-500 text-sm">this stack</span>
-          )}
+          ) : null}
         </div>
         <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
           {NAV.map((n) => (
@@ -48,9 +45,6 @@ export default function SiteHeader({ section }: { section?: string }) {
               writeVertical(e.target.value);
               if (e.target.value === "safety") {
                 window.location.href = "/workbench/safety";
-              }
-              if (e.target.value === "music") {
-                window.location.href = "/workbench";
               }
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"

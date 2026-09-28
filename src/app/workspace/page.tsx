@@ -17,7 +17,7 @@ import {
 export default function WorkspacePage() {
   const [plant, setPlant] = useState<LoopPlant | null>(null);
   const [namer, setNamer] = useState<Namer>("grok_fast");
-  const [note, setNote] = useState("A is ready. B is the plant, not a buyer.");
+  const [note, setNote] = useState("A is ready. Open Workbench when you need the plant.");
 
   useEffect(() => {
     setPlant(readPersistedPlant() || freshPlant());
@@ -35,7 +35,8 @@ export default function WorkspacePage() {
       }),
     });
     const data = await res.json();
-    setPlant(data.plant); persistPlant(data.plant);
+    setPlant(data.plant);
+    persistPlant(data.plant);
     setNote(
       `Self() via ${namerLabel(data.named_by)} wrote y=${data.rec.y}. Measured ${data.rec.z}. e ${data.rec.e} → ${data.rec.e_next}.`
     );
@@ -43,15 +44,26 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="A · controller" />
+      <SiteHeader section="Workspace" />
+      <div className="border-b border-zinc-800">
+        <nav className="max-w-4xl mx-auto px-6 py-3 flex flex-wrap gap-4 text-sm">
+          <Link href="/workbench" className="text-emerald-400 hover:text-white">
+            Workbench
+          </Link>
+          <Link href="/workbench/safety" className="text-zinc-400 hover:text-white">
+            Safety
+          </Link>
+          <Link href="/nfts" className="text-zinc-400 hover:text-white">
+            Music rail
+          </Link>
+        </nav>
+      </div>
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">Workspace A · names y</p>
-        <h1 className="text-3xl font-bold mb-3">Controller inside the loop</h1>
+        <p className="text-emerald-400 mb-3">Workspace A · controller</p>
+        <h1 className="text-3xl font-bold mb-3">Workspace A</h1>
         <p className="text-zinc-400 mb-8">
-          Task, policy, evaluator, memory, Self(). A is not a product of its
-          own. A names y. B runs W(B,y). z comes back measured. Grok fast,
-          Hy4 deep, and Grok Bot are drop-in namers — swap them, keep the
-          loop.
+          Task, policy, evaluator, memory, Self(). Workbench is the
+          environment A acts on. It is linked here only.
         </p>
 
         <div className="flex flex-wrap gap-2 mb-6">
@@ -129,18 +141,6 @@ export default function WorkspacePage() {
             </table>
           </div>
         ) : null}
-
-        <div className="flex flex-wrap gap-3 mt-8">
-          <Link href="/workbench" className="underline text-sm">
-            Hand y to B
-          </Link>
-          <Link href="/workbench/safety" className="underline text-sm">
-            Safety pack
-          </Link>
-          <Link href="/loop" className="underline text-sm">
-            Full loop
-          </Link>
-        </div>
       </main>
     </div>
   );
