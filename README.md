@@ -45,7 +45,39 @@ GTP closes that step. A GPT-class namer may propose `y`. The controller accepts 
 $$
 Y = (\text{settlement},\;\text{acquisition},\;\text{audience\_response},\;\text{conversion},\;\text{revenue},\;\text{retention})
 $$
+On the ledger slice the same letters already exist:
 
+Y
+=
+(
+settlement
+,
+  
+acquisition
+,
+  
+audience_response
+,
+  
+conversion
+,
+  
+revenue
+,
+  
+retention
+)
+Y=(settlement,acquisition,audience_response,conversion,revenue,retention)
+Integrate
+
+GPT / Grok / Hy4 / Bot  →  names y
+            ↓
+     GTP controller A   →  Self(), M
+            ↓
+          W(B, y)       →  plant
+            ↓
+         μ(B')          →  z, e  →  M
+         
 `computeB()` names `B`. `Self()` selects the next `y` from `z` and `M`. The model does not invent `B` and does not name `z`.
 
 Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Swap the GPT. Carry `M` to the next host.
