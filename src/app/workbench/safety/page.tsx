@@ -29,16 +29,46 @@ export default function SafetyPage() {
       <SiteHeader section="Diagnostic Safety" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          Experience pack on B · not a diagnosis
+          Second vertical · experience pack on B · not a diagnosis
         </p>
         <h1 className="text-3xl font-bold mb-3">Diagnostic Safety Workbench</h1>
-        <p className="text-zinc-400 mb-8">
+        <p className="text-zinc-400 mb-6">
           Misdiagnosis data is experience, and B’s job is generating
           experience for A. Enter the case as a task-policy-evaluator-memory
           record in A, then let B run W(B,y) and feed the outcome back up.
           Gates are HOLD / CLINICIAN_REVIEW / ESCALATE. No Diagnose button.
           No device claim.
         </p>
+
+        <div className="flex flex-wrap gap-3 mb-8">
+          <Link
+            href="/"
+            className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center"
+          >
+            Music
+          </Link>
+          <Link
+            href="/nfts"
+            className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Music rail
+          </Link>
+          <Link
+            href="/playlist"
+            className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Playlist
+          </Link>
+          <Link
+            href="/single"
+            className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Songs
+          </Link>
+          <span className="h-11 px-5 rounded-full border border-emerald-700 text-sm inline-flex items-center text-emerald-400">
+            Diagnostic Safety
+          </span>
+        </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
           {SAFETY_PACK.map((item) => (
@@ -106,7 +136,9 @@ export default function SafetyPage() {
           <button
             onClick={() => {
               if (!plant) return;
-              const out = stepLoop(plant, { namer: "hy4_deep" }); setPlant(out.plant); persistPlant(out.plant);
+              const out = stepLoop(plant, { namer: "hy4_deep" });
+              setPlant(out.plant);
+              persistPlant(out.plant);
             }}
             className="h-11 px-5 rounded-full bg-emerald-600 text-sm"
           >
@@ -120,14 +152,14 @@ export default function SafetyPage() {
         </section>
 
         <nav className="flex flex-wrap gap-4 text-sm">
+          <Link className="underline" href="/">
+            Music home
+          </Link>
           <Link className="underline" href="/workspace">
-            Back to A
+            Workspace
           </Link>
-          <Link className="underline" href="/loop">
-            Closed loop
-          </Link>
-          <Link className="underline" href="/marketplace">
-            List this e
+          <Link className="underline" href="/nfts">
+            /nfts
           </Link>
         </nav>
       </main>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
+import { VERTICALS, hrefForVertical, readVertical, writeVertical } from "@/lib/verticles";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -27,7 +27,9 @@ export default function SiteHeader({ section }: { section?: string }) {
           </Link>
           {section ? (
             <span className="text-zinc-500 text-sm">{section}</span>
-          ) : null}
+          ) : (
+            <span className="text-zinc-500 text-sm">Music</span>
+          )}
         </div>
         <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
           {NAV.map((n) => (
@@ -41,11 +43,10 @@ export default function SiteHeader({ section }: { section?: string }) {
           <select
             value={vertical}
             onChange={(e) => {
-              setVertical(e.target.value);
-              writeVertical(e.target.value);
-              if (e.target.value === "safety") {
-                window.location.href = "/workbench/safety";
-              }
+              const id = e.target.value;
+              setVertical(id);
+              writeVertical(id);
+              window.location.href = hrefForVertical(id);
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
           >
