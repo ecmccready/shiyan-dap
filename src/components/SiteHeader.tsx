@@ -5,12 +5,11 @@ import { useEffect, useState } from "react";
 import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
 
 const NAV = [
-  { href: "/", label: "Loop" },
-  { href: "/workspace", label: "A" },
-  { href: "/workbench", label: "B" },
-  { href: "/workbench/safety", label: "Safety" },
-  { href: "/nfts", label: "Music" },
-  { href: "/marketplace", label: "e" },
+  { href: "/", label: "Home" },
+  { href: "/workspace", label: "Workspace" },
+  { href: "/workbench", label: "Workbench" },
+  { href: "/playlist", label: "Playlist" },
+  { href: "/single", label: "Songs" },
 ];
 
 export default function SiteHeader({ section }: { section?: string }) {
@@ -30,7 +29,7 @@ export default function SiteHeader({ section }: { section?: string }) {
           {section ? (
             <span className="text-zinc-500 text-sm">{section}</span>
           ) : (
-            <span className="text-zinc-500 text-sm">one loop</span>
+            <span className="text-zinc-500 text-sm">this stack</span>
           )}
         </div>
         <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
@@ -50,6 +49,9 @@ export default function SiteHeader({ section }: { section?: string }) {
               if (e.target.value === "safety") {
                 window.location.href = "/workbench/safety";
               }
+              if (e.target.value === "music") {
+                window.location.href = "/workbench";
+              }
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
           >
@@ -60,6 +62,12 @@ export default function SiteHeader({ section }: { section?: string }) {
             ))}
           </select>
         </label>
+        <Link
+          href="/upload"
+          className="h-10 px-4 rounded-full bg-emerald-600 text-sm inline-flex items-center"
+        >
+          Upload
+        </Link>
       </div>
     </header>
   );
