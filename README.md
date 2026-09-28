@@ -8,10 +8,6 @@ Repo: https://github.com/ecmccready/shiyan-dap
 
 One closed loop. Not three products.
 
-```
-z_t --Self() in A--> y_t --W(B,y)--> B'_{t+1}
-     measure z_{t+1}, e_t --M--> z-next
-```
 
 - **A** — controller: Task, Policy, Evaluator, Memory, Self(). Names `y`.
 - **B** — environment: safety reference pack (misdiagnosis-process cases as experience). Not a customer. Not a clinician.
@@ -24,51 +20,11 @@ Grok fast, Hy4 deep, and Grok Bot are interchangeable orchestrators **inside A**
 
 Music is the first vertical rail (`/nfts`). Diagnostic safety is the first measurable plant (`/workbench/safety`). Domain = safety opens that plant.
 
-This is **not SIMA 2, not AGI, and not unsupervised clinical diagnosis or treatment**.
-
 ---
 
 ## Formula
 
-$$
-\begin{aligned}
-y_t &= \mathrm{Self}_A(z_t, M_t) \\
-B_{t+1} &= W(B_t, y_t) \\
-z_{t+1} &= \mu(B_{t+1}) \\
-e_t &= d\!\left(z_{t+1},\, z^{\star}\right) \\
-M_{t+1} &= \mathcal{M}(M_t,\, y_t,\, z_{t+1},\, e_t)
-\end{aligned}
-$$
-
 GTP closes that step. A GPT-class namer may propose `y`. The controller accepts or revises it. `W` and `μ` are not the model.
-
-$$
-Y = (\text{settlement},\;\text{acquisition},\;\text{audience\_response},\;\text{conversion},\;\text{revenue},\;\text{retention})
-$$
-On the ledger slice the same letters already exist:
-
-Y
-=
-(
-settlement
-,
-  
-acquisition
-,
-  
-audience_response
-,
-  
-conversion
-,
-  
-revenue
-,
-  
-retention
-)
-Y=(settlement,acquisition,audience_response,conversion,revenue,retention)
-Integrate
 
 GPT / Grok / Hy4 / Bot  →  names y
             ↓
