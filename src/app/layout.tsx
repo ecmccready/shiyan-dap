@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Shiyan Yishu",
+  title: "Shiyan — one loop",
   description:
-    "Workspace A controller. Workbench B environment. Music is the first vertical.",
+    "A acts, B transitions, z is measured. Intelligence is the reduction of e on B. Grok / Hy4 / Bot only name y.",
 };
 
 export default function RootLayout({
@@ -28,7 +28,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-black text-white">
+        {children}
+      </body>
     </html>
   );
 }

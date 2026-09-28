@@ -1,139 +1,56 @@
 # Shiyan
 
 Live: https://shiyan-dap.vercel.app
-
 Repo: https://github.com/ecmccready/shiyan-dap
 
-Workspace A is a **model-portable autonomous controller**.
+One closed loop. Not three products.
 
-Workbench B can still measure state `z`.
+```
+z_t --Self() in A--> y_t --W(B,y)--> B'_{t+1}
+     measure z_{t+1}, e_t --M--> z-next
+```
 
-**You Buy as B.** Workspace B is a **potential customer in scope**, not an environment-only out-of-scope role.
+- **A** — controller: Task, Policy, Evaluator, Memory, Self(). Names `y`.
+- **B** — environment: safety reference pack (misdiagnosis-process cases as experience). Not a customer. Not a clinician.
+- **z** — measured `|B'|` after the transition. Not an LLM opinion.
+- **e** — error vs the reference label / second-order check. This is what can list on the marketplace.
 
-Music is the first vertical, not the product boundary.
+Intelligence is the measured reduction of `e` on B.
 
-Grok fast, Hy4 deep, and Grok Bot orchestrate A.
+Grok fast, Hy4 deep, and Grok Bot are interchangeable orchestrators **inside A**. They only name `y`. Models do not sit outside the loop.
+
+Music is the first vertical rail (`/nfts`). Diagnostic safety is the first measurable plant (`/workbench/safety`). Domain = safety opens that plant.
 
 This is **not SIMA 2, not AGI, and not unsupervised clinical diagnosis or treatment**.
 
-## Commercial intent
+## Live rails
 
-This repository states intent to commercially implement:
-
-1. **Healthcare** pathways — operations and agentic workflows with a human gate. Not unsupervised diagnosis or treatment.
-2. **Enterprise agentic workflows** — plan → tool calls → human approval → audit.
-3. **General-purpose software-as-a-service (SaaS)** pathways — tenant, buyer workspace, paid rail.
-
-OnRail folders in this repo:
-
-| Path | Role | Status |
-| --- | --- | --- |
-| `onrail/platform` | Workspace A / vendor environment | Internal |
-| `onrail/customer-b` | Workspace B / potential customer | **IN SCOPE** |
-
-Buy as B must stay in scope versus out. B is a buyer identity, not a disposable second environment.
+| Surface | Role in the one loop |
+|---|---|
+| `/` | The loop. A acts, B transitions, z is measured. |
+| `/loop` | Runnable plant. Step e down. |
+| `/workspace` | A names y. Drop-in namers. |
+| `/workbench` | B runs W(B,y). Experience generator. |
+| `/workbench/safety` | Safety reference pack. HOLD / CLINICIAN_REVIEW / ESCALATE. |
+| `/architecture` | Spec for the triad. |
+| `/marketplace` | e listings + music ledger. |
+| `/nfts` | Music prove rail. |
+| `/bot` | Grok Bot as a namer of y. |
 
 ## What it is
 
 A Workspace that:
 
-1. Uses workbenches as measurable environments
-2. Turns actions `y` into experience
+1. Uses one Workbench as the environment
+2. Turns actions `y` into measurable experience
 3. Maintains state `z`
 4. Predicts outcomes
-5. Measures error
+5. Measures error `e` against a reference
 6. Uses `Self()` to select or revise the next action
-7. Sells to B as a potential customer on healthcare, enterprise agentic, and general SaaS pathways
+7. Lists `e` when a second-order check exists
 
-Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Carry `M` to the next host. Keep B in scope as the buyer.
-
-## Repo layout
-
-onrail/
-  onrail.code-workspace
-  README.md
-  platform/          # Workspace A — environment
-  customer-b/        # Workspace B — potential customer (Buy as B)
-
-
-## Pathways
-
-- Healthcare: prior auth intake, care-ops handoff, audit trail, BAA-aware tenancy notes.
-- Enterprise agentic: goal → plan → tool calls → approval gate → result.
-- General-purpose SaaS: tenant isolation, customer workspace, subscription intent.
+Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Carry `M` to the next host.
 
 ## Status
 
-Scaffold only. No production PHI, no live claims, no unsupervised clinical decisions.
-# Workspace A — Platform Environment
-
-This folder is the **vendor environment**.
-
-It is not the customer. It owns:
-
-- agent runtime
-- tenancy and SaaS control plane
-- healthcare / enterprise / general pathway adapters
-- what a buyer (Workspace B) purchases
-
-B evaluates A. A does not pretend to be B.
-
-# Scope: Buy as B must stay in
-
-## In scope
-- Workspace B is a potential customer.
-- Customer can buy healthcare, enterprise agentic, and general SaaS pathways.
-- Customer tenant is isolated from the platform environment.
-- Human approval gates on healthcare-facing and high-risk enterprise actions.
-- Commercial packaging: plan, seat, workflow pack.
-
-## Out of scope
-- Treating Workspace B as “just another environment.”
-- Shipping B’s files as if they were platform internals.
-- Unsupervised clinical diagnosis or treatment decisions.
-- Using real patient data in this scaffold.
-
-# Workspace B — Potential Customer
-
-**You Buy as B.**
-
-This workspace is a **potential customer**, not an environment.
-
-## In scope
-- I am the buyer.
-- I evaluate OnRail for commercial use.
-- I may purchase:
-  - healthcare pathways
-  - enterprise agentic workflows
-  - general-purpose SaaS pathways
-- My tenant, brand, users, and data boundary stay on the customer side.
-
-## Out of scope
-- Being treated as a second copy of the platform environment.
-- Sharing vendor secrets or platform-only config.
-- Running as if I were Workspace A.
-
-## What B needs from A
-- A provisioned customer workspace
-- Pathway catalog and pricing intent
-- Approval-gated agentic runs
-- Audit export
-- Healthcare: BAA / tenancy discussion before any PHI
-
-# Buy as B
-
-Workspace: B  
-Role: potential customer  
-Status: **IN SCOPE**
-
-## Buying situation
-New-task commercial evaluation of OnRail.
-
-## Must-have
-- Healthcare commercial pathway (ops / workflow, not unsupervised clinical care)
-- Enterprise agentic workflows with human gates
-- General-purpose SaaS tenancy I can actually buy
-
-## Must-not
-- “B is just an environment”
-- Demo-only identity that cannot become a paying tenant
+Scaffold only. No production PHI. No live claims. No unsupervised clinical decisions. Evidence gate only — not a diagnosis, not a device.

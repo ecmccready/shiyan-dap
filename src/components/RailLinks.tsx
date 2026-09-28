@@ -1,16 +1,16 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 const rails = [
-  { href: "/workspace", label: "Workspace" },
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/trade", label: "Trade" },
+  { href: "/loop", label: "Loop" },
+  { href: "/workspace", label: "A names y" },
+  { href: "/workbench", label: "B transitions" },
+  { href: "/workbench/safety", label: "Safety pack" },
+  { href: "/marketplace", label: "List e" },
+  { href: "/nfts", label: "Music rail" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
-  { href: "/tokens", label: "Tokenize" },
-  { href: "/protocol", label: "Protocol" },
-  { href: "/ab", label: "A/B" },
-  { href: "/ping", label: "Ping" },
-  { href: "/bot", label: "Grok Bot" },
+  { href: "/bot", label: "Namer · Bot" },
+  { href: "/architecture", label: "Spec" },
 ];
 
 export default function RailLinks() {

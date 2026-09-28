@@ -7,6 +7,7 @@ export type Vertical = {
 };
 
 export const VERTICALS: Vertical[] = [
+  { id: "safety", label: "Diagnostic Safety", asset: "case", firstY: "retention", actions: ["HOLD", "CLINICIAN_REVIEW", "ESCALATE"] },
   { id: "music", label: "Music", asset: "song", firstY: "settlement", actions: ["INITIATE_TRADE", "playlist_push", "release"] },
   { id: "ai-content", label: "AI Content", asset: "model", firstY: "acquisition", actions: ["INITIATE_TRADE", "license", "release"] },
   { id: "animation", label: "Animation", asset: "clip", firstY: "audience_response", actions: ["INITIATE_TRADE", "premiere", "release"] },
