@@ -69,22 +69,59 @@ export default function WorkbenchPage() {
       <SiteHeader section="Workbench B" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          Workbench B · environment · Outcome Engine
+          The first commercial move
         </p>
-        <h1 className="text-3xl font-bold mb-3">Workbench B</h1>
-        <p className="text-zinc-400 max-w-2xl mb-6">
-          B is the environment. W(B,y) is the world transition. Customers do
-          not buy an AI. They operate a Run on this workbench: action, measured
-          z, error e, Self() names the next y.
+        <h1 className="text-3xl font-bold mb-3">Workbench B · Outcome Engine</h1>
+        <p className="text-zinc-400 max-w-2xl mb-4">
+          The customer should not buy “Shiyan DAP,” an AI, or a state machine.
+          They buy a system that repeatedly takes an action, observes the
+          result, measures the error against a reference, and uses that
+          experience to choose the next action.
+        </p>
+        <p className="text-zinc-500 text-sm max-w-2xl mb-8">
+          Aethel Node is an autonomous outcome-learning workspace: it executes
+          actions against a measurable environment, learns from the resulting
+          error, and continuously selects the next action. Sales: Turn
+          operational experience into the next best action. Technical: a
+          model-portable closed-loop execution system where intelligence is
+          measured by reduction of error, not by model output alone.
         </p>
 
         <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 mb-8 overflow-auto leading-6 text-emerald-300">
-{`Workspace A → y
-Workbench B → W(B,y) → z, e
-Self() → y'
-Run records Δe
-Experience → Marketplace`}
+{`CUSTOMER
+   │
+   ▼
+WORKSPACE A   Goal / Task
+   │ y
+   ▼
+WORKBENCH B   Environment
+   │
+   ▼
+measured z → error e → Self() next move → repeat
+
+Goal → y1 → z1 → e1 → Self() → y2 → z2 → e2 → … → Outcome
+Organization → Workspace → Workbench → Run → Experience → Marketplace
+Metric: Δe per Run`}
         </pre>
+
+        <div className="grid gap-4 md:grid-cols-2 mb-8 text-sm text-zinc-400">
+          <section className="border border-zinc-800 rounded-2xl p-5">
+            <p className="text-emerald-400 text-xs mb-2">A Run records</p>
+            <p>
+              organization, workspace, workbench, objective, actions,
+              measurements, error reduction, experience, outcomes, permissions,
+              usage/billing.
+            </p>
+          </section>
+          <section className="border border-zinc-800 rounded-2xl p-5">
+            <p className="text-emerald-400 text-xs mb-2">Hard rule</p>
+            <p>
+              Core loop = protected. Commercialization = additive. Do not
+              commercialize the AI. Commercialize the closed-loop outcome.
+              Build the intelligence once; change the environment.
+            </p>
+          </section>
+        </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
           {SAFETY_PACK.map((c) => (
@@ -178,18 +215,33 @@ Experience → Marketplace`}
           </div>
         ) : null}
 
+        <article className="text-sm text-zinc-400 space-y-4 mb-10">
+          <p>
+            Product: Aethel Node Outcome Engine. First Workbench: Node.
+            Safety stays an evidence-gate demonstration, not a diagnosis.
+            Marketplace is an Experience Marketplace: validated Δe becomes a
+            reusable asset.
+          </p>
+          <p>
+            Acceptance: /workspace, /workbench, and /loop still work. A user
+            can start one Run. The Run records y → z → e. Self() names the
+            next action. The Run has an id. Experience can list. No PHI. No
+            unsupervised clinical decision.
+          </p>
+        </article>
+
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/workspace">
             Workspace
-          </Link>
-          <Link className="underline" href="/run">
-            Run
           </Link>
           <Link className="underline" href="/workbench/safety">
             Diagnostic Safety
           </Link>
           <Link className="underline" href="/marketplace">
-            Marketplace
+            Experience marketplace
+          </Link>
+          <Link className="underline" href="/loop">
+            Loop
           </Link>
         </nav>
       </main>
