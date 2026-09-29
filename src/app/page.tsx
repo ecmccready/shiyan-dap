@@ -35,19 +35,25 @@ export default function HomePage() {
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 mb-3">First vertical · Music</p>
         <h1 className="text-3xl font-bold mb-3">Aethel Node</h1>
-        <p className="text-zinc-400 max-w-2xl mb-8">
+        <p className="text-zinc-400 max-w-2xl mb-4">
           Sovereign multi-model orchestration and multi-domain workspace
           infrastructure (formerly shiyan-dap).
         </p>
         <p className="text-zinc-500 max-w-2xl mb-8 text-sm">
-          model-portable autonomous Workspace that uses Workbenches as
-          environments, turns actions into measurable experience, maintains a
-          state z, predicts outcomes, measures error, and uses Self() to
-          select/revise the next action: Grok fast, Hy4 deep, and Grok Bot
-          orchestrate.
+          Autonomous outcome-learning workspace: it executes actions against a
+          measurable environment, learns from the resulting error, and
+          continuously selects the next action. Turn operational experience
+          into the next best action. Grok fast, Hy4 deep, and Grok Bot
+          orchestrate inside A.
         </p>
 
         <div className="flex flex-wrap gap-3 mb-8">
+          <Link
+            href="/run"
+            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
+          >
+            Start a Run
+          </Link>
           <Link
             href="/workspace"
             className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
@@ -88,6 +94,8 @@ export default function HomePage() {
             {loading ? "…" : "Grok Bot"}
           </button>
         </form>
+
+        {result ? <p className="text-zinc-300 mt-6">{result}</p> : null}
       </main>
     </div>
   );

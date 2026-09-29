@@ -1,60 +1,21 @@
-# Aethel Node
+Aethel Node is an autonomous outcome-learning workspace: it executes
+actions against a measurable environment, learns from the resulting error, and continuously selects the next action.
 
-Sovereign multi-model orchestration and multi-domain workspace infrastructure (formerly shiyan-dap).
+Sales: Turn operational experience into the next best action.
 
-Live: https://shiyan-dap.vercel.app  
-Repo: https://github.com/ecmccready/shiyan-dap
+Technical: A model-portable closed-loop execution system where intelligence is measured by reduction of error, not by model output alone.
 
-One closed loop. Not three products.
+Customers buy a Run, not an AI.
 
-z_t --Self() in A--> y_t --W(B,y)--> B'{t+1} measure z{t+1}, e_t --M--> z-next
+Organization → Workspace → Workbench → Run → Experience → Marketplace Goal → y → z → e → Self() → y' → Outcome Metric: Δe per Run
 
-
-- **A** — controller: Task, Policy, Evaluator, Memory, Self(). Names `y`.
-- **B** — environment: safety reference pack (misdiagnosis-process cases as experience). Not a customer. Not a clinician.
-- **z** — measured `|B'|` after the transition. Not an LLM opinion.
-- **e** — error vs the reference label / second-order check. This is what can list on the marketplace.
-
-Intelligence is the measured reduction of `e` on B.
-
-Grok fast, Hy4 deep, and Grok Bot are interchangeable orchestrators **inside A**. They only name `y`. Models do not sit outside the loop.
-
-Music is the first vertical (home). Diagnostic Safety is the second (`/workbench/safety`). Music rail remains `/nfts`. Workbench opens from Workspace.
-
-This is **not SIMA 2, not AGI, and not unsupervised clinical diagnosis or treatment**.
-
-## Live rails
-
-
-| Surface | Role in the one loop |
-|---|---|
-| `/` | Aethel Node home. First vertical: Music. |
-| `/workspace` | A names y. Workbench is linked here only. |
-| `/workbench` | B runs W(B,y). Experience generator. |
-| `/workbench/safety` | Second vertical. HOLD / CLINICIAN_REVIEW / ESCALATE. |
-| `/marketplace` | e listings + music ledger. |
-| `/playlist` | Playlist. |
-| `/single` | Songs. |
-| `/nfts` | Music prove rail. |
-| `/architecture` | Spec for the triad. |
-| `/loop` | Runnable plant. Step e down. |
-| `/bot` | Grok Bot as a namer of y. |
-
-
-## What it is
-
-A Workspace that:
-
-1. Uses Workbenches as environments
-2. Turns actions `y` into measurable experience
-3. Maintains state `z`
-4. Predicts outcomes
-5. Measures error `e` against a reference
-6. Uses `Self()` to select or revise the next action
-7. Lists `e` when a second-order check exists
-
-Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Carry `M` to the next host.
+Core loop is protected. Commercialization is additive (`src/product/`).
+First Workbench is Node. Safety remains an evidence-gate demonstration,
+not a clinical product.
 
 ## Status
 
-Over coming updates, the codebase will transition from a personalized integration workspace into a clean, decoupled engine designed for independent developers who demand absolute technical sovereignty.
+First commercial primitive is live at `/run`. Over coming updates, the
+codebase will transition from a personalized integration workspace into a clean, decoupled engine designed for independent developers who demand absolute technical sovereignty.
+
+No production PHI. No unsupervised clinical decisions. Evidence gate only
