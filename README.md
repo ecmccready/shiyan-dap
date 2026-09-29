@@ -1,12 +1,13 @@
-# Shiyan
+# Aethel Node
+
+Sovereign multi-model orchestration and multi-domain workspace infrastructure (formerly shiyan-dap).
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap
 
-**Generative Transform Protocol (GTP)** is the autonomous agentic AI controller in this repo.  
-**Generative Pretrained Transform (GPT)** is a portable model seat inside that controller. It names `y`. It does not name `z`. It does not sit outside the loop.
-
 One closed loop. Not three products.
+
+z_t --Self() in A--> y_t --W(B,y)--> B'{t+1} measure z{t+1}, e_t --M--> z-next
 
 
 - **A** — controller: Task, Policy, Evaluator, Memory, Self(). Names `y`.
@@ -18,63 +19,42 @@ Intelligence is the measured reduction of `e` on B.
 
 Grok fast, Hy4 deep, and Grok Bot are interchangeable orchestrators **inside A**. They only name `y`. Models do not sit outside the loop.
 
-Music is the first vertical rail (`/nfts`). Diagnostic safety is the first measurable plant (`/workbench/safety`). Domain = safety opens that plant.
+Music is the first vertical (home). Diagnostic Safety is the second (`/workbench/safety`). Music rail remains `/nfts`. Workbench opens from Workspace.
 
----
-
-## Formula
-
-GTP closes that step. A GPT-class namer may propose `y`. The controller accepts or revises it. `W` and `μ` are not the model.
-
-GPT / Grok / Hy4 / Bot  →  names y
-            ↓
-     GTP controller A   →  Self(), M
-            ↓
-          W(B, y)       →  plant
-            ↓
-         μ(B')          →  z, e  →  M
-         
-`computeB()` names `B`. `Self()` selects the next `y` from `z` and `M`. The model does not invent `B` and does not name `z`.
-
-Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Swap the GPT. Carry `M` to the next host.
-
----
+This is **not SIMA 2, not AGI, and not unsupervised clinical diagnosis or treatment**.
 
 ## Live rails
 
+
 | Surface | Role in the one loop |
 |---|---|
-| `/` | The loop. A acts, B transitions, z is measured. |
-| `/loop` | Runnable plant. Step e down. |
-| `/workspace` | A names y. Drop-in namers. |
+| `/` | Aethel Node home. First vertical: Music. |
+| `/workspace` | A names y. Workbench is linked here only. |
 | `/workbench` | B runs W(B,y). Experience generator. |
-| `/workbench/safety` | Safety reference pack. HOLD / CLINICIAN_REVIEW / ESCALATE. |
-| `/architecture` | Spec for the triad. GTP controller. GPT namer. |
-| `/protocol` | Operator view of slice_v6 tools. |
+| `/workbench/safety` | Second vertical. HOLD / CLINICIAN_REVIEW / ESCALATE. |
 | `/marketplace` | e listings + music ledger. |
+| `/playlist` | Playlist. |
+| `/single` | Songs. |
 | `/nfts` | Music prove rail. |
+| `/architecture` | Spec for the triad. |
+| `/loop` | Runnable plant. Step e down. |
 | `/bot` | Grok Bot as a namer of y. |
 
----
 
 ## What it is
 
 A Workspace that:
 
-1. Speaks GTP as the controller protocol
-2. Hosts a GPT-class model only as a namer of `y`
-3. Uses one Workbench as the environment
-4. Turns actions `y` into measurable experience
-5. Maintains state `z`
-6. Predicts outcomes
-7. Measures error `e` against a reference
-8. Uses `Self()` to select or revise the next action
-9. Lists `e` when a second-order check exists
+1. Uses Workbenches as environments
+2. Turns actions `y` into measurable experience
+3. Maintains state `z`
+4. Predicts outcomes
+5. Measures error `e` against a reference
+6. Uses `Self()` to select or revise the next action
+7. Lists `e` when a second-order check exists
 
----
+Portable means: keep A, `Self()`, and memory `M`. Swap the workbench `W` and the measurement of `z`. Carry `M` to the next host.
 
 ## Status
 
-Demonstrate that the same A architecture can enter a materially different B as a P2P real patient misdiagnostic data and understand its measurable state/action space, operate autonomously, accumulate experience, and improve its action selection without hard-coding the solution for that particular B, proof of autonomous control into evidence for a general-purpose agent architecture.
-
-This scaffold does not ingest production PHI, does not emit a diagnosis, and does not treat. Gates remain HOLD / CLINICIAN_REVIEW / ESCALATE. Evidence gate only — not a device.
+Over coming updates, the codebase will transition from a personalized integration workspace into a clean, decoupled engine designed for independent developers who demand absolute technical sovereignty.
