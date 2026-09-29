@@ -49,10 +49,10 @@ export default function HomePage() {
 
         <div className="flex flex-wrap gap-3 mb-8">
           <Link
-            href="/run"
+            href="/workbench"
             className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
-            Start a Run
+            Workbench
           </Link>
           <Link
             href="/workspace"
