@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { VERTICALS, hrefForVertical, readVertical, writeVertical } from "@/lib/verticles";
+import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -24,7 +24,7 @@ export default function SiteHeader({ section }: { section?: string }) {
       <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/" className="font-semibold">
-            Shiyan
+            Aethel Node
           </Link>
           {section ? (
             <span className="text-zinc-500 text-sm">{section}</span>
@@ -47,7 +47,8 @@ export default function SiteHeader({ section }: { section?: string }) {
               const id = e.target.value;
               setVertical(id);
               writeVertical(id);
-              window.location.href = hrefForVertical(id);
+              if (id === "safety") window.location.href = "/workbench/safety";
+              if (id === "music") window.location.href = "/";
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
           >
