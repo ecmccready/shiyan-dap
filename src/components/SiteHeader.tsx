@@ -7,7 +7,6 @@ import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
 const NAV = [
   { href: "/", label: "Home" },
   { href: "/workbench", label: "Workbench" },
-  { href: "/workspace", label: "Workspace" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },

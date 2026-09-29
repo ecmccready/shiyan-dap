@@ -40,11 +40,9 @@ export default function HomePage() {
           infrastructure (formerly shiyan-dap).
         </p>
         <p className="text-zinc-500 max-w-2xl mb-8 text-sm">
-          Autonomous outcome-learning workspace: it executes actions against a
-          measurable environment, learns from the resulting error, and
-          continuously selects the next action. Turn operational experience
-          into the next best action. Grok fast, Hy4 deep, and Grok Bot
-          orchestrate inside A.
+          Autonomous outcome-learning home: Workbench B is the environment.
+          Marketplace lists experience. Playlist and Songs are the Music
+          rail. A and B stay in the engine, not as separate products.
         </p>
 
         <div className="flex flex-wrap gap-3 mb-8">
@@ -53,12 +51,6 @@ export default function HomePage() {
             className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
             Workbench
-          </Link>
-          <Link
-            href="/workspace"
-            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
-          >
-            Workspace
           </Link>
           <Link
             href="/marketplace"
