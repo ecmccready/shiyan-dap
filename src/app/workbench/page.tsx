@@ -69,38 +69,56 @@ export default function WorkbenchPage() {
       <SiteHeader section="Workbench B" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          The first commercial move
+          Workspace B · commercial plant
         </p>
         <h1 className="text-3xl font-bold mb-3">Workbench B · Outcome Engine</h1>
         <p className="text-zinc-400 max-w-2xl mb-4">
-          The customer should not buy “Shiyan DAP,” an AI, or a state machine.
-          They buy a system that repeatedly takes an action, observes the
-          result, measures the error against a reference, and uses that
+          Home is Workspace A. Workbench B is the SaaS surface: one environment,
+          many domains. The customer does not buy an AI. They buy a system that
+          takes an action, measures error against a reference, and uses that
           experience to choose the next action.
         </p>
-        <p className="text-zinc-500 text-sm max-w-2xl mb-8">
-          Aethel Node is an autonomous outcome-learning workspace: it executes
-          actions against a measurable environment, learns from the resulting
-          error, and continuously selects the next action. Sales: Turn
-          operational experience into the next best action. Technical: a
-          model-portable closed-loop execution system where intelligence is
-          measured by reduction of error, not by model output alone.
+        <p className="text-zinc-500 text-sm max-w-2xl mb-6">
+          Diagnostic validation and the audit desk live on this workbench, not
+          as separate products. Music remains the first vertical. Intelligence
+          is Δe, not model prose.
         </p>
 
+        <div className="flex flex-wrap gap-3 mb-8">
+          <span className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center">
+            Run
+          </span>
+          <Link
+            href="/workbench/safety"
+            className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Diagnostic
+          </Link>
+          <Link
+            href="/audit"
+            className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Audit
+          </Link>
+          <Link
+            href="/marketplace"
+            className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Experience
+          </Link>
+        </div>
+
         <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 mb-8 overflow-auto leading-6 text-emerald-300">
-{`CUSTOMER
+{`HOME A          Goal / Task / namer of y
    │
    ▼
-WORKSPACE A   Goal / Task
-   │ y
-   ▼
-WORKBENCH B   Environment
+WORKBENCH B     Environment · SaaS plant
+   Run | Diagnostic | Audit | Experience
    │
    ▼
 measured z → error e → Self() next move → repeat
 
-Goal → y1 → z1 → e1 → Self() → y2 → z2 → e2 → … → Outcome
-Organization → Workspace → Workbench → Run → Experience → Marketplace
+Organization → Workspace A → Workbench B → Run → Experience → Marketplace
 Metric: Δe per Run`}
         </pre>
 
@@ -215,6 +233,19 @@ Metric: Δe per Run`}
           </div>
         ) : null}
 
+        {history.length > 0 ? (
+          <section className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 mb-8">
+            <p className="text-emerald-400 text-xs mb-3">Recent runs</p>
+            <ul className="text-sm text-zinc-400 space-y-2">
+              {history.slice(0, 6).map((r) => (
+                <li key={r.id} className="font-mono text-xs">
+                  {r.id} · Δe={r.delta_e} · {r.status}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <article className="text-sm text-zinc-400 space-y-4 mb-10">
           <p>
             Product: Aethel Node Outcome Engine. First Workbench: Node.
@@ -223,25 +254,25 @@ Metric: Δe per Run`}
             reusable asset.
           </p>
           <p>
-            Acceptance: /workspace, /workbench, and /loop still work. A user
-            can start one Run. The Run records y → z → e. Self() names the
-            next action. The Run has an id. Experience can list. No PHI. No
-            unsupervised clinical decision.
+            Acceptance: Home A and Workbench B still work. A user can start
+            one Run. The Run records y → z → e. Self() names the next action.
+            Diagnostic and Audit open from this plant. No PHI. No unsupervised
+            clinical decision.
           </p>
         </article>
 
         <nav className="flex flex-wrap gap-4 text-sm">
-          <Link className="underline" href="/workspace">
-            Workspace
+          <Link className="underline" href="/">
+            Home A
           </Link>
           <Link className="underline" href="/workbench/safety">
-            Diagnostic Safety
+            Diagnostic
+          </Link>
+          <Link className="underline" href="/audit">
+            Audit
           </Link>
           <Link className="underline" href="/marketplace">
             Experience marketplace
-          </Link>
-          <Link className="underline" href="/loop">
-            Loop
           </Link>
         </nav>
       </main>
