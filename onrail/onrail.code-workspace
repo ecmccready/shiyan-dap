@@ -1,0 +1,15 @@
+{
+  "folders": [
+    {
+      "name": "A · Platform Environment",
+      "path": "platform"
+    },
+    {
+      "name": "B · Potential Customer (IN SCOPE)",
+      "path": "customer-b"
+    }
+  ],
+  "settings": {
+    "window.title": "OnRail — Buy as B in scope"
+  }
+}

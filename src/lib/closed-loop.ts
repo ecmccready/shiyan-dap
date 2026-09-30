@@ -72,9 +72,11 @@ export type MemoryM = {
   last_dominant: string | null;
 };
 
+export type DomainId = string;
+
 export type LoopPlant = {
   t: number;
-  domain: "safety" | "music";
+  domain: DomainId;
   case_id: string;
   B: PlantB;
   M: MemoryM;

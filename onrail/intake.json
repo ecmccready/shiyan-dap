@@ -1,0 +1,17 @@
+{
+  "workspace": "B",
+  "role": "potential-customer",
+  "inScope": true,
+  "buyAsB": true,
+  "organization": "Example Health & Enterprise Buyer",
+  "requestedPathways": [
+    "healthcare",
+    "enterprise-agentic",
+    "general-purpose-saas"
+  ],
+  "constraints": {
+    "treatAsEnvironment": false,
+    "phiInScaffold": false,
+    "humanApprovalRequired": true
+  }
+}

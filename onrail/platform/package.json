@@ -1,0 +1,10 @@
+{
+  "name": "@onrail/platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OnRail vendor environment for commercial healthcare, enterprise agentic, and general-purpose SaaS pathways",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  }
+}
