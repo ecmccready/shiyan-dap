@@ -7,6 +7,8 @@ import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
 const NAV = [
   { href: "/", label: "Home" },
   { href: "/workbench", label: "Workbench" },
+  { href: "/workbench/safety", label: "Diagnostic" },
+  { href: "/audit", label: "Audit" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
@@ -47,7 +49,9 @@ export default function SiteHeader({ section }: { section?: string }) {
               const id = e.target.value;
               setVertical(id);
               writeVertical(id);
-              if (id === "safety") window.location.href = "/workbench/safety";
+              if (id === "safety" || id === "compliance") {
+                window.location.href = "/workbench/safety";
+              }
               if (id === "music") window.location.href = "/";
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
