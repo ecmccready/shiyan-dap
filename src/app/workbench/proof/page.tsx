@@ -6,11 +6,11 @@ import SiteHeader from "@/components/SiteHeader";
 import { Namer, namerLabel } from "@/lib/closed-loop";
 import {
   Arm,
+  Receipt,
   proofLines,
   readReceipts,
   recordOutcomeIntent,
   safetyFlywheel,
-  Receipt,
 } from "@/product/proof";
 
 export default function ProofPage() {
@@ -26,15 +26,13 @@ export default function ProofPage() {
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           Workspace B · Safety proof
         </p>
-        <h1 className="text-3xl font-bold mb-3">Run → z → e → Δe → experience</h1>
+        <h1 className="text-3xl font-bold mb-3">Run, z, e, delta-e, experience</h1>
         <p className="text-zinc-400 max-w-2xl mb-4">
           One commercial B. A acts, B changes, error is measured, and the next
           case either uses that experience or it does not.
         </p>
         <p className="text-zinc-500 text-sm max-w-2xl mb-8">
-          Evidence gate only. No diagnosis. No PHI. Self() is not edited. Reuse
-          is a policy outside the loop: the first action is a prior y that
-          already reduced the same defect.
+          Evidence gate only. No diagnosis. No PHI. Self() is not edited.
         </p>
 
         <div className="flex flex-wrap gap-2 mb-8">
@@ -50,14 +48,6 @@ export default function ProofPage() {
             </button>
           ))}
         </div>
-
-        <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 mb-8 overflow-auto leading-6 text-emerald-300">{`Input
-  ↓
-A proposes action
-  ↓
-Workbench B executes
-  ↓
-z → reference → e → Δe → experience → next case`}</pre>
 
         {wheel.reuse.map((arm, i) => (
           <section key={arm.case_id} className="mb-8">
@@ -82,12 +72,12 @@ z → reference → e → Δe → experience → next case`}</pre>
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm">
           <p className="text-emerald-400 text-xs mb-2">Flywheel</p>
           <p className="text-zinc-300">
-            Case 2 reuse Δe {wheel.reuse[1].delta_e} vs cold {wheel.cold[1].delta_e}.
-            Case 3 reuse Δe {wheel.reuse[2].delta_e} vs cold {wheel.cold[2].delta_e}.
+            Case 2 reuse delta-e {wheel.reuse[1].delta_e} vs cold {wheel.cold[1].delta_e}.
+            Case 3 reuse delta-e {wheel.reuse[2].delta_e} vs cold {wheel.cold[2].delta_e}.
           </p>
           <p className="text-zinc-500 mt-2">
             {won
-              ? "Later cases beat cold Self() on this pack. That is the claim, on one B."
+              ? "Later cases beat cold Self() on this pack."
               : "Later cases did not beat cold Self(). Do not claim the flywheel."}
           </p>
         </section>
@@ -95,8 +85,8 @@ z → reference → e → Δe → experience → next case`}</pre>
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8">
           <p className="text-emerald-400 text-xs mb-2">Charge for the outcome</p>
           <p className="text-sm text-zinc-400 mb-4">
-            $49 for one closed Safety proof. This button writes an unsettled
-            receipt. It is not a payment until Stripe settles it.
+            $49 for one closed Safety proof. This writes an unsettled receipt.
+            It is not a payment.
           </p>
           <button
             className="h-11 px-5 rounded-full bg-emerald-600 text-sm"
@@ -110,7 +100,7 @@ z → reference → e → Δe → experience → next case`}</pre>
           <ul className="mt-4 text-xs font-mono text-zinc-500 space-y-1">
             {receipts.map((r) => (
               <li key={r.id}>
-                {r.id} · Δe {r.delta_e} · ${r.amount_usd} · {r.status}
+                {r.id} · delta-e {r.delta_e} · ${r.amount_usd} · {r.status}
               </li>
             ))}
           </ul>
@@ -131,13 +121,13 @@ function ArmCard({ arm }: { arm: Arm }) {
     <article className="border border-zinc-800 rounded-2xl p-4">
       <p className="text-xs text-zinc-500 mb-1">{arm.label}</p>
       <p className="text-sm text-zinc-300 mb-2">
-        e {arm.e0} → {arm.e1} · Δe {arm.delta_e}
+        e {arm.e0} → {arm.e1} · delta-e {arm.delta_e}
         {arm.used_prior ? " · used prior" : ""}
       </p>
       <ol className="text-xs font-mono text-zinc-400 space-y-1">
         {arm.steps.map((s) => (
-          <li key={`${arm.label}-${s.t}`}>
-            y={s.y} · e {s.e}→{s.e_next} · Δe {s.reduced} · {s.gate}
+          <li key={`${arm.label}-${arm.case_id}-${s.t}`}>
+            y={s.y} · e {s.e}→{s.e_next} · delta-e {s.reduced} · {s.gate}
           </li>
         ))}
       </ol>

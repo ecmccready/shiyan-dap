@@ -1,9 +1,6 @@
 /**
  * Proof object for Workbench B · Safety.
  * Additive. Does not edit src/lib/closed-loop.ts.
- *
- * Customer record:
- *   Workbench → y → B changed → z → e/Δe → experience → next Run used it.
  */
 import {
   LoopPlant,
@@ -54,14 +51,12 @@ export type Arm = {
 };
 
 export type Flywheel = {
-  arms: Arm[];
   cold: Arm[];
   reuse: Arm[];
   case2_better: boolean;
   case3_better: boolean;
 };
 
-/** Outside the loop. Prefer a prior y that already reduced this defect. */
 export function yFromExperience(prior: StepRec[], dominant: string): YAction | null {
   const hit = prior.find((s) => s.dominant === dominant && s.reduced > 0);
   return hit?.y ?? null;
@@ -69,36 +64,36 @@ export function yFromExperience(prior: StepRec[], dominant: string): YAction | n
 
 function stateOf(plant: LoopPlant) {
   const B = plant.B;
-  return `missing=${B.missing} contradiction=${B.contradiction} completeness=${B.completeness} gate-input=${B.independent_check}`;
+  return `missing=${B.missing} contradiction=${B.contradiction} completeness=${B.completeness}`;
 }
 
-function toArtifact(label: string, plant: LoopPlant, steps: StepRec[], used: boolean, first: YAction | null): RunArtifact {
+function toArtifact(
+  plant: LoopPlant,
+  steps: StepRec[],
+  used: boolean,
+  first: YAction | null
+): RunArtifact {
   const c = caseById(plant.case_id);
   const last = steps[steps.length - 1];
   const e0 = plant.M.last_e;
   const e1 = last ? last.e_next : e0;
   return {
-    run_id: `proof_${plant.case_id}_${label.replace(/\s+/g, "_")}`,
+    run_id: `proof_${plant.case_id}`,
     B: "Safety",
     case_id: plant.case_id,
     reference: c.reference_note,
     initial_state: stateOf(plant),
-    action_y: steps.map((s) => s.y).join(" → ") || "none",
+    action_y: steps.map((s) => s.y).join(" -> ") || "none",
     result_z: last?.z ?? "no measurement",
-    e: last ? `${last.e} → ${last.e_next}` : String(e0),
+    e: last ? `${last.e} -> ${last.e_next}` : String(e0),
     delta_e: Number((e0 - e1).toFixed(3)),
-    experience: used ? "prior validated y loaded" : "cold Self()",
+    experience: used ? "prior y that reduced this defect" : "cold Self()",
     next_action: first ?? last?.y ?? "observe",
     used_prior: used,
   };
 }
 
-function armFrom(
-  label: string,
-  plant: LoopPlant,
-  namer: Namer,
-  prior: StepRec[]
-): Arm {
+function armFrom(label: string, plant: LoopPlant, namer: Namer, prior: StepRec[]): Arm {
   const e0 = plant.M.last_e;
   let cursor = plant;
   const taken: StepRec[] = [];
@@ -124,33 +119,27 @@ function armFrom(
     delta_e: Number((e0 - e1).toFixed(3)),
     used_prior: used,
     first_y: first,
-    artifact: toArtifact(label, plant, taken, used, first),
+    artifact: toArtifact(plant, taken, used, first),
   };
 }
 
-function play(caseId: string, namer: Namer, prior: StepRec[]) {
-  const plant = prior.length ? loadCase({ ...freshPlant(prior[0].case_id), M: { ...freshPlant().M, ledger: prior } }, caseId) : freshPlant(caseId);
-  const arm = armFrom(prior.length ? "reuse" : "cold", plant, namer, prior);
-  let memory = freshPlant(caseId);
-  for (const rec of [...arm.steps].reverse()) {
-    memory = stepLoop(memory, { namer, y: rec.y }).plant;
-  }
-  return { arm, ledger: [...prior, ...memory.M.ledger] };
+function plantWith(prior: StepRec[], caseId: string): LoopPlant {
+  const carrier = freshPlant(prior[0]?.case_id ?? caseId);
+  carrier.M.ledger = prior;
+  return loadCase(carrier, caseId);
 }
 
-/** Case 1 → experience → Case 2. Case 2 → experience → Case 3. Cold arms sit beside them. */
 export function safetyFlywheel(namer: Namer = "grok_bot"): Flywheel {
   const cold: Arm[] = [];
   const reuse: Arm[] = [];
-  let ledger: StepRec[] = [];
+  let prior: StepRec[] = [];
   for (const id of PROOF_CASES) {
     cold.push(armFrom("cold", freshPlant(id), namer, []));
-    const played = play(id, namer, ledger);
-    reuse.push(played.arm);
-    ledger = played.ledger;
+    const arm = armFrom("reuse", prior.length ? plantWith(prior, id) : freshPlant(id), namer, prior);
+    reuse.push(arm);
+    prior = [...arm.steps.filter((s) => s.reduced > 0), ...prior];
   }
   return {
-    arms: reuse,
     cold,
     reuse,
     case2_better: reuse[1].delta_e > cold[1].delta_e || reuse[1].steps.length < cold[1].steps.length,
@@ -165,9 +154,12 @@ export function proofLines(arm: Arm): ProofLine[] {
     { k: "A took this action", v: s ? `${s.namer} named y=${s.y}` : "no action" },
     { k: "B changed this way", v: s ? `${s.dominant} · gate ${s.gate}` : "no transition" },
     { k: "The measured result was this", v: s?.z ?? "—" },
-    { k: "Error changed by this amount", v: `Δe ${arm.delta_e} · e ${arm.e0} → ${arm.e1}` },
+    { k: "Error changed by this amount", v: `delta-e ${arm.delta_e} · e ${arm.e0} -> ${arm.e1}` },
     { k: "Therefore this experience was created", v: arm.artifact.experience },
-    { k: "On the next Run, A used that experience", v: arm.used_prior ? `yes · first y=${arm.first_y}` : "no · cold Self()" },
+    {
+      k: "On the next Run, A used that experience",
+      v: arm.used_prior ? `yes · first y=${arm.first_y}` : "no · cold Self()",
+    },
   ];
 }
 
@@ -192,7 +184,6 @@ export function readReceipts(): Receipt[] {
   }
 }
 
-/** Not a charge. A local intent until Stripe settles it. */
 export function recordOutcomeIntent(arm: Arm, amount = 49): Receipt {
   const receipt: Receipt = {
     id: `rcpt_${Date.now().toString(36)}`,
@@ -204,7 +195,8 @@ export function recordOutcomeIntent(arm: Arm, amount = 49): Receipt {
     created_at: new Date().toISOString(),
   };
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(RECEIPT_KEY, JSON.stringify([receipt, ...readReceipts()].slice(0, 24)));
+    const next = [receipt, ...readReceipts()].slice(0, 24);
+    window.localStorage.setItem(RECEIPT_KEY, JSON.stringify(next));
   }
   return receipt;
 }
