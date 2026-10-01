@@ -89,6 +89,12 @@ export default function WorkbenchPage() {
             Run
           </span>
           <Link
+          href="/workbench/exchange"
+          className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+        >
+          Exchange
+          </Link>
+          <Link
               href="/workbench/proof"
               className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
             >
