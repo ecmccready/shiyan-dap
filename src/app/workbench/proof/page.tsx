@@ -26,10 +26,10 @@ export default function ProofPage() {
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           Workspace B · Safety proof
         </p>
-        <h1 className="text-3xl font-bold mb-3">Run, z, e, delta-e, experience</h1>
+        <h1 className="text-3xl font-bold mb-3">Case 1 → experience → Case 2</h1>
         <p className="text-zinc-400 max-w-2xl mb-4">
-          One commercial B. A acts, B changes, error is measured, and the next
-          case either uses that experience or it does not.
+          One B. Input, action, measurement, reference, error, experience, next case.
+          Improvement means fewer steps or fewer ESCALATE gates. A tied Δe is not a win.
         </p>
         <p className="text-zinc-500 text-sm max-w-2xl mb-8">
           Evidence gate only. No diagnosis. No PHI. Self() is not edited.
@@ -49,10 +49,19 @@ export default function ProofPage() {
           ))}
         </div>
 
+        <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 mb-8 overflow-auto leading-6 text-emerald-300">{`Input
+  ↓
+A proposes action
+  ↓
+Workbench executes
+  ↓
+z → reference → e → Δe → experience → next case`}</pre>
+
         {wheel.reuse.map((arm, i) => (
           <section key={arm.case_id} className="mb-8">
             <p className="text-emerald-400 text-xs mb-3">
               Case {i + 1} · {arm.title}
+              {i > 0 ? (i === 1 ? wheel.case2_better : wheel.case3_better) ? " · improved" : " · did not improve" : ""}
             </p>
             <div className="border border-zinc-800 rounded-2xl p-5 mb-3">
               {proofLines(arm).map((line) => (
@@ -72,21 +81,22 @@ export default function ProofPage() {
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm">
           <p className="text-emerald-400 text-xs mb-2">Flywheel</p>
           <p className="text-zinc-300">
-            Case 2 reuse delta-e {wheel.reuse[1].delta_e} vs cold {wheel.cold[1].delta_e}.
-            Case 3 reuse delta-e {wheel.reuse[2].delta_e} vs cold {wheel.cold[2].delta_e}.
+            Case 2: {wheel.reuse[1].steps.length} steps, {wheel.reuse[1].escalates} ESCALATE
+            vs cold {wheel.cold[1].steps.length} steps, {wheel.cold[1].escalates} ESCALATE.
+            Case 3: {wheel.reuse[2].steps.length} steps, {wheel.reuse[2].escalates} ESCALATE
+            vs cold {wheel.cold[2].steps.length} steps, {wheel.cold[2].escalates} ESCALATE.
           </p>
           <p className="text-zinc-500 mt-2">
             {won
-              ? "Later cases beat cold Self() on this pack."
-              : "Later cases did not beat cold Self(). Do not claim the flywheel."}
+              ? "Later cases improved on steps or unsafe gates. That is the flywheel on one B. It is not N customers."
+              : "Later cases did not improve. Do not claim the flywheel."}
           </p>
         </section>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8">
-          <p className="text-emerald-400 text-xs mb-2">Charge for the outcome</p>
+          <p className="text-emerald-400 text-xs mb-2">Not a customer yet</p>
           <p className="text-sm text-zinc-400 mb-4">
-            $49 for one closed Safety proof. This writes an unsettled receipt.
-            It is not a payment.
+            One A, one B, one founder. The receipt is unsettled. N customers starts when someone else pays for this record.
           </p>
           <button
             className="h-11 px-5 rounded-full bg-emerald-600 text-sm"
@@ -99,9 +109,7 @@ export default function ProofPage() {
           </button>
           <ul className="mt-4 text-xs font-mono text-zinc-500 space-y-1">
             {receipts.map((r) => (
-              <li key={r.id}>
-                {r.id} · delta-e {r.delta_e} · ${r.amount_usd} · {r.status}
-              </li>
+              <li key={r.id}>{r.id} · delta-e {r.delta_e} · ${r.amount_usd} · {r.status}</li>
             ))}
           </ul>
         </section>
@@ -121,7 +129,7 @@ function ArmCard({ arm }: { arm: Arm }) {
     <article className="border border-zinc-800 rounded-2xl p-4">
       <p className="text-xs text-zinc-500 mb-1">{arm.label}</p>
       <p className="text-sm text-zinc-300 mb-2">
-        e {arm.e0} → {arm.e1} · delta-e {arm.delta_e}
+        e {arm.e0} → {arm.e1} · delta-e {arm.delta_e} · {arm.steps.length} steps · {arm.escalates} ESCALATE
         {arm.used_prior ? " · used prior" : ""}
       </p>
       <ol className="text-xs font-mono text-zinc-400 space-y-1">

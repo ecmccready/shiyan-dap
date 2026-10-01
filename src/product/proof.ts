@@ -1,6 +1,7 @@
 /**
- * Proof object for Workbench B · Safety.
- * Additive. Does not edit src/lib/closed-loop.ts.
+ * Safety flywheel. Additive. Does not edit src/lib/closed-loop.ts.
+ * Improvement is fewer steps to the same e, or fewer ESCALATE gates.
+ * A tie on Δe is not a win.
  */
 import {
   LoopPlant,
@@ -8,7 +9,6 @@ import {
   StepRec,
   YAction,
   caseById,
-  dominantOf,
   freshPlant,
   loadCase,
   stepLoop,
@@ -45,6 +45,7 @@ export type Arm = {
   e0: number;
   e1: number;
   delta_e: number;
+  escalates: number;
   used_prior: boolean;
   first_y: YAction | null;
   artifact: RunArtifact;
@@ -57,9 +58,21 @@ export type Flywheel = {
   case3_better: boolean;
 };
 
-export function yFromExperience(prior: StepRec[], dominant: string): YAction | null {
-  const hit = prior.find((s) => s.dominant === dominant && s.reduced > 0);
-  return hit?.y ?? null;
+function useless(prior: StepRec[]): Set<YAction> {
+  return new Set(prior.filter((s) => s.reduced <= 0).map((s) => s.y));
+}
+
+function usefulOrder(prior: StepRec[]): YAction[] {
+  const seen = new Set<YAction>();
+  const ys: YAction[] = [];
+  const safe = prior.filter((s) => s.reduced > 0 && s.gate !== "ESCALATE");
+  const rest = prior.filter((s) => s.reduced > 0 && s.gate === "ESCALATE");
+  for (const s of [...safe, ...rest]) {
+    if (seen.has(s.y)) continue;
+    seen.add(s.y);
+    ys.push(s.y);
+  }
+  return ys;
 }
 
 function stateOf(plant: LoopPlant) {
@@ -67,12 +80,7 @@ function stateOf(plant: LoopPlant) {
   return `missing=${B.missing} contradiction=${B.contradiction} completeness=${B.completeness}`;
 }
 
-function toArtifact(
-  plant: LoopPlant,
-  steps: StepRec[],
-  used: boolean,
-  first: YAction | null
-): RunArtifact {
+function toArtifact(plant: LoopPlant, steps: StepRec[], used: boolean, first: YAction | null): RunArtifact {
   const c = caseById(plant.case_id);
   const last = steps[steps.length - 1];
   const e0 = plant.M.last_e;
@@ -87,7 +95,7 @@ function toArtifact(
     result_z: last?.z ?? "no measurement",
     e: last ? `${last.e} -> ${last.e_next}` : String(e0),
     delta_e: Number((e0 - e1).toFixed(3)),
-    experience: used ? "prior y that reduced this defect" : "cold Self()",
+    experience: used ? "skipped a y that did not reduce e" : "cold Self()",
     next_action: first ?? last?.y ?? "observe",
     used_prior: used,
   };
@@ -95,15 +103,19 @@ function toArtifact(
 
 function armFrom(label: string, plant: LoopPlant, namer: Namer, prior: StepRec[]): Arm {
   const e0 = plant.M.last_e;
+  const skip = useless(prior);
+  const order = usefulOrder(prior);
   let cursor = plant;
   const taken: StepRec[] = [];
   let used = false;
   let first: YAction | null = null;
   for (let i = 0; i < 4; i++) {
-    const priorY = i === 0 ? yFromExperience(prior, dominantOf(cursor.B)) : null;
+    const priorY = order[i];
+    if (priorY && skip.has(priorY)) break;
     if (priorY) used = true;
-    if (i === 0) first = priorY;
-    const out = stepLoop(cursor, { namer, y: priorY ?? undefined });
+    if (i === 0) first = priorY ?? null;
+    const out = stepLoop(cursor, { namer, y: priorY });
+    if (prior.length && out.rec.reduced <= 0) break;
     taken.push(out.rec);
     cursor = out.plant;
     if (out.rec.reduced <= 0) break;
@@ -117,6 +129,7 @@ function armFrom(label: string, plant: LoopPlant, namer: Namer, prior: StepRec[]
     e0,
     e1,
     delta_e: Number((e0 - e1).toFixed(3)),
+    escalates: taken.filter((s) => s.gate === "ESCALATE").length,
     used_prior: used,
     first_y: first,
     artifact: toArtifact(plant, taken, used, first),
@@ -129,6 +142,10 @@ function plantWith(prior: StepRec[], caseId: string): LoopPlant {
   return loadCase(carrier, caseId);
 }
 
+function better(next: Arm, cold: Arm) {
+  return next.steps.length < cold.steps.length || next.escalates < cold.escalates || next.e1 < cold.e1;
+}
+
 export function safetyFlywheel(namer: Namer = "grok_bot"): Flywheel {
   const cold: Arm[] = [];
   const reuse: Arm[] = [];
@@ -137,13 +154,13 @@ export function safetyFlywheel(namer: Namer = "grok_bot"): Flywheel {
     cold.push(armFrom("cold", freshPlant(id), namer, []));
     const arm = armFrom("reuse", prior.length ? plantWith(prior, id) : freshPlant(id), namer, prior);
     reuse.push(arm);
-    prior = [...arm.steps.filter((s) => s.reduced > 0), ...prior];
+    prior = [...arm.steps, ...prior];
   }
   return {
     cold,
     reuse,
-    case2_better: reuse[1].delta_e > cold[1].delta_e || reuse[1].steps.length < cold[1].steps.length,
-    case3_better: reuse[2].delta_e > cold[2].delta_e || reuse[2].steps.length < cold[2].steps.length,
+    case2_better: better(reuse[1], cold[1]),
+    case3_better: better(reuse[2], cold[2]),
   };
 }
 
@@ -195,8 +212,7 @@ export function recordOutcomeIntent(arm: Arm, amount = 49): Receipt {
     created_at: new Date().toISOString(),
   };
   if (typeof window !== "undefined") {
-    const next = [receipt, ...readReceipts()].slice(0, 24);
-    window.localStorage.setItem(RECEIPT_KEY, JSON.stringify(next));
+    window.localStorage.setItem(RECEIPT_KEY, JSON.stringify([receipt, ...readReceipts()].slice(0, 24)));
   }
   return receipt;
 }
