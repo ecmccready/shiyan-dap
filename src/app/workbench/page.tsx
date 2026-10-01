@@ -89,22 +89,22 @@ export default function WorkbenchPage() {
             Run
           </span>
           <Link
-          href="/workbench/exchange"
-          className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
-        >
-          Exchange
-          </Link>
-          <Link
-              href="/workbench/proof"
-              className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
-            >
-              Proof
-            </Link>
-          <Link
             href="/workbench/safety"
             className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
           >
             Diagnostic
+          </Link>
+          <Link
+            href="/workbench/proof"
+            className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Proof
+          </Link>
+          <Link
+            href="/workbench/exchange"
+            className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Exchange
           </Link>
           <Link
             href="/audit"
@@ -125,7 +125,7 @@ export default function WorkbenchPage() {
    │
    ▼
 WORKBENCH B     Environment · SaaS plant
-   Run | Diagnostic | Audit | Experience
+   Run | Diagnostic | Proof | Exchange | Audit | Experience
    │
    ▼
 measured z → error e → Self() next move → repeat
@@ -268,8 +268,8 @@ Metric: Δe per Run`}
           <p>
             Acceptance: Home A and Workbench B still work. A user can start
             one Run. The Run records y → z → e. Self() names the next action.
-            Diagnostic and Audit open from this plant. No PHI. No unsupervised
-            clinical decision.
+            Diagnostic, Proof, Exchange, and Audit open from this plant. No PHI.
+            No unsupervised clinical decision.
           </p>
         </article>
 
@@ -279,6 +279,12 @@ Metric: Δe per Run`}
           </Link>
           <Link className="underline" href="/workbench/safety">
             Diagnostic
+          </Link>
+          <Link className="underline" href="/workbench/proof">
+            Proof
+          </Link>
+          <Link className="underline" href="/workbench/exchange">
+            Exchange
           </Link>
           <Link className="underline" href="/audit">
             Audit
