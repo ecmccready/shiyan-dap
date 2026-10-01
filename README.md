@@ -33,9 +33,11 @@ W(B,y) → measured z → error e → Self() → y' → repeat
 
 Organization → Workspace A → Workbench B → Run → Experience → Marketplace
 
-The proof object, on Safety, is the customer sentence:
+The proof object, on Safety, is:
 
-I gave A this Workbench. A took this action. B changed this way. The measured result was this. Error changed by this amount. Therefore this experience was created. On the next Run, A used that experience.
+RUN #001 creates experience.
+RUN #002 uses #001.
+Better only if the later run is shorter, safer, or lower-error.
 
 ## Navigation strategy
 
@@ -46,7 +48,7 @@ Home is A. Workbench is B. That split is the product, not a layout preference.
 | `/` Home A | Controller | Goal, task, namer of y. Music is the first vertical. |
 | `/workbench` Workbench B | Environment | The SaaS plant. Runs, domains, audit, listed experience. |
 | Diagnostic | Plant on B | Validation of y against a reference. Not a header product. |
-| Proof | Plant on B | Run → z → e → Δe → experience, and whether the next case used it. Not a header product. |
+| Proof | Plant on B | Run → Experience → Run. Not a header product. |
 | Audit | Plant on B | Frozen run + digest when Δe stalls. Human review desk. |
 | Marketplace / Playlist / Songs | Kept rails | Assets already listed. Traction stays on the page. |
 
@@ -69,7 +71,7 @@ Shiyan already shipped the loop. Aethel Node commercializes that loop without re
 | Music vertical | Home. First commercial rail. | `/` | Live |
 | Workbench B | Outcome Engine. Start / step / close a Run. List experience. | `/workbench` | Live |
 | Safety pack | Evidence gate. HOLD / CLINICIAN_REVIEW / ESCALATE. | `/workbench/safety` | Live |
-| Proof | One B. Case 1, Case 2, Case 3. Cold versus reuse. | `/workbench/proof` | Live. Reuse did not beat cold. |
+| Proof | Run 001 → Run 002 / 003. Cold versus reuse. | `/workbench/proof` | Live. `6e66236`. |
 | Marketplace | Two listed singles + path for listed e / experience | `/marketplace` | Live |
 | Playlist / Songs | Shiyan Yishu — First Single, Sleep Terrors — Second Single | `/playlist` `/single` | Live assets |
 | Prove rail | NFT / proof path for the same two works | `/nfts` | Kept |
@@ -80,14 +82,15 @@ Core loop = protected. Commercialization = additive.
 
 ## New in this development
 
-Date: 2026-10-01.
+Date: 2026-10-01. Production deploy `6e66236` is Ready.
 
-- Proof is a plant on Workbench B, at `/workbench/proof`. It is not a new product and not a new vertical.
-- The record is readable. Case 1, Incomplete evidence pack: y = `request_independent_check`, z = `0.918`, e `1.561 → 0.165`, Δe `1.396`.
-- Case 2, Missing measurements, and Case 3, Provenance gap, finish at Δe `1.183` cold and `1.183` reuse.
-- The page states the result: later cases did not beat cold Self(). Do not claim the flywheel.
-- The charge control writes an unsettled receipt. It is not a payment. No settled Safety outcome is on record.
-- `Self()` remains a one-step search. Experience reuse, where attempted, is a policy outside the loop.
+- `/workbench/proof` is the demonstration. Heading: Run → Experience → Run.
+- Run #001, Incomplete evidence pack: `request_independent_check → fill_missing → fill_missing → observe`. Error `1.561 → 0.165`. Experience created: YES.
+- Run #002 and Run #003 use `#001`. First action changes to `fill_missing → request_independent_check`. Error `1.399 → 0.216`.
+- Score against cold: 2 steps and 0 ESCALATE, versus 3 steps and 1 ESCALATE. The page says Better.
+- Δe against the cold final error is `0`. The path is shorter and safer. The final error did not fall.
+- Reuse is a policy outside the loop. `Self()` was not edited.
+- No settled payment. An unsettled receipt is not revenue.
 
 ## Assets that stay listed
 
@@ -97,7 +100,7 @@ Do not orphan traction while the engine generalizes.
 |---|---|---|
 | Shiyan Yishu — First Single | `/single` `/playlist` `/marketplace` `/nfts` | Founder proof. First listed work. |
 | Sleep Terrors — Second Single | `/single` `/playlist` `/marketplace` | Second listed work. Same settlement path. |
-| Listed e / experience | `/marketplace` | Validated Δe becomes a reusable asset. Not validated on the Safety proof yet. |
+| Listed e / experience | `/marketplace` | Validated Δe becomes a reusable asset. Safety reuse has not cut final e. |
 
 Music is the first vertical, not the product boundary.
 
@@ -115,7 +118,7 @@ Portable means:
 
 Intelligence is Δe on B, not the paragraph a model writes.
 One controller, many environments, many models.
-Carrying M is not the same as the next Run improving. The Safety proof is the check.
+Carrying a prior y is not the same as lowering e. The Safety proof separates those.
 
 ## Diagnostic validation as a commercial core
 
@@ -143,7 +146,7 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | Gatekeeper | `src/workbench/safety/gatekeeper.ts` | HOLD / CLINICIAN_REVIEW / ESCALATE / FROZEN + digest |
 | Engine hook | `src/lib/engine.ts` | New workbench = schema + error function |
 | Review desk | `/audit` | Human-in-the-loop when Δe stalls |
-| Proof | `/workbench/proof` | Whether a later case used, and beat, a prior Run |
+| Proof | `/workbench/proof` | Whether a later run used a prior run, and on which score it won |
 
 Safety remains an evidence gate. It is not a diagnostic device.
 No production PHI. No unsupervised clinical decision.
@@ -152,12 +155,12 @@ No production PHI. No unsupervised clinical decision.
 
 | Asset | Customer value | Monetization | Evidence |
 |---|---|---|---|
-| Auditable verification logs | Every y was simulated, z measured, e scored before execution | Per-run / API | Safety proof records y, z, e, Δe. |
-| Sovereign engine architecture | Swap models or hosts; keep M | On-prem / enterprise seat | Namers swap. M does not yet change Self(). |
-| Verified experience marketplace | Discover or list loop policies that already cut e | Platform fee | Two singles listed. Safety reuse has not cut e below cold. |
+| Auditable verification logs | Every y was simulated, z measured, e scored before execution | Per-run / API | Proof records y, z, e, steps, gates. |
+| Sovereign engine architecture | Swap models or hosts; keep M | On-prem / enterprise seat | Namers swap. Self() does not read M. |
+| Verified experience marketplace | Discover or list loop policies that already cut e | Platform fee | Two singles listed. Safety reuse did not cut final e. |
 
 Do not commercialize the AI. Commercialize the closed-loop outcome.
-Do not list a Safety Δe as verified experience until a later Run beats cold.
+Do not list a Safety Δe as verified experience until a later Run has a lower final e than cold.
 
 ## Surfaces
 
@@ -166,7 +169,7 @@ Do not list a Safety Δe as verified experience until a later Run beats cold.
 | `/` | Home A. Music vertical. Workbench, Marketplace, Playlist, Songs. |
 | `/workbench` | Workbench B. Run plant. Diagnostic, Proof, and Audit open here. |
 | `/workbench/safety` | Diagnostic validation plant on B. |
-| `/workbench/proof` | Run 001 and later cases. Cold versus reuse. Flywheel refused if tied. |
+| `/workbench/proof` | Run #001, then #002 and #003. Steps and ESCALATE compared with cold. |
 | `/audit` | Review desk. Frozen digests. |
 | `/marketplace` | First Single + Sleep Terrors. Experience can list. |
 | `/playlist` | Settlement rail for those two assets. |
@@ -182,19 +185,15 @@ They are not separate products.
 
 Adjust as we go. Add to what exists. Do not rewrite the loop to announce a new narrative.
 
-1. Keep the loop.
-2. Keep the two listed works and their rails.
-3. Name the next workbench on B (Node / Music / Safety / Compliance / next).
-4. Define the reference that makes e measurable.
-5. Run.
-6. Freeze and audit when Δe stalls.
-7. List validated experience when a second-order check exists.
-8. Claim reuse only when a later Run beats cold on steps, unsafe gates, or final e.
-9. Charge only after that comparison wins. An unsettled receipt is not revenue.
+Development criteria for the next change:
 
-Momentum is the live site, the two assets, the Run primitive, and the same A entering more than one B.
-Consolidation means fewer top-level products and a stronger Workbench B.
-The next milestone is one demonstration: Run → Experience → Run, with Δe = e2 − e1. Negative means better.
+1. Keep `src/lib/closed-loop.ts` frozen.
+2. Keep the two listed works and their rails.
+3. A claim is allowed only if `/workbench/proof` shows it.
+4. "Used experience" means the later run names `#001` and its first action differs from cold.
+5. "Better" means fewer steps, fewer ESCALATE gates, or a lower final e. A tie on final e is not an error win.
+6. "Customer value" means a settled payment for that record. An unsettled receipt does not count.
+7. No new vertical until this Safety comparison is the page a buyer opens.
 
 ## Unicorn Development Status
 
@@ -204,20 +203,23 @@ That sentence is the thesis. It is not a measurement.
 
 | Claim | Status on 2026-10-01 |
 |---|---|
-| A acts on B, produces z, calculates e/Δe | Shown on `/workbench/proof`. Case 1 Δe `1.396`. |
-| The experience improves the next action | Not shown. Case 2 and Case 3 reuse Δe `1.183` = cold `1.183`. |
-| Customers pay for the outcome | Not shown. Receipt is unsettled. |
-| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. Compliance is named, not a second built B. |
-| Experience compounds | Not shown. |
-| Customers or partners create new B environments | Not shown. Both live Bs were built here. |
+| A acts on B, produces z, calculates e/Δe | Shown. Run #001, e `1.561 → 0.165`. |
+| A later run uses that experience | Shown. Run #002 and #003 say `Experience used: #001`. |
+| The later run is better | Shown on path only. 2 steps, 0 ESCALATE, versus 3 steps, 1 ESCALATE. |
+| The later run has lower error | Not shown. Δe against cold is `0`. Final e `0.216` either way. |
+| Customers pay for the outcome | Not shown. |
+| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. Compliance is named, not built. |
+| Experience compounds across many workbenches | Not shown. One B. |
+| Customers or partners create new B environments | Not shown. |
 | Revenue grows faster than engineering effort | Not shown. |
 
 Commercial development is underway on the Shiyan engine.
 The first customer-facing primitive is a Run on Workbench B.
-Diagnostic validation and the Safety proof are plants on that same workbench.
-The smaller proposition still to prove:
+The smaller proposition still open:
 
-A acts on B → B produces measurable z → Δe → experience → better next action → customer value
+A acts on B → B produces measurable z → experience → better next action → lower e → customer value
+
+The middle of that line is now visible. The last two terms are not.
 
 Repo: https://github.com/ecmccready/shiyan-dap
 Live: https://shiyan-dap.vercel.app
