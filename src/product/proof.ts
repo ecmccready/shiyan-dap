@@ -1,18 +1,28 @@
 /**
- * Safety flywheel. Additive. Does not edit src/lib/closed-loop.ts.
- * Improvement is fewer steps to the same e, or fewer ESCALATE gates.
- * A tie on Δe is not a win.
+ * Milestones 2–4 for one commercial B.
+ * Does not edit src/lib/closed-loop.ts. Milestone 1 is that freeze.
  */
 import {
   LoopPlant,
   Namer,
   StepRec,
   YAction,
+  Y_ACTIONS,
   caseById,
   freshPlant,
   loadCase,
   stepLoop,
 } from "@/lib/closed-loop";
+
+export const SAFETY_B = {
+  id: "Safety",
+  accepts: ["case_id from the Safety reference pack"],
+  actions: Y_ACTIONS,
+  z: "distance of B after y: completeness, contradiction, missing, uncertainty, independent check",
+  e: "distance to the reference gate, plus 0.25 if the gate does not match",
+  delta_e: "e at start minus e after the last reducing step",
+  not: "a diagnosis, a model score, or PHI",
+} as const;
 
 export const PROOF_CASES = [
   "case-incomplete-pack",
@@ -20,21 +30,17 @@ export const PROOF_CASES = [
   "case-provenance-gap",
 ] as const;
 
-export type ProofLine = { k: string; v: string };
-
 export type RunArtifact = {
   run_id: string;
   B: string;
-  case_id: string;
-  reference: string;
   initial_state: string;
   action_y: string;
   result_z: string;
-  e: string;
+  reference: string;
+  error_e: string;
   delta_e: number;
   experience: string;
   next_action: string;
-  used_prior: boolean;
 };
 
 export type Arm = {
@@ -47,7 +53,6 @@ export type Arm = {
   delta_e: number;
   escalates: number;
   used_prior: boolean;
-  first_y: YAction | null;
   artifact: RunArtifact;
 };
 
@@ -58,86 +63,74 @@ export type Flywheel = {
   case3_better: boolean;
 };
 
-function useless(prior: StepRec[]): Set<YAction> {
+function skipSet(prior: StepRec[]) {
   return new Set(prior.filter((s) => s.reduced <= 0).map((s) => s.y));
 }
 
-function usefulOrder(prior: StepRec[]): YAction[] {
+function orderFrom(prior: StepRec[]): YAction[] {
   const seen = new Set<YAction>();
-  const ys: YAction[] = [];
-  const safe = prior.filter((s) => s.reduced > 0 && s.gate !== "ESCALATE");
-  const rest = prior.filter((s) => s.reduced > 0 && s.gate === "ESCALATE");
-  for (const s of [...safe, ...rest]) {
+  const out: YAction[] = [];
+  const ranked = [
+    ...prior.filter((s) => s.reduced > 0 && s.gate !== "ESCALATE"),
+    ...prior.filter((s) => s.reduced > 0),
+  ];
+  for (const s of ranked) {
     if (seen.has(s.y)) continue;
     seen.add(s.y);
-    ys.push(s.y);
+    out.push(s.y);
   }
-  return ys;
+  return out;
 }
 
-function stateOf(plant: LoopPlant) {
-  const B = plant.B;
-  return `missing=${B.missing} contradiction=${B.contradiction} completeness=${B.completeness}`;
-}
-
-function toArtifact(plant: LoopPlant, steps: StepRec[], used: boolean, first: YAction | null): RunArtifact {
+function artifactOf(plant: LoopPlant, steps: StepRec[], used: boolean): RunArtifact {
   const c = caseById(plant.case_id);
   const last = steps[steps.length - 1];
-  const e0 = plant.M.last_e;
-  const e1 = last ? last.e_next : e0;
+  const B = plant.B;
   return {
     run_id: `proof_${plant.case_id}`,
     B: "Safety",
-    case_id: plant.case_id,
-    reference: c.reference_note,
-    initial_state: stateOf(plant),
+    initial_state: `missing=${B.missing} contradiction=${B.contradiction} completeness=${B.completeness}`,
     action_y: steps.map((s) => s.y).join(" -> ") || "none",
     result_z: last?.z ?? "no measurement",
-    e: last ? `${last.e} -> ${last.e_next}` : String(e0),
-    delta_e: Number((e0 - e1).toFixed(3)),
-    experience: used ? "skipped a y that did not reduce e" : "cold Self()",
-    next_action: first ?? last?.y ?? "observe",
-    used_prior: used,
+    reference: c.reference_note,
+    error_e: last ? `${steps[0].e} -> ${last.e_next}` : String(plant.M.last_e),
+    delta_e: Number((plant.M.last_e - (last?.e_next ?? plant.M.last_e)).toFixed(3)),
+    experience: used ? "prior y kept only if it reduced e" : "cold Self()",
+    next_action: steps[0]?.y ?? "observe",
   };
 }
 
 function armFrom(label: string, plant: LoopPlant, namer: Namer, prior: StepRec[]): Arm {
-  const e0 = plant.M.last_e;
-  const skip = useless(prior);
-  const order = usefulOrder(prior);
+  const skip = skipSet(prior);
+  const order = orderFrom(prior);
   let cursor = plant;
-  const taken: StepRec[] = [];
-  let used = false;
-  let first: YAction | null = null;
+  const steps: StepRec[] = [];
   for (let i = 0; i < 4; i++) {
-    const priorY = order[i];
-    if (priorY && skip.has(priorY)) break;
-    if (priorY) used = true;
-    if (i === 0) first = priorY ?? null;
-    const out = stepLoop(cursor, { namer, y: priorY });
+    const y = order[i];
+    if (y && skip.has(y)) break;
+    const out = stepLoop(cursor, { namer, y });
     if (prior.length && out.rec.reduced <= 0) break;
-    taken.push(out.rec);
+    steps.push(out.rec);
     cursor = out.plant;
     if (out.rec.reduced <= 0) break;
   }
-  const e1 = taken.length ? taken[taken.length - 1].e_next : e0;
+  const last = steps[steps.length - 1];
   return {
     label,
     case_id: plant.case_id,
     title: caseById(plant.case_id).title,
-    steps: taken,
-    e0,
-    e1,
-    delta_e: Number((e0 - e1).toFixed(3)),
-    escalates: taken.filter((s) => s.gate === "ESCALATE").length,
-    used_prior: used,
-    first_y: first,
-    artifact: toArtifact(plant, taken, used, first),
+    steps,
+    e0: plant.M.last_e,
+    e1: last?.e_next ?? plant.M.last_e,
+    delta_e: Number((plant.M.last_e - (last?.e_next ?? plant.M.last_e)).toFixed(3)),
+    escalates: steps.filter((s) => s.gate === "ESCALATE").length,
+    used_prior: order.length > 0,
+    artifact: artifactOf(plant, steps, order.length > 0),
   };
 }
 
-function plantWith(prior: StepRec[], caseId: string): LoopPlant {
-  const carrier = freshPlant(prior[0]?.case_id ?? caseId);
+function withMemory(prior: StepRec[], caseId: string): LoopPlant {
+  const carrier = freshPlant(prior[0].case_id);
   carrier.M.ledger = prior;
   return loadCase(carrier, caseId);
 }
@@ -152,7 +145,7 @@ export function safetyFlywheel(namer: Namer = "grok_bot"): Flywheel {
   let prior: StepRec[] = [];
   for (const id of PROOF_CASES) {
     cold.push(armFrom("cold", freshPlant(id), namer, []));
-    const arm = armFrom("reuse", prior.length ? plantWith(prior, id) : freshPlant(id), namer, prior);
+    const arm = armFrom("reuse", prior.length ? withMemory(prior, id) : freshPlant(id), namer, prior);
     reuse.push(arm);
     prior = [...arm.steps, ...prior];
   }
@@ -164,55 +157,10 @@ export function safetyFlywheel(namer: Namer = "grok_bot"): Flywheel {
   };
 }
 
-export function proofLines(arm: Arm): ProofLine[] {
-  const s = arm.steps[0];
-  return [
-    { k: "I gave A this Workbench", v: `Safety · ${arm.title}` },
-    { k: "A took this action", v: s ? `${s.namer} named y=${s.y}` : "no action" },
-    { k: "B changed this way", v: s ? `${s.dominant} · gate ${s.gate}` : "no transition" },
-    { k: "The measured result was this", v: s?.z ?? "—" },
-    { k: "Error changed by this amount", v: `delta-e ${arm.delta_e} · e ${arm.e0} -> ${arm.e1}` },
-    { k: "Therefore this experience was created", v: arm.artifact.experience },
-    {
-      k: "On the next Run, A used that experience",
-      v: arm.used_prior ? `yes · first y=${arm.first_y}` : "no · cold Self()",
-    },
-  ];
+export function readReceipts(): { id: string; status: string }[] {
+  return [];
 }
 
-const RECEIPT_KEY = "aethel-safety-receipts";
-
-export type Receipt = {
-  id: string;
-  workbench: "Safety";
-  run_id: string;
-  delta_e: number;
-  amount_usd: number;
-  status: "unsettled";
-  created_at: string;
-};
-
-export function readReceipts(): Receipt[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(window.localStorage.getItem(RECEIPT_KEY) || "[]") as Receipt[];
-  } catch {
-    return [];
-  }
-}
-
-export function recordOutcomeIntent(arm: Arm, amount = 49): Receipt {
-  const receipt: Receipt = {
-    id: `rcpt_${Date.now().toString(36)}`,
-    workbench: "Safety",
-    run_id: arm.artifact.run_id,
-    delta_e: arm.delta_e,
-    amount_usd: amount,
-    status: "unsettled",
-    created_at: new Date().toISOString(),
-  };
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(RECEIPT_KEY, JSON.stringify([receipt, ...readReceipts()].slice(0, 24)));
-  }
-  return receipt;
+export function recordOutcomeIntent(_arm: Arm) {
+  return { id: "use-checkout", status: "unsettled" as const };
 }
