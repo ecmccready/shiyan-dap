@@ -160,7 +160,16 @@ Adjust as we go. Add to what exists. Do not rewrite the loop to announce a new n
 Momentum is the live site, the two assets, the Run primitive, and the same A entering more than one B.
 Consolidation means fewer top-level products and a stronger Workbench B.
 
-## Status
+## Unicorn Development Status
+
+Aethel Node becomes potentially enormous if it can become the infrastructure layer through which organizations turn real-world actions and outcomes into reusable machine experience across many Workbench environments.
+
+1. Aethel Node works repeatedly — A can act on B, produce z, calculate e/Δe, and use the experience to improve the next action.
+2. Customers pay for the outcome — not for "AI," but for measurable improvement.
+3. The same engine works across multiple Bs — without rebuilding A each time.
+4. Experience compounds — prior validated Runs make subsequent Runs better, cheaper, faster, safer, or more reliable.
+5. Customers/partners create new B environments — making the platform expand beyond what you personally build.
+6. The economics scale — revenue grows substantially faster than your personal engineering effort.
 
 Commercial development is underway on the Shiyan engine.
 The first customer-facing primitive is a Run on Workbench B.
@@ -170,4 +179,3 @@ Over coming updates, the codebase continues from a personalized integration work
 
 Repo: https://github.com/ecmccready/shiyan-dap  
 Live: https://shiyan-dap.vercel.app
-
