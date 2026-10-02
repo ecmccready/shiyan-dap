@@ -16,6 +16,13 @@ export type Roll = {
 
 const SEARCH: YAction[] = Y_ACTIONS.filter((y) => y !== "clinician_review");
 
+const MEASURED: YAction[] = [
+  "mark_boundary",
+  "complete_field",
+  "request_independent_check",
+  "seal_pack",
+];
+
 function rollSequence(caseId: string, sequence: YAction[], max = 4): Roll {
   let plant = freshPlant(caseId);
   const steps: StepRec[] = [];
@@ -49,14 +56,21 @@ function sequences(length: number): YAction[][] {
   return out;
 }
 
-/** Outside Self(). Keeps a sequence only when final e is strictly lower. */
+function better(next: Roll, best: Roll | null, cold: Roll) {
+  if (next.eFinal >= cold.eFinal) return false;
+  if (!best) return true;
+  return next.eFinal < best.eFinal;
+}
+
+/** Outside Self(). A pack lists only when its own final e is strictly lower. */
 export function reuseRoll(caseId: string, cold: Roll): Roll {
   let best: Roll | null = null;
+  const measured = rollSequence(caseId, MEASURED);
+  if (better(measured, best, cold)) best = measured;
   for (const length of [2, 3]) {
     for (const sequence of sequences(length)) {
       const next = rollSequence(caseId, sequence);
-      if (next.eFinal >= cold.eFinal) continue;
-      if (!best || next.eFinal < best.eFinal) best = next;
+      if (better(next, best, cold)) best = next;
     }
   }
   return best ?? { ...cold, sequence: [] };
