@@ -11,14 +11,16 @@ export type Roll = {
   e0: number;
   eFinal: number;
   escalates: number;
-  hint: YAction | null;
+  sequence: YAction[];
 };
 
-function roll(caseId: string, hint: YAction | null, max = 4): Roll {
+const SEARCH: YAction[] = Y_ACTIONS.filter((y) => y !== "clinician_review");
+
+function rollSequence(caseId: string, sequence: YAction[], max = 4): Roll {
   let plant = freshPlant(caseId);
   const steps: StepRec[] = [];
   for (let i = 0; i < max; i++) {
-    const y = i === 0 && hint ? hint : undefined;
+    const y = sequence[i];
     const out = stepLoop(plant, { namer: "operator", y });
     steps.push(out.rec);
     plant = out.plant;
@@ -29,30 +31,40 @@ function roll(caseId: string, hint: YAction | null, max = 4): Roll {
     e0: steps[0]?.e ?? plant.M.last_e,
     eFinal: steps.at(-1)?.e_next ?? plant.M.last_e,
     escalates: steps.filter((s) => s.gate === "ESCALATE").length,
-    hint,
+    sequence: steps.map((s) => s.y),
   };
 }
 
 export function coldRoll(caseId: string) {
-  return roll(caseId, null);
+  return rollSequence(caseId, []);
 }
 
-/** Outside Self(). A first-y search. Kept only if final e falls. */
-export function reuseRoll(caseId: string, cold: Roll) {
-  const failed = new Set(cold.steps.filter((s) => s.reduced <= 0).map((s) => s.y));
-  let best = cold;
-  for (const y of Y_ACTIONS) {
-    if (failed.has(y) || y === "clinician_review") continue;
-    const next = roll(caseId, y);
-    const lower = next.eFinal < best.eFinal;
-    const tieSafer =
-      next.eFinal === best.eFinal && next.escalates < best.escalates;
-    if (lower || tieSafer) best = next;
+function sequences(length: number): YAction[][] {
+  if (length === 1) return SEARCH.map((y) => [y]);
+  const out: YAction[][] = [];
+  for (const head of sequences(length - 1)) {
+    for (const y of SEARCH) out.push([...head, y]);
   }
-  const used = best.hint !== null && best.eFinal < cold.eFinal;
-  return used ? best : { ...cold, hint: null };
+  return out;
+}
+
+/** Outside Self(). Keeps a sequence only when final e is strictly lower. */
+export function reuseRoll(caseId: string, cold: Roll): Roll {
+  let best: Roll | null = null;
+  for (const length of [2, 3]) {
+    for (const sequence of sequences(length)) {
+      const next = rollSequence(caseId, sequence);
+      if (next.eFinal >= cold.eFinal) continue;
+      if (!best || next.eFinal < best.eFinal) best = next;
+    }
+  }
+  return best ?? { ...cold, sequence: [] };
 }
 
 export function phi(cold: Roll, reuse: Roll) {
   return Number((cold.eFinal - reuse.eFinal).toFixed(3));
+}
+
+export function usedExperience(cold: Roll, reuse: Roll) {
+  return reuse.sequence.length > 0 && phi(cold, reuse) > 0;
 }

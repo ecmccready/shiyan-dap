@@ -3,7 +3,13 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { coldRoll, phi, reuseRoll, type Roll } from "@/lib/reuse-policy";
+import {
+  coldRoll,
+  phi,
+  reuseRoll,
+  usedExperience,
+  type Roll,
+} from "@/lib/reuse-policy";
 
 const CASES = [
   ["case-incomplete-pack", "Incomplete evidence pack"],
@@ -18,22 +24,17 @@ function line(r: Roll) {
 }
 
 export default function ProofPage() {
-  const demo = useMemo(() => {
-    return CASES.map(([id, title]) => {
-      const cold = coldRoll(id);
-      const reuse = reuseRoll(id, cold);
-      const gain = phi(cold, reuse);
-      return {
-        id,
-        title,
-        cold,
-        reuse,
-        gain,
-        used: reuse.hint !== null && gain > 0,
-      };
-    });
-  }, []);
-  const won = demo.every((d) => d.gain > 0);
+  const demo = useMemo(
+    () =>
+      CASES.map(([id, title]) => {
+        const cold = coldRoll(id);
+        const reuse = reuseRoll(id, cold);
+        const gain = phi(cold, reuse);
+        return { id, title, cold, reuse, gain, used: usedExperience(cold, reuse) };
+      }),
+    []
+  );
+  const won = demo.every((d) => d.used);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -43,23 +44,23 @@ export default function ProofPage() {
         <h1 className="text-3xl font-bold mb-3">Cold plant, then reuse plant</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
           Evidence gate. Not a diagnosis. No PHI. Self() is not edited.
-          Φ = e_cold(final) − e_reuse(final). List only if Φ &gt; 0.
+          A sequence is used only when its final e is below cold.
         </p>
         {demo.map((d) => (
           <section key={d.id} className="mb-8">
             <h2 className="text-lg font-semibold mb-2">{d.title}</h2>
             <pre className="text-sm bg-zinc-950 border border-zinc-800 rounded-2xl p-5 leading-7">{`cold
-hint: none
+sequence: Self()
 e ${d.cold.e0} → ${d.cold.eFinal}
 ${line(d.cold)}
 
 reuse
-hint: ${d.reuse.hint ?? "none"}
+sequence: ${d.used ? d.reuse.sequence.join(" → ") : "none"}
 used experience: ${d.used ? "yes" : "no"}
 e ${d.reuse.e0} → ${d.reuse.eFinal}
-${line(d.reuse)}
+${d.used ? line(d.reuse) : "same plant as cold"}
 
-Φ ${d.gain} · ${d.gain > 0 ? "error win" : "not listable"}`}</pre>
+Φ ${d.gain} · ${d.used ? "error win" : "not listable"}`}</pre>
           </section>
         ))}
         <p className="text-sm text-zinc-300">
