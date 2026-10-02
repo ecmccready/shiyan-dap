@@ -44,7 +44,7 @@ export default function ProofPage() {
         <h1 className="text-3xl font-bold mb-3">Cold plant, then reuse plant</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
           Evidence gate. Not a diagnosis. No PHI. Self() is not edited.
-          A sequence is used only when its final e is below cold.
+          A pack lists only when its own final e is below cold.
         </p>
         {demo.map((d) => (
           <section key={d.id} className="mb-8">
@@ -64,9 +64,12 @@ ${d.used ? line(d.reuse) : "same plant as cold"}
           </section>
         ))}
         <p className="text-sm text-zinc-300">
+          {demo.map((d) => `${d.title}: Φ ${d.gain} ${d.used ? "yes" : "no"}`).join(" · ")}
+        </p>
+        <p className="text-sm text-zinc-300 mt-3">
           {won
-            ? "Later plants beat cold final e."
-            : "Later plants did not beat cold final e. Do not claim the flywheel."}
+            ? "All three later plants beat cold final e."
+            : "Not every plant beat cold final e. Do not claim the flywheel."}
         </p>
         <nav className="flex gap-4 text-sm mt-8">
           <Link className="underline" href="/workbench">Workbench B</Link>
