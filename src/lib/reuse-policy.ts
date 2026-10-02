@@ -20,11 +20,12 @@ function rollSequence(caseId: string, sequence: YAction[], max = 4): Roll {
   let plant = freshPlant(caseId);
   const steps: StepRec[] = [];
   for (let i = 0; i < max; i++) {
-    const y = sequence[i];
-    const out = stepLoop(plant, { namer: "operator", y });
+    const planned = sequence[i];
+    const out = stepLoop(plant, { namer: "operator", y: planned });
     steps.push(out.rec);
     plant = out.plant;
-    if (out.rec.reduced <= 0) break;
+    const explicitLeft = i < sequence.length - 1;
+    if (!explicitLeft && out.rec.reduced <= 0) break;
   }
   return {
     steps,
