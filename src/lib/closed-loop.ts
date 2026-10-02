@@ -23,7 +23,9 @@ export type YAction =
   | "request_independent_check"
   | "hold"
   | "escalate"
-  | "clinician_review";
+  | "clinician_review"
+  | "mark_boundary"
+  | "seal_pack";
 
 export type ReferenceCase = {
   id: string;
@@ -46,6 +48,8 @@ export type PlantB = {
   uncertainty: number;
   independent_check: number;
   useful: number;
+  /** Set only by mark_boundary. Not read by Self(). */
+  boundary_ready: number;
 };
 
 export type StepRec = {
@@ -193,6 +197,8 @@ export const Y_ACTIONS: YAction[] = [
   "hold",
   "escalate",
   "clinician_review",
+  "mark_boundary",
+  "seal_pack",
 ];
 
 export function caseById(id: string): ReferenceCase {
@@ -219,6 +225,7 @@ export function plantFromCase(c: ReferenceCase): PlantB {
     uncertainty: Number(uncertainty.toFixed(3)),
     independent_check: independent,
     useful,
+    boundary_ready: 0,
   };
 }
 
@@ -245,7 +252,7 @@ export function clamp01(n: number) {
 }
 
 export function W(B: PlantB, y: YAction): PlantB {
-  const next = { ...B };
+  const next = { ...B, boundary_ready: B.boundary_ready ?? 0 };
   switch (y) {
     case "observe":
       next.uncertainty = clamp01(next.uncertainty - 0.04);
@@ -276,6 +283,15 @@ export function W(B: PlantB, y: YAction): PlantB {
     case "clinician_review":
       next.useful = clamp01(next.useful + 0.08);
       next.uncertainty = clamp01(next.uncertainty - 0.05);
+      break;
+    case "mark_boundary":
+      next.boundary_ready = 1;
+      break;
+    case "seal_pack":
+      if (next.boundary_ready === 1) {
+        next.missing = 0;
+        next.completeness = Math.min(0.849, Math.max(next.completeness, 0.849));
+      }
       break;
   }
   next.useful = clamp01(
@@ -330,7 +346,6 @@ export function measureE(B: PlantB, c: ReferenceCase): number {
     missing: [],
     contradictions: c.reference_gate === "ESCALATE" ? c.contradictions : [],
   });
-  // Distance to a resolved evidence state, plus gate mismatch.
   const dist = Math.sqrt(
     Math.pow(B.completeness - Math.max(ref.completeness, 0.9), 2) +
       Math.pow(B.contradiction - (c.reference_gate === "ESCALATE" ? 0.2 : 0), 2) +
@@ -477,3 +492,4 @@ export function readEListings(): ErrorListing[] {
     return [];
   }
 }
+
