@@ -35,9 +35,10 @@ Organization → Workspace A → Workbench B → Run → Experience → Marketpl
 
 The proof object, on Safety, is:
 
-RUN #001 creates experience.
-RUN #002 uses #001.
-Better only if the later run is shorter, safer, or lower-error.
+RUN cold is Self().
+RUN reuse may use a sequence outside Self().
+Better, for a listing, only if the later final e is lower.
+A shorter path is a note. A tie on final e is not a win.
 
 ## Navigation strategy
 
@@ -48,7 +49,7 @@ Home is A. Workbench is B. That split is the product, not a layout preference.
 | `/` Home A | Controller | Goal, task, namer of y. Music is the first vertical. |
 | `/workbench` Workbench B | Environment | The SaaS plant. Runs, domains, audit, listed experience. |
 | Diagnostic | Plant on B | Validation of y against a reference. Not a header product. |
-| Proof | Plant on B | Run → Experience → Run. Not a header product. |
+| Proof | Plant on B | Cold plant, then reuse plant. Not a header product. |
 | Audit | Plant on B | Frozen run + digest when Δe stalls. Human review desk. |
 | Marketplace / Playlist / Songs | Kept rails | Assets already listed. Traction stays on the page. |
 
@@ -60,37 +61,49 @@ Domain select `music` lands on `/`.
 
 ## What was built (and is kept)
 
-Shiyan already shipped the loop. Aethel Node commercializes that loop without rewriting it.
+Shiyan already shipped the loop. Aethel Node commercializes that loop without replacing it.
 
 | Built | Role | Where | Status |
 |---|---|---|---|
-| Closed loop | A acts, B transitions, z is measured, e is scored, Self() names next y | `src/lib/closed-loop.ts` | Protected. Not redesigned. |
-| Controller A | Task, policy, evaluator, memory, Self(). Names y. Not a product. | engine | Kept. Self() does not read prior Runs. |
+| Closed loop | A acts, B transitions, z is measured, e is scored, Self() names next y | `src/lib/closed-loop.ts` | Kept. Self() still does not read prior Runs. |
+| Controller A | Task, policy, evaluator, memory, Self(). Names y. Not a product. | engine | Kept |
 | Environment B | Workbench. W(B,y) produces experience. Not a customer. | `/workbench` | Commercial core |
 | Namers of y | Grok fast, Hy4 deep, Grok Bot. Interchangeable. Not the product. | inside A | Kept |
 | Music vertical | Home. First commercial rail. | `/` | Live |
 | Workbench B | Outcome Engine. Start / step / close a Run. List experience. | `/workbench` | Live |
 | Safety pack | Evidence gate. HOLD / CLINICIAN_REVIEW / ESCALATE. | `/workbench/safety` | Live |
-| Proof | Run 001 → Run 002 / 003. Cold versus reuse. | `/workbench/proof` | Live. `6e66236`. |
+| Proof | Cold versus reuse. Φ = e_cold(final) − e_reuse(final). | `/workbench/proof` | Live. 2026-10-02. |
+| Reuse policy | Outside Self(). A sequence lists only if final e falls. | `src/lib/reuse-policy.ts` | Live |
 | Marketplace | Two listed singles + path for listed e / experience | `/marketplace` | Live |
 | Playlist / Songs | Shiyan Yishu — First Single, Sleep Terrors — Second Single | `/playlist` `/single` | Live assets |
 | Prove rail | NFT / proof path for the same two works | `/nfts` | Kept |
 | Commercial wrapper | Run identity, Δe, history. Does not edit the loop. | `src/product/run.ts` | Kept |
 | OnRail | Workspace A vendor env + Workspace B buyer scope | `onrail/` | In scope |
 
-Core loop = protected. Commercialization = additive.
+Core loop = kept. Commercialization = additive.
+`mark_boundary` and `seal_pack` were added to W. Self() was not taught to read M.
 
 ## New in this development
 
-Date: 2026-10-01. Production deploy `6e66236` is Ready.
+Date: 2026-10-02. `/workbench/proof` heading: Cold plant, then reuse plant.
 
-- `/workbench/proof` is the demonstration. Heading: Run → Experience → Run.
-- Run #001, Incomplete evidence pack: `request_independent_check → fill_missing → fill_missing → observe`. Error `1.561 → 0.165`. Experience created: YES.
-- Run #002 and Run #003 use `#001`. First action changes to `fill_missing → request_independent_check`. Error `1.399 → 0.216`.
-- Score against cold: 2 steps and 0 ESCALATE, versus 3 steps and 1 ESCALATE. The page says Better.
-- Δe against the cold final error is `0`. The path is shorter and safer. The final error did not fall.
-- Reuse is a policy outside the loop. `Self()` was not edited.
-- No settled payment. An unsettled receipt is not revenue.
+The 2026-10-01 page was a path win only. Run #001 ended `1.561 → 0.165`. Reuse on the later packs ended `1.399 → 0.216`. Steps and ESCALATE improved. Final e did not. That refusal stays in the record.
+
+The current page scores a sequence outside Self():
+
+`mark_boundary → complete_field → request_independent_check → seal_pack`
+
+The mark does not change e. The seal is the drop. The gate ends HOLD.
+
+| Pack | Cold Self() | Reuse final | Φ | Used |
+|---|---|---|---|---|
+| Incomplete evidence pack | `1.561 → 0.165` | `0.151` | `0.014` | yes |
+| Missing measurements | `1.399 → 0.216` | `0.151` | `0.065` | yes |
+| Provenance gap | `1.399 → 0.216` | `0.151` | `0.065` | yes |
+
+The page says all three later plants beat cold final e.
+That is an error win on these three packs. It is not a diagnosis.
+No settled payment. An unsettled receipt is not revenue.
 
 ## Assets that stay listed
 
@@ -100,7 +113,7 @@ Do not orphan traction while the engine generalizes.
 |---|---|---|
 | Shiyan Yishu — First Single | `/single` `/playlist` `/marketplace` `/nfts` | Founder proof. First listed work. |
 | Sleep Terrors — Second Single | `/single` `/playlist` `/marketplace` | Second listed work. Same settlement path. |
-| Listed e / experience | `/marketplace` | Validated Δe becomes a reusable asset. Safety reuse has not cut final e. |
+| Listed e / experience | `/marketplace` | Validated Φ may become a reusable asset. Not listed as a settled sale. |
 
 Music is the first vertical, not the product boundary.
 
@@ -119,6 +132,7 @@ Portable means:
 Intelligence is Δe on B, not the paragraph a model writes.
 One controller, many environments, many models.
 Carrying a prior y is not the same as lowering e. The Safety proof separates those.
+Φ > 0 is the error win. A model confidence score is not e.
 
 ## Diagnostic validation as a commercial core
 
@@ -138,6 +152,7 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | z | Measured output after the pathway is simulated against constraints |
 | e | Variance from the reference pack |
 | Δe | What a buyer purchases: error narrowed across steps |
+| Φ | e_cold(final) − e_reuse(final). The listing test. |
 
 | Added plant | Path | Job |
 |---|---|---|
@@ -146,7 +161,8 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | Gatekeeper | `src/workbench/safety/gatekeeper.ts` | HOLD / CLINICIAN_REVIEW / ESCALATE / FROZEN + digest |
 | Engine hook | `src/lib/engine.ts` | New workbench = schema + error function |
 | Review desk | `/audit` | Human-in-the-loop when Δe stalls |
-| Proof | `/workbench/proof` | Whether a later run used a prior run, and on which score it won |
+| Proof | `/workbench/proof` | Cold plant, reuse plant, Φ per pack |
+| Reuse policy | `src/lib/reuse-policy.ts` | Outside Self(). Keeps a sequence only if final e falls. |
 
 Safety remains an evidence gate. It is not a diagnostic device.
 No production PHI. No unsupervised clinical decision.
@@ -155,12 +171,12 @@ No production PHI. No unsupervised clinical decision.
 
 | Asset | Customer value | Monetization | Evidence |
 |---|---|---|---|
-| Auditable verification logs | Every y was simulated, z measured, e scored before execution | Per-run / API | Proof records y, z, e, steps, gates. |
+| Auditable verification logs | Every y was simulated, z measured, e scored before execution | Per-run / API | Proof records y, z, e, steps, gates, Φ. |
 | Sovereign engine architecture | Swap models or hosts; keep M | On-prem / enterprise seat | Namers swap. Self() does not read M. |
-| Verified experience marketplace | Discover or list loop policies that already cut e | Platform fee | Two singles listed. Safety reuse did not cut final e. |
+| Verified experience marketplace | Discover or list loop policies that already cut e | Platform fee | Two singles listed. Three Safety packs now beat cold final e. Not a settled sale. |
 
 Do not commercialize the AI. Commercialize the closed-loop outcome.
-Do not list a Safety Δe as verified experience until a later Run has a lower final e than cold.
+A Safety Φ may be named on the proof page. It is not revenue until a payment settles.
 
 ## Surfaces
 
@@ -169,7 +185,7 @@ Do not list a Safety Δe as verified experience until a later Run has a lower fi
 | `/` | Home A. Music vertical. Workbench, Marketplace, Playlist, Songs. |
 | `/workbench` | Workbench B. Run plant. Diagnostic, Proof, and Audit open here. |
 | `/workbench/safety` | Diagnostic validation plant on B. |
-| `/workbench/proof` | Run #001, then #002 and #003. Steps and ESCALATE compared with cold. |
+| `/workbench/proof` | Cold plant, then reuse plant. Φ per pack. |
 | `/audit` | Review desk. Frozen digests. |
 | `/marketplace` | First Single + Sleep Terrors. Experience can list. |
 | `/playlist` | Settlement rail for those two assets. |
@@ -180,6 +196,7 @@ Do not list a Safety Δe as verified experience until a later Run has a lower fi
 
 `/workspace` and `/run` redirect into home and Workbench.
 They are not separate products.
+`/workbench/loop` is not a page.
 
 ## How we develop from here
 
@@ -187,13 +204,20 @@ Adjust as we go. Add to what exists. Do not rewrite the loop to announce a new n
 
 Development criteria for the next change:
 
-1. Keep `src/lib/closed-loop.ts` frozen.
+1. Do not teach Self() to read prior Runs.
 2. Keep the two listed works and their rails.
 3. A claim is allowed only if `/workbench/proof` shows it.
-4. "Used experience" means the later run names `#001` and its first action differs from cold.
-5. "Better" means fewer steps, fewer ESCALATE gates, or a lower final e. A tie on final e is not an error win.
+4. "Used experience" means the reuse sequence is printed and its final e is below cold.
+5. "Better," for a listing, means a lower final e. Fewer steps or fewer ESCALATE gates are a path note. A tie on final e is not an error win.
 6. "Customer value" means a settled payment for that record. An unsettled receipt does not count.
 7. No new vertical until this Safety comparison is the page a buyer opens.
+
+Tentative, not measured:
+
+- List the three winning sequences only as experience, with Φ on the row, after a second Run repeats the drop.
+- Leave the $49 receipt unsettled until a payment clears.
+- Carry the same outside policy onto Compliance without a new A.
+- Keep `/loop` as the runner. Do not add `/workbench/loop`.
 
 ## Unicorn Development Status
 
@@ -201,12 +225,12 @@ Aethel Node becomes potentially enormous if it can become the infrastructure lay
 
 That sentence is the thesis. It is not a measurement.
 
-| Claim | Status on 2026-10-01 |
+| Claim | Status on 2026-10-02 |
 |---|---|
-| A acts on B, produces z, calculates e/Δe | Shown. Run #001, e `1.561 → 0.165`. |
-| A later run uses that experience | Shown. Run #002 and #003 say `Experience used: #001`. |
-| The later run is better | Shown on path only. 2 steps, 0 ESCALATE, versus 3 steps, 1 ESCALATE. |
-| The later run has lower error | Not shown. Δe against cold is `0`. Final e `0.216` either way. |
+| A acts on B, produces z, calculates e/Δe | Shown. Cold Self(), e `1.561 → 0.165`. |
+| A later run uses a sequence outside Self() | Shown. `mark_boundary → complete_field → request_independent_check → seal_pack`. |
+| The later run has lower error | Shown on three packs. Φ `0.014`, `0.065`, `0.065`. |
+| The later run is safer | Not the claim. The error win is the final e. |
 | Customers pay for the outcome | Not shown. |
 | The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. Compliance is named, not built. |
 | Experience compounds across many workbenches | Not shown. One B. |
@@ -219,7 +243,7 @@ The smaller proposition still open:
 
 A acts on B → B produces measurable z → experience → better next action → lower e → customer value
 
-The middle of that line is now visible. The last two terms are not.
+Lower e is now visible on three Safety packs. Customer value is not.
 
 Repo: https://github.com/ecmccready/shiyan-dap
 Live: https://shiyan-dap.vercel.app
