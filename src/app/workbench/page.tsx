@@ -95,8 +95,8 @@ export default function ProofPage() {
           </ul>
           <p className="text-zinc-500 mt-3">
             {won
-              ? "Case 2 and Case 3 beat cold on steps, ESCALATE gates, or final e."
-              : "A later run did not benefit. Do not claim the flywheel."}
+              ? "Case 2 and Case 3 beat cold final e. Claim the flywheel on that drop only."
+              : "Final e did not fall. Do not claim the flywheel."}
           </p>
         </section>
 
