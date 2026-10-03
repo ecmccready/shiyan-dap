@@ -69,29 +69,12 @@ export type Flywheel = {
   case3_better: boolean;
 };
 
-function skipSet(prior: StepRec[]) {
-  return new Set(prior.filter((s) => s.reduced <= 0).map((s) => s.y));
-}
-
-function orderFrom(prior: StepRec[]): YAction[] {
-  const seen = new Set<YAction>();
-  const out: YAction[] = [];
-  const ranked = [
-    ...prior.filter((s) => s.reduced > 0 && s.gate !== "ESCALATE"),
-    ...prior.filter((s) => s.reduced > 0),
-  ];
-  for (const s of ranked) {
-    if (seen.has(s.y)) continue;
-    seen.add(s.y);
-    out.push(s.y);
-  }
-  return out;
-}
-
 function artifactOf(plant: LoopPlant, steps: StepRec[], used: boolean): RunArtifact {
   const c = caseById(plant.case_id);
   const last = steps[steps.length - 1];
   const B = plant.B;
+  const e0 = steps[0]?.e ?? plant.M.last_e;
+  const e1 = last?.e_next ?? plant.M.last_e;
   return {
     run_id: `proof_${plant.case_id}`,
     B: "Safety",
@@ -99,8 +82,8 @@ function artifactOf(plant: LoopPlant, steps: StepRec[], used: boolean): RunArtif
     action_y: steps.map((s) => s.y).join(" -> ") || "none",
     result_z: last?.z ?? "no measurement",
     reference: c.reference_note,
-    error_e: last ? `${steps[0].e} -> ${last.e_next}` : String(plant.M.last_e),
-    delta_e: Number((plant.M.last_e - (last?.e_next ?? plant.M.last_e)).toFixed(3)),
+    error_e: last ? `${e0} -> ${e1}` : String(plant.M.last_e),
+    delta_e: Number((e0 - e1).toFixed(3)),
     experience: used
       ? "mark_boundary → complete_field → request_independent_check → seal_pack"
       : "cold Self()",
@@ -108,32 +91,29 @@ function artifactOf(plant: LoopPlant, steps: StepRec[], used: boolean): RunArtif
   };
 }
 
-function armFrom(label: string, plant: LoopPlant, namer: Namer, prior: StepRec[]): Arm {
-  const skip = skipSet(prior);
-  const order = orderFrom(prior);
+function armFrom(label: string, plant: LoopPlant, namer: Namer): Arm {
   let cursor = plant;
   const steps: StepRec[] = [];
   for (let i = 0; i < 4; i++) {
-    const y = order[i];
-    if (y && skip.has(y)) break;
-    const out = stepLoop(cursor, { namer, y });
-    if (prior.length && out.rec.reduced <= 0) break;
+    const out = stepLoop(cursor, { namer });
     steps.push(out.rec);
     cursor = out.plant;
     if (out.rec.reduced <= 0) break;
   }
   const last = steps[steps.length - 1];
+  const e0 = steps[0]?.e ?? plant.M.last_e;
+  const e1 = last?.e_next ?? plant.M.last_e;
   return {
     label,
     case_id: plant.case_id,
     title: caseById(plant.case_id).title,
     steps,
-    e0: plant.M.last_e,
-    e1: last?.e_next ?? plant.M.last_e,
-    delta_e: Number((plant.M.last_e - (last?.e_next ?? plant.M.last_e)).toFixed(3)),
+    e0,
+    e1,
+    delta_e: Number((e0 - e1).toFixed(3)),
     escalates: steps.filter((s) => s.gate === "ESCALATE").length,
-    used_prior: order.length > 0,
-    artifact: artifactOf(cursor, steps, order.length > 0),
+    used_prior: false,
+    artifact: artifactOf(cursor, steps, false),
   };
 }
 
@@ -170,7 +150,7 @@ export function safetyFlywheel(namer: Namer = "grok_bot"): Flywheel {
   const cold: Arm[] = [];
   const reuse: Arm[] = [];
   for (const id of PROOF_CASES) {
-    cold.push(armFrom("cold", freshPlant(id), namer, []));
+    cold.push(armFrom("cold", freshPlant(id), namer));
     reuse.push(rollMeasured(id));
   }
   return {
