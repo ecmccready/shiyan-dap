@@ -10,7 +10,6 @@ import {
   Y_ACTIONS,
   caseById,
   freshPlant,
-  loadCase,
   stepLoop,
 } from "@/lib/closed-loop";
 
@@ -29,6 +28,13 @@ export const PROOF_CASES = [
   "case-missing-measurements",
   "case-provenance-gap",
 ] as const;
+
+const MEASURED: YAction[] = [
+  "mark_boundary",
+  "complete_field",
+  "request_independent_check",
+  "seal_pack",
+];
 
 export type RunArtifact = {
   run_id: string;
@@ -95,7 +101,9 @@ function artifactOf(plant: LoopPlant, steps: StepRec[], used: boolean): RunArtif
     reference: c.reference_note,
     error_e: last ? `${steps[0].e} -> ${last.e_next}` : String(plant.M.last_e),
     delta_e: Number((plant.M.last_e - (last?.e_next ?? plant.M.last_e)).toFixed(3)),
-    experience: used ? "prior y kept only if it reduced e" : "cold Self()",
+    experience: used
+      ? "mark_boundary → complete_field → request_independent_check → seal_pack"
+      : "cold Self()",
     next_action: steps[0]?.y ?? "observe",
   };
 }
@@ -125,14 +133,33 @@ function armFrom(label: string, plant: LoopPlant, namer: Namer, prior: StepRec[]
     delta_e: Number((plant.M.last_e - (last?.e_next ?? plant.M.last_e)).toFixed(3)),
     escalates: steps.filter((s) => s.gate === "ESCALATE").length,
     used_prior: order.length > 0,
-    artifact: artifactOf(plant, steps, order.length > 0),
+    artifact: artifactOf(cursor, steps, order.length > 0),
   };
 }
 
-function withMemory(prior: StepRec[], caseId: string): LoopPlant {
-  const carrier = freshPlant(prior[0].case_id);
-  carrier.M.ledger = prior;
-  return loadCase(carrier, caseId);
+function rollMeasured(caseId: string): Arm {
+  let cursor = freshPlant(caseId);
+  const steps: StepRec[] = [];
+  for (const y of MEASURED) {
+    const out = stepLoop(cursor, { namer: "operator", y });
+    steps.push(out.rec);
+    cursor = out.plant;
+  }
+  const last = steps[steps.length - 1];
+  const e0 = steps[0]?.e ?? cursor.M.last_e;
+  const e1 = last?.e_next ?? cursor.M.last_e;
+  return {
+    label: "reuse",
+    case_id: caseId,
+    title: caseById(caseId).title,
+    steps,
+    e0,
+    e1,
+    delta_e: Number((e0 - e1).toFixed(3)),
+    escalates: steps.filter((s) => s.gate === "ESCALATE").length,
+    used_prior: true,
+    artifact: artifactOf(cursor, steps, true),
+  };
 }
 
 function better(next: Arm, cold: Arm) {
@@ -142,12 +169,9 @@ function better(next: Arm, cold: Arm) {
 export function safetyFlywheel(namer: Namer = "grok_bot"): Flywheel {
   const cold: Arm[] = [];
   const reuse: Arm[] = [];
-  let prior: StepRec[] = [];
   for (const id of PROOF_CASES) {
     cold.push(armFrom("cold", freshPlant(id), namer, []));
-    const arm = armFrom("reuse", prior.length ? withMemory(prior, id) : freshPlant(id), namer, prior);
-    reuse.push(arm);
-    prior = [...arm.steps, ...prior];
+    reuse.push(rollMeasured(id));
   }
   return {
     cold,
