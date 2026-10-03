@@ -41,7 +41,8 @@ export default function LoopPage() {
       const data = await res.json();
       current = data.plant;
     }
-    setPlant(current); persistPlant(current);
+    setPlant(current);
+    persistPlant(current);
     setBusy(false);
   }
 
@@ -50,13 +51,13 @@ export default function LoopPage() {
       <SiteHeader section="Closed loop" />
       <main className="max-w-5xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          Collapse it to one loop
+          Shiyan AI Assist · function
         </p>
         <h1 className="text-3xl font-bold mb-3">The loop is the AI</h1>
         <p className="text-zinc-400 max-w-3xl mb-8">
           A acts, B transitions, z is the measured state. Grok / Hy4 / Grok
-          Bot are interchangeable orchestrators inside A. Models do not sit
-          outside it. Ship the measured reduction of e on B.
+          Bot are interchangeable orchestrators inside A. One Step should
+          lower e on B. That drop is the next best action.
         </p>
 
         <div className="flex flex-wrap gap-2 mb-6">
@@ -113,7 +114,7 @@ export default function LoopPage() {
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <div className="grid gap-4 md:grid-cols-4 mb-8">
           <div className="border border-zinc-800 rounded-2xl p-5">
             <p className="text-xs text-zinc-500">t</p>
             <p className="text-2xl">{plant?.t ?? 0}</p>
@@ -125,6 +126,10 @@ export default function LoopPage() {
           <div className="border border-zinc-800 rounded-2xl p-5">
             <p className="text-xs text-zinc-500">last y</p>
             <p className="text-2xl">{plant?.M.last_y ?? "—"}</p>
+          </div>
+          <div className="border border-zinc-800 rounded-2xl p-5">
+            <p className="text-xs text-zinc-500">Δe</p>
+            <p className="text-2xl">{series[0]?.reduced ?? "—"}</p>
           </div>
         </div>
 
@@ -180,7 +185,11 @@ export default function LoopPage() {
         )}
 
         <p className="text-sm text-zinc-500 mt-8">
-          Music still proves on{" "}
+          Proof single lives on{" "}
+          <Link className="underline" href="/single">
+            /single
+          </Link>
+          . Music still proves on{" "}
           <Link className="underline" href="/nfts">
             /nfts
           </Link>
