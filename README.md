@@ -73,6 +73,7 @@ Shiyan already shipped the loop. Aethel Node commercializes that loop without re
 | Workbench B | Outcome Engine. Start / step / close a Run. List experience. | `/workbench` | Live |
 | Safety pack | Evidence gate. HOLD / CLINICIAN_REVIEW / ESCALATE. | `/workbench/safety` | Live |
 | Proof | Cold versus reuse. Φ = e_cold(final) − e_reuse(final). | `/workbench/proof` | Live. 2026-10-02. |
+| Flywheel on B | Same sealed sequence as Proof. Claim only if final e falls. | `/workbench` | Live. 2026-10-03. |
 | Reuse policy | Outside Self(). A sequence lists only if final e falls. | `src/lib/reuse-policy.ts` | Live |
 | Marketplace | Two listed singles + path for listed e / experience | `/marketplace` | Live |
 | Playlist / Songs | Shiyan Yishu — First Single, Sleep Terrors — Second Single | `/playlist` `/single` | Live assets |
@@ -104,6 +105,32 @@ The mark does not change e. The seal is the drop. The gate ends HOLD.
 The page says all three later plants beat cold final e.
 That is an error win on these three packs. It is not a diagnosis.
 No settled payment. An unsettled receipt is not revenue.
+
+## Benefit on 2026-10-03
+
+The surfaces were split back apart. Home is Aethel Node. Workbench is B. `/loop` is the runner. Shiyan Yishu stays the proof single, not the platform name.
+
+`/workbench` had been claiming a flywheel on a path win. Case 2 and Case 3 reused prior y, ended `1.399 → 0.216`, and matched cold final e. Fewer steps and fewer ESCALATE gates were a note. That claim was refused.
+
+The flywheel on `/workbench` now runs the same sequence already scored on `/workbench/proof`, outside Self():
+
+`mark_boundary → complete_field → request_independent_check → seal_pack`
+
+Live on 2026-10-03, commit `cbb3391e`:
+
+| Pack | Cold Self() | Reuse final | Φ | Better |
+|---|---|---|---|---|
+| Incomplete evidence pack | `1.561 → 0.165` | `0.151` | `0.014` | yes |
+| Missing measurements | `1.399 → 0.216` | `0.151` | `0.065` | yes |
+| Provenance gap | `1.399 → 0.216` | `0.151` | `0.065` | yes |
+
+The mark leaves e unchanged. The seal is the drop. Case 2 and Case 3 beat cold final e, `0.216 → 0.151`. That is the flywheel claim. A tie is not.
+
+Build insight: a shorter path is not the benefit. The benefit is a lower final e, printed, on a sequence outside Self(). Self() was not taught to read prior Runs.
+
+The artifact row on the provenance pack printed `Δe · 0`. The case cards are the measurement: Δe `1.248`, final e `0.151`. Trust the cards until that row is corrected.
+
+No settled payment. The charge line still says no charge yet. An unsettled receipt is not revenue.
 
 ## Assets that stay listed
 
@@ -162,6 +189,7 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | Engine hook | `src/lib/engine.ts` | New workbench = schema + error function |
 | Review desk | `/audit` | Human-in-the-loop when Δe stalls |
 | Proof | `/workbench/proof` | Cold plant, reuse plant, Φ per pack |
+| Flywheel | `src/product/proof.ts` | Same sealed sequence on `/workbench`. Wins only if final e falls. |
 | Reuse policy | `src/lib/reuse-policy.ts` | Outside Self(). Keeps a sequence only if final e falls. |
 
 Safety remains an evidence gate. It is not a diagnostic device.
@@ -176,14 +204,14 @@ No production PHI. No unsupervised clinical decision.
 | Verified experience marketplace | Discover or list loop policies that already cut e | Platform fee | Two singles listed. Three Safety packs now beat cold final e. Not a settled sale. |
 
 Do not commercialize the AI. Commercialize the closed-loop outcome.
-A Safety Φ may be named on the proof page. It is not revenue until a payment settles.
+A Safety Φ may be named on the proof page and on the Workbench flywheel. It is not revenue until a payment settles.
 
 ## Surfaces
 
 | URL | What the customer sees |
 |---|---|
 | `/` | Home A. Music vertical. Workbench, Marketplace, Playlist, Songs. |
-| `/workbench` | Workbench B. Run plant. Diagnostic, Proof, and Audit open here. |
+| `/workbench` | Workbench B. Run plant. Sealed flywheel. Diagnostic, Proof, and Audit open here. |
 | `/workbench/safety` | Diagnostic validation plant on B. |
 | `/workbench/proof` | Cold plant, then reuse plant. Φ per pack. |
 | `/audit` | Review desk. Frozen digests. |
@@ -206,7 +234,7 @@ Development criteria for the next change:
 
 1. Do not teach Self() to read prior Runs.
 2. Keep the two listed works and their rails.
-3. A claim is allowed only if `/workbench/proof` shows it.
+3. A claim is allowed only if `/workbench/proof` shows it, and `/workbench` does not claim a tie.
 4. "Used experience" means the reuse sequence is printed and its final e is below cold.
 5. "Better," for a listing, means a lower final e. Fewer steps or fewer ESCALATE gates are a path note. A tie on final e is not an error win.
 6. "Customer value" means a settled payment for that record. An unsettled receipt does not count.
@@ -218,6 +246,7 @@ Tentative, not measured:
 - Leave the $49 receipt unsettled until a payment clears.
 - Carry the same outside policy onto Compliance without a new A.
 - Keep `/loop` as the runner. Do not add `/workbench/loop`.
+- Correct the provenance artifact row so Δe matches the case card.
 
 ## Unicorn Development Status
 
@@ -225,11 +254,12 @@ Aethel Node becomes potentially enormous if it can become the infrastructure lay
 
 That sentence is the thesis. It is not a measurement.
 
-| Claim | Status on 2026-10-02 |
+| Claim | Status on 2026-10-03 |
 |---|---|
 | A acts on B, produces z, calculates e/Δe | Shown. Cold Self(), e `1.561 → 0.165`. |
-| A later run uses a sequence outside Self() | Shown. `mark_boundary → complete_field → request_independent_check → seal_pack`. |
+| A later run uses a sequence outside Self() | Shown on Proof and on the Workbench flywheel. `mark_boundary → complete_field → request_independent_check → seal_pack`. |
 | The later run has lower error | Shown on three packs. Φ `0.014`, `0.065`, `0.065`. |
+| A path win was refused | Shown. Prior-y reuse tied at `0.216`. That refusal stays. |
 | The later run is safer | Not the claim. The error win is the final e. |
 | Customers pay for the outcome | Not shown. |
 | The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. Compliance is named, not built. |
@@ -243,7 +273,7 @@ The smaller proposition still open:
 
 A acts on B → B produces measurable z → experience → better next action → lower e → customer value
 
-Lower e is now visible on three Safety packs. Customer value is not.
+Lower e is now visible on three Safety packs, on Proof and on the Workbench flywheel. Customer value is not.
 
 Repo: https://github.com/ecmccready/shiyan-dap
 Live: https://shiyan-dap.vercel.app
