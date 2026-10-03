@@ -136,7 +136,7 @@ function withMemory(prior: StepRec[], caseId: string): LoopPlant {
 }
 
 function better(next: Arm, cold: Arm) {
-  return next.steps.length < cold.steps.length || next.escalates < cold.escalates || next.e1 < cold.e1;
+  return next.e1 < cold.e1;
 }
 
 export function safetyFlywheel(namer: Namer = "grok_bot"): Flywheel {
