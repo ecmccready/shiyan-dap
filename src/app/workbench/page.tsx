@@ -6,6 +6,11 @@ import SiteHeader from "@/components/SiteHeader";
 import { Namer, namerLabel } from "@/lib/closed-loop";
 import { Arm, SAFETY_B, safetyFlywheel } from "@/product/proof";
 
+const VERTICALS = [
+  { name: "Music", state: "first · live", href: "/single" },
+  { name: "Diagnostic Safety", state: "current B", href: "/workbench/safety" },
+];
+
 export default function ProofPage() {
   const [namer, setNamer] = useState<Namer>("grok_bot");
   const [pay, setPay] = useState("No charge yet.");
@@ -35,34 +40,36 @@ export default function ProofPage() {
       <SiteHeader section="Workbench B" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          Shiyan AI Assist · Workbench B
+          Commercial core
         </p>
-        <h1 className="text-3xl font-bold mb-3">A acts on Safety</h1>
+        <h1 className="text-3xl font-bold mb-3">Workbench</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
-          The loop is frozen. This page is the proposition: measurable z, Δe,
-          experience, a better next action, then a charge. Not a unicorn proof.
+          Verticals sit here. Music is first. This page is the proposition:
+          measurable z, Δe, experience, a better next action, then a charge.
         </p>
 
-        <div className="flex flex-wrap gap-3 mb-8">
-          <Link
-            href="/loop"
-            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
-          >
-            Step the loop
-          </Link>
-          <Link
-            href="/playlist"
-            className="h-12 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
-          >
-            Playlist
-          </Link>
-          <Link
-            href="/single"
-            className="h-12 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
-          >
-            Songs
-          </Link>
+        <div className="grid gap-3 mb-8">
+          {VERTICALS.map((v) => (
+            <Link
+              key={v.name}
+              href={v.href}
+              className="border border-zinc-800 rounded-2xl p-5 flex items-center justify-between"
+            >
+              <span>
+                <span className="block text-xs text-zinc-500">{v.state}</span>
+                <span className="text-lg font-semibold">{v.name}</span>
+              </span>
+              <span className="text-sm text-zinc-400">Open</span>
+            </Link>
+          ))}
         </div>
+
+        <Link
+          href="/loop"
+          className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center mb-8"
+        >
+          Step the loop
+        </Link>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-400">
           <p className="text-emerald-400 text-xs mb-2">1 · Loop frozen. 2 · What a B is</p>
