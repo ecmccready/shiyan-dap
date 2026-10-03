@@ -28,6 +28,8 @@ export default function LoopPage() {
     [plant]
   );
 
+  const latest = plant?.M.ledger[0];
+
   async function tick(times = 1) {
     if (!plant) return;
     setBusy(true);
@@ -129,7 +131,7 @@ export default function LoopPage() {
           </div>
           <div className="border border-zinc-800 rounded-2xl p-5">
             <p className="text-xs text-zinc-500">Δe</p>
-            <p className="text-2xl">{series[0]?.reduced ?? "—"}</p>
+            <p className="text-2xl">{latest?.reduced ?? "—"}</p>
           </div>
         </div>
 
