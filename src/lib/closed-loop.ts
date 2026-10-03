@@ -1,7 +1,7 @@
 /**
  * One closed loop. Not three products.
  *
- *   z_t  --Self() in A-->  y_t  --W(B,y)-->  B'_{t+1}
+ *   z_t  --name y in A-->  y_t  --W(B,y)-->  B'_{t+1}
  *        measure z_{t+1}, e_t  --M-->  z-next
  *
  * Intelligence is the measured reduction of e on B.
@@ -9,6 +9,9 @@
  * B is the environment. B is not a customer and not a clinician.
  * z is measured |B'| after the transition. z is not an LLM opinion.
  * e vs a reference label is what may list on the marketplace.
+ *
+ * Self() is the proof namer. It does not read M.
+ * nameYFromExperience is the product namer. It reads M.
  */
 
 export type Namer = "grok_fast" | "hy4_deep" | "grok_bot" | "operator";
@@ -66,6 +69,7 @@ export type StepRec = {
   e_next: number;
   reduced: number;
   dominant: string;
+  source: "self" | "memory" | "search" | "hold" | "given";
 };
 
 export type MemoryM = {
@@ -356,6 +360,13 @@ export function measureE(B: PlantB, c: ReferenceCase): number {
   return Number((dist + gatePenalty).toFixed(3));
 }
 
+function legal(plant: LoopPlant, y: YAction): boolean {
+  if (y === "clinician_review" && gateOf(plant.B) !== "CLINICIAN_REVIEW") return false;
+  if (y === "seal_pack" && (plant.B.boundary_ready ?? 0) < 1) return false;
+  return true;
+}
+
+/** Proof baseline. Does not read plant.M. */
 export function Self(plant: LoopPlant): YAction {
   const c = caseById(plant.case_id);
   let best: YAction = "observe";
@@ -372,12 +383,57 @@ export function Self(plant: LoopPlant): YAction {
   return best;
 }
 
+export function nameYFromExperience(plant: LoopPlant): {
+  y: YAction;
+  source: "memory" | "search" | "hold";
+} {
+  const c = caseById(plant.case_id);
+  const e0 = measureE(plant.B, c);
+  const failed = new Set(
+    plant.M.ledger.filter((s) => s.reduced <= 0).map((s) => s.y)
+  );
+  const helped = plant.M.ledger
+    .filter((s) => s.reduced > 0 && s.dominant === plant.M.last_dominant)
+    .sort((a, b) => b.reduced - a.reduced);
+
+  for (const prior of helped) {
+    if (!legal(plant, prior.y) || failed.has(prior.y)) continue;
+    if (measureE(W(plant.B, prior.y), c) < e0) {
+      return { y: prior.y, source: "memory" };
+    }
+  }
+
+  let best: YAction = "observe";
+  let bestE = e0;
+  for (const y of Y_ACTIONS) {
+    if (!legal(plant, y) || failed.has(y)) continue;
+    const e = measureE(W(plant.B, y), c);
+    if (e < bestE) {
+      bestE = e;
+      best = y;
+    }
+  }
+  if (bestE < e0) return { y: best, source: "search" };
+  return { y: "observe", source: "hold" };
+}
+
+export function nameY(
+  plant: LoopPlant,
+  which: "self" | "experience" = "experience"
+): { y: YAction; source: StepRec["source"] } {
+  if (which === "self") return { y: Self(plant), source: "self" };
+  return nameYFromExperience(plant);
+}
+
 export function stepLoop(
   plant: LoopPlant,
-  opts?: { y?: YAction; namer?: Namer }
+  opts?: { y?: YAction; namer?: Namer; which?: "self" | "experience" }
 ): { plant: LoopPlant; rec: StepRec } {
   const namer: Namer = opts?.namer ?? "grok_bot";
-  const y = opts?.y ?? Self(plant);
+  const named = opts?.y
+    ? { y: opts.y, source: "given" as const }
+    : nameY(plant, opts?.which ?? "experience");
+  const y = named.y;
   const c = caseById(plant.case_id);
   const B = plant.B;
   const B_next = W(B, y);
@@ -398,6 +454,7 @@ export function stepLoop(
     e_next,
     reduced: Number((e - e_next).toFixed(3)),
     dominant: dominantOf(B_next),
+    source: named.source,
   };
   const next: LoopPlant = {
     ...plant,
@@ -492,4 +549,3 @@ export function readEListings(): ErrorListing[] {
     return [];
   }
 }
-
