@@ -35,13 +35,34 @@ export default function ProofPage() {
       <SiteHeader section="Workbench B" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          One commercial B
+          Shiyan AI Assist · Workbench B
         </p>
         <h1 className="text-3xl font-bold mb-3">A acts on Safety</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
           The loop is frozen. This page is the proposition: measurable z, Δe,
           experience, a better next action, then a charge. Not a unicorn proof.
         </p>
+
+        <div className="flex flex-wrap gap-3 mb-8">
+          <Link
+            href="/loop"
+            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
+          >
+            Step the loop
+          </Link>
+          <Link
+            href="/playlist"
+            className="h-12 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Playlist
+          </Link>
+          <Link
+            href="/single"
+            className="h-12 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center"
+          >
+            Songs
+          </Link>
+        </div>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-400">
           <p className="text-emerald-400 text-xs mb-2">1 · Loop frozen. 2 · What a B is</p>
@@ -107,12 +128,6 @@ export default function ProofPage() {
             Charge for this Safety run
           </button>
         </section>
-
-        <nav className="flex flex-wrap gap-4 text-sm">
-          <Link className="underline" href="/workbench">Workbench B</Link>
-          <Link className="underline" href="/workbench/safety">Diagnostic</Link>
-          <Link className="underline" href="/audit">Audit</Link>
-        </nav>
       </main>
     </div>
   );
