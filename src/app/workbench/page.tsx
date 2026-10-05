@@ -109,10 +109,11 @@ export default function ProofPage() {
         </section>
 
         <nav className="flex flex-wrap gap-4 text-sm">
-          <Link className="underline" href="/workbench">Workbench B</Link>
-          <Link className="underline" href="/workbench/safety">Diagnostic</Link>
-          <Link className="underline" href="/audit">Audit</Link>
-        </nav>
+  <Link className="underline" href="/workbench/safety">Diagnostic</Link>
+  <Link className="underline" href="/workbench/proof">Proof</Link>
+  <Link className="underline" href="/audit">Audit</Link>
+  <Link className="underline" href="/workbench/mcp">MCP</Link>
+</nav>
       </main>
     </div>
   );
