@@ -78,9 +78,10 @@ Shiyan already shipped the loop. Aethel Node commercializes that loop without re
 | Proof | Cold versus reuse. Φ = e_cold(final) − e_reuse(final). | `/workbench/proof` | Live. 2026-10-02. |
 | Flywheel on B | Same sealed sequence as Proof. Claim only if final e falls. | `/workbench` | Live. 2026-10-03. |
 | Reuse policy | Outside Self(). A sequence lists only if final e falls. | `src/lib/reuse-policy.ts` | Live |
-| MCP contract | y, z, e, Δe, Φ as an open client-server interface. | `src/lib/mcp/` | 2026-10-05. Interface, not a partner. |
-| MCP host | Controller A. JSON-RPC only. Does not import B. | `src/lib/mcp/host.ts` | 2026-10-05 |
-| MCP server | Workbench B. Tools, resources, scored e. | `src/app/api/mcp/route.ts` | 2026-10-05 |
+| MCP contract | y, z, e, Δe, Φ as an open client-server interface. | `src/lib/mcp/schema.ts` | 2026-10-05. Interface, not a partner. |
+| MCP host | Controller A. JSON-RPC only. Does not import B. | `src/lib/mcp/host.ts` | 2026-10-05. `89a0797` |
+| MCP server | Workbench B. Tools, resources, scored e. | `src/lib/mcp/handler.ts` | 2026-10-05. `3dea3d4` |
+| MCP page | Decoupled loop, opened from B. Header unchanged. | `/workbench/mcp` | 2026-10-05. `0b94734` |
 | Marketplace | Two listed singles + path for listed e / experience | `/marketplace` | Live |
 | Playlist / Songs | Shiyan Yishu — First Single, Sleep Terrors — Second Single | `/playlist` `/single` | Live assets |
 | Prove rail | NFT / proof path for the same two works | `/nfts` | Kept |
@@ -141,7 +142,7 @@ No settled payment. The charge line still says no charge yet. An unsettled recei
 
 ## MCP refactor on 2026-10-05
 
-The global refactor turns the bespoke import of `src/lib/engine.ts` into an open orchestration contract. It does not replace the engine. It does not move MCP into the header.
+The refactor turns the bespoke import of `src/lib/engine.ts` into an open orchestration contract. It does not replace the engine. It does not move MCP into the header.
 
 Enterprise buyers do not pay for generated text. They pay for a system that repeatedly takes an action, measures error against a reference truth, and uses compiled experience to reduce that error (Δe). A partner must be able to spin up Workbench B without a rewrite of Controller A.
 
@@ -163,16 +164,16 @@ WORKBENCH B (MCP server)
 | Δe | e − e_next on that call. |
 | Φ | e_cold(final) − e_reuse(final). Cold final is passed in. The server does not look it up in M. |
 
-| Piece | Where | What it is not |
+| Piece | Commit | Where |
 |---|---|---|
-| Contract | `src/lib/mcp/schema.ts` | Not a new vertical. |
-| Server | `src/lib/mcp/handler.ts` | Not Controller A. Not Self(). |
-| HTTP / SSE | `POST /api/mcp`, `GET /api/mcp` | Not a second product. |
-| Stdio | `scripts/mcp-stdio.ts`, `.vscode/mcp.json` | VS Code host bridge. Same handler. |
-| Host | `src/lib/mcp/host.ts` | Does not import B. |
-| Page | `/workbench/mcp` | Opens from B. Header unchanged. |
+| Contract | `83b4f86` | `src/lib/mcp/schema.ts` |
+| Server | `3dea3d4` | `src/lib/mcp/handler.ts`, `scripts/mcp-stdio.ts` |
+| Host | `89a0797` | `src/lib/mcp/host.ts` |
+| Page | `0b94734` | `/workbench/mcp`, footer on `/workbench` |
 
 The recorded Φ rows stay the claim: `0.014`, `0.065`, `0.065`, commit `cbb3391e`. A live tool call is a new plant. It does not overwrite those rows. No settled payment. A partner environment is the interface, not yet a customer.
+
+Branch: `feat/experience-namer`. Not on `main` until merged. The live site stays the 3 October plant until that merge deploys.
 
 ## Assets that stay listed
 
