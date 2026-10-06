@@ -80,6 +80,9 @@ export default function McpPage() {
           <Link href="/workbench/independent" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
             Independent B
           </Link>
+          <Link href="/workbench/peer" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
+            Peer proof
+          </Link>
         </div>
 
         {rows.map((r) => (
