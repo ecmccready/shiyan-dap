@@ -85,7 +85,8 @@ Shiyan already shipped the loop. Aethel Node commercializes that loop without re
 | MCP host | Controller A. JSON-RPC only. Does not import B. | `src/lib/mcp/host.ts` | 2026-10-05. `89a0797` |
 | MCP server | Workbench B. Tools, resources, scored e. | `src/lib/mcp/handler.ts` | 2026-10-05. `3dea3d4` |
 | MCP page | Decoupled loop, opened from B. Header unchanged. | `/workbench/mcp` | 2026-10-05. `0b94734` |
-| Peer proof | Same host. B1 and an independent B2. | `/workbench/peer` | Next plant. Not a Safety claim. |
+| B2 identity | Independent server. A does not import the plant. | `GET /api/b2` | Live. `e0f921c`. Not a measurement. |
+| Peer proof | Same host. B1 and B2. | `/workbench/peer` | Page live. Button not yet a claim. |
 | Marketplace | Two listed singles + path for listed e / experience | `/marketplace` | Live |
 | Playlist / Songs | Shiyan Yishu — First Single, Sleep Terrors — Second Single | `/playlist` `/single` | Live assets |
 | Prove rail | NFT / proof path for the same two works | `/nfts` | Kept |
@@ -199,12 +200,12 @@ A / Self()
 If B2 can be independently implemented and A can operate it without modification, the P2P abstraction is an interoperability property, not only a diagram.
 
 - B1: `POST /api/mcp`. The existing server.
-- B2: `POST /api/mcp/independent`. A does not import this plant.
+- B2: `GET /api/b2` and `POST /api/b2`. A does not import this plant.
 - Host: `src/lib/mcp/host.ts`, unchanged.
-- Surface: `/workbench/peer`, opened from `/workbench/mcp`.
-- Identity: `GET /api/mcp/independent`.
+- Surface: `/workbench/independent` and `/workbench/peer`.
+- Old path: `/api/mcp/independent` still 404s. Do not use it.
 
-Φ is e_cold(final) − e_reuse(final) inside that plant. A lower e on B2 than on B1 is not an error win. The Safety rows stay `0.014`, `0.065`, `0.065`. Not a diagnosis. No PHI. No settled payment. Not live until this commit is on Production.
+Live on 2026-10-06, commit `e0f921c`: `GET /api/b2` returns `id: B2`, `controller: unchanged`. That is the identity. It is not z, e, or Φ. The button has not printed a measurement. A lower e on B2 than on B1 is not an error win. The Safety rows stay `0.014`, `0.065`, `0.065`. Not a diagnosis. No PHI. No settled payment.
 
 ## Assets that stay listed
 
@@ -235,7 +236,7 @@ One controller, many environments, many models.
 Carrying a prior y is not the same as lowering e. The Safety proof separates those.
 Φ > 0 is the error win. A model confidence score is not e.
 
-From 2026-10-05, swap also means: point the host at another MCP server that exposes the same tools and the same two resources. Do not fork Controller A to do it. B2 is that swap. It is not a customer.
+From 2026-10-05, swap also means: point the host at another MCP server that exposes the same tools and the same two resources. Do not fork Controller A to do it. B2 is that swap, at `/api/b2`. It is not a customer.
 
 ## Diagnostic validation as a commercial core
 
@@ -268,7 +269,7 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | Flywheel | `src/product/proof.ts` | Same sealed sequence on `/workbench`. Wins only if final e falls. |
 | Reuse policy | `src/lib/reuse-policy.ts` | Outside Self(). Keeps a sequence only if final e falls. |
 | MCP server | `src/lib/mcp/handler.ts` | Same tools, over JSON-RPC, so B can move. |
-| B2 | `src/lib/mcp/independent-b.ts` | Other server. Same host. Own z and e. |
+| B2 | `src/app/api/b2/route.ts` | Other server. Same host. Identity live. Measurement not yet printed. |
 
 Safety remains an evidence gate. It is not a diagnostic device.
 No production PHI. No unsupervised clinical decision.
@@ -279,12 +280,12 @@ No production PHI. No unsupervised clinical decision.
 |---|---|---|---|
 | Auditable verification logs | Every y was simulated, z measured, e scored before execution | Per-run / API | Proof records y, z, e, steps, gates, Φ. |
 | Sovereign engine architecture | Swap models or hosts; keep M | On-prem / enterprise seat | Namers swap. Self() does not read M. |
-| Open Workbench B | A partner environment speaks the contract. A is not rewritten. | Seat on the host, later | B1 on `/workbench/mcp`. B2 on `/api/mcp/independent`. Not a partner yet. |
+| Open Workbench B | A partner environment speaks the contract. A is not rewritten. | Seat on the host, later | B1 on `/workbench/mcp`. B2 identity on `/api/b2`. Not a partner yet. |
 | Verified experience marketplace | Discover or list loop policies that already cut e | Platform fee | Two singles listed. Three Safety packs now beat cold final e. Not a settled sale. |
 
 Do not commercialize the AI. Commercialize the closed-loop outcome.
 A Safety Φ may be named on the proof page and on the Workbench flywheel. It is not revenue until a payment settles.
-A B2 Φ is not a Safety Φ. A cross-plant comparison is not a listing.
+A B2 identity is not a Safety Φ. A cross-plant comparison is not a listing.
 
 ## Surfaces
 
@@ -295,12 +296,14 @@ A B2 Φ is not a Safety Φ. A cross-plant comparison is not a listing.
 | `/workbench/safety` | Diagnostic validation plant on B. |
 | `/workbench/proof` | Cold plant, then reuse plant. Φ per pack. |
 | `/workbench/mcp` | B1. Same A, MCP server. Header unchanged. |
-| `/workbench/peer` | Same A, B1 and B2. z and e from each. Φ per plant. |
+| `/workbench/independent` | Same A, other B. Measure button. |
+| `/workbench/peer` | Same A, B1 and B2. Button not yet a claim. |
+| `/api/b2` | B2 identity. Live on `e0f921c`. |
 | `/audit` | Review desk. Frozen digests. |
 | `/marketplace` | Listed works and listed experience. |
 | `/playlist` `/single` | Shiyan Yishu, Sleep Terrors. |
 | `/api/plane` | P2P capability-plane contract. |
-| `/plane` | Plane page. In `fc6bee7`. Alias still 404 until that route surfaces. |
+| `/plane` | Two axes of Self(). Live. |
 
 ## How we develop from here
 
@@ -315,6 +318,7 @@ Development criteria for the next change:
 7. No new vertical until the Safety comparison remains the buyer-facing proof.
 8. A new Workbench B speaks MCP. No fork of Controller A. No header slot.
 9. Peer Φ is per plant. B2 beating B1 is not an error win.
+10. A B2 identity is not a measurement. Print z and e before naming Φ.
 
 Tentative, not measured:
 
@@ -323,7 +327,6 @@ Tentative, not measured:
 - Carry the same outside policy onto Compliance without a new A.
 - Keep `/loop` as the runner. Do not add `/workbench/loop`.
 - Correct the provenance artifact row so Δe matches the case card.
-- Redeploy `fc6bee7` with the build cache off if `/plane` still 404s. Do not treat that 404 as a missing commit.
 
 ## Unicorn Development Status
 
@@ -338,15 +341,15 @@ That sentence is the thesis. It is not a measurement.
 | The later run has lower error | Shown on three packs. Φ `0.014`, `0.065`, `0.065`. |
 | A path win was refused | Shown. Prior-y reuse tied at `0.216`. That refusal stays. |
 | The later run is safer | Not the claim. The error win is the final e. |
-| The same A can operate an independent B2 | Next plant. Not live until `/workbench/peer` prints z and e for both. Not a partner. |
+| The same A can address an independent B2 | Identity shown. `GET /api/b2` returns `B2`. z and e not yet printed. |
 | Customers pay for the outcome | Not shown. |
-| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. B2 is the MCP proof. Compliance is named, not built. |
+| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. B2 is the MCP identity. Compliance is named, not built. |
 
 The smaller proposition still open:
 
 A acts on B → B produces measurable z → experience → better next action → lower e → customer value
 
-Lower e is now visible on three Safety packs, on Proof and on the Workbench flywheel. The open contract is the path for the next B. Customer value is not.
+Lower e is now visible on three Safety packs, on Proof and on the Workbench flywheel. B2 has an address. Customer value is not.
 
 Repo: https://github.com/ecmccready/shiyan-dap
 Live: https://shiyan-dap.vercel.app
@@ -367,4 +370,4 @@ Self() is not a four-stage pipeline. The four assets are two axes.
 
 Self() = a peer that converts verified knowledge into executable, observable, reusable action across Workbench B.
 
-Do feeds Know as verified experience Φ. Self() still does not read prior Runs. A sequence lists only when its own final e is strictly lower. Contract: `GET /api/plane`, live on `fc6bee7`. Page: `/plane`, still 404 on the alias.
+Do feeds Know as verified experience Φ. Self() still does not read prior Runs. A sequence lists only when its own final e is strictly lower.
