@@ -40,7 +40,7 @@ RUN reuse may use a sequence outside Self().
 Better, for a listing, only if the later final e is lower.
 A shorter path is a note. A tie on final e is not a win.
 
-A second B does not change that object. Same A. Other server. Its z, e, and Δe are its own.
+The peer proof does not replace that object. Same A. Two MCP servers. Φ stays inside the plant that produced it.
 
 ## Navigation strategy
 
@@ -54,10 +54,10 @@ Home is A. Workbench is B. That split is the product, not a layout preference.
 | Proof | Plant on B | Cold plant, then reuse plant. Not a header product. |
 | Audit | Plant on B | Frozen run + digest when Δe stalls. Human review desk. |
 | MCP | Plant on B | Open host/server contract. Not a header product. |
-| Independent B | Plant on B | Same A, other MCP server. Not a header product. |
+| Peer proof | Plant on B | Same A, B1 and B2. Not a header product. |
 | Marketplace / Playlist / Songs | Kept rails | Assets already listed. Traction stays on the page. |
 
-Diagnostic, Proof, Audit, MCP, and Independent B do not sit next to Home as sibling products.
+Diagnostic, Proof, Audit, MCP, and the peer proof do not sit next to Home as sibling products.
 They open from Workbench B.
 
 Domain select `safety` / `compliance` lands on `/workbench`.
@@ -85,7 +85,7 @@ Shiyan already shipped the loop. Aethel Node commercializes that loop without re
 | MCP host | Controller A. JSON-RPC only. Does not import B. | `src/lib/mcp/host.ts` | 2026-10-05. `89a0797` |
 | MCP server | Workbench B. Tools, resources, scored e. | `src/lib/mcp/handler.ts` | 2026-10-05. `3dea3d4` |
 | MCP page | Decoupled loop, opened from B. Header unchanged. | `/workbench/mcp` | 2026-10-05. `0b94734` |
-| Independent B | Same host, other server. A does not import the plant. | `/workbench/independent` | Next plant. Not a Safety claim. |
+| Peer proof | Same host. B1 and an independent B2. | `/workbench/peer` | Next plant. Not a Safety claim. |
 | Marketplace | Two listed singles + path for listed e / experience | `/marketplace` | Live |
 | Playlist / Songs | Shiyan Yishu — First Single, Sleep Terrors — Second Single | `/playlist` `/single` | Live assets |
 | Prove rail | NFT / proof path for the same two works | `/nfts` | Kept |
@@ -179,22 +179,32 @@ The recorded Φ rows stay the claim: `0.014`, `0.065`, `0.065`, commit `cbb3391e
 
 On `main` from 2026-10-05. The 3 October plant remains the Safety claim.
 
-## Independent B
+## Peer proof
 
-Same Controller A. A second Workbench that A does not import.
+Now prove the peer. The experiment is extremely small.
 
-Connect a genuinely independent Workbench B to Aethel Node through MCP and prove that the same A can produce measurable z / e / Δe there.
+A / Self()
+    │  same controller
+    ▼
+   MCP
+  ┌┴────┐
+  ▼     ▼
+  B1    B2
+  │     │
+ z1,e1 z2,e2
+  └──┬──┘
+     ▼
+ Φ / experience
 
-- Plant: `partner-fixture-b`. Not Safety. Not a diagnosis. No PHI.
-- Identity: `GET /api/mcp/independent`
-- Host transport: `POST /api/mcp/independent`
-- Surface: `/workbench/independent`, opened from `/workbench/mcp`
-- Host: `src/lib/mcp/host.ts`, unchanged
-- Plant: `src/lib/mcp/independent-b.ts`. Controller A does not import it.
+If B2 can be independently implemented and A can operate it without modification, the P2P abstraction is an interoperability property, not only a diagram.
 
-The page prints z, e, and Δe from that response. Φ counts only if final e on this B is lower than the cold final passed in. The three Safety packs stay on `/workbench/proof`. They are not this plant.
+- B1: `POST /api/mcp`. The existing server.
+- B2: `POST /api/mcp/independent`. A does not import this plant.
+- Host: `src/lib/mcp/host.ts`, unchanged.
+- Surface: `/workbench/peer`, opened from `/workbench/mcp`.
+- Identity: `GET /api/mcp/independent`.
 
-Not live until this commit is on Production. No settled payment.
+Φ is e_cold(final) − e_reuse(final) inside that plant. A lower e on B2 than on B1 is not an error win. The Safety rows stay `0.014`, `0.065`, `0.065`. Not a diagnosis. No PHI. No settled payment. Not live until this commit is on Production.
 
 ## Assets that stay listed
 
@@ -225,7 +235,7 @@ One controller, many environments, many models.
 Carrying a prior y is not the same as lowering e. The Safety proof separates those.
 Φ > 0 is the error win. A model confidence score is not e.
 
-From 2026-10-05, swap also means: point the host at another MCP server that exposes the same tools and the same two resources. Do not fork Controller A to do it. The independent fixture is that swap, on a second route. It is not a customer.
+From 2026-10-05, swap also means: point the host at another MCP server that exposes the same tools and the same two resources. Do not fork Controller A to do it. B2 is that swap. It is not a customer.
 
 ## Diagnostic validation as a commercial core
 
@@ -258,7 +268,7 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | Flywheel | `src/product/proof.ts` | Same sealed sequence on `/workbench`. Wins only if final e falls. |
 | Reuse policy | `src/lib/reuse-policy.ts` | Outside Self(). Keeps a sequence only if final e falls. |
 | MCP server | `src/lib/mcp/handler.ts` | Same tools, over JSON-RPC, so B can move. |
-| Independent B | `src/lib/mcp/independent-b.ts` | Other server. Same host. Own z, e, Δe. |
+| B2 | `src/lib/mcp/independent-b.ts` | Other server. Same host. Own z and e. |
 
 Safety remains an evidence gate. It is not a diagnostic device.
 No production PHI. No unsupervised clinical decision.
@@ -269,12 +279,12 @@ No production PHI. No unsupervised clinical decision.
 |---|---|---|---|
 | Auditable verification logs | Every y was simulated, z measured, e scored before execution | Per-run / API | Proof records y, z, e, steps, gates, Φ. |
 | Sovereign engine architecture | Swap models or hosts; keep M | On-prem / enterprise seat | Namers swap. Self() does not read M. |
-| Open Workbench B | A partner environment speaks the contract. A is not rewritten. | Seat on the host, later | Interface on `/workbench/mcp`. Fixture on `/api/mcp/independent`. Not a partner yet. |
+| Open Workbench B | A partner environment speaks the contract. A is not rewritten. | Seat on the host, later | B1 on `/workbench/mcp`. B2 on `/api/mcp/independent`. Not a partner yet. |
 | Verified experience marketplace | Discover or list loop policies that already cut e | Platform fee | Two singles listed. Three Safety packs now beat cold final e. Not a settled sale. |
 
 Do not commercialize the AI. Commercialize the closed-loop outcome.
 A Safety Φ may be named on the proof page and on the Workbench flywheel. It is not revenue until a payment settles.
-A fixture Φ is not a Safety Φ.
+A B2 Φ is not a Safety Φ. A cross-plant comparison is not a listing.
 
 ## Surfaces
 
@@ -284,8 +294,8 @@ A fixture Φ is not a Safety Φ.
 | `/workbench` | Workbench B. Run plant. Sealed flywheel. Diagnostic, Proof, Audit, and MCP open here. |
 | `/workbench/safety` | Diagnostic validation plant on B. |
 | `/workbench/proof` | Cold plant, then reuse plant. Φ per pack. |
-| `/workbench/mcp` | Same A, MCP server. Header unchanged. |
-| `/workbench/independent` | Same A, other B. z, e, Δe from that server. |
+| `/workbench/mcp` | B1. Same A, MCP server. Header unchanged. |
+| `/workbench/peer` | Same A, B1 and B2. z and e from each. Φ per plant. |
 | `/audit` | Review desk. Frozen digests. |
 | `/marketplace` | Listed works and listed experience. |
 | `/playlist` `/single` | Shiyan Yishu, Sleep Terrors. |
@@ -304,7 +314,7 @@ Development criteria for the next change:
 6. "Customer value" means a settled payment for that record. An unsettled receipt does not count.
 7. No new vertical until the Safety comparison remains the buyer-facing proof.
 8. A new Workbench B speaks MCP. No fork of Controller A. No header slot.
-9. An independent B prints its own z, e, and Δe. It does not cite the Safety Φ rows.
+9. Peer Φ is per plant. B2 beating B1 is not an error win.
 
 Tentative, not measured:
 
@@ -328,9 +338,9 @@ That sentence is the thesis. It is not a measurement.
 | The later run has lower error | Shown on three packs. Φ `0.014`, `0.065`, `0.065`. |
 | A path win was refused | Shown. Prior-y reuse tied at `0.216`. That refusal stays. |
 | The later run is safer | Not the claim. The error win is the final e. |
-| The same A can measure another B | Interface shown. Fixture is the next plant. Not a partner. Not a Safety win. |
+| The same A can operate an independent B2 | Next plant. Not live until `/workbench/peer` prints z and e for both. Not a partner. |
 | Customers pay for the outcome | Not shown. |
-| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. The fixture is the MCP proof. Compliance is named, not built. |
+| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. B2 is the MCP proof. Compliance is named, not built. |
 
 The smaller proposition still open:
 
