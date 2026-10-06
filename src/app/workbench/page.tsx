@@ -113,6 +113,7 @@ export default function ProofPage() {
   <Link className="underline" href="/workbench/proof">Proof</Link>
   <Link className="underline" href="/audit">Audit</Link>
   <Link className="underline" href="/workbench/mcp">MCP</Link>
+  <Link className="underline" href="/plane">Plane</Link>
 </nav>
       </main>
     </div>

@@ -53,6 +53,7 @@ export default function ArchitecturePage() {
           <Link className="underline" href="/workbench/safety">
             Safety pack
           </Link>
+          <Link className="underline" href="/plane">Plane</Link>
         </div>
       </main>
     </div>
