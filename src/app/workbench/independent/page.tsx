@@ -10,7 +10,7 @@ type Row = { label: string; value: string };
 export default function IndependentBPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
-  const rpc = httpTransport("/api/mcp/independent");
+  const rpc = httpTransport("/api/b2");
 
   async function prove() {
     setBusy(true);
@@ -21,7 +21,7 @@ export default function IndependentBPage() {
       const reuse = await reuseOutsideSelf(rpc, coldFinal, "partner-fixture-b");
       setRows([
         { label: "same A", value: "aethel-controller-a via JSON-RPC. This page does not import the plant." },
-        { label: "independent B", value: "partner-fixture-b · POST /api/mcp/independent" },
+        { label: "independent B", value: "partner-fixture-b · POST /api/b2" },
         { label: "tools", value: JSON.stringify(host.tools, null, 2) },
         { label: "cold z / e / Δe", value: `z ${cold?.z} · e ${cold?.e} → ${cold?.e_next} · Δe ${cold?.delta_e}` },
         { label: "reuse z / e / Δe", value: `z ${reuse.z} · final e ${reuse.final_e} · Δe ${reuse.delta_e}` },
@@ -54,8 +54,9 @@ export default function IndependentBPage() {
         <p className="text-zinc-500 text-sm">A tie is not a win. The Safety Φ values are not this plant. No settled payment.</p>
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/workbench/mcp">MCP</Link>
+          <Link className="underline" href="/workbench/peer">Peer proof</Link>
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
-          <Link className="underline" href="/api/mcp/independent">B identity</Link>
+          <Link className="underline" href="/api/b2">B identity</Link>
         </nav>
       </main>
     </div>
