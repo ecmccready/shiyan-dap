@@ -77,6 +77,9 @@ export default function McpPage() {
           <Link href="/workbench" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
             Back to B
           </Link>
+          <Link href="/workbench/independent" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
+            Independent B
+          </Link>
         </div>
 
         {rows.map((r) => (
