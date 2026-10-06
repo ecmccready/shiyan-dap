@@ -327,3 +327,32 @@ Lower e is now visible on three Safety packs, on Proof and on the Workbench flyw
 
 Repo: https://github.com/ecmccready/shiyan-dap
 Live: https://shiyan-dap.vercel.app
+
+## P2P capability plane
+
+Self() is not a four-stage pipeline. The four assets are two axes.
+
+- X = epistemic → operational: Know → Know-how → Show → Do
+- Y = individual → peer/reusable
+
+| Asset | Axis | Surface |
+|---|---|---|
+| Auditable verification | Know × individual | `/audit` |
+| Sovereign / model-portable engine | Know-how × individual | `/` |
+| Open Workbench B | Show × peer | `/workbench` |
+| Verified experience marketplace | Do × peer | `/marketplace` |
+
+Self() = a peer that converts verified knowledge into executable, observable, reusable action across Workbench B.
+
+Do feeds Know as verified experience Φ. Self() still does not read prior Runs. A sequence lists only when its own final e is strictly lower. Surface: `/plane`. Contract: `GET /api/plane`.
+From the repo root in the VS Code terminal:
+
+bash
+git checkout -b plane/self-axes
+git add src/lib/capability-plane.ts src/app/api/plane/route.ts
+git commit -m "feat(plane): define the P2P capability plane outside Self()"
+git add src/app/plane/page.tsx src/app/workbench/page.tsx src/app/architecture/page.tsx
+git commit -m "feat(plane): publish /plane as the P2P abstraction surface"
+git add README.md
+git commit -m "docs: record the P2P plane without retiring the path-win refusal"
+git push -u origin plane/self-axes
