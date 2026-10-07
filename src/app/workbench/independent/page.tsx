@@ -4,31 +4,41 @@ import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { act, connectHost, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
+import { PLANTS } from "@/product/experience";
 
-type Row = { label: string; value: string };
+type Arm = { id: string; tools: string; z: string; e: string; phi: string; better: boolean };
 
-export default function IndependentBPage() {
-  const [rows, setRows] = useState<Row[]>([]);
+export default function IndependencePage() {
+  const [arms, setArms] = useState<Arm[]>([]);
+  const [note, setNote] = useState("Not run. A B2 identity is not a measurement.");
   const [busy, setBusy] = useState(false);
-  const rpc = httpTransport("/api/b2");
 
   async function prove() {
     setBusy(true);
     try {
-      const host = await connectHost(rpc);
-      const cold = await act(rpc, "observe", "partner-fixture-b");
-      const coldFinal = cold?.e_next ?? 0;
-      const reuse = await reuseOutsideSelf(rpc, coldFinal, "partner-fixture-b");
-      setRows([
-        { label: "same A", value: "aethel-controller-a via JSON-RPC. This page does not import the plant." },
-        { label: "independent B", value: "partner-fixture-b · POST /api/b2" },
-        { label: "tools", value: JSON.stringify(host.tools, null, 2) },
-        { label: "cold z / e / Δe", value: `z ${cold?.z} · e ${cold?.e} → ${cold?.e_next} · Δe ${cold?.delta_e}` },
-        { label: "reuse z / e / Δe", value: `z ${reuse.z} · final e ${reuse.final_e} · Δe ${reuse.delta_e}` },
-        { label: "Φ", value: `${reuse.phi} · ${reuse.better ? "error win on this B" : "not a win"}` },
-      ]);
+      const next: Arm[] = [];
+      for (const plant of PLANTS) {
+        const rpc = httpTransport(plant.href);
+        const host = await connectHost(rpc);
+        const listed = Array.isArray(host.tools)
+          ? host.tools
+          : ((host.tools as { tools?: { name: string }[] })?.tools ?? []);
+        const cold = await act(rpc, "mark_boundary", plant.id);
+        const coldFinal = cold?.e_next ?? cold?.e ?? 0;
+        const reuse = await reuseOutsideSelf(rpc, coldFinal, plant.id);
+        next.push({
+          id: plant.id,
+          tools: listed.map((tool) => tool.name).join(", ") || "none listed",
+          z: String(reuse.z ?? cold?.z ?? "none"),
+          e: `${cold?.e ?? "?"} → ${coldFinal} cold · ${reuse.final_e} reuse`,
+          phi: String(reuse.phi),
+          better: Boolean(reuse.better),
+        });
+      }
+      setArms(next);
+      setNote("Same A. No plant import. Φ stays inside the plant that printed it. B2 beating B1 is not an error win.");
     } catch (err) {
-      setRows([{ label: "not proved", value: String(err) }]);
+      setNote(String(err));
     } finally {
       setBusy(false);
     }
@@ -38,25 +48,36 @@ export default function IndependentBPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Workbench" />
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-6">
-        <p className="text-emerald-400 text-xs uppercase tracking-widest">Same A · other B</p>
-        <h1 className="text-3xl font-bold">Independent Workbench B</h1>
+        <p className="text-emerald-400 text-xs uppercase tracking-widest">Now prove</p>
+        <h1 className="text-3xl font-bold">A → B1 and A → B2</h1>
         <p className="text-zinc-400">
-          Connect a genuinely independent Workbench B to Aethel Node through MCP and prove that the same A can produce measurable z / e / Δe there. A is not rewritten. Self() does not read prior Runs. This plant is not the Safety proof.
+          B2 is a separate server. The same A operates both without knowing their internal implementation.
         </p>
+        <blockquote className="border-l-2 border-zinc-700 pl-4 text-zinc-200">
+          The same A can operate different Workbenches without knowing their internal implementation.
+        </blockquote>
+        <ul className="text-sm text-zinc-400 space-y-1">
+          {PLANTS.map((plant) => (
+            <li key={plant.id}>{plant.id} · {plant.href} · {plant.note}</li>
+          ))}
+        </ul>
         <button disabled={busy} onClick={prove} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
-          Measure this B
+          Print z and e on both
         </button>
-        {rows.map((r) => (
-          <pre key={r.label} className="text-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 overflow-auto">
-            {r.label}{"\n"}{r.value}
-          </pre>
+        {arms.map((arm) => (
+          <section key={arm.id} className="border border-zinc-800 rounded-2xl p-5 text-sm">
+            <p className="text-emerald-400 text-xs">A → {arm.id}</p>
+            <p>tools seen by A · {arm.tools}</p>
+            <p>z · {arm.z}</p>
+            <p>e · {arm.e}</p>
+            <p>Φ · {arm.phi} · {arm.better ? "error win on this plant" : "not a win"}</p>
+          </section>
         ))}
-        <p className="text-zinc-500 text-sm">A tie is not a win. The Safety Φ values are not this plant. No settled payment.</p>
+        <p className="text-zinc-500 text-sm">{note} Safety rows stay on /workbench/proof. No settled payment.</p>
         <nav className="flex flex-wrap gap-4 text-sm">
-          <Link className="underline" href="/workbench/mcp">MCP</Link>
-          <Link className="underline" href="/workbench/peer">Peer proof</Link>
-          <Link className="underline" href="/workbench/proof">Safety proof</Link>
-          <Link className="underline" href="/api/b2">B identity</Link>
+          <Link className="underline" href="/workbench/watch">Watched Run</Link>
+          <Link className="underline" href="/workbench/peer">Peer</Link>
+          <Link className="underline" href="/api/b2">B2 identity</Link>
         </nav>
       </main>
     </div>
