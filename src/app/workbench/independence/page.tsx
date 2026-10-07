@@ -20,12 +20,15 @@ export default function IndependencePage() {
       for (const plant of PLANTS) {
         const rpc = httpTransport(plant.href);
         const host = await connectHost(rpc);
-        const cold = await act(rpc, "observe", plant.id);
-        const coldFinal = cold?.e_next ?? 0;
+        const listed = Array.isArray(host.tools)
+          ? host.tools
+          : ((host.tools as { tools?: { name: string }[] })?.tools ?? []);
+        const cold = await act(rpc, "mark_boundary", plant.id);
+        const coldFinal = cold?.e_next ?? cold?.e ?? 0;
         const reuse = await reuseOutsideSelf(rpc, coldFinal, plant.id);
         next.push({
           id: plant.id,
-          tools: host.tools.map((tool) => tool.name).join(", ") || "none listed",
+          tools: listed.map((tool) => tool.name).join(", ") || "none listed",
           z: String(reuse.z ?? cold?.z ?? "none"),
           e: `${cold?.e ?? "?"} → ${coldFinal} cold · ${reuse.final_e} reuse`,
           phi: String(reuse.phi),
