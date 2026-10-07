@@ -69,20 +69,20 @@ export type Flywheel = {
   case3_better: boolean;
 };
 
-function artifactOf(plant: LoopPlant, steps: StepRec[], used: boolean): RunArtifact {
-  const c = caseById(plant.case_id);
+function artifactOf(start: LoopPlant, steps: StepRec[], used: boolean): RunArtifact {
+  const c = caseById(start.case_id);
   const last = steps[steps.length - 1];
-  const B = plant.B;
-  const e0 = steps[0]?.e ?? plant.M.last_e;
-  const e1 = last?.e_next ?? plant.M.last_e;
+  const B = start.B;
+  const e0 = steps[0]?.e ?? start.M.last_e;
+  const e1 = last?.e_next ?? start.M.last_e;
   return {
-    run_id: `proof_${plant.case_id}`,
+    run_id: `proof_${start.case_id}`,
     B: "Safety",
     initial_state: `missing=${B.missing} contradiction=${B.contradiction} completeness=${B.completeness}`,
     action_y: steps.map((s) => s.y).join(" -> ") || "none",
     result_z: last?.z ?? "no measurement",
     reference: c.reference_note,
-    error_e: last ? `${e0} -> ${e1}` : String(plant.M.last_e),
+    error_e: last ? `${e0} -> ${e1}` : String(start.M.last_e),
     delta_e: Number((e0 - e1).toFixed(3)),
     experience: used
       ? "mark_boundary → complete_field → request_independent_check → seal_pack"
@@ -113,12 +113,13 @@ function armFrom(label: string, plant: LoopPlant, namer: Namer): Arm {
     delta_e: Number((e0 - e1).toFixed(3)),
     escalates: steps.filter((s) => s.gate === "ESCALATE").length,
     used_prior: false,
-    artifact: artifactOf(cursor, steps, false),
+    artifact: artifactOf(plant, steps, false),
   };
 }
 
 function rollMeasured(caseId: string): Arm {
-  let cursor = freshPlant(caseId);
+  const start = freshPlant(caseId);
+  let cursor = start;
   const steps: StepRec[] = [];
   for (const y of MEASURED) {
     const out = stepLoop(cursor, { namer: "operator", y });
@@ -126,8 +127,8 @@ function rollMeasured(caseId: string): Arm {
     cursor = out.plant;
   }
   const last = steps[steps.length - 1];
-  const e0 = steps[0]?.e ?? cursor.M.last_e;
-  const e1 = last?.e_next ?? cursor.M.last_e;
+  const e0 = steps[0]?.e ?? start.M.last_e;
+  const e1 = last?.e_next ?? start.M.last_e;
   return {
     label: "reuse",
     case_id: caseId,
@@ -138,7 +139,7 @@ function rollMeasured(caseId: string): Arm {
     delta_e: Number((e0 - e1).toFixed(3)),
     escalates: steps.filter((s) => s.gate === "ESCALATE").length,
     used_prior: true,
-    artifact: artifactOf(cursor, steps, true),
+    artifact: artifactOf(start, steps, true),
   };
 }
 
