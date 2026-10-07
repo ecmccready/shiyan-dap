@@ -1,3 +1,6 @@
+Replace the entire README.md with this. The old rules, Safety rows, and refusals stay. The provenance sentence, the B2 measurement, and the 2026-10-07 record are the additions.
+
+md
 # Aethel Node
 
 Sovereign multi-model orchestration and multi-domain workspace infrastructure (formerly Shiyan-DAP).
@@ -42,6 +45,12 @@ A shorter path is a note. A tie on final e is not a win.
 
 The peer proof does not replace that object. Same A. Two MCP servers. Φ stays inside the plant that produced it.
 
+Engine and commercial layer stay separate.
+
+A ↔ B ↔ Run ↔ Measurement
+
+Organization → Workspace → Workbench → Usage → Billing → Marketplace
+
 ## Navigation strategy
 
 Home is A. Workbench is B. That split is the product, not a layout preference.
@@ -85,8 +94,8 @@ Shiyan already shipped the loop. Aethel Node commercializes that loop without re
 | MCP host | Controller A. JSON-RPC only. Does not import B. | `src/lib/mcp/host.ts` | 2026-10-05. `89a0797` |
 | MCP server | Workbench B. Tools, resources, scored e. | `src/lib/mcp/handler.ts` | 2026-10-05. `3dea3d4` |
 | MCP page | Decoupled loop, opened from B. Header unchanged. | `/workbench/mcp` | 2026-10-05. `0b94734` |
-| B2 identity | Independent server. A does not import the plant. | `GET /api/b2` | Live. `e0f921c`. Not a measurement. |
-| Peer proof | Same host. B1 and B2. | `/workbench/peer` | Page live. Button not yet a claim. |
+| B2 identity | Independent server. A does not import the plant. | `GET /api/b2` | Live. `e0f921c`. Identity is not a measurement. |
+| Peer proof | Same host. B1 and B2. | `/workbench/peer` and `/workbench/independence` | B1 printed on 2026-10-07. Not a cross-plant win. |
 | Marketplace | Two listed singles + path for listed e / experience | `/marketplace` | Live |
 | Playlist / Songs | Shiyan Yishu — First Single, Sleep Terrors — Second Single | `/playlist` `/single` | Live assets |
 | Prove rail | NFT / proof path for the same two works | `/nfts` | Kept |
@@ -141,7 +150,7 @@ The mark leaves e unchanged. The seal is the drop. Case 2 and Case 3 beat cold f
 
 Build insight: a shorter path is not the benefit. The benefit is a lower final e, printed, on a sequence outside Self(). Self() was not taught to read prior Runs.
 
-The artifact row on the provenance pack printed `Δe · 0`. The case cards are the measurement: Δe `1.248`, final e `0.151`. Trust the cards until that row is corrected.
+The provenance artifact row used to print `Δe · 0` while the case card reported `1.248`, final e `0.151`. The row was reading the plant after the run. The artifact now takes the plant from before the run and the same steps as the card. Within-run Δe on that pack is `1.248`. Φ on that pack remains `0.065`. Those are different numbers.
 
 No settled payment. The charge line still says no charge yet. An unsettled receipt is not revenue.
 
@@ -202,10 +211,14 @@ If B2 can be independently implemented and A can operate it without modification
 - B1: `POST /api/mcp`. The existing server.
 - B2: `GET /api/b2` and `POST /api/b2`. A does not import this plant.
 - Host: `src/lib/mcp/host.ts`, unchanged.
-- Surface: `/workbench/independent` and `/workbench/peer`.
+- Surface: `/workbench/independent`, `/workbench/peer`, and `/workbench/independence`.
 - Old path: `/api/mcp/independent` still 404s. Do not use it.
 
-Live on 2026-10-06, commit `e0f921c`: `GET /api/b2` returns `id: B2`, `controller: unchanged`. That is the identity. It is not z, e, or Φ. The button has not printed a measurement. A lower e on B2 than on B1 is not an error win. The Safety rows stay `0.014`, `0.065`, `0.065`. Not a diagnosis. No PHI. No settled payment.
+Live on 2026-10-06, commit `e0f921c`: `GET /api/b2` returns `id: B2`, `controller: unchanged`. That is the identity. It is not z, e, or Φ.
+
+On 2026-10-07, `/workbench/independence` printed B1 through that same host. Tools seen: `mark_boundary`, `complete_field`, `request_independent_check`, `seal_pack`, `score_error`, `run_sealed_sequence`. z `1.162` after `mark_boundary`. Cold `1.391 → 1.391`. Reuse `0.235`. Plant Φ `1.156`. The cold arm is the mark, which does not change e. It does not replace the Safety rows. B2 is the second server on that page. B2 beating B1 is not an error win. Not a diagnosis. No PHI. No settled payment.
+
+`/workbench/watch` printed a tie: cold `0.235`, reuse `0.235`, Δe `0`. The page refused to call that reusable.
 
 ## Assets that stay listed
 
@@ -238,6 +251,8 @@ Carrying a prior y is not the same as lowering e. The Safety proof separates tho
 
 From 2026-10-05, swap also means: point the host at another MCP server that exposes the same tools and the same two resources. Do not fork Controller A to do it. B2 is that swap, at `/api/b2`. It is not a customer.
 
+The vertical demonstrates the engine. It does not imprison it. Manufacturing, supply chain, financial operations, IT/SecOps, enterprise workflows, and AI evaluation are named. They are not built.
+
 ## Diagnostic validation as a commercial core
 
 Buyers in high-stakes operations do not pay for generated text.
@@ -254,7 +269,7 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 |---|---|
 | y | Hypothesis, test recommendation, or pathway named by A |
 | z | Measured output after the pathway is simulated against constraints |
-| e | Variance from the reference pack |
+| e | Variance from the reference pack. A diagnostic reading of error, not a diagnosis. |
 | Δe | What a buyer purchases: error narrowed across steps |
 | Φ | e_cold(final) − e_reuse(final). The listing test. |
 
@@ -269,10 +284,11 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | Flywheel | `src/product/proof.ts` | Same sealed sequence on `/workbench`. Wins only if final e falls. |
 | Reuse policy | `src/lib/reuse-policy.ts` | Outside Self(). Keeps a sequence only if final e falls. |
 | MCP server | `src/lib/mcp/handler.ts` | Same tools, over JSON-RPC, so B can move. |
-| B2 | `src/app/api/b2/route.ts` | Other server. Same host. Identity live. Measurement not yet printed. |
+| B2 | `src/app/api/b2/route.ts` | Other server. Same host. Identity live. Measurement is per plant. |
 
 Safety remains an evidence gate. It is not a diagnostic device.
 No production PHI. No unsupervised clinical decision.
+The diagnostic reading makes the loop legible. It does not make Aethel Node a healthcare company.
 
 ## Commercial vector
 
@@ -280,12 +296,14 @@ No production PHI. No unsupervised clinical decision.
 |---|---|---|---|
 | Auditable verification logs | Every y was simulated, z measured, e scored before execution | Per-run / API | Proof records y, z, e, steps, gates, Φ. |
 | Sovereign engine architecture | Swap models or hosts; keep M | On-prem / enterprise seat | Namers swap. Self() does not read M. |
-| Open Workbench B | A partner environment speaks the contract. A is not rewritten. | Seat on the host, later | B1 on `/workbench/mcp`. B2 identity on `/api/b2`. Not a partner yet. |
+| Open Workbench B | A partner environment speaks the contract. A is not rewritten. | Seat on the host, later | B1 on `/workbench/mcp`. B2 on `/api/b2`. Not a partner yet. |
 | Verified experience marketplace | Discover or list loop policies that already cut e | Platform fee | Two singles listed. Three Safety packs now beat cold final e. Not a settled sale. |
 
 Do not commercialize the AI. Commercialize the closed-loop outcome.
 A Safety Φ may be named on the proof page and on the Workbench flywheel. It is not revenue until a payment settles.
 A B2 identity is not a Safety Φ. A cross-plant comparison is not a listing.
+
+Platform subscription plus usage: organization or workspace fee, workbench per operational domain, runs usage-based, experience as a reusable capability, enterprise as private MCP workbenches with audit and governance. The unit is the Run, not a count of AI conversations.
 
 ## Surfaces
 
@@ -297,7 +315,15 @@ A B2 identity is not a Safety Φ. A cross-plant comparison is not a listing.
 | `/workbench/proof` | Cold plant, then reuse plant. Φ per pack. |
 | `/workbench/mcp` | B1. Same A, MCP server. Header unchanged. |
 | `/workbench/independent` | Same A, other B. Measure button. |
-| `/workbench/peer` | Same A, B1 and B2. Button not yet a claim. |
+| `/workbench/peer` | Same A, B1 and B2. |
+| `/workbench/independence` | A → B1 and A → B2. Print z and e. `1b4ab1d`. |
+| `/workbench/watch` | One watched Run. Tie at `0.235` refused. |
+| `/workbench/finished` | Diagram. Not a measurement. |
+| `/workbench/diagnostic` | Diagnostic reading. Not a new plant. |
+| `/workbench/domains` | Later domains named, not built. |
+| `/saas` | Organization to marketplace. Aethel Node does not own every Workbench. |
+| `/saas/pricing` | Platform subscription plus usage. |
+| `/saas/engine` | Engine separate from the commercial layer. |
 | `/api/b2` | B2 identity. Live on `e0f921c`. |
 | `/audit` | Review desk. Frozen digests. |
 | `/marketplace` | Listed works and listed experience. |
@@ -326,7 +352,8 @@ Tentative, not measured:
 - Leave the $49 receipt unsettled until a payment clears.
 - Carry the same outside policy onto Compliance without a new A.
 - Keep `/loop` as the runner. Do not add `/workbench/loop`.
-- Correct the provenance artifact row so Δe matches the case card.
+- Provenance artifact Δe now matches the case card. Do not reintroduce a post-run plant as the initial state.
+- Record the B2 row beside the printed B1 row before calling the peer demonstration finished.
 
 ## Unicorn Development Status
 
@@ -334,22 +361,22 @@ Aethel Node becomes potentially enormous if it can become the infrastructure lay
 
 That sentence is the thesis. It is not a measurement.
 
-| Claim | Status on 2026-10-06 |
+| Claim | Status on 2026-10-07 |
 |---|---|
 | A acts on B, produces z, calculates e/Δe | Shown. Cold Self(), e `1.561 → 0.165`. |
 | A later run uses a sequence outside Self() | Shown on Proof and on the Workbench flywheel. `mark_boundary → complete_field → request_independent_check → seal_pack`. |
 | The later run has lower error | Shown on three packs. Φ `0.014`, `0.065`, `0.065`. |
 | A path win was refused | Shown. Prior-y reuse tied at `0.216`. That refusal stays. |
 | The later run is safer | Not the claim. The error win is the final e. |
-| The same A can address an independent B2 | Identity shown. `GET /api/b2` returns `B2`. z and e not yet printed. |
+| The same A can address an independent B2 | Identity shown. B1 measurement printed on `/workbench/independence`. B2 row not yet copied into this record. |
 | Customers pay for the outcome | Not shown. |
-| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. B2 is the MCP identity. Compliance is named, not built. |
+| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. B2 is the MCP server. Later domains are named, not built. |
 
 The smaller proposition still open:
 
 A acts on B → B produces measurable z → experience → better next action → lower e → customer value
 
-Lower e is now visible on three Safety packs, on Proof and on the Workbench flywheel. B2 has an address. Customer value is not.
+Lower e is now visible on three Safety packs, on Proof and on the Workbench flywheel. B1 has a live peer print. Customer value is not.
 
 Repo: https://github.com/ecmccready/shiyan-dap
 Live: https://shiyan-dap.vercel.app
@@ -371,3 +398,29 @@ Self() is not a four-stage pipeline. The four assets are two axes.
 Self() = a peer that converts verified knowledge into executable, observable, reusable action across Workbench B.
 
 Do feeds Know as verified experience Φ. Self() still does not read prior Runs. A sequence lists only when its own final e is strictly lower.
+
+Verified experience is `(y, z, e_before, e_after, Δe, context, provenance, replayability)`.
+The flywheel is Run → measurement → proof → Experience → reuse → better Run → new Experience.
+That compounding is a thesis until a second Run repeats a drop.
+
+## 2026-10-07
+
+Preserved: closed loop, Self() does not read prior Runs, two listed works, Safety rows `0.014`, `0.065`, `0.065`, header unchanged, no new vertical.
+
+| Surface | What it is | What it is not |
+|---|---|---|
+| `/saas` | Organization, workspace, brought-or-owned Workbench | A measurement |
+| `/saas/pricing` | Platform subscription plus usage. Unit is the Run | A settled charge |
+| `/saas/engine` | Engine separate from the commercial layer | A new A |
+| `/workbench/watch` | One Run. Printed `0.235 → 0.235`. Refused | Reusable experience |
+| `/workbench/independence` | Same A, B1 and B2, `mark_boundary` | A cross-plant win |
+| `/workbench/finished` | The diagram under the measurement | A claim |
+| `/workbench/domains` | Later domains named | Built plants |
+| `/workbench/diagnostic` | Diagnostic reading | A healthcare company |
+
+Will do, not done:
+
+- Copy the printed B2 z and e next to the B1 row.
+- A second Run that repeats a Safety drop before any listing.
+- A settled payment. An unsettled receipt is not customer value.
+- Compliance, manufacturing, supply chain, financial operations, IT/SecOps, enterprise workflows, and AI evaluation only after each speaks MCP and prints its own z and e.
