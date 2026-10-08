@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import { safetyFlywheel, type Arm } from "@/product/proof";
 
+const JOURNEY = ["CREATE RUN", "Objective", "A proposes", "B executes", "z", "e", "Δe", "PROOF", "REUSE", "NEW RUN"];
+
 export default function RunDossierPage() {
   const params = useParams<{ id: string }>();
   const id = decodeURIComponent(params.id ?? "");
@@ -13,21 +15,20 @@ export default function RunDossierPage() {
   const hit = useMemo(() => {
     const i = wheel.reuse.findIndex((arm) => arm.artifact.run_id === id || arm.case_id === id);
     if (i < 0) return null;
-    return { reuse: wheel.reuse[i], cold: wheel.cold[i], i };
+    return { reuse: wheel.reuse[i], cold: wheel.cold[i] };
   }, [wheel, id]);
-  const [copied, setCopied] = useState("");
+  const [note, setNote] = useState("");
 
-  async function exportProof(arm: Arm, cold: Arm) {
-    const phi = Number((cold.e1 - arm.e1).toFixed(3));
-    const dossier = dossierOf(arm, cold, phi, id);
-    const blob = new Blob([JSON.stringify(dossier, null, 2)], { type: "application/json" });
+  function exportProof(arm: Arm, cold: Arm) {
+    const record = recordOf(arm, cold, id);
+    const blob = new Blob([JSON.stringify(record, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${arm.artifact.run_id}.proof.json`;
+    a.download = `${arm.artifact.run_id}.run.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setCopied("Proof file downloaded. It is a record, not a receipt.");
+    setNote("Record downloaded. It is evidence, not a receipt.");
   }
 
   return (
@@ -35,112 +36,100 @@ export default function RunDossierPage() {
       <SiteHeader section="Run" />
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         <Link href="/workbench" className="text-sm text-zinc-500 underline">Workbench</Link>
+        <ol className="mt-6 flex gap-2 overflow-x-auto text-xs text-zinc-400">
+          {JOURNEY.map((step) => (
+            <li key={step} className="shrink-0 rounded-full border border-zinc-800 px-3 py-1">{step}</li>
+          ))}
+        </ol>
         {!hit && (
-          <section className="mt-8 rounded-3xl border border-dashed border-zinc-700 p-8" role="status">
+          <section className="mt-8 rounded-3xl border border-dashed border-zinc-700 p-8">
             <h1 className="text-2xl font-medium">Run not on this plant</h1>
-            <p className="mt-3 text-sm leading-6 text-zinc-400">
-              {id || "Missing id"} is not in the sealed Safety flywheel. No evidence was invented for it.
-            </p>
+            <p className="mt-3 text-sm text-zinc-400">{id || "Missing id"} has no record. None was invented.</p>
           </section>
         )}
-        {hit && <Dossier arm={hit.reuse} cold={hit.cold} onExport={exportProof} note={copied} />}
+        {hit && <Record arm={hit.reuse} cold={hit.cold} id={id} note={note} onExport={exportProof} />}
       </main>
     </div>
   );
 }
 
-function Dossier({
+function Record({
   arm,
   cold,
-  onExport,
+  id,
   note,
+  onExport,
 }: {
   arm: Arm;
   cold: Arm;
-  onExport: (arm: Arm, cold: Arm) => void;
+  id: string;
   note: string;
+  onExport: (arm: Arm, cold: Arm) => void;
 }) {
-  const phi = Number((cold.e1 - arm.e1).toFixed(3));
-  const accepted = arm.e1 < cold.e1;
-  const a = arm.artifact;
-  const rows = [
-    ["What was the objective?", arm.title],
-    ["What action did A choose?", a.action_y],
-    ["What did B do?", arm.steps.map((s) => s.y).join(" → ") || "No steps printed."],
-    ["What happened?", a.result_z],
-    ["What was the measured result?", `z recorded. Final e ${arm.e1}.`],
-    ["What was the error?", `e0 ${arm.e0} → e1 ${arm.e1}. Δe ${arm.delta_e}.`],
-    ["Did the next attempt improve?", accepted ? `Yes. Cold final ${cold.e1}, reuse final ${arm.e1}, Φ ${phi}.` : `No. Final e did not fall. Φ ${phi}.`],
-    ["Why accepted or rejected?", accepted ? "Reuse final e is below cold final e. That is the listing test." : "A tie or a rise is not an error win. Claim refused."],
-    ["What evidence supports it?", `${a.run_id} · ${a.experience}`],
-    ["Can I reproduce it?", "Yes. Replay the sealed sequence on this plant. Self() does not read this Run."],
+  const row = recordOf(arm, cold, id);
+  const fields = [
+    ["Objective", row.objective],
+    ["Reference", row.reference],
+    ["Controller A", row.controller],
+    ["Workbench B", row.workbench],
+    ["Action y", row.action_y],
+    ["Output z", row.output_z],
+    ["Initial e", String(row.initial_e)],
+    ["Final e", String(row.final_e)],
+    ["Δe", String(row.delta_e)],
+    ["Gate status", row.gate],
+    ["Evidence", row.evidence],
+    ["Provenance", row.provenance],
+    ["Replay sequence", row.replay],
+    ["Cold result", String(row.cold_result)],
+    ["Reuse result", String(row.reuse_result)],
+    ["Φ", String(row.phi)],
+    ["Outcome", row.outcome],
   ];
 
   return (
     <article className="mt-6">
-      <p className="text-xs uppercase tracking-[0.18em] text-emerald-400">Atomic commercial unit</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{arm.title}</h1>
-      <p className="mt-2 font-mono text-xs text-zinc-500">{a.run_id}</p>
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat k="Baseline e" v={String(arm.e0)} />
-        <Stat k="Final e" v={String(arm.e1)} />
-        <Stat k="Δe" v={String(arm.delta_e)} />
-        <Stat k="Φ" v={phi.toFixed(3)} />
-      </div>
+      <p className="text-xs uppercase tracking-[0.18em] text-emerald-400">RUN #{row.run_id}</p>
+      <h1 className="mt-2 text-3xl font-semibold">{row.objective}</h1>
+      <p className={`mt-4 text-2xl font-medium ${row.outcome === "PASS" ? "text-emerald-300" : "text-amber-200"}`}>{row.outcome}</p>
       <dl className="mt-6 divide-y divide-zinc-800 rounded-3xl border border-zinc-800">
-        {rows.map(([q, answer]) => (
-          <div key={q} className="px-4 py-4 sm:px-5">
-            <dt className="text-xs uppercase tracking-wider text-zinc-500">{q}</dt>
-            <dd className="mt-1 text-sm leading-6 text-zinc-200">{answer}</dd>
+        {fields.map(([k, v]) => (
+          <div key={k} className="grid gap-1 px-4 py-3 sm:grid-cols-3">
+            <dt className="text-xs uppercase tracking-wider text-zinc-500">{k}</dt>
+            <dd className="text-sm text-zinc-200 sm:col-span-2">{v}</dd>
           </div>
         ))}
       </dl>
-      <div className="mt-4 rounded-3xl border border-zinc-800 p-5 text-sm text-zinc-400">
-        <p>Reference · {a.reference}</p>
-        <p className="mt-2">Initial state · {a.initial_state}</p>
-        <p className="mt-2">Next action · {a.next_action}</p>
-        <p className="mt-2">Escalates · {arm.escalates}. Used prior inside Self() · {arm.used_prior ? "yes" : "no"}.</p>
-      </div>
-      <div className="mt-5 flex flex-wrap gap-3">
-        <button onClick={() => onExport(arm, cold)} className="h-11 rounded-full bg-white px-5 text-sm font-medium text-black">
-          Export proof
-        </button>
-        <Link href="/workbench/proof" className="inline-flex h-11 items-center rounded-full border border-zinc-700 px-5 text-sm">
-          Open proof plant
-        </Link>
-        <Link href="/audit" className="inline-flex h-11 items-center rounded-full border border-zinc-700 px-5 text-sm">
-          Audit trail
-        </Link>
-      </div>
+      <button onClick={() => onExport(arm, cold)} className="mt-5 h-11 rounded-full bg-white px-5 text-sm font-medium text-black">
+        Export record
+      </button>
       {note && <p className="mt-3 text-sm text-emerald-300">{note}</p>}
     </article>
   );
 }
 
-function Stat({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="rounded-2xl bg-zinc-950 p-3">
-      <p className="text-xs text-zinc-500">{k}</p>
-      <p className="mt-1 text-xl font-semibold tabular-nums">{v}</p>
-    </div>
-  );
-}
-
-function dossierOf(arm: Arm, cold: Arm, phi: number, id: string) {
+function recordOf(arm: Arm, cold: Arm, id: string) {
+  const phi = Number((cold.e1 - arm.e1).toFixed(3));
+  const gate = arm.escalates > 0 ? "ESCALATE" : "HOLD";
+  const outcome = phi > 0 ? "PASS" : phi === 0 ? "HOLD" : "FAIL";
   return {
     run_id: arm.artifact.run_id || id,
     objective: arm.title,
+    reference: arm.artifact.reference,
+    controller: "A names y. Self() does not read this Run.",
+    workbench: arm.artifact.B,
     action_y: arm.artifact.action_y,
-    steps: arm.steps,
-    result_z: arm.artifact.result_z,
-    e_cold: cold.e1,
-    e_reuse: arm.e1,
+    output_z: arm.artifact.result_z,
+    initial_e: arm.e0,
+    final_e: arm.e1,
     delta_e: arm.delta_e,
-    phi,
-    accepted: arm.e1 < cold.e1,
+    gate,
     evidence: arm.artifact.experience,
-    reproducible: true,
-    self_reads_prior_runs: false,
-    revenue: false,
+    provenance: `${arm.artifact.run_id} · sealed Safety plant`,
+    replay: arm.steps.map((s) => s.y).join(" → "),
+    cold_result: cold.e1,
+    reuse_result: arm.e1,
+    phi,
+    outcome,
   };
 }
