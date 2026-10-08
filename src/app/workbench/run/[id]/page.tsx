@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
+import { SAFETY_PACK } from "@/lib/closed-loop";
 import { safetyFlywheel, type Arm } from "@/product/proof";
 import { readRuns, type OutcomeRun } from "@/product/run";
 
@@ -24,6 +25,13 @@ export default function RunDossierPage() {
     setStored(readRuns().find((run) => run.id === id) ?? null);
   }, [id]);
 
+  const arm = stored
+    ? wheel.reuse.find((item) => item.case_id === stored.plant.case_id) ?? null
+    : hit?.reuse ?? null;
+  const cold = stored
+    ? wheel.cold.find((item) => item.case_id === stored.plant.case_id) ?? null
+    : hit?.cold ?? null;
+
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Run" />
@@ -35,14 +43,12 @@ export default function RunDossierPage() {
           ))}
         </ol>
         {stored === undefined && <p className="mt-8 text-sm text-zinc-500">Reading this browser.</p>}
-        {stored && <StoredRecord run={stored} />}
+        {stored && <StoredRecord run={stored} arm={arm} cold={cold} />}
         {!stored && hit && <PlantRecord arm={hit.reuse} cold={hit.cold} id={id} />}
         {stored === null && !hit && (
           <section className="mt-8 rounded-3xl border border-dashed border-zinc-700 p-8">
             <h1 className="text-2xl font-medium">Run not in this browser</h1>
-            <p className="mt-3 text-sm text-zinc-400">
-              {id || "Missing id"} is not stored here and is not a sealed Safety Run. A private window cannot see a browser record. None was invented.
-            </p>
+            <p className="mt-3 text-sm text-zinc-400">{id || "Missing id"} is not stored here. None was invented.</p>
           </section>
         )}
       </main>
@@ -50,31 +56,36 @@ export default function RunDossierPage() {
   );
 }
 
-function StoredRecord({ run }: { run: OutcomeRun }) {
+function StoredRecord({ run, arm, cold }: { run: OutcomeRun; arm: Arm | null; cold: Arm | null }) {
+  const pack = SAFETY_PACK.find((item) => item.id === run.plant.case_id);
+  const last = run.steps[0];
+  const y = last?.y ?? run.plant.M.last_y ?? arm?.artifact.action_y ?? "not stepped on this stored Run";
+  const z = run.plant.M.last_z ?? arm?.artifact.result_z ?? "not measured on this stored Run";
+  const phi = cold && arm ? Number((cold.e1 - arm.e1).toFixed(3)) : run.delta_e;
   const fields = [
     ["Objective", run.objective],
-    ["Reference", run.reference],
+    ["Reference", pack?.reference_note ?? "not stored"],
     ["Controller A", `${run.org} / ${run.workspace}`],
     ["Workbench B", run.workbench],
-    ["Action y", run.case_id],
-    ["Output z", run.status],
+    ["Action y", y],
+    ["Output z", z],
     ["Initial e", String(run.e0)],
     ["Final e", String(run.e_now)],
     ["Δe", String(run.delta_e)],
-    ["Gate status", run.status],
-    ["Evidence", "Stored in this browser. Not a receipt."],
-    ["Provenance", run.id],
-    ["Replay sequence", "sealed Safety replay"],
-    ["Cold result", String(run.e0)],
+    ["Gate status", pack?.reference_gate ?? run.status],
+    ["Evidence", "Stored in this browser. Replay z is the sealed plant, not a new measurement."],
+    ["Provenance", `${run.id} · ${run.plant.case_id}`],
+    ["Replay sequence", arm ? arm.steps.map((s) => s.y).join(" → ") : "not on this plant"],
+    ["Cold result", cold ? String(cold.e1) : String(run.e0)],
     ["Reuse result", String(run.e_now)],
-    ["Φ", String(run.delta_e)],
+    ["Φ", String(phi)],
     ["Outcome", run.delta_e > 0 ? "PASS" : run.delta_e === 0 ? "HOLD" : "FAIL"],
   ];
   return (
     <article className="mt-6">
       <p className="text-xs uppercase tracking-[0.18em] text-emerald-400">RUN #{run.id}</p>
       <h1 className="mt-2 text-3xl font-semibold">{run.objective}</h1>
-      <p className="mt-3 text-sm text-zinc-500">This browser only. Another window will not have it.</p>
+      <p className="mt-3 text-sm text-zinc-500">This browser only. Status is {run.status}. Status is not z.</p>
       <Fields fields={fields} />
     </article>
   );
