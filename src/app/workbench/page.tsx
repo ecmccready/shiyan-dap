@@ -4,16 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { Namer, namerLabel } from "@/lib/closed-loop";
-import { SAFETY_B, safetyFlywheel, type Arm } from "@/product/proof";
-import { createRun, type OutcomeRun } from "@/product/run";
+import { PROOF_CASES, SAFETY_B, safetyFlywheel, type Arm } from "@/product/proof";
+import { closeRun, createRun, type OutcomeRun } from "@/product/run";
 
 type Phase = "empty" | "setup" | "running" | "closed" | "error";
-
-const CASES = [
-  { id: "case-incomplete-evidence", title: "Incomplete evidence pack" },
-  { id: "case-missing-measurements", title: "Missing measurements" },
-  { id: "case-provenance-gap", title: "Provenance gap" },
-] as const;
 
 const LOOP = [
   ["Give A a task", "Objective and reference, not a prompt."],
@@ -26,7 +20,7 @@ const LOOP = [
 export default function WorkbenchPage() {
   const [phase, setPhase] = useState<Phase>("empty");
   const [namer, setNamer] = useState<Namer>("grok_bot");
-  const [caseId, setCaseId] = useState<(typeof CASES)[number]["id"]>(CASES[2].id);
+  const [caseId, setCaseId] = useState<(typeof PROOF_CASES)[number]>(PROOF_CASES[2]);
   const [objective, setObjective] = useState(
     "Close the provenance gap against the Safety reference gate.",
   );
@@ -36,7 +30,7 @@ export default function WorkbenchPage() {
   const [fault, setFault] = useState("");
 
   const wheel = useMemo(() => safetyFlywheel(namer), [namer]);
-  const index = Math.max(0, CASES.findIndex((c) => c.id === caseId));
+  const index = Math.max(0, PROOF_CASES.indexOf(caseId));
   const cold = wheel.cold[index];
   const reuse = wheel.reuse[index];
   const improved = Boolean(reuse && cold && reuse.e1 < cold.e1);
@@ -45,6 +39,9 @@ export default function WorkbenchPage() {
   useEffect(() => {
     if (phase !== "running" || !reuse) return;
     if (shown >= reuse.steps.length) {
+      setRun((current) =>
+        current ? closeRun({ ...current, e_now: reuse.e1, delta_e: reuse.delta_e }) : current,
+      );
       setPhase("closed");
       return;
     }
@@ -78,7 +75,8 @@ export default function WorkbenchPage() {
     setPhase("empty");
   }
 
-  const liveE = phase === "closed" && reuse ? reuse.e1 : reuse?.steps[shown - 1]?.e_next ?? reuse?.e0;
+  const liveE =
+    phase === "closed" && reuse ? reuse.e1 : reuse?.steps[shown - 1]?.e_next ?? reuse?.e0;
   const delta = reuse && liveE != null ? Number((reuse.e0 - liveE).toFixed(3)) : 0;
 
   return (
@@ -134,9 +132,7 @@ export default function WorkbenchPage() {
           </p>
         </section>
 
-        {phase === "empty" && (
-          <Empty onCreate={() => setPhase("setup")} />
-        )}
+        {phase === "empty" && <Empty onCreate={() => setPhase("setup")} />}
 
         {phase === "error" && (
           <div className="mb-8 rounded-3xl border border-red-900 bg-red-950/40 p-6" role="alert">
@@ -178,11 +174,13 @@ export default function WorkbenchPage() {
                 Case
                 <select
                   value={caseId}
-                  onChange={(e) => setCaseId(e.target.value as (typeof CASES)[number]["id"])}
+                  onChange={(e) => setCaseId(e.target.value as (typeof PROOF_CASES)[number])}
                   className="mt-2 h-11 w-full rounded-full border border-zinc-700 bg-black px-4 text-sm"
                 >
-                  {CASES.map((c) => (
-                    <option key={c.id} value={c.id}>{c.title}</option>
+                  {wheel.reuse.map((arm) => (
+                    <option key={arm.case_id} value={arm.case_id}>
+                      {arm.title}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -192,7 +190,9 @@ export default function WorkbenchPage() {
                     type="button"
                     key={id}
                     onClick={() => setNamer(id)}
-                    className={`h-10 rounded-full border px-4 text-sm ${namer === id ? "border-emerald-500 bg-emerald-500 text-black" : "border-zinc-700"}`}
+                    className={`h-10 rounded-full border px-4 text-sm ${
+                      namer === id ? "border-emerald-500 bg-emerald-500 text-black" : "border-zinc-700"
+                    }`}
                   >
                     {namerLabel(id)}
                   </button>
@@ -211,9 +211,13 @@ export default function WorkbenchPage() {
             </form>
 
             <div className="rounded-3xl border border-zinc-800 p-5 lg:col-span-7">
-              {phase === "setup" && <p className="text-sm text-zinc-500">Waiting for a Run. Nothing is measured yet.</p>}
+              {phase === "setup" && (
+                <p className="text-sm text-zinc-500">Waiting for a Run. Nothing is measured yet.</p>
+              )}
               {phase === "running" && (
-                <p className="mb-3 text-sm text-emerald-300" role="status">Live · replaying the sealed plant. Not a new measurement.</p>
+                <p className="mb-3 text-sm text-emerald-300" role="status">
+                  Live · replaying the sealed plant. Not a new measurement. Stored in this browser.
+                </p>
               )}
               {reuse && phase !== "setup" && (
                 <>
@@ -229,8 +233,14 @@ export default function WorkbenchPage() {
                   </div>
                   <ol className="space-y-2">
                     {reuse.steps.map((step, i) => (
-                      <li key={`${step.y}-${i}`} className={`rounded-2xl border px-4 py-3 text-sm ${i < shown ? "border-zinc-700" : "border-zinc-900 text-zinc-600"}`}>
-                        <span className="text-zinc-500">y = </span>{step.y}
+                      <li
+                        key={`${step.y}-${i}`}
+                        className={`rounded-2xl border px-4 py-3 text-sm ${
+                          i < shown ? "border-zinc-700" : "border-zinc-900 text-zinc-600"
+                        }`}
+                      >
+                        <span className="text-zinc-500">y = </span>
+                        {step.y}
                         <span className="float-right tabular-nums">e {i < shown ? step.e_next : "—"}</span>
                       </li>
                     ))}
@@ -241,14 +251,25 @@ export default function WorkbenchPage() {
                 <div className="mt-4 rounded-2xl border border-zinc-800 p-4 text-sm">
                   <p className={improved ? "text-emerald-300" : "text-amber-300"}>
                     {improved
-                      ? `Accepted. Reuse final e ${reuse.e1} is below cold final e ${cold.e1}. Φ ${phi}.`
-                      : "Rejected. Final e did not fall. Do not claim the flywheel."}
+                      ? `Accepted. Reuse final e ${reuse.e1} is below cold final e ${cold.e1}. Φ ${phi}. Stored.`
+                      : "Rejected. Final e did not fall. Do not claim the flywheel. The Run is still stored."}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-3">
-                    <Link className="underline" href={`/workbench/run/${reuse.artifact.run_id}`}>Open the Run</Link>
-                    <Link className="underline" href="/workbench/proof">Proof</Link>
-                    <Link className="underline" href="/audit">Audit</Link>
-                    <button className="underline" onClick={reset}>New Run</button>
+                    <Link className="underline" href="/workbench/history">
+                      History
+                    </Link>
+                    <Link className="underline" href={`/workbench/run/${reuse.artifact.run_id}`}>
+                      Open the Run
+                    </Link>
+                    <Link className="underline" href="/workbench/proof">
+                      Proof
+                    </Link>
+                    <Link className="underline" href="/audit">
+                      Audit
+                    </Link>
+                    <button className="underline" onClick={reset}>
+                      New Run
+                    </button>
                   </div>
                 </div>
               )}
@@ -258,8 +279,10 @@ export default function WorkbenchPage() {
 
         <section className="mb-8">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-medium">Run history</h2>
-            <Link href="/workbench/eval" className="text-sm text-zinc-400 underline">Reliability harness</Link>
+            <h2 className="text-lg font-medium">Sealed plant</h2>
+            <Link href="/workbench/history" className="text-sm text-zinc-400 underline">
+              Stored Runs
+            </Link>
           </div>
           <div className="overflow-x-auto rounded-3xl border border-zinc-800">
             <table className="w-full min-w-[680px] text-left text-sm">
@@ -282,12 +305,13 @@ export default function WorkbenchPage() {
         </section>
 
         <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-400">
+          <Link className="underline" href="/workbench/history">History</Link>
           <Link className="underline" href="/workbench/proof">Proof</Link>
           <Link className="underline" href="/workbench/repeat">Repeat</Link>
+          <Link className="underline" href="/workbench/twice">Twice</Link>
           <Link className="underline" href="/workbench/safety">Diagnostic</Link>
           <Link className="underline" href="/workbench/mcp">MCP</Link>
           <Link className="underline" href="/audit">Audit</Link>
-          <Link className="underline" href="/marketplace">Experience</Link>
         </nav>
       </main>
     </div>
@@ -324,7 +348,9 @@ function HistoryRow({ arm, cold }: { arm: Arm; cold: Arm }) {
   return (
     <tr className="border-t border-zinc-800">
       <td className="px-4 py-3">
-        <Link href={`/workbench/run/${arm.artifact.run_id}`} className="underline">{arm.title}</Link>
+        <Link href={`/workbench/run/${arm.artifact.run_id}`} className="underline">
+          {arm.title}
+        </Link>
       </td>
       <td className="px-4 py-3 tabular-nums">{cold.e1.toFixed(3)}</td>
       <td className="px-4 py-3 tabular-nums">{arm.e1.toFixed(3)}</td>
