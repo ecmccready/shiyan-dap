@@ -266,7 +266,7 @@ Carrying a prior y is not the same as lowering e. The Safety proof separates tho
 
 From 2026-10-05, swap also means: point the host at another MCP server that exposes the same tools and the same two resources. Do not fork Controller A to do it. B2 is that swap, at `/api/b2`. It is not a customer.
 
-The vertical demonstrates the engine. It does not imprison it. Manufacturing, supply chain, financial operations, IT/SecOps, enterprise workflows, and AI evaluation are named. They are not built.
+The vertical demonstrates the engine. It does not imprison it. Manufacturing, supply chain, financial operations, IT/SecOps, enterprise workflows, and AI evaluation are named. They are not built. On 2026-10-08 one IT verification page was added as a fixture. It does not change that sentence for the others.
 
 ## Diagnostic validation as a commercial core
 
@@ -300,6 +300,7 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | Reuse policy | `src/lib/reuse-policy.ts` | Outside Self(). Keeps a sequence only if final e falls. |
 | MCP server | `src/lib/mcp/handler.ts` | Same tools, over JSON-RPC, so B can move. |
 | B2 | `src/app/api/b2/route.ts` | Other server. Same host. z and e printed on `/workbench/compare`. |
+| Operations plant | `src/lib/mcp/operations-b.ts` | B2 domain. Not Safety. `01856e3`. |
 
 Safety remains an evidence gate. It is not a diagnostic device.
 No production PHI. No unsupervised clinical decision.
@@ -320,6 +321,8 @@ A B2 identity is not a Safety Φ. A cross-plant comparison is not a listing.
 
 Platform subscription plus usage: organization or workspace fee, workbench per operational domain, runs usage-based, experience as a reusable capability, enterprise as private MCP workbenches with audit and governance. The unit is the Run, not a count of AI conversations.
 
+On 2026-10-08 the workspace page prints that fee as unbuilt. A closed Run is not a charge.
+
 ## Surfaces
 
 | URL | What the customer sees |
@@ -338,10 +341,17 @@ Platform subscription plus usage: organization or workspace fee, workbench per o
 | `/workbench/finished` | Diagram. Not a measurement. |
 | `/workbench/diagnostic` | Diagnostic reading. Not a new plant. |
 | `/workbench/domains` | Later domains named, not built. |
+| `/workbench/operations` | B2 Operations plant. B3 contract only. |
+| `/workbench/verify` | One IT fixture. Not a Safety replacement. |
+| `/workbench/twice` | Two independent Safety calls. |
+| `/workbench/eval` | Sealed harness. Pass only if Φ > 0. |
+| `/workbench/history` | Browser-local closed Runs. |
+| `/workbench/run/[id]` | The Run record. Proof link is a copy. |
+| `/workbench/workspace` | Unsigned. No membership. No charge. |
 | `/saas` | Organization to marketplace. Aethel Node does not own every Workbench. |
 | `/saas/pricing` | Platform subscription plus usage. |
 | `/saas/engine` | Engine separate from the commercial layer. |
-| `/api/b2` | B2 identity. Live on `e0f921c`. |
+| `/api/b2` | B2 Operations plant. Was identity on `e0f921c`. |
 | `/audit` | Review desk. Frozen digests. |
 | `/marketplace` | Listed works and listed experience. |
 | `/playlist` `/single` | Shiyan Yishu, Sleep Terrors. |
@@ -377,23 +387,24 @@ Aethel Node becomes potentially enormous if it can become the infrastructure lay
 
 That sentence is the thesis. It is not a measurement.
 
-| Claim | Status on 2026-10-07 |
+| Claim | Status on 2026-10-08 |
 |---|---|
 | A acts on B, produces z, calculates e/Δe | Shown. Cold Self(), e `1.561 → 0.165`. |
 | A later run uses a sequence outside Self() | Shown on Proof and on the Workbench flywheel. |
 | The later run has lower error | Shown on three packs. Φ `0.014`, `0.065`, `0.065`. |
 | A path win was refused | Shown. Prior-y reuse tied at `0.216`. That refusal stays. |
 | The later run is safer | Not the claim. The error win is the final e. |
-| The same A can address an independent B2 | Shown. B1 and B2 both printed z and e on `/workbench/compare`. |
+| The same A can address an independent B2 | Shown. B2 is now an Operations plant. B3 has no invented z or e. |
 | The reduction repeats | Shown on the live B1 plant, two passes, `1.391` to `0.235`. Not a Safety-row replacement. |
+| A Run is the commercial object | Shown in this browser. `run_mv00higr_oo7lsu`. Not a server record. |
 | Customers pay for the outcome | Not shown. |
-| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. B2 printed. Later domains are named, not built. |
+| The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. B2 printed. One IT fixture printed. Later domains are named, not built. |
 
 The smaller proposition still open:
 
 A acts on B → B produces measurable z → experience → better next action → lower e → customer value
 
-Lower e is visible on three Safety packs. Peer z and e are visible on B1 and B2. A repeat is visible on B1. Customer value is not.
+Lower e is visible on three Safety packs. Peer z and e are visible on B1 and B2. A repeat is visible on B1. A stored Run is visible in one browser. Customer value is not.
 
 Repo: https://github.com/ecmccready/shiyan-dap
 Live: https://shiyan-dap.vercel.app
@@ -432,8 +443,28 @@ Preserved: closed loop, Self() does not read prior Runs, two listed works, Safet
 | `/saas` | Commercial frame | Measurement |
 | `/workbench/domains` | Later domains named | Built plants |
 
+## 2026-10-08
+
+The Workbench became the demonstrative product. The scope that scales is unchanged: one A, many B, one contract. Interim means the surfaces print the loop. It does not mean a customer owns it.
+
+| Surface | Printed | Not a claim |
+|---|---|---|
+| `/workbench` | Create Run. Δe `1.391 → 0.235`. Φ `1.156` on that repeat. | Revenue |
+| `/workbench/history` | `run_mv00higr_oo7lsu`, e `1.399 → 0.151`, Δe `1.248` | Another browser |
+| `/workbench/run/[id]` | Reference, y, z, gate HOLD, outcome PASS | A new measurement |
+| Proof link | A copied record | A receipt. A bare Run URL |
+| `/workbench/operations` | B2 Operations. B3 empty. | Win over Safety |
+| `/workbench/verify` | IT fixture, e `1.24 → 0.18` | Healthcare. A second Safety proof |
+| `/workbench/twice` | Two calls. Repeat only if both fall. | Safety-row replacement |
+| `/workbench/eval` | Sealed pass or fail | Customer evaluation |
+| `/workbench/workspace` | Unsigned. `aethel` / `A` / 1 closed Run | Sign-in. A charge |
+
+On the stored provenance Run, Δe `1.248` and Φ `0.065` remain different numbers. The sealed pack is cold `0.216` to reuse `0.151`.
+
 Will do, not done:
 
-- A second Run that repeats a Safety-pack drop before any listing.
+- A server record. The proof link is a copy. The bare Run URL is not.
+- A signed workspace, then a meter. A closed Run is not a charge.
 - A settled payment. An unsettled receipt is not customer value.
-- Compliance, manufacturing, supply chain, financial operations, IT/SecOps, enterprise workflows, and AI evaluation only after each speaks MCP and prints its own z and e.
+- A second Run that repeats a Safety-pack drop before any listing.
+- Compliance, manufacturing, supply chain, and financial operations only after each speaks MCP and prints its own z and e.
