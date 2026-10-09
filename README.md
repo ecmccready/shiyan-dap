@@ -48,6 +48,12 @@ A ↔ B ↔ Run ↔ Measurement
 
 Organization → Workspace → Workbench → Usage → Billing → Marketplace
 
+A Run may carry a network version:
+
+R = (N, A, B, y, z, e, Δe, Φ)
+
+N is context. It is not e. An observed relationship is not causation.
+
 ## Navigation strategy
 
 Home is A. Workbench is B. That split is the product, not a layout preference.
@@ -61,9 +67,10 @@ Home is A. Workbench is B. That split is the product, not a layout preference.
 | Audit | Plant on B | Frozen run + digest when Δe stalls. Human review desk. |
 | MCP | Plant on B | Open host/server contract. Not a header product. |
 | Peer proof | Plant on B | Same A, B1 and B2. Not a header product. |
+| Actor network | Context on B | Documented actors and handoffs. Not a controller. |
 | Marketplace / Playlist / Songs | Kept rails | Assets already listed. Traction stays on the page. |
 
-Diagnostic, Proof, Audit, MCP, and the peer proof do not sit next to Home as sibling products.
+Diagnostic, Proof, Audit, MCP, the peer proof, and the actor network do not sit next to Home as sibling products.
 They open from Workbench B.
 
 Domain select `safety` / `compliance` lands on `/workbench`.
@@ -99,10 +106,12 @@ Shiyan already shipped the loop. Aethel Node commercializes that loop without re
 | Prove rail | NFT / proof path for the same two works | `/nfts` | Kept |
 | Commercial wrapper | Run identity, Δe, history. Does not edit the loop. | `src/product/run.ts` | Kept |
 | OnRail | Workspace A vendor env + Workspace B buyer scope | `onrail/` | In scope |
+| Actor network | Context and provenance layer. Not a controller. | `src/lib/network/context.ts` | 2026-10-09. Not a measurement. |
 
 Core loop = kept. Commercialization = additive.
 `mark_boundary` and `seal_pack` were added to W. Self() was not taught to read M.
 The MCP refactor moves that same pair across JSON-RPC. It does not teach Self() to read M.
+The actor network does not replace that pair.
 
 ## New in this development
 
@@ -287,6 +296,7 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | e | Variance from the reference pack. A diagnostic reading of error, not a diagnosis. |
 | Δe | What a buyer purchases: error narrowed across steps |
 | Φ | e_cold(final) − e_reuse(final). The listing test. |
+| N | Actor network version. Context. Not e. |
 
 | Added plant | Path | Job |
 |---|---|---|
@@ -301,10 +311,12 @@ CASE INPUT → CONTROLLER A → WORKBENCH B → z
 | MCP server | `src/lib/mcp/handler.ts` | Same tools, over JSON-RPC, so B can move. |
 | B2 | `src/app/api/b2/route.ts` | Other server. Same host. z and e printed on `/workbench/compare`. |
 | Operations plant | `src/lib/mcp/operations-b.ts` | B2 domain. Not Safety. `01856e3`. |
+| Actor network | `src/lib/network/context.ts` | Context. A missing handoff is not Φ. |
 
 Safety remains an evidence gate. It is not a diagnostic device.
 No production PHI. No unsupervised clinical decision.
 The diagnostic reading makes the loop legible. It does not make Aethel Node a healthcare company.
+The actor network does not make it one either.
 
 ## Commercial vector
 
@@ -318,6 +330,7 @@ The diagnostic reading makes the loop legible. It does not make Aethel Node a he
 Do not commercialize the AI. Commercialize the closed-loop outcome.
 A Safety Φ may be named on the proof page and on the Workbench flywheel. It is not revenue until a payment settles.
 A B2 identity is not a Safety Φ. A cross-plant comparison is not a listing.
+A documented handoff is not a Safety Φ.
 
 Platform subscription plus usage: organization or workspace fee, workbench per operational domain, runs usage-based, experience as a reusable capability, enterprise as private MCP workbenches with audit and governance. The unit is the Run, not a count of AI conversations.
 
@@ -348,6 +361,19 @@ On 2026-10-08 the workspace page prints that fee as unbuilt. A closed Run is not
 | `/workbench/history` | Browser-local closed Runs. |
 | `/workbench/run/[id]` | The Run record. Proof link is a copy. |
 | `/workbench/workspace` | Unsigned. No membership. No charge. |
+| `/workbench/context` | Index of the actor-network slice. |
+| `/workbench/control` | Control A. Six rules. |
+| `/workbench/network` | N-safety-evidence. One missing handoff. |
+| `/workbench/graph` | Run reading beside network reading. |
+| `/workbench/reused` | Context check. Φ does not move. |
+| `/workbench/dependencies` | seal_pack blocked while the edge is open. |
+| `/workbench/propose` | y named. z not measured. |
+| `/workbench/execute` | Check returns e 0.216, Δe 0. |
+| `/workbench/seal` | Sealed replay. e 0.151, Φ 0.065. |
+| `/workbench/record` | R = (N, A, B, y, z, e, Δe, Φ). |
+| `/workbench/chain` | Claim boundary. |
+| `/workbench/diagnostics` | Evidence gate. Not a diagnosis. |
+| `/workbench/keep` | Browser Run for the network version. Φ not copied. |
 | `/saas` | Organization to marketplace. Aethel Node does not own every Workbench. |
 | `/saas/pricing` | Platform subscription plus usage. |
 | `/saas/engine` | Engine separate from the commercial layer. |
@@ -372,6 +398,8 @@ Development criteria for the next change:
 8. A new Workbench B speaks MCP. No fork of Controller A. No header slot.
 9. Peer Φ is per plant. B2 beating B1 is not an error win.
 10. A B2 identity is not a measurement. Print z and e before naming Φ.
+11. N is context. A missing handoff is not e. A documented edge does not rewrite a sealed pack.
+12. A proposal is not a measurement. seal_pack is the drop on this pack.
 
 Tentative, not measured:
 
@@ -387,7 +415,7 @@ Aethel Node becomes potentially enormous if it can become the infrastructure lay
 
 That sentence is the thesis. It is not a measurement.
 
-| Claim | Status on 2026-10-08 |
+| Claim | Status on 2026-10-09 |
 |---|---|
 | A acts on B, produces z, calculates e/Δe | Shown. Cold Self(), e `1.561 → 0.165`. |
 | A later run uses a sequence outside Self() | Shown on Proof and on the Workbench flywheel. |
@@ -397,6 +425,7 @@ That sentence is the thesis. It is not a measurement.
 | The same A can address an independent B2 | Shown. B2 is now an Operations plant. B3 has no invented z or e. |
 | The reduction repeats | Shown on the live B1 plant, two passes, `1.391` to `0.235`. Not a Safety-row replacement. |
 | A Run is the commercial object | Shown in this browser. `run_mv00higr_oo7lsu`. Not a server record. |
+| A Run can name its network version | Shown. `run_mv1e6pg5_lfev67`. Φ was not copied. |
 | Customers pay for the outcome | Not shown. |
 | The same engine works across multiple Bs without rebuilding A | Music and Safety use the same A. B2 printed. One IT fixture printed. Later domains are named, not built. |
 
@@ -404,7 +433,7 @@ The smaller proposition still open:
 
 A acts on B → B produces measurable z → experience → better next action → lower e → customer value
 
-Lower e is visible on three Safety packs. Peer z and e are visible on B1 and B2. A repeat is visible on B1. A stored Run is visible in one browser. Customer value is not.
+Lower e is visible on three Safety packs. Peer z and e are visible on B1 and B2. A repeat is visible on B1. A stored Run is visible in one browser. N can block a seal. Customer value is not.
 
 Repo: https://github.com/ecmccready/shiyan-dap
 Live: https://shiyan-dap.vercel.app
@@ -461,9 +490,32 @@ The Workbench became the demonstrative product. The scope that scales is unchang
 
 On the stored provenance Run, Δe `1.248` and Φ `0.065` remain different numbers. The sealed pack is cold `0.216` to reuse `0.151`.
 
+## 2026-10-09
+
+Actor-network context was added inside Workbench B. It did not replace Controller A, Self(), or the measurement contract.
+
+N describes actors and relationships. A still names y. B still returns z. A missing edge can block `seal_pack`. A proposal is not a measurement. `request_independent_check` returned e `0.216` and Δe `0`. `seal_pack` remains the drop: sealed replay `0.151`, Φ `0.065`.
+
+| Surface | Printed | Not a claim |
+|---|---|---|
+| `/workbench/context` | Index of the slice | A new controller |
+| `/workbench/network` | `N-safety-evidence · 2026-10-09`, one missing handoff | Causation |
+| `/workbench/graph` | Run `0.216 → 0.151` beside 1 missing edge | The edge is e |
+| `/workbench/reused` | Reuse refused, then context matches | Φ copied |
+| `/workbench/dependencies` | `seal_pack` blocked, then lifted | A new plant |
+| `/workbench/propose` | y named, z not measured | An error win |
+| `/workbench/execute` | z returned, e `0.216`, Δe `0` | The drop |
+| `/workbench/seal` | e `0.151`, Φ `0.065` after the check | A new measurement |
+| `/workbench/record` | R = (N, A, B, y, z, e, Δe, Φ) | A rewritten pack |
+| `/workbench/keep` | `run_mv1e6pg5_lfev67`, e `1.561 → 1.561`, Δe `0` | The sealed Φ |
+| `/workbench/history` | That Run beside `run_mv00higr_oo7lsu` | Another browser |
+| `/workbench/diagnostics` | Evidence gate fixture | A diagnosis. PHI. A clinical decision |
+
+Safety rows stay `0.014`, `0.065`, `0.065`. No PHI. No diagnosis. No clinical decision. Not revenue.
+
 Will do, not done:
 
-- A server record. The proof link is a copy. The bare Run URL is not.
+- A server record. The proof link is a copy. The kept Run is this browser only.
 - A signed workspace, then a meter. A closed Run is not a charge.
 - A settled payment. An unsettled receipt is not customer value.
 - A second Run that repeats a Safety-pack drop before any listing.
