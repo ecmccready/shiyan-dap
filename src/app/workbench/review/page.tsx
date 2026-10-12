@@ -55,6 +55,14 @@ export default function ReviewPage() {
           </p>
         </section>
 
+        <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
+          <h2 className="text-white font-semibold mb-2">Request a scored pack</h2>
+          <p>
+            Supply the repeated workflow and the objective reference. The workbench scores it.
+            Export the Run. Inspect it on History. Same loop as the public proof.
+          </p>
+        </section>
+
         <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-500">
           <p>
             Not a diagnosis. No PHI. Not revenue until a client settles.
@@ -65,6 +73,7 @@ export default function ReviewPage() {
 
         <nav className="flex flex-wrap gap-4 text-sm mt-8">
           <Link className="underline" href="/workbench">Workbench B</Link>
+          <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
           <Link className="underline" href="/workbench/compare">Peer proof</Link>
         </nav>
