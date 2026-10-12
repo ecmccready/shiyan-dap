@@ -3,6 +3,12 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
+const MODEL3 = {
+  cold: "pure “machine that builds the machine” claim",
+  reuse: "dial back automation theater, increase human involvement, remeasure throughput and rework",
+  note: "Δe is the difference in cars delivered and quality against the original target. Final e fell relative to the pure-automation path. A shorter or more automated path was not the win; the measured output was.",
+};
+
 const REFERENCE = {
   q2_weekly: "a few dozen",
   august_weekly: "several hundred",
@@ -64,14 +70,25 @@ export default function OptimusPage() {
         </section>
 
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          Optimus pipeline · diagnostic definiteness
+          Sealed reference · Model 3 2018
+        </p>
+        <h2 className="text-2xl font-bold mb-3">Cold run, then correction run</h2>
+        <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300">
+          <p className="mb-3"><span className="text-white">Cold:</span> {MODEL3.cold}</p>
+          <p className="mb-3"><span className="text-white">Reuse / correction:</span> {MODEL3.reuse}</p>
+          <p>{MODEL3.note}</p>
+          <p className="mt-3 text-zinc-500 text-xs">
+            Explicit reference (promised throughput and quality via automated equipment). Measured deviation (actual cars per week, rework, public admission). Documented action that reduced the error. Final e fell relative to the pure-automation path.
+          </p>
+        </section>
+
+        <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
+          Optimus pipeline · 2026 reporting · diagnostic definiteness
         </p>
         <h2 className="text-2xl font-bold mb-3">Cold plant, then reuse plant</h2>
         <p className="text-zinc-400 max-w-2xl mb-6">
-          Reference criteria from the public Optimus manufacturing pipeline.
-          Manufacturing reliability evidence. Not a diagnosis. No PHI.
+          Recent echo: hands and forearms still require manual assembly of 100+ screws and small parts; production at hundreds per week against much higher targets; touch-sensor reliability issues. Same pattern — complex equipment for the equipment remains the bottleneck, not the solved product.
           Self() is not edited. A pack lists only when its own final e is below cold.
-          Developmental stack is the product. Optimus is the evolving reference.
         </p>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300">
@@ -114,6 +131,7 @@ e ${p.reuse.e0} → ${p.reuse.eFinal}
           All three later plants beat cold final e on the Optimus reference criteria.
           Same sealed sequence as Safety. Φ stays inside this plant.
           Not a cross-plant win. Not revenue. Not useful-work claim.
+          Developmental stack is the product. Optimus and Model 3 are the evolving and sealed references.
         </p>
 
         <nav className="flex flex-wrap gap-4 text-sm mt-8">
