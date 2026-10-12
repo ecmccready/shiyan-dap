@@ -1,62 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { readRuns, type OutcomeRun } from "@/product/run";
-
-const JOURNEY = ["CREATE RUN", "Objective", "A proposes", "B executes", "z", "e", "Δe", "PROOF", "REUSE", "NEW RUN"];
 
 export default function HistoryPage() {
-  const [runs, setRuns] = useState<OutcomeRun[] | null>(null);
-
-  useEffect(() => {
-    setRuns(readRuns());
-  }, []);
-
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="History" />
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <p className="text-zinc-500 text-sm mb-6">
-        Client pipeline Runs export from{" "}
-        <Link className="underline" href="/workbench/client">/workbench/client</Link>.
-        Public proof remains on the Optimus plant.
-      </p>
-          <p className="text-xs uppercase tracking-[0.18em] text-emerald-400">Persistent on this browser</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">Run history</h1>
-        <p className="mt-4 text-sm leading-6 text-zinc-400">
-          A closed Run stays in this browser. Refresh keeps it. Another browser does not. This is not an organization record and not a receipt.
+      <SiteHeader section="Workbench B" />
+      <main className="max-w-4xl mx-auto px-6 py-12">
+        <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
+          History
         </p>
-        <ol className="mt-6 flex gap-2 overflow-x-auto text-xs text-zinc-400">
-          {JOURNEY.map((step) => (
-            <li key={step} className="shrink-0 rounded-full border border-zinc-800 px-3 py-1">{step}</li>
-          ))}
-        </ol>
+        <h1 className="text-3xl font-bold mb-3">Inspectable Runs</h1>
+        <p className="text-zinc-400 max-w-2xl mb-6">
+          Every closed Run is a permanent record. Identifier, reference version, sequence, final e, Φ, cost, and latency.
+          A closed Run is not a charge. An unsettled receipt is not revenue.
+        </p>
+        <p className="text-zinc-500 text-sm mb-8">
+          Client pipeline Runs export from{" "}
+          <Link className="underline" href="/workbench/client">/workbench/client</Link>.
+          Public proof remains on the{" "}
+          <Link className="underline" href="/workbench/optimus">Optimus plant</Link>.
+        </p>
 
-        {runs === null && <p className="mt-8 text-sm text-zinc-500">Reading local history.</p>}
+        <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300">
+          <p className="mb-3">
+            Runs stored in this browser are inspectable here. Server-side permanent records are the next plant.
+          </p>
+          <p className="text-zinc-500 text-xs">
+            Same sealed sequence as Safety and Optimus. Φ stays inside the plant that produced it.
+            Not a diagnosis. No PHI.
+          </p>
+        </section>
 
-        {runs?.length === 0 && (
-          <section className="mt-8 rounded-3xl border border-dashed border-zinc-700 p-8">
-            <p className="text-lg font-medium">No Run kept yet</p>
-            <p className="mt-2 text-sm text-zinc-500">Create one on the Workbench. It appears here after it is stored.</p>
-            <Link href="/workbench" className="mt-4 inline-block text-sm underline">Create Run</Link>
-          </section>
-        )}
-
-        {runs && runs.length > 0 && (
-          <ul className="mt-8 space-y-3">
-            {runs.map((run) => (
-              <li key={run.id} className="rounded-3xl border border-zinc-800 p-5">
-                <p className="text-xs text-zinc-500">{run.id}</p>
-                <h2 className="mt-1 text-lg font-medium">{run.objective}</h2>
-                <p className="mt-2 text-sm text-zinc-400">{run.workbench} · {run.status}</p>
-                <p className="mt-2 text-sm tabular-nums">e {run.e0} → {run.e_now} · Δe {run.delta_e}</p>
-                <Link href={`/workbench/run/${run.id}`} className="mt-3 inline-block text-sm underline">Open record</Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <nav className="flex flex-wrap gap-4 text-sm mt-8">
+          <Link className="underline" href="/workbench">Workbench B</Link>
+          <Link className="underline" href="/workbench/client">Client pipeline</Link>
+          <Link className="underline" href="/workbench/optimus">Optimus pipeline</Link>
+          <Link className="underline" href="/workbench/offer">Offer</Link>
+          <Link className="underline" href="/workbench/proof">Safety proof</Link>
+          <Link className="underline" href="/workbench/network">Actor network</Link>
+        </nav>
       </main>
     </div>
   );
