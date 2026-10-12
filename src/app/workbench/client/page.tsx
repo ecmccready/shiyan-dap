@@ -37,6 +37,7 @@ function buildRun() {
       customer_approved_value: "recorded when client settles",
     },
     note: "Same sealed sequence as Safety and Optimus. Φ stays inside this plant. Not a diagnosis. No PHI. Not revenue until the client settles.",
+    exported_at: new Date().toISOString(),
   };
 }
 
@@ -44,13 +45,18 @@ export default function ClientPage() {
   const [exported, setExported] = useState(false);
 
   function exportRun() {
-    const blob = new Blob([JSON.stringify(buildRun(), null, 2)], { type: "application/json" });
+    const run = buildRun();
+    const blob = new Blob([JSON.stringify(run, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "aethel-client-run.json";
     a.click();
     URL.revokeObjectURL(url);
+
+    const existing = JSON.parse(localStorage.getItem("aethel_client_runs") || "[]");
+    existing.unshift(run);
+    localStorage.setItem("aethel_client_runs", JSON.stringify(existing.slice(0, 20)));
     setExported(true);
   }
 
@@ -121,7 +127,7 @@ Run identifier + reference version + sequence + final e + Φ + cost + latency
         </button>
         {exported && (
           <p className="text-sm text-emerald-400 mb-2">
-            Run exported. The file is the inspectable evidence.
+            Run exported and stored. Inspectable on History.
           </p>
         )}
 

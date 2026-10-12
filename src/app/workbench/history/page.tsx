@@ -1,9 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
+type StoredRun = {
+  run_id: string;
+  plant: string;
+  reference: string;
+  phi: string;
+  exported_at: string;
+  commercial?: { cost?: string; latency?: string };
+};
+
 export default function HistoryPage() {
+  const [runs, setRuns] = useState<StoredRun[]>([]);
+
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("aethel_client_runs") || "[]");
+    setRuns(stored);
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Workbench B" />
@@ -22,6 +39,27 @@ export default function HistoryPage() {
           Public proof remains on the{" "}
           <Link className="underline" href="/workbench/optimus">Optimus plant</Link>.
         </p>
+
+        {runs.length === 0 ? (
+          <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-400">
+            No client Runs stored in this browser yet. Export one from the client pipeline.
+          </section>
+        ) : (
+          runs.map((r) => (
+            <section key={r.run_id} className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
+              <p><span className="text-white">Run:</span> {r.run_id}</p>
+              <p><span className="text-white">Plant:</span> {r.plant}</p>
+              <p><span className="text-white">Reference:</span> {r.reference}</p>
+              <p><span className="text-white">Φ:</span> {r.phi}</p>
+              <p><span className="text-white">Exported:</span> {r.exported_at}</p>
+              {r.commercial && (
+                <p className="text-zinc-500 text-xs mt-2">
+                  cost: {r.commercial.cost} · latency: {r.commercial.latency}
+                </p>
+              )}
+            </section>
+          ))
+        )}
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300">
           <p className="mb-3">
