@@ -3,17 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { Namer, namerLabel } from "@/lib/closed-loop";
-import { SAFETY_B, safetyFlywheel, type Arm } from "@/product/proof";
+import { Namer } from "@/lib/closed-loop";
 import { createRun, type OutcomeRun } from "@/product/run";
 
 type Phase = "empty" | "setup" | "running" | "closed" | "error";
-
-const CASES = [
-  { id: "case-incomplete-evidence", title: "Incomplete evidence pack" },
-  { id: "case-missing-measurements", title: "Missing measurements" },
-  { id: "case-provenance-gap", title: "Provenance gap" },
-] as const;
 
 const LOOP = [
   ["Give A a task", "Objective and reference, not a prompt."],
@@ -25,8 +18,6 @@ const LOOP = [
 
 export default function WorkbenchPage() {
   const [phase, setPhase] = useState<Phase>("empty");
-  const [namer, setNamer] = useState<Namer>("grok_bot");
-  const [run, setRun] = useState<OutcomeRun | null>(null);
 
   function start() {
     setPhase("setup");
@@ -46,13 +37,14 @@ export default function WorkbenchPage() {
         </p>
 
         <nav className="flex flex-wrap gap-4 text-sm mb-8">
+          <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/client">Client pipeline</Link>
           <Link className="underline" href="/workbench/optimus">Optimus + Model 3 proof</Link>
+          <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
+          <Link className="underline" href="/workbench/history">History</Link>
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
           <Link className="underline" href="/workbench/compare">Peer proof</Link>
-          <Link className="underline" href="/workbench/repeat">Repeat</Link>
-          <Link className="underline" href="/workbench/history">History</Link>
         </nav>
 
         {phase === "empty" && (
