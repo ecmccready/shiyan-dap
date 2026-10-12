@@ -41,10 +41,18 @@ export default function OfferPage() {
           <Link className="underline" href="/workbench/history">History</Link>
         </nav>
 
+        <h2 className="text-xl font-semibold mb-3">Verified sequences</h2>
+        <p className="text-zinc-400 text-sm mb-4">
+          Listings of sequences that have already lowered final e. Not settled. Not revenue.
+        </p>
+        <nav className="flex flex-wrap gap-4 text-sm mb-8">
+          <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
+        </nav>
+
         <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-300 mb-8">
           <p className="mb-3">
             Developmental stack is the product. Public packs are the proof. Client reference is the next plant.
-            Exported Runs are inspectable on History in the same browser.
+            Exported Runs are inspectable on History. Verified sequences are listed on the Marketplace.
           </p>
           <p className="text-zinc-500 text-xs">
             Not a diagnosis. No PHI. Not revenue until a client settles. A lower error score is necessary but not sufficient. Healthcare diagnostics remains a higher-risk, later vertical.
