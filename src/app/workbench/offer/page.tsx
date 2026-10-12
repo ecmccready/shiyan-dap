@@ -34,16 +34,17 @@ export default function OfferPage() {
 
         <h2 className="text-xl font-semibold mb-3">Client pipeline</h2>
         <p className="text-zinc-400 text-sm mb-4">
-          Same workbench. Client supplies the repeated workflow and the objective reference. Exportable Run is the evidence.
+          Same workbench. Client supplies the repeated workflow and the objective reference. Export stores an inspectable Run.
         </p>
         <nav className="flex flex-wrap gap-4 text-sm mb-8">
           <Link className="underline" href="/workbench/client">Client pipeline</Link>
           <Link className="underline" href="/workbench/history">History</Link>
         </nav>
 
-        <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-300">
+        <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-300 mb-8">
           <p className="mb-3">
             Developmental stack is the product. Public packs are the proof. Client reference is the next plant.
+            Exported Runs are inspectable on History in the same browser.
           </p>
           <p className="text-zinc-500 text-xs">
             Not a diagnosis. No PHI. Not revenue until a client settles. A lower error score is necessary but not sufficient. Healthcare diagnostics remains a higher-risk, later vertical.
