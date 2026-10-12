@@ -1,15 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-
-/**
- * Target-client pipeline.
- * Same loop as Safety and Optimus.
- * Client supplies the reference. Workbench scores the Run.
- * Φ only if final e falls. Evidence is exportable.
- * Commercial fields recorded on the same Run.
- */
 
 const CLIENT = {
   name: "Target client",
@@ -29,7 +22,38 @@ const TEMPLATE = {
   phi: "Φ only if final e falls",
 };
 
+function buildRun() {
+  return {
+    run_id: `client_${Date.now()}`,
+    plant: "Client",
+    reference: "client-supplied",
+    cold: TEMPLATE.cold,
+    reuse: TEMPLATE.reuse,
+    phi: TEMPLATE.phi,
+    commercial: {
+      cost: "recorded per Run",
+      latency: "recorded per Run",
+      success_rate: "recorded per Run",
+      customer_approved_value: "recorded when client settles",
+    },
+    note: "Same sealed sequence as Safety and Optimus. Φ stays inside this plant. Not a diagnosis. No PHI. Not revenue until the client settles.",
+  };
+}
+
 export default function ClientPage() {
+  const [exported, setExported] = useState(false);
+
+  function exportRun() {
+    const blob = new Blob([JSON.stringify(buildRun(), null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "aethel-client-run.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    setExported(true);
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Workbench B" />
@@ -61,7 +85,7 @@ export default function ClientPage() {
           2. Run cold on Workbench B. Record initial e.<br />
           3. Apply the sealed sequence or the client’s verified sequence.<br />
           4. Score final e. Φ only if it falls.<br />
-          5. Export the Run (identifier, reference version, sequence, final e, Φ, cost, latency).
+          5. Export the Run.
         </p>
 
         <section className="mb-8">
@@ -88,6 +112,18 @@ export
 Run identifier + reference version + sequence + final e + Φ + cost + latency
 = inspectable evidence for the buyer and for any later review`}</pre>
         </section>
+
+        <button
+          onClick={exportRun}
+          className="h-12 rounded-full bg-emerald-500 px-6 text-sm font-medium text-black mb-4"
+        >
+          Export Run
+        </button>
+        {exported && (
+          <p className="text-sm text-emerald-400 mb-6">
+            Run exported. The file is the inspectable evidence.
+          </p>
+        )}
 
         <p className="text-sm text-zinc-300">
           Same sealed sequence as Safety and Optimus. Φ stays inside this plant.
