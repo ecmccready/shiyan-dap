@@ -8,6 +8,7 @@ import SiteHeader from "@/components/SiteHeader";
  * Same loop as Safety and Optimus.
  * Client supplies the reference. Workbench scores the Run.
  * Φ only if final e falls. Evidence is exportable.
+ * Commercial fields recorded on the same Run.
  */
 
 const CLIENT = {
@@ -48,6 +49,7 @@ export default function ClientPage() {
           <p><span className="text-white">Examples:</span> {CLIENT.examples.join(", ")}</p>
           <p><span className="text-white">Product:</span> Workbench that executes the task, scores outcomes against their reference, and records reproducible evidence.</p>
           <p><span className="text-white">Primary metric:</span> Change in final error, Φ, alongside task success, cost, latency, and safety.</p>
+          <p><span className="text-white">Potential business model:</span> Subscription for the workbench, usage-based execution, and later paid access to verified reusable workflows.</p>
         </section>
 
         <h2 className="text-2xl font-bold mb-3">Client pack template</h2>
@@ -71,7 +73,17 @@ sequence: ${TEMPLATE.reuse.sequence}
 used experience: ${TEMPLATE.reuse.used ? "yes" : "no"}
 e ${TEMPLATE.reuse.e0} → ${TEMPLATE.reuse.eFinal}
 
-Φ ${TEMPLATE.phi}`}</pre>
+Φ ${TEMPLATE.phi}
+
+commercial
+cost: recorded per Run
+latency: recorded per Run
+success rate: recorded per Run
+customer-approved value: recorded when client settles
+
+export
+Run identifier + reference version + sequence + final e + Φ + cost + latency
+= inspectable evidence for the buyer and for any later review`}</pre>
         </section>
 
         <p className="text-sm text-zinc-300">
@@ -86,6 +98,7 @@ e ${TEMPLATE.reuse.e0} → ${TEMPLATE.reuse.eFinal}
           <Link className="underline" href="/workbench/optimus">Optimus pipeline</Link>
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
+          <Link className="underline" href="/workbench/compare">Peer proof</Link>
         </nav>
       </main>
     </div>
