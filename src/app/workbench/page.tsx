@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { Namer } from "@/lib/closed-loop";
-import { createRun, type OutcomeRun } from "@/product/run";
 
 type Phase = "empty" | "setup" | "running" | "closed" | "error";
 
@@ -37,6 +35,7 @@ export default function WorkbenchPage() {
         </p>
 
         <nav className="flex flex-wrap gap-4 text-sm mb-8">
+          <Link className="underline" href="/workbench/review">Review</Link>
           <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/client">Client pipeline</Link>
           <Link className="underline" href="/workbench/optimus">Optimus + Model 3 proof</Link>

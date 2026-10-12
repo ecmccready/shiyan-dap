@@ -63,6 +63,7 @@ export default function OfferPage() {
           <Link className="underline" href="/workbench">Workbench B</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
           <Link className="underline" href="/workbench/compare">Peer proof</Link>
+          <Link className="underline" href="/workbench/review">Review</Link>
         </nav>
       </main>
     </div>
