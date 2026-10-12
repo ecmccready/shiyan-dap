@@ -18,7 +18,12 @@ export default function HistoryPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="History" />
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <p className="text-xs uppercase tracking-[0.18em] text-emerald-400">Persistent on this browser</p>
+        <p className="text-zinc-500 text-sm mb-6">
+        Client pipeline Runs export from{" "}
+        <Link className="underline" href="/workbench/client">/workbench/client</Link>.
+        Public proof remains on the Optimus plant.
+      </p>
+          <p className="text-xs uppercase tracking-[0.18em] text-emerald-400">Persistent on this browser</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Run history</h1>
         <p className="mt-4 text-sm leading-6 text-zinc-400">
           A closed Run stays in this browser. Refresh keeps it. Another browser does not. This is not an organization record and not a receipt.

@@ -119,6 +119,15 @@ Run identifier + reference version + sequence + final e + Φ + cost + latency
         >
           Export Run
         </button>
+
+        <p className="text-sm text-zinc-400 mt-4 mb-6">
+          Exported Runs are inspectable on{" "}
+          <Link className="underline" href="/workbench/history">History</Link>.
+          A closed Run is not a charge. An unsettled receipt is not revenue.
+        </p>
+        <p className="text-sm text-zinc-300 mb-8">
+          Ready to score your reference? The workbench is the plant. Supply the repeated workflow and the objective evaluator.
+        </p>
         {exported && (
           <p className="text-sm text-emerald-400 mb-6">
             Run exported. The file is the inspectable evidence.
