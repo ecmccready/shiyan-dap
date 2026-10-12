@@ -119,6 +119,11 @@ Run identifier + reference version + sequence + final e + Φ + cost + latency
         >
           Export Run
         </button>
+        {exported && (
+          <p className="text-sm text-emerald-400 mb-2">
+            Run exported. The file is the inspectable evidence.
+          </p>
+        )}
 
         <p className="text-sm text-zinc-400 mt-4 mb-6">
           Exported Runs are inspectable on{" "}
@@ -128,11 +133,6 @@ Run identifier + reference version + sequence + final e + Φ + cost + latency
         <p className="text-sm text-zinc-300 mb-8">
           Ready to score your reference? The workbench is the plant. Supply the repeated workflow and the objective evaluator.
         </p>
-        {exported && (
-          <p className="text-sm text-emerald-400 mb-6">
-            Run exported. The file is the inspectable evidence.
-          </p>
-        )}
 
         <p className="text-sm text-zinc-300">
           Same sealed sequence as Safety and Optimus. Φ stays inside this plant.
@@ -144,6 +144,7 @@ Run identifier + reference version + sequence + final e + Φ + cost + latency
         <nav className="flex flex-wrap gap-4 text-sm mt-8">
           <Link className="underline" href="/workbench">Workbench B</Link>
           <Link className="underline" href="/workbench/optimus">Optimus pipeline</Link>
+          <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
           <Link className="underline" href="/workbench/compare">Peer proof</Link>
