@@ -42,6 +42,9 @@ export default function ClientPage() {
           Know which AI workflow works, prove that it works, and reuse it when the evidence supports doing so.
           The workbench does not change. The client supplies the reference.
         </p>
+        <p className="text-zinc-500 text-sm mb-6">
+          Public proof is already printed on the Optimus plant. This page is where the same loop scores your reference.
+        </p>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300 space-y-3">
           <p><span className="text-white">Buyer:</span> {CLIENT.name} — organization responsible for quality, cost, or reliability of repeated workflows.</p>
