@@ -32,6 +32,38 @@ Not a diagnosis. No PHI. Not revenue until a client settles.
 Healthcare diagnostics remains a higher-risk, later vertical.  
 Self() does not yet read prior Runs. Level 3 is the next architectural milestone.
 
+## 2026-10-12 · Optimus reference pack, client pipeline, solicitation surface
+
+What was added today. Prior wins stay in the record.
+
+- Optimus pipeline plant on `/workbench/optimus`.  
+  Public reference criteria from late Sep–Oct 2026 reporting (hands still manual, hundreds/week vs higher targets, sensor reliability).  
+  Model 3 2018 admission treated as the sealed historical reference: cold = pure “machine that builds the machine” claim; reuse/correction = dial back automation theater, remeasure throughput and rework; final e fell relative to the pure-automation path.  
+  Three packs scored with the sealed sequence outside Self(): Φ 0.51 / 0.45 / 0.38.  
+  Same refusal rule as Safety. Not a useful-work claim. Not revenue.
+
+- Client pipeline on `/workbench/client`.  
+  Same loop. Client supplies the repeated workflow and the objective reference.  
+  Export button downloads the Run JSON and stores it locally.  
+  Commercial fields recorded on the same Run (cost, latency, success rate, customer-approved value).  
+  Explicit boundary: unsettled receipt is not revenue.
+
+- History on `/workbench/history` now lists the exported client Runs stored in the browser.  
+  Permanent inspectable record of identifier, reference, Φ, and commercial fields.
+
+- Marketplace on `/workbench/marketplace`.  
+  Lists the sealed sequence as a verified reusable workflow (Safety Φ and Optimus Φ).  
+  Not settled. Not revenue.
+
+- Offer on `/workbench/offer` and Review on `/workbench/review`.  
+  Single-entry solicitation and acquirer one-pager.  
+  Links every commercial surface. States the Level 3 boundary.
+
+- Commercial center on `/workbench` now leads with Review, Offer, Client, Optimus, Marketplace, History.
+
+Prior Safety proof (Φ 0.014 / 0.065 / 0.065), peer proof, MCP split, actor network, and music assets remain unchanged.  
+The engine did not get replaced. Self() still does not read prior Runs.
+
 ## What this is
 
 Customers do not buy "Shiyan DAP," an AI, or a state machine.
@@ -43,6 +75,7 @@ They buy a system that repeatedly takes an action, observes the result, measures
 - Unit they operate: a **Run** on **Workbench B**. Metric: **Δe**.
 
 HOME A controller · music vertical · namers of y │ ▼ WORKBENCH B commercial plant · SaaS surface Run | Diagnostic | Proof | Audit | Experience │ ▼ W(B,y) → measured z → error e → Self() → y' → repeat
+
 
 Organization → Workspace A → Workbench B → Run → Experience → Marketplace
 
