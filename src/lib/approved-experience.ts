@@ -36,7 +36,11 @@ export async function retrieveApproved(
     }));
 }
 
-/** Defined interface — Self() calls only this. */
+/**
+ * Defined interface used by Self().
+ * Rejects unsafe or unverified experience
+ * (approved === false or safety_passed === false or phi <= 0).
+ */
 export async function SelfFromApproved(
   client_id: string,
   workflow_version: string,
@@ -44,7 +48,9 @@ export async function SelfFromApproved(
   fallbackY: string
 ): Promise<{ y: string; source: "approved" | "fallback"; justification?: string }> {
   const approved = await retrieveApproved(client_id, workflow_version, model_version);
-  if (approved.length === 0) return { y: fallbackY, source: "fallback" };
+  if (approved.length === 0) {
+    return { y: fallbackY, source: "fallback" };
+  }
   const best = approved.reduce((a, b) => (a.phi > b.phi ? a : b));
   return { y: best.y, source: "approved", justification: best.run_id };
 }
