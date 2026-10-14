@@ -10,29 +10,99 @@ export default function RelativeMovementPage() {
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-12">
         <header>
           <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-            Optimus as relative movement · sealed abstraction
+            Optimized relative-scope algorithm · sealed abstraction
           </p>
           <h1 className="text-3xl font-bold mb-4">
-            Autonomous agent navigates relative scope
+            Workspace A · Optimus / Workbench B · Outcome z · Self()
           </h1>
           <p className="text-zinc-400 max-w-2xl">
-            An autonomous agent navigates relative scope by repeatedly measuring its state against a target, taking actions that change that relationship, and using observed outcomes to select subsequent actions. This generalizes beyond physical movement. The common abstraction is a state transition evaluated against a target.
+            An autonomous agent navigates relative scope by repeatedly measuring its state against a target, taking actions that change that relationship, and using observed outcomes to select subsequent actions. The common abstraction is a state transition evaluated against a target.
           </p>
         </header>
 
+        {/* 1. Optimized algorithm */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
-          <h2 className="text-xl font-semibold">A · B · z · Self()</h2>
-          <ul className="space-y-3 text-sm text-zinc-300">
-            <li><span className="text-white font-medium">A — Workspace:</span> chooses the destination and strategy.</li>
-            <li><span className="text-white font-medium">B — Optimus / Workbench:</span> navigates the available actions and states.</li>
-            <li><span className="text-white font-medium">z — Outcome:</span> measures whether the destination was reached and at what cost.</li>
-            <li><span className="text-white font-medium">Self():</span> uses previous navigation results to improve the next route. (Level 3 — not yet reading prior Runs.)</li>
-          </ul>
+          <h2 className="text-xl font-semibold">1. Optimized algorithm</h2>
+          <div className="space-y-3 text-sm text-zinc-300">
+            <p><span className="text-white font-medium">Workspace A</span> — Observe state, target, and available scope.</p>
+            <p className="font-mono">Relative-scope function: e_t = d(x_t, x*)</p>
+            <p>Calculate the distance from current state to target.</p>
+            <p><span className="text-white font-medium">Optimus / Workbench B</span> — Select and execute an action.</p>
+            <p className="font-mono">x&#123;t+1&#125; = f(x_t, u_t)</p>
+            <p><span className="text-white font-medium">Outcome z</span> — Measure whether the action improved the result.</p>
+            <p className="font-mono">Δe_t = e&#123;t+1&#125; − e_t</p>
+            <p><span className="text-white font-medium">Self()</span> — Updates the next decision from recorded evidence. (Level 3 — not yet reading prior Runs.)</p>
+          </div>
           <p className="text-xs text-zinc-500">
-            Same split already live: Home A controller · Workbench B commercial plant · Run · measure z → e → Δe / Φ.
+            Here, d is a distance or error function, x* is the target, and u_t is the chosen action. This formulation works across many kinds of tasks, provided their states and targets can be represented meaningfully. Φ only when final e falls.
           </p>
         </section>
 
+        {/* 2. What this optimizes */}
+        <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
+          <h2 className="text-xl font-semibold">2. What this optimizes</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead>
+                <tr className="border-b border-zinc-800">
+                  <th className="py-2 pr-4 text-white font-medium">Function</th>
+                  <th className="py-2 pr-4 text-zinc-400">Before</th>
+                  <th className="py-2 text-zinc-300">With relative-scope navigation</th>
+                </tr>
+              </thead>
+              <tbody className="text-zinc-300">
+                <tr className="border-b border-zinc-800/60">
+                  <td className="py-2 pr-4 text-white">Measurement</td>
+                  <td className="py-2 pr-4 text-zinc-400">Records an outcome</td>
+                  <td className="py-2">Measures progress toward a target</td>
+                </tr>
+                <tr className="border-b border-zinc-800/60">
+                  <td className="py-2 pr-4 text-white">Action</td>
+                  <td className="py-2 pr-4 text-zinc-400">Executes a step</td>
+                  <td className="py-2">Selects a step based on current error</td>
+                </tr>
+                <tr className="border-b border-zinc-800/60">
+                  <td className="py-2 pr-4 text-white">Feedback</td>
+                  <td className="py-2 pr-4 text-zinc-400">Stores a Run</td>
+                  <td className="py-2">Evaluates whether the Run improved the state</td>
+                </tr>
+                <tr className="border-b border-zinc-800/60">
+                  <td className="py-2 pr-4 text-white">Self()</td>
+                  <td className="py-2 pr-4 text-zinc-400">Intended autonomy</td>
+                  <td className="py-2">Can use prior transitions to select actions</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 text-white">Product value</td>
+                  <td className="py-2 pr-4 text-zinc-400">General AI/workbench proposition</td>
+                  <td className="py-2">Measurable improvement in a customer’s workflow</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="text-sm text-zinc-300 space-y-2 pt-2">
+            <p>The key addition is a decision rule. For example, a controller could prefer actions that reduce error while accounting for cost:</p>
+            <p className="font-mono">u_t* = argmin_&#123;u∈U&#125; [e&#123;t+1&#125;(u) + λC(u)]</p>
+            <p>Here, C(u) is the cost of an action and λ determines how strongly the system prioritizes efficiency. Safety constraints must also limit which actions are eligible.</p>
+          </div>
+        </section>
+
+        {/* 3. Does it optimize the commercial product? */}
+        <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
+          <h2 className="text-xl font-semibold text-white">3. Does it optimize the commercial product?</h2>
+          <p>Potentially, yes. It provides a common algorithmic core for different applications instead of requiring a new conceptual model for every vertical.</p>
+          <ul className="space-y-1">
+            <li>• <span className="text-white">Optimus</span>: a reference environment for testing state transitions and corrective actions.</li>
+            <li>• <span className="text-white">Workspace A</span>: the controller that chooses and evaluates actions.</li>
+            <li>• <span className="text-white">Workbench B</span>: the environment or workflow where changes occur.</li>
+            <li>• <span className="text-white">Run history</span>: the evidence used to improve later decisions.</li>
+            <li>• <span className="text-white">Commercial product</span>: an execution system that demonstrates measurable improvements in cost, time, quality, or reliability.</li>
+          </ul>
+          <p className="text-xs text-zinc-500">
+            Same sealed sequence across Safety, Optimus, and Client. Φ only when final e falls. Self() does not yet read prior Runs. Not a cross-plant win. Not revenue. Developmental stack is the product.
+          </p>
+        </section>
+
+        {/* Prior abstraction kept */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Optimus as relative movement</h2>
           <div className="space-y-3">
@@ -51,32 +121,6 @@ export default function RelativeMovementPage() {
               <p className="text-sm text-zinc-400">Measure progress, deviation, cost and remaining distance</p>
             </div>
           </div>
-        </section>
-
-        <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
-          <h2 className="text-xl font-semibold text-white">Generalizes beyond physical movement</h2>
-          <ul className="space-y-2">
-            <li>• In a software workflow, movement is a transition between execution states.</li>
-            <li>• In a marketplace, movement is a change in the state of an asset or transaction.</li>
-            <li>• In an optimization task, movement is a reduction in objective error.</li>
-            <li>• In physical robotics, movement is a change in position relative to a reference frame.</li>
-          </ul>
-          <p className="text-zinc-500 text-xs">The common abstraction is a state transition evaluated against a target. Same sealed sequence across Safety, Optimus, Client.</p>
-        </section>
-
-        <section className="border border-zinc-800 rounded-2xl p-6 space-y-4 font-mono text-sm">
-          <h2 className="text-xl font-semibold font-sans">Formal relative error</h2>
-          <p className="text-zinc-400 font-sans text-sm">Let the current state be x_t, the target be x*, and the action be u_t.</p>
-          <p>x&#123;t+1&#125; = f(x_t, u_t)</p>
-          <p className="text-zinc-400 font-sans text-sm">Define relative error as:</p>
-          <p>e_t = x* - x_t</p>
-          <p className="text-zinc-400 font-sans text-sm">Then the movement achieved is:</p>
-          <p>Δx_t = x&#123;t+1&#125; - x_t</p>
-          <p className="text-zinc-400 font-sans text-sm">The controller evaluates whether that movement reduces the error:</p>
-          <p>Δe_t = e&#123;t+1&#125; - e_t</p>
-          <p className="text-xs text-zinc-500 font-sans">
-            Φ only when final e falls. Reuse refused on tie or increase. Same rule as Safety (0.014 / 0.065 / 0.065) and Optimus packs. Self() does not yet read prior Runs.
-          </p>
         </section>
 
         <footer className="flex flex-wrap gap-4 text-sm">
