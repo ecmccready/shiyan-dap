@@ -10,117 +10,137 @@ export default function RelativeMovementPage() {
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-12">
         <header>
           <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-            Optimized relative-scope algorithm · sealed abstraction
+            Relative-scope mathematics · reference algorithm
           </p>
           <h1 className="text-3xl font-bold mb-4">
-            Workspace A · Optimus / Workbench B · Outcome z · Self()
+            State → relative error → action → measured improvement → next action
           </h1>
           <p className="text-zinc-400 max-w-2xl">
-            An autonomous agent navigates relative scope by repeatedly measuring its state against a target, taking actions that change that relationship, and using observed outcomes to select subsequent actions. The common abstraction is a state transition evaluated against a target.
+            Common algorithmic core across Optimus, Workspace A, Workbench B, and Run history. Φ only when final e falls. Self() does not yet read prior Runs.
           </p>
         </header>
 
-        {/* 1. Optimized algorithm */}
+        {/* 1. Core mathematics */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
-          <h2 className="text-xl font-semibold">1. Optimized algorithm</h2>
+          <h2 className="text-xl font-semibold">1. The core mathematics</h2>
+          <p className="text-sm text-zinc-400">
+            Define the system state at time t as x_t, its target as x*, and the action chosen by the controller as u_t.
+          </p>
           <div className="space-y-3 text-sm text-zinc-300">
-            <p><span className="text-white font-medium">Workspace A</span> — Observe state, target, and available scope.</p>
-            <p className="font-mono">Relative-scope function: e_t = d(x_t, x*)</p>
-            <p>Calculate the distance from current state to target.</p>
-            <p><span className="text-white font-medium">Optimus / Workbench B</span> — Select and execute an action.</p>
-            <p className="font-mono">x&#123;t+1&#125; = f(x_t, u_t)</p>
-            <p><span className="text-white font-medium">Outcome z</span> — Measure whether the action improved the result.</p>
+            <p><span className="text-white font-medium">A. Relative position</span></p>
+            <p className="font-mono">e_t = x* − x_t</p>
+            <p>The error vector describes the difference between the current state and the target. For complex states, use a distance or loss function d(x_t, x*).</p>
+
+            <p><span className="text-white font-medium">B. Movement through scope</span></p>
+            <p className="font-mono">x&#123;t+1&#125; = f(x_t, u_t, w_t)</p>
+            <p>The action changes the state. The term w_t represents disturbances or environmental changes.</p>
+
+            <p><span className="text-white font-medium">C. Measured progress</span></p>
             <p className="font-mono">Δe_t = e&#123;t+1&#125; − e_t</p>
-            <p><span className="text-white font-medium">Self()</span> — Updates the next decision from recorded evidence. (Level 3 — not yet reading prior Runs.)</p>
+            <p className="font-mono">G_t = ∥e_t∥ − ∥e&#123;t+1&#125;∥</p>
+            <p>Positive G_t means the measured distance to the target decreased; negative G_t means it increased.</p>
+
+            <p><span className="text-white font-medium">D. Action optimization</span></p>
+            <p className="font-mono">u_t* = argmin_&#123;u∈U_safe&#125; [d(f(x_t, u), x*) + λC(u)]</p>
+            <p>Choose an eligible action that balances target progress against execution cost. U_safe is the set of permitted actions, and λ controls the cost trade-off.</p>
           </div>
           <p className="text-xs text-zinc-500">
-            Here, d is a distance or error function, x* is the target, and u_t is the chosen action. This formulation works across many kinds of tasks, provided their states and targets can be represented meaningfully. Φ only when final e falls.
+            This is the mathematical core: state → relative error → action → state transition → measured improvement → next action. Same refusal rule as Safety and Optimus packs.
           </p>
         </section>
 
-        {/* 2. What this optimizes */}
+        {/* 2. Reference algorithm */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
-          <h2 className="text-xl font-semibold">2. What this optimizes</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="py-2 pr-4 text-white font-medium">Function</th>
-                  <th className="py-2 pr-4 text-zinc-400">Before</th>
-                  <th className="py-2 text-zinc-300">With relative-scope navigation</th>
-                </tr>
-              </thead>
-              <tbody className="text-zinc-300">
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Measurement</td>
-                  <td className="py-2 pr-4 text-zinc-400">Records an outcome</td>
-                  <td className="py-2">Measures progress toward a target</td>
-                </tr>
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Action</td>
-                  <td className="py-2 pr-4 text-zinc-400">Executes a step</td>
-                  <td className="py-2">Selects a step based on current error</td>
-                </tr>
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Feedback</td>
-                  <td className="py-2 pr-4 text-zinc-400">Stores a Run</td>
-                  <td className="py-2">Evaluates whether the Run improved the state</td>
-                </tr>
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Self()</td>
-                  <td className="py-2 pr-4 text-zinc-400">Intended autonomy</td>
-                  <td className="py-2">Can use prior transitions to select actions</td>
-                </tr>
-                <tr>
-                  <td className="py-2 pr-4 text-white">Product value</td>
-                  <td className="py-2 pr-4 text-zinc-400">General AI/workbench proposition</td>
-                  <td className="py-2">Measurable improvement in a customer’s workflow</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="text-sm text-zinc-300 space-y-2 pt-2">
-            <p>The key addition is a decision rule. For example, a controller could prefer actions that reduce error while accounting for cost:</p>
-            <p className="font-mono">u_t* = argmin_&#123;u∈U&#125; [e&#123;t+1&#125;(u) + λC(u)]</p>
-            <p>Here, C(u) is the cost of an action and λ determines how strongly the system prioritizes efficiency. Safety constraints must also limit which actions are eligible.</p>
-          </div>
+          <h2 className="text-xl font-semibold">2. The Shiyan DAP algorithm (reference)</h2>
+          <p className="text-sm text-zinc-400">
+            The equations become a product algorithm when Workspace A uses each Run to choose its next action. This is a reference algorithm, not a claim that the current repository already implements every function shown.
+          </p>
+          <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 leading-6 overflow-x-auto">{`def self_optimize(target, state, run_history, safe_actions):
+    # 1. Measure the current distance from the target
+    error = distance(state, target)
+
+    # 2. Evaluate candidate actions using the available evidence
+    candidates = []
+    for action in safe_actions:
+        predicted_state = predict(state, action, run_history)
+        predicted_error = distance(predicted_state, target)
+        cost = estimate_cost(action)
+
+        score = predicted_error + LAMBDA * cost
+        candidates.append((score, action))
+
+    # 3. Select the best eligible action
+    _, action = min(candidates, key=lambda item: item[0])
+
+    # 4. Execute through Workbench B / Optimus
+    result = execute(action)
+
+    # 5. Measure actual state and outcome
+    next_state = observe_state(result)
+    next_error = distance(next_state, target)
+
+    # 6. Preserve evidence for future decisions
+    run = record_run(
+        state=state,
+        action=action,
+        result=result,
+        error_before=error,
+        error_after=next_error
+    )
+
+    # 7. Update the history used by future decisions
+    updated_history = append(run_history, run)
+
+    return next_state, updated_history`}</pre>
+          <p className="text-xs text-zinc-500">
+            In particular, predict() needs a model or empirical estimates from previous Runs, and execute() must enforce real execution and safety controls. A reliable implementation also needs to handle missing observations, failed actions, uncertainty, and cases where no available action improves the outcome. Self() does not yet read prior Runs.
+          </p>
         </section>
 
-        {/* 3. Does it optimize the commercial product? */}
+        {/* 3. Relation to original x,y,z */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
-          <h2 className="text-xl font-semibold text-white">3. Does it optimize the commercial product?</h2>
-          <p>Potentially, yes. It provides a common algorithmic core for different applications instead of requiring a new conceptual model for every vertical.</p>
+          <h2 className="text-xl font-semibold text-white">3. How this relates to earlier x, y, z mathematics</h2>
+          <p>An earlier expression was (x, y) + (y, x) = z. That notation alone does not specify an optimization algorithm; the operations and variable meanings must be defined.</p>
+          <p>A useful operational interpretation:</p>
           <ul className="space-y-1">
-            <li>• <span className="text-white">Optimus</span>: a reference environment for testing state transitions and corrective actions.</li>
-            <li>• <span className="text-white">Workspace A</span>: the controller that chooses and evaluates actions.</li>
-            <li>• <span className="text-white">Workbench B</span>: the environment or workflow where changes occur.</li>
-            <li>• <span className="text-white">Run history</span>: the evidence used to improve later decisions.</li>
-            <li>• <span className="text-white">Commercial product</span>: an execution system that demonstrates measurable improvements in cost, time, quality, or reliability.</li>
+            <li>• x: the current state or position.</li>
+            <li>• y: the reference, target, or contextual information.</li>
+            <li>• z: the measured result of combining the state and reference.</li>
+          </ul>
+          <p className="font-mono">z_t = r(x_t, y_t) = y_t − x_t</p>
+          <p>Then z_t is the relative error rather than the final outcome. After execution, a separate measurement function evaluates the resulting state. A reference calculation, a state transition, and an observed outcome are three different operations.</p>
+        </section>
+
+        {/* 4. Convergence condition */}
+        <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
+          <h2 className="text-xl font-semibold text-white">4. The convergence condition</h2>
+          <p>To establish that the system genuinely optimizes, define a nonnegative error function V(x_t), such as the distance to the target.</p>
+          <p className="font-mono">V(x&#123;t+1&#125;) &lt; V(x_t)</p>
+          <p>More generally, under uncertainty:</p>
+          <p className="font-mono">E[V(x&#123;t+1&#125;) | x_t, u_t] &lt; V(x_t)</p>
+          <p>These conditions express progress but do not by themselves prove global convergence. Assumptions about the environment, available actions, observability, and controller behavior are required. Some tasks have unreachable targets or unavoidable trade-offs.</p>
+          <p>The system therefore distinguishes:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• Convergence: the target error decreases under specified conditions.</li>
+            <li>• Stability: the system avoids uncontrolled oscillation or divergence.</li>
+            <li>• Learning: past experience changes future action selection.</li>
+            <li>• Autonomy: the system can perform the decision-and-execution cycle within its permissions and constraints.</li>
+          </ul>
+          <p className="text-xs text-zinc-500">They are related, but none automatically implies the others. Φ only when final e falls.</p>
+        </section>
+
+        {/* 5. Product positioning */}
+        <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
+          <h2 className="text-xl font-semibold text-white">5. How the mathematics is positioned in the product</h2>
+          <ul className="space-y-2">
+            <li><span className="text-white">Workspace A — Controller</span>: Defines the target, evaluates relative state, and chooses the next action.</li>
+            <li><span className="text-white">Optimus / Workbench B — Execution reference</span>: Provides an environment in which actions, transitions, and constraints can be tested.</li>
+            <li><span className="text-white">Run history — Experience</span>: Records what happened, what it cost, and whether the action improved the result.</li>
+            <li><span className="text-white">Self() — Feedback policy</span>: Uses previous evidence to alter future decisions and tests whether that alteration actually helps. (Level 3 boundary unchanged.)</li>
           </ul>
           <p className="text-xs text-zinc-500">
-            Same sealed sequence across Safety, Optimus, and Client. Φ only when final e falls. Self() does not yet read prior Runs. Not a cross-plant win. Not revenue. Developmental stack is the product.
+            Common core across verticals. Same sealed sequence. Developmental stack is the product. Not a cross-plant win. Not revenue.
           </p>
-        </section>
-
-        {/* Prior abstraction kept */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Optimus as relative movement</h2>
-          <div className="space-y-3">
-            <div className="border border-zinc-800 rounded-2xl p-5 bg-zinc-950">
-              <p className="font-semibold">A — Reference frame</p>
-              <p className="text-sm text-zinc-400">Current state · target state · available scope</p>
-            </div>
-            <div className="text-center text-zinc-500">↓</div>
-            <div className="border border-zinc-800 rounded-2xl p-5">
-              <p className="font-semibold">Optimus — Movement</p>
-              <p className="text-sm text-zinc-400">Choose an action that changes the current state relative to the target</p>
-            </div>
-            <div className="text-center text-zinc-500">↓</div>
-            <div className="border border-zinc-800 rounded-2xl p-5 bg-zinc-950">
-              <p className="font-semibold">z — Relative displacement</p>
-              <p className="text-sm text-zinc-400">Measure progress, deviation, cost and remaining distance</p>
-            </div>
-          </div>
         </section>
 
         <footer className="flex flex-wrap gap-4 text-sm">
