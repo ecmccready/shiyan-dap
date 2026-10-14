@@ -24,13 +24,13 @@ export default function SelfPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          plant,
-          which,
-          client_id: plant.case_id,
-          workspace_id: "workbench-self",
-          workflow_version: "1.0",
-          model_version: "grok-bot",
-        }),
+        plant,
+        which,
+        client_id: plant.case_id,
+        workspace_id: "workbench-self",
+        workflow_version: "1.0",
+        model_version: "grok-bot",
+      }),
       });
       const text = await res.text();
       let data: any;
