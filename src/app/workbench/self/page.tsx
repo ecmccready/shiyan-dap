@@ -12,6 +12,7 @@ export default function SelfPage() {
     justification?: string;
     rec: StepRec;
     persisted: { id: string; phi: number } | null;
+    note?: string;
   } | null>(null);
   const [log, setLog] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,13 @@ export default function SelfPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plant, which }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Non-JSON response (${res.status}): ${text.slice(0, 180)}`);
+      }
       if (!data.ok) throw new Error(data.error || "step failed");
       setPlant(data.plant);
       setLast(data);
@@ -90,6 +97,7 @@ export default function SelfPage() {
             <p>e {last.rec.e.toFixed(3)} → {last.rec.e_next.toFixed(3)}</p>
             <p>reduced = {last.rec.reduced}</p>
             <p className="text-zinc-400">{last.persisted ? `persisted ${last.persisted.id} (Φ ${last.persisted.phi})` : "not persisted (reduced ≤ 0)"}</p>
+            {last.note && <p className="text-zinc-500 text-xs">{last.note}</p>}
           </section>
         )}
 
