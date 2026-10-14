@@ -1,60 +1,83 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
-const LISTINGS = [
-  {
-    id: "safety-sealed",
-    title: "Safety evidence gate",
-    sequence: "mark_boundary → complete_field → request_independent_check → seal_pack",
-    phi: "0.014 / 0.065 / 0.065",
-    status: "verified on plant · not settled",
-  },
-  {
-    id: "shiyan-pipeline",
-    title: "Shiyan pipeline reliability",
-    sequence: "mark_boundary → complete_field → request_independent_check → seal_pack",
-    phi: "0.51 / 0.45 / 0.38",
-    status: "reference plant · not settled",
-  },
+type Phase = "empty" | "setup" | "running" | "closed" | "error";
+
+const LOOP = [
+  ["Give A a task", "Objective and reference, not a prompt."],
+  ["Let B execute", "Workbench steps y. A only names y."],
+  ["Measure", "z is observed. e is distance to the reference."],
+  ["Improve", "Reuse only if final e falls. A tie is not a win."],
+  ["Preserve", "The Run is the evidence. Export it."],
 ];
 
-export default function MarketplacePage() {
+export default function WorkbenchPage() {
+  const [phase, setPhase] = useState<Phase>("empty");
+
+  function start() {
+    setPhase("setup");
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Workbench B" />
+      <SiteHeader section="Workbench" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          Marketplace
+          One commercial plant
         </p>
-        <h1 className="text-3xl font-bold mb-3">Verified reusable workflows</h1>
-        <p className="text-zinc-400 max-w-2xl mb-8">
-          Later paid access to sequences that have already lowered final e on a reference.
-          A listing is not a settled sale. An unsettled receipt is not revenue.
-        </p>
-
-        {LISTINGS.map((item) => (
-          <section key={item.id} className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
-            <h2 className="text-lg font-semibold text-white mb-2">{item.title}</h2>
-            <p className="mb-1"><span className="text-white">Sequence:</span> {item.sequence}</p>
-            <p className="mb-1"><span className="text-white">Φ:</span> {item.phi}</p>
-            <p className="text-zinc-500 text-xs">{item.status}</p>
-          </section>
-        ))}
-
-        <p className="text-sm text-zinc-300 mb-8">
-          Same sealed sequence as the Safety and Shiyan plants. Φ stays inside the plant that produced it.
-          Not a diagnosis. No PHI. Not revenue.
+        <h1 className="text-3xl font-bold mb-3">One Run. Measured. Kept.</h1>
+        <p className="text-zinc-400 max-w-2xl mb-6">
+          Give A a task. Let the plant execute it. Measure the result. Improve the next run. Preserve the evidence.
+          Customers are not buying an AI or a state machine. They are buying that loop.
         </p>
 
-        <nav className="flex flex-wrap gap-4 text-sm">
-          <Link className="underline" href="/workbench">Workbench B</Link>
+        <nav className="flex flex-wrap gap-4 text-sm mb-8">
+          <Link className="underline" href="/workbench/review">Review</Link>
           <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/client">Client pipeline</Link>
-          <Link className="underline" href="/workbench/shiyan">Shiyan pipeline</Link>
+          <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
+          <Link className="underline" href="/workbench/self">Level 3 Self()</Link>
+          <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
           <Link className="underline" href="/workbench/history">History</Link>
+          <Link className="underline" href="/workbench/proof">Safety proof</Link>
+          <Link className="underline" href="/workbench/network">Actor network</Link>
+          <Link className="underline" href="/workbench/compare">Peer proof</Link>
         </nav>
+
+        {phase === "empty" && (
+          <button
+            onClick={start}
+            className="h-12 shrink-0 rounded-full bg-emerald-500 px-6 text-sm font-medium text-black"
+          >
+            Create Run
+          </button>
+        )}
+
+        <section className="mt-10 space-y-6">
+          {LOOP.map(([title, body], i) => (
+            <div key={title} className="border border-zinc-800 rounded-2xl p-5">
+              <p className="text-emerald-400 text-xs uppercase tracking-widest mb-1">
+                0{i + 1}
+              </p>
+              <h2 className="text-lg font-semibold mb-1">{title}</h2>
+              <p className="text-zinc-400 text-sm">{body}</p>
+            </div>
+          ))}
+        </section>
+
+        <section className="mt-10 border border-zinc-800 rounded-2xl p-5">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest mb-2">
+            Killer metric · Δe
+          </p>
+          <h2 className="text-lg font-semibold mb-2">Intelligence is reduction of error</h2>
+          <p className="text-zinc-400 text-sm">
+            Φ is the change in final error between a cold run and a reuse run on the same reference.
+            A lower final e is the claim. A shorter path is a note. A tie is not a win.
+          </p>
+        </section>
       </main>
     </div>
   );
