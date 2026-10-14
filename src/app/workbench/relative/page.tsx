@@ -19,11 +19,10 @@ export default function RelativeMovementPage() {
             Mathematical specification. Execution lives in the shared operator. Φ only when final e falls. Self() does not yet read prior Runs.
           </p>
           <Link href="/workbench/operator" className="text-emerald-400 text-sm hover:underline mt-2 inline-block">
-            → Live operator (actual execution) 
+            → Live operator (actual execution)
           </Link>
         </header>
 
-        {/* Actual status table */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
           <h2 className="text-xl font-semibold">Objective → Actual status</h2>
           <div className="overflow-x-auto">
@@ -67,7 +66,6 @@ export default function RelativeMovementPage() {
           </p>
         </section>
 
-        {/* Existing sections 1–5 remain unchanged below this point */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
           <h2 className="text-xl font-semibold">1. The core mathematics</h2>
           <p className="text-sm text-zinc-400">Define the system state at time t as x_t, its target as x*, and the action chosen by the controller as u_t.</p>
@@ -111,10 +109,9 @@ export default function RelativeMovementPage() {
           <p className="text-xs text-zinc-500">predict() and execute() are illustrative. The live operator uses the real Self / nameYFromExperience / W / measureE from closed-loop.ts. Self() does not yet read prior Runs.</p>
         </section>
 
-        {/* Sections 3, 4, 5 stay exactly as before — abbreviated here for length; paste full versions from the prior file */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
           <h2 className="text-xl font-semibold text-white">3–5. Relation, convergence, positioning</h2>
-          <p>Unchanged from prior version. Relative error, convergence condition V(x_{t+1}) &lt; V(x_t), and product roles (Workspace A controller, Optimus/Workbench B environment, Run history, Self() feedback) remain the specification.</p>
+          <p>Unchanged from prior version. Relative error, convergence condition V(x&#123;t+1&#125;) &lt; V(x_t), and product roles (Workspace A controller, Optimus/Workbench B environment, Run history, Self() feedback) remain the specification.</p>
           <p className="text-xs text-zinc-500">Φ only when final e falls. Level 3 boundary unchanged. Not revenue. Developmental stack is the product.</p>
         </section>
 
