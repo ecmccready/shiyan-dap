@@ -20,7 +20,6 @@ export default function RelativeMovementPage() {
           </p>
         </header>
 
-        {/* Image 1 concepts */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
           <h2 className="text-xl font-semibold">A · B · z · Self()</h2>
           <ul className="space-y-3 text-sm text-zinc-300">
@@ -34,7 +33,6 @@ export default function RelativeMovementPage() {
           </p>
         </section>
 
-        {/* Image 3 diagram as structured cards */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Optimus as relative movement</h2>
           <div className="space-y-3">
@@ -55,7 +53,6 @@ export default function RelativeMovementPage() {
           </div>
         </section>
 
-        {/* Image 2 generalization */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
           <h2 className="text-xl font-semibold text-white">Generalizes beyond physical movement</h2>
           <ul className="space-y-2">
@@ -67,17 +64,16 @@ export default function RelativeMovementPage() {
           <p className="text-zinc-500 text-xs">The common abstraction is a state transition evaluated against a target. Same sealed sequence across Safety, Optimus, Client.</p>
         </section>
 
-        {/* Image 4 math — formal contract */}
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4 font-mono text-sm">
           <h2 className="text-xl font-semibold font-sans">Formal relative error</h2>
-          <p className="text-zinc-400 font-sans text-sm">Let the current state be \( x_t \), the target be \( x^* \), and the action be \( u_t \).</p>
-          <p>\( x_{t+1} = f(x_t, u_t) \)</p>
+          <p className="text-zinc-400 font-sans text-sm">Let the current state be x_t, the target be x*, and the action be u_t.</p>
+          <p>x&#123;t+1&#125; = f(x_t, u_t)</p>
           <p className="text-zinc-400 font-sans text-sm">Define relative error as:</p>
-          <p>\( e_t = x^* - x_t \)</p>
+          <p>e_t = x* - x_t</p>
           <p className="text-zinc-400 font-sans text-sm">Then the movement achieved is:</p>
-          <p>\( \Delta x_t = x_{t+1} - x_t \)</p>
+          <p>Δx_t = x&#123;t+1&#125; - x_t</p>
           <p className="text-zinc-400 font-sans text-sm">The controller evaluates whether that movement reduces the error:</p>
-          <p>\( \Delta e_t = e_{t+1} - e_t \)</p>
+          <p>Δe_t = e&#123;t+1&#125; - e_t</p>
           <p className="text-xs text-zinc-500 font-sans">
             Φ only when final e falls. Reuse refused on tie or increase. Same rule as Safety (0.014 / 0.065 / 0.065) and Optimus packs. Self() does not yet read prior Runs.
           </p>
