@@ -11,10 +11,6 @@ import {
 
 export const runtime = "nodejs";
 
-const DEMO_CLIENT = "demo-client";
-const DEMO_WORKFLOW = "1.0";
-const DEMO_MODEL = "grok-bot";
-
 // Process-local fallback when KV is not configured
 const memory = new Map<string, PersistedRun>();
 const memoryByClient = new Map<string, string[]>();
@@ -47,6 +43,11 @@ export async function POST(req: Request) {
     const which: "self" | "experience" = body.which === "self" ? "self" : "experience";
     const plant: LoopPlant = body.plant ?? freshPlant();
 
+    const client_id = String(body.client_id || plant.case_id || "default-client");
+    const workspace_id = String(body.workspace_id || "default-workspace");
+    const workflow_version = String(body.workflow_version || "1.0");
+    const model_version = String(body.model_version || "grok-bot");
+
     let y: YAction;
     let source: string;
     let justification: string | undefined;
@@ -55,17 +56,25 @@ export async function POST(req: Request) {
       y = Self(plant);
       source = "self";
     } else {
-      // Prefer real approved-experience; fall back to memory list
-      let approved: Awaited<ReturnType<typeof SelfFromApproved>>;
+      let approved: { y: string; source: string; justification?: string };
       try {
-        approved = await SelfFromApproved(DEMO_CLIENT, DEMO_WORKFLOW, DEMO_MODEL, "observe");
+        approved = await SelfFromApproved(
+          client_id,
+          workflow_version,
+          model_version,
+          "observe"
+        );
       } catch {
-        const runs = await safeList(DEMO_CLIENT);
-        const eligible = runs.filter((r) => r.approved && r.safety_passed && (r.phi ?? 0) > 0);
+        const runs = await safeList(client_id);
+        const eligible = runs.filter(
+          (r) => r.approved && r.safety_passed && (r.phi ?? 0) > 0
+        );
         if (eligible.length === 0) {
           approved = { y: "observe", source: "fallback" };
         } else {
-          const best = eligible.reduce((a, b) => ((a.phi ?? 0) > (b.phi ?? 0) ? a : b));
+          const best = eligible.reduce((a, b) =>
+            (a.phi ?? 0) > (b.phi ?? 0) ? a : b
+          );
           approved = { y: best.y, source: "approved", justification: best.id };
         }
       }
@@ -83,11 +92,11 @@ export async function POST(req: Request) {
     if (rec.reduced > 0) {
       const run: PersistedRun = {
         id: `run_${plant.case_id}_${nextPlant.t}_${Date.now()}`,
-        workspace_id: "demo-workspace",
-        client_id: DEMO_CLIENT,
+        workspace_id,
+        client_id,
         input_reference: plant.case_id,
-        workflow_version: DEMO_WORKFLOW,
-        model_version: DEMO_MODEL,
+        workflow_version,
+        model_version,
         y: rec.y,
         z: rec.z,
         e: rec.e_next,
