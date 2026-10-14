@@ -11,7 +11,7 @@ export default function SelfPage() {
     source: string;
     justification?: string;
     rec: StepRec;
-    persisted: { id: string; phi: number } | null;
+    persisted: { id: string; phi: number; store?: string } | null;
     note?: string;
   } | null>(null);
   const [log, setLog] = useState<string[]>([]);
@@ -23,7 +23,14 @@ export default function SelfPage() {
       const res = await fetch("/api/loop/step/self", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plant, which }),
+        body: JSON.stringify({
+          plant,
+          which,
+          client_id: plant.case_id,
+          workspace_id: "workbench-self",
+          workflow_version: "1.0",
+          model_version: "grok-bot",
+        }),
       });
       const text = await res.text();
       let data: any;
@@ -64,7 +71,7 @@ export default function SelfPage() {
         <section className="border border-zinc-800 rounded-2xl p-5 text-sm">
           <p><span className="text-white">Case:</span> {plant.case_id}</p>
           <p><span className="text-white">t:</span> {plant.t}</p>
-          <p className="text-xs text-zinc-500 mt-1">Plant state is real. Persistence uses the existing run-store.</p>
+          <p className="text-xs text-zinc-500 mt-1">Client scope is the plant case id. Persistence uses KV when available, memory otherwise.</p>
         </section>
 
         <div className="flex flex-wrap gap-3">
