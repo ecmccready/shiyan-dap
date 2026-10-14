@@ -39,6 +39,7 @@ export default function WorkbenchPage() {
           <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/client">Client pipeline</Link>
           <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
+          <Link className="underline" href="/workbench/self">Level 3 Self()</Link>
           <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
           <Link className="underline" href="/workbench/history">History</Link>
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
