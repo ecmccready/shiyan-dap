@@ -23,21 +23,21 @@ const REFERENCE = {
 
 const PACKS = [
   {
-    id: "optimus-hand-assembly",
+    id: "shiyan-hand-assembly",
     title: "Hand + forearm assembly bottleneck",
     cold: { e0: 1.48, eFinal: 0.92, sequence: "Self()", note: "pure automation claim" },
     reuse: { e0: 1.48, eFinal: 0.41, sequence: "mark_boundary → complete_field → request_independent_check → seal_pack", used: true },
     phi: 0.51,
   },
   {
-    id: "optimus-line-alignment",
+    id: "shiyan-line-alignment",
     title: "Fixture alignment / rework rate",
     cold: { e0: 1.35, eFinal: 0.78, sequence: "Self()", note: "line speed without measured fixtures" },
     reuse: { e0: 1.35, eFinal: 0.33, sequence: "mark_boundary → complete_field → request_independent_check → seal_pack", used: true },
     phi: 0.45,
   },
   {
-    id: "optimus-sensor-reliability",
+    id: "shiyan-sensor-reliability",
     title: "Touch sensor durability",
     cold: { e0: 1.22, eFinal: 0.67, sequence: "Self()", note: "sensor claim without replaceable path" },
     reuse: { e0: 1.22, eFinal: 0.29, sequence: "mark_boundary → complete_field → request_independent_check → seal_pack", used: true },
@@ -45,7 +45,7 @@ const PACKS = [
   },
 ];
 
-export default function OptimusPage() {
+export default function ShiyanPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Workbench B" />
@@ -83,7 +83,7 @@ export default function OptimusPage() {
         </section>
 
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          Optimus pipeline · 2026 reporting · diagnostic definiteness
+          Shiyan pipeline · 2026 reporting · diagnostic definiteness
         </p>
         <h2 className="text-2xl font-bold mb-3">Cold plant, then reuse plant</h2>
         <p className="text-zinc-400 max-w-2xl mb-6">
@@ -128,10 +128,10 @@ e ${p.reuse.e0} → ${p.reuse.eFinal}
         ))}
 
         <p className="text-sm text-zinc-300">
-          All three later plants beat cold final e on the Optimus reference criteria.
+          All three later plants beat cold final e on the Shiyan reference criteria.
           Same sealed sequence as Safety. Φ stays inside this plant.
           Not a cross-plant win. Not revenue. Not useful-work claim.
-          Developmental stack is the product. Optimus and Model 3 are the evolving and sealed references.
+          Developmental stack is the product. Shiyan and Model 3 are the evolving and sealed references.
         </p>
 
         <nav className="flex flex-wrap gap-4 text-sm mt-8">
