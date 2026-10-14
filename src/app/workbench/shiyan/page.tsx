@@ -135,7 +135,7 @@ e ${p.reuse.e0} → ${p.reuse.eFinal}
         </p>
 
         <nav className="flex flex-wrap gap-4 text-sm mt-8">
-          <Link className="underline" href="/workbench">Workbench B</Link>
+          <Link className="underline" href="/workbench">Workbench</Link>
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
           <Link className="underline" href="/workbench/compare">Peer proof</Link>
