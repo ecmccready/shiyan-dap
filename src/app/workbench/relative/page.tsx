@@ -10,86 +10,52 @@ export default function RelativeMovementPage() {
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-12">
         <header>
           <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-            Relative-scope mathematics · specification
+            Relative-scope mathematics · reference algorithm
           </p>
           <h1 className="text-3xl font-bold mb-4">
             State → relative error → action → measured improvement → next action
           </h1>
           <p className="text-zinc-400 max-w-2xl">
-            Mathematical specification. Execution lives in the shared operator. Φ only when final e falls. Self() does not yet read prior Runs.
+            Common algorithmic core across Shiyan, Workspace A, Workbench B, and Run history. Φ only when final e falls. Self() can consume approved experience; baseline Self() remains memory-free for comparison.
           </p>
-          <Link href="/workbench/operator" className="text-emerald-400 text-sm hover:underline mt-2 inline-block">
-            → Live operator (actual execution)
+          <Link href="/workbench/self" className="text-emerald-400 text-sm hover:underline mt-2 inline-block">
+            → Level 3 Self() comparison
           </Link>
         </header>
 
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Objective → Actual status</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="py-2 pr-4 text-white font-medium">Objective</th>
-                  <th className="py-2 text-zinc-300">Actual status</th>
-                </tr>
-              </thead>
-              <tbody className="text-zinc-300">
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Relative movement mathematics</td>
-                  <td className="py-2">Documented here (specification)</td>
-                </tr>
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">One-dimensional operator concept</td>
-                  <td className="py-2">Not fully specified as an executable operator; this page uses general state/error mathematics</td>
-                </tr>
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Shiyan as the reference environment</td>
-                  <td className="py-2">Connected conceptually and through navigation</td>
-                </tr>
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Blockchain narrative</td>
-                  <td className="py-2">Absent, as intended</td>
-                </tr>
-                <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Autonomous learning from prior Runs</td>
-                  <td className="py-2">Explicitly marked as not yet implemented in Self()</td>
-                </tr>
-                <tr>
-                  <td className="py-2 pr-4 text-white">End-to-end optimized execution</td>
-                  <td className="py-2">Reference pseudocode on this page. Live shared operator on /workbench/operator that calls the real closed-loop functions</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="text-xs text-zinc-500">
-            The functions in the reference algorithm (predict, execute, etc.) are illustrative interfaces. The live operator imports and calls the real implementations from src/lib/closed-loop.ts. It does not duplicate the logic.
-          </p>
-        </section>
-
-        <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
           <h2 className="text-xl font-semibold">1. The core mathematics</h2>
-          <p className="text-sm text-zinc-400">Define the system state at time t as x_t, its target as x*, and the action chosen by the controller as u_t.</p>
+          <p className="text-sm text-zinc-400">
+            Define the system state at time t as x_t, its target as x*, and the action chosen by the controller as u_t.
+          </p>
           <div className="space-y-3 text-sm text-zinc-300">
             <p><span className="text-white font-medium">A. Relative position</span></p>
             <p className="font-mono">e_t = x* − x_t</p>
             <p>The error vector describes the difference between the current state and the target. For complex states, use a distance or loss function d(x_t, x*).</p>
+
             <p><span className="text-white font-medium">B. Movement through scope</span></p>
             <p className="font-mono">x&#123;t+1&#125; = f(x_t, u_t, w_t)</p>
             <p>The action changes the state. The term w_t represents disturbances or environmental changes.</p>
+
             <p><span className="text-white font-medium">C. Measured progress</span></p>
             <p className="font-mono">Δe_t = e&#123;t+1&#125; − e_t</p>
             <p className="font-mono">G_t = ∥e_t∥ − ∥e&#123;t+1&#125;∥</p>
             <p>Positive G_t means the measured distance to the target decreased; negative G_t means it increased.</p>
+
             <p><span className="text-white font-medium">D. Action optimization</span></p>
             <p className="font-mono">u_t* = argmin_&#123;u∈U_safe&#125; [d(f(x_t, u), x*) + λC(u)]</p>
             <p>Choose an eligible action that balances target progress against execution cost. U_safe is the set of permitted actions, and λ controls the cost trade-off.</p>
           </div>
-          <p className="text-xs text-zinc-500">This is the mathematical core. Same refusal rule as Safety and Shiyan packs.</p>
+          <p className="text-xs text-zinc-500">
+            This is the mathematical core: state → relative error → action → state transition → measured improvement → next action. Same refusal rule as Safety and Shiyan packs.
+          </p>
         </section>
 
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
           <h2 className="text-xl font-semibold">2. The Shiyan DAP algorithm (reference)</h2>
-          <p className="text-sm text-zinc-400">Reference only. Not a claim that every function is already implemented. See the live operator for the actual call path.</p>
+          <p className="text-sm text-zinc-400">
+            The equations become a product algorithm when Workspace A uses each Run to choose its next action. This is a reference algorithm, not a claim that every function is already implemented in full.
+          </p>
           <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 leading-6 overflow-x-auto">{`def self_optimize(target, state, run_history, safe_actions):
     error = distance(state, target)
     candidates = []
@@ -106,20 +72,60 @@ export default function RelativeMovementPage() {
     run = record_run(state=state, action=action, result=result, error_before=error, error_after=next_error)
     updated_history = append(run_history, run)
     return next_state, updated_history`}</pre>
-          <p className="text-xs text-zinc-500">predict() and execute() are illustrative. The live operator uses the real Self / nameYFromExperience / W / measureE from closed-loop.ts. Self() does not yet read prior Runs.</p>
+          <p className="text-xs text-zinc-500">
+            predict() and execute() are illustrative. Live SelfFromApproved retrieves only approved, safety-passed Runs with Φ &gt; 0. Baseline Self() remains memory-free. Reuse refused on tie or increase.
+          </p>
         </section>
 
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
-          <h2 className="text-xl font-semibold text-white">3–5. Relation, convergence, positioning</h2>
-          <p>Unchanged from prior version. Relative error, convergence condition V(x&#123;t+1&#125;) &lt; V(x_t), and product roles (Workspace A controller, Shiyan/Workbench B environment, Run history, Self() feedback) remain the specification.</p>
-          <p className="text-xs text-zinc-500">Φ only when final e falls. Level 3 boundary unchanged. Not revenue. Developmental stack is the product.</p>
+          <h2 className="text-xl font-semibold text-white">3. How this relates to earlier x, y, z mathematics</h2>
+          <p>An earlier expression was (x, y) + (y, x) = z. That notation alone does not specify an optimization algorithm; the operations and variable meanings must be defined.</p>
+          <p>A useful operational interpretation:</p>
+          <ul className="space-y-1">
+            <li>• x: the current state or position.</li>
+            <li>• y: the reference, target, or contextual information.</li>
+            <li>• z: the measured result of combining the state and reference.</li>
+          </ul>
+          <p className="font-mono">z_t = r(x_t, y_t) = y_t − x_t</p>
+          <p>Then z_t is the relative error rather than the final outcome. After execution, a separate measurement function evaluates the resulting state. A reference calculation, a state transition, and an observed outcome are three different operations.</p>
+        </section>
+
+        <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
+          <h2 className="text-xl font-semibold text-white">4. The convergence condition</h2>
+          <p>To establish that the system genuinely optimizes, define a nonnegative error function V(x_t), such as the distance to the target.</p>
+          <p className="font-mono">V(x&#123;t+1&#125;) &lt; V(x_t)</p>
+          <p>More generally, under uncertainty:</p>
+          <p className="font-mono">E[V(x&#123;t+1&#125;) | x_t, u_t] &lt; V(x_t)</p>
+          <p>These conditions express progress but do not by themselves prove global convergence. Assumptions about the environment, available actions, observability, and controller behavior are required. Some tasks have unreachable targets or unavoidable trade-offs.</p>
+          <p>The system therefore distinguishes:</p>
+          <ul className="space-y-1 text-xs">
+            <li>• Convergence: the target error decreases under specified conditions.</li>
+            <li>• Stability: the system avoids uncontrolled oscillation or divergence.</li>
+            <li>• Learning: past experience changes future action selection.</li>
+            <li>• Autonomy: the system can perform the decision-and-execution cycle within its permissions and constraints.</li>
+          </ul>
+          <p className="text-xs text-zinc-500">They are related, but none automatically implies the others. Φ only when final e falls.</p>
+        </section>
+
+        <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
+          <h2 className="text-xl font-semibold text-white">5. How the mathematics is positioned in the product</h2>
+          <ul className="space-y-2">
+            <li><span className="text-white">Workspace A — Controller</span>: Defines the target, evaluates relative state, and chooses the next action.</li>
+            <li><span className="text-white">Shiyan / Workbench B — Execution reference</span>: Provides an environment in which actions, transitions, and constraints can be tested.</li>
+            <li><span className="text-white">Run history — Experience</span>: Records what happened, what it cost, and whether the action improved the result.</li>
+            <li><span className="text-white">Self() — Feedback policy</span>: Baseline version does not read memory. SelfFromApproved consumes approved experience (Φ &gt; 0 only). Live comparison at /workbench/self.</li>
+          </ul>
+          <p className="text-xs text-zinc-500">
+            Common core across verticals. Same sealed sequence. Developmental stack is the product. Not a cross-plant win. Not revenue.
+          </p>
         </section>
 
         <footer className="flex flex-wrap gap-4 text-sm">
-          <Link href="/workbench/operator" className="text-emerald-400 hover:underline">Live operator →</Link>
-          <Link href="/workbench/optimus" className="text-emerald-400 hover:underline">← Shiyan plant</Link>
+          <Link href="/workbench/self" className="text-emerald-400 hover:underline">Level 3 Self() →</Link>
+          <Link href="/workbench/shiyan" className="text-emerald-400 hover:underline">← Shiyan plant</Link>
           <Link href="/workbench" className="text-emerald-400 hover:underline">Workbench B</Link>
           <Link href="/workbench/history" className="text-emerald-400 hover:underline">History</Link>
+          <Link href="/workbench/marketplace" className="text-emerald-400 hover:underline">Marketplace</Link>
         </footer>
       </main>
     </div>
