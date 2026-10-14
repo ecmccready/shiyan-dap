@@ -43,7 +43,7 @@ export default function RelativeMovementPage() {
                   <td className="py-2">Not fully specified as an executable operator; this page uses general state/error mathematics</td>
                 </tr>
                 <tr className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4 text-white">Optimus as the reference environment</td>
+                  <td className="py-2 pr-4 text-white">Shiyan as the reference environment</td>
                   <td className="py-2">Connected conceptually and through navigation</td>
                 </tr>
                 <tr className="border-b border-zinc-800/60">
@@ -84,7 +84,7 @@ export default function RelativeMovementPage() {
             <p className="font-mono">u_t* = argmin_&#123;u∈U_safe&#125; [d(f(x_t, u), x*) + λC(u)]</p>
             <p>Choose an eligible action that balances target progress against execution cost. U_safe is the set of permitted actions, and λ controls the cost trade-off.</p>
           </div>
-          <p className="text-xs text-zinc-500">This is the mathematical core. Same refusal rule as Safety and Optimus packs.</p>
+          <p className="text-xs text-zinc-500">This is the mathematical core. Same refusal rule as Safety and Shiyan packs.</p>
         </section>
 
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-4">
@@ -111,13 +111,13 @@ export default function RelativeMovementPage() {
 
         <section className="border border-zinc-800 rounded-2xl p-6 space-y-3 text-sm text-zinc-300">
           <h2 className="text-xl font-semibold text-white">3–5. Relation, convergence, positioning</h2>
-          <p>Unchanged from prior version. Relative error, convergence condition V(x&#123;t+1&#125;) &lt; V(x_t), and product roles (Workspace A controller, Optimus/Workbench B environment, Run history, Self() feedback) remain the specification.</p>
+          <p>Unchanged from prior version. Relative error, convergence condition V(x&#123;t+1&#125;) &lt; V(x_t), and product roles (Workspace A controller, Shiyan/Workbench B environment, Run history, Self() feedback) remain the specification.</p>
           <p className="text-xs text-zinc-500">Φ only when final e falls. Level 3 boundary unchanged. Not revenue. Developmental stack is the product.</p>
         </section>
 
         <footer className="flex flex-wrap gap-4 text-sm">
           <Link href="/workbench/operator" className="text-emerald-400 hover:underline">Live operator →</Link>
-          <Link href="/workbench/optimus" className="text-emerald-400 hover:underline">← Optimus plant</Link>
+          <Link href="/workbench/optimus" className="text-emerald-400 hover:underline">← Shiyan plant</Link>
           <Link href="/workbench" className="text-emerald-400 hover:underline">Workbench B</Link>
           <Link href="/workbench/history" className="text-emerald-400 hover:underline">History</Link>
         </footer>

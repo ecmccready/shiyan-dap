@@ -125,7 +125,7 @@ export default function OperatorPage() {
 
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link href="/workbench/relative" className="underline">Mathematical specification</Link>
-          <Link href="/workbench/optimus" className="underline">Optimus</Link>
+          <Link href="/workbench/optimus" className="underline">Shiyan plant</Link>
           <Link href="/workbench" className="underline">Workbench B</Link>
         </nav>
       </main>
