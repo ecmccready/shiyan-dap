@@ -12,8 +12,8 @@ const LISTINGS = [
     status: "verified on plant · not settled",
   },
   {
-    id: "optimus-pipeline",
-    title: "Optimus pipeline reliability",
+    id: "shiyan-pipeline",
+    title: "Shiyan pipeline reliability",
     sequence: "mark_boundary → complete_field → request_independent_check → seal_pack",
     phi: "0.51 / 0.45 / 0.38",
     status: "reference plant · not settled",
@@ -23,7 +23,7 @@ const LISTINGS = [
 export default function MarketplacePage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Workbench B" />
+      <SiteHeader section="Workbench" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           Marketplace
@@ -44,15 +44,15 @@ export default function MarketplacePage() {
         ))}
 
         <p className="text-sm text-zinc-300 mb-8">
-          Same sealed sequence as the Safety and Optimus plants. Φ stays inside the plant that produced it.
+          Same sealed sequence as the Safety and Shiyan plants. Φ stays inside the plant that produced it.
           Not a diagnosis. No PHI. Not revenue.
         </p>
 
         <nav className="flex flex-wrap gap-4 text-sm">
-          <Link className="underline" href="/workbench">Workbench B</Link>
+          <Link className="underline" href="/workbench">Workbench</Link>
           <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/client">Client pipeline</Link>
-          <Link className="underline" href="/workbench/optimus">Optimus pipeline</Link>
+          <Link className="underline" href="/workbench/shiyan">Shiyan pipeline</Link>
           <Link className="underline" href="/workbench/history">History</Link>
         </nav>
       </main>
