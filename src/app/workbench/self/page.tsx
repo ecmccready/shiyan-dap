@@ -3,43 +3,37 @@
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { SelfFromApproved } from "@/lib/approved-experience";
-import { Self, freshPlant, type YAction } from "@/lib/closed-loop";
+import { freshPlant, type LoopPlant, type StepRec } from "@/lib/closed-loop";
 
 export default function SelfPage() {
-  const [baseline, setBaseline] = useState<YAction | null>(null);
-  const [fromExperience, setFromExperience] = useState<{
-    y: string;
+  const [plant, setPlant] = useState<LoopPlant>(() => freshPlant());
+  const [last, setLast] = useState<{
     source: string;
     justification?: string;
+    rec: StepRec;
+    persisted: { id: string; phi: number } | null;
   } | null>(null);
-  const [loading, setLoading] = useState(false);
   const [log, setLog] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  async function runBaseline() {
-    const plant = freshPlant();
-    const y = Self(plant);
-    setBaseline(y);
-    setLog((prev) => [`Baseline Self() → ${y} (does not read memory)`, ...prev.slice(0, 7)]);
-  }
-
-  async function runFromExperience() {
+  async function step(which: "self" | "experience") {
     setLoading(true);
     try {
-      // Demo client / versions — replace with real workspace values in production
-      const result = await SelfFromApproved(
-        "demo-client",
-        "1.0",
-        "grok-bot",
-        "observe"
-      );
-      setFromExperience(result);
+      const res = await fetch("/api/loop/step/self", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plant, which }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "step failed");
+      setPlant(data.plant);
+      setLast(data);
       setLog((prev) => [
-        `SelfFromApproved → ${result.y} (${result.source}${result.justification ? ` · ${result.justification}` : ""})`,
-        ...prev.slice(0, 7),
+        `t=${data.rec.t} source=${data.source} y=${data.rec.y} reduced=${data.rec.reduced}${data.persisted ? ` persisted=${data.persisted.id}` : " (not persisted)"}`,
+        ...prev.slice(0, 9),
       ]);
     } catch (err) {
-      setLog((prev) => [`Error: ${String(err)}`, ...prev.slice(0, 7)]);
+      setLog((prev) => [`Error: ${String(err)}`, ...prev.slice(0, 9)]);
     }
     setLoading(false);
   }
@@ -50,47 +44,54 @@ export default function SelfPage() {
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-8">
         <header>
           <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-            Level 3 · Self() from persistent experience
+            Level 3 · closed loop
           </p>
           <h1 className="text-3xl font-bold mb-3">
-            Baseline Self() vs experience-using Self()
+            Real Run writes experience · next Self() consumes it
           </h1>
           <p className="text-zinc-400 max-w-2xl">
-            Baseline Self() names y without reading memory. SelfFromApproved retrieves only approved, safety-passed Runs with Φ &gt; 0 and selects the highest-Φ y. Reuse refused on tie or increase. Engine not replaced.
+            Baseline Self() does not read memory. Experience path calls SelfFromApproved, executes the step, and persists the Run only when reduced &gt; 0. That Run becomes eligible for the next call under the same client.
           </p>
         </header>
 
+        <section className="border border-zinc-800 rounded-2xl p-5 text-sm">
+          <p><span className="text-white">Case:</span> {plant.case_id}</p>
+          <p><span className="text-white">t:</span> {plant.t}</p>
+          <p className="text-xs text-zinc-500 mt-1">Plant state is real. Persistence uses the existing run-store.</p>
+        </section>
+
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={runBaseline}
-            className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-sm"
+            onClick={() => step("self")}
+            disabled={loading}
+            className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-xl text-sm disabled:opacity-50"
           >
-            Run baseline Self()
+            Step (baseline Self)
           </button>
           <button
-            onClick={runFromExperience}
+            onClick={() => step("experience")}
             disabled={loading}
             className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm disabled:opacity-50"
           >
-            {loading ? "…" : "Run Self() from approved experience"}
+            {loading ? "…" : "Step (from approved experience)"}
+          </button>
+          <button
+            onClick={() => { setPlant(freshPlant()); setLast(null); setLog([]); }}
+            className="border border-zinc-700 px-4 py-2 rounded-xl text-sm"
+          >
+            Reset plant
           </button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <section className="border border-zinc-800 rounded-2xl p-5">
-            <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Baseline</p>
-            <p className="text-lg font-mono">{baseline ?? "—"}</p>
-            <p className="text-xs text-zinc-500 mt-2">Does not read prior Runs</p>
+        {last && (
+          <section className="border border-zinc-800 rounded-2xl p-5 text-sm font-mono space-y-1">
+            <p>source = {last.source}{last.justification ? ` · ${last.justification}` : ""}</p>
+            <p>y = {last.rec.y}</p>
+            <p>e {last.rec.e.toFixed(3)} → {last.rec.e_next.toFixed(3)}</p>
+            <p>reduced = {last.rec.reduced}</p>
+            <p className="text-zinc-400">{last.persisted ? `persisted ${last.persisted.id} (Φ ${last.persisted.phi})` : "not persisted (reduced ≤ 0)"}</p>
           </section>
-          <section className="border border-zinc-800 rounded-2xl p-5">
-            <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">From approved experience</p>
-            <p className="text-lg font-mono">{fromExperience?.y ?? "—"}</p>
-            <p className="text-xs text-zinc-500 mt-2">
-              source: {fromExperience?.source ?? "—"}
-              {fromExperience?.justification ? ` · ${fromExperience.justification}` : ""}
-            </p>
-          </section>
-        </div>
+        )}
 
         {log.length > 0 && (
           <section className="border border-zinc-800 rounded-2xl p-5 text-xs font-mono space-y-1">
@@ -101,7 +102,7 @@ export default function SelfPage() {
         )}
 
         <p className="text-xs text-zinc-500">
-          Only Runs with approved === true, safety_passed === true, and phi &gt; 0 are eligible. A tie on final e is not a win. Developmental stack is the product. Not revenue.
+          Only Runs with reduced &gt; 0 are written to the store and become eligible for the next SelfFromApproved call. Tie or increase is refused. Baseline Self() remains memory-free. Engine not replaced. Not revenue.
         </p>
 
         <nav className="flex flex-wrap gap-4 text-sm">
