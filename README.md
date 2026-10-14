@@ -21,18 +21,20 @@ Developmental stack is the product. Public packs are the proof. Client reference
 | /workbench | Commercial center | https://shiyan-dap.vercel.app/workbench |
 | /workbench/review | Acquirer / funding one-pager | https://shiyan-dap.vercel.app/workbench/review |
 | /workbench/offer | Solicitation | https://shiyan-dap.vercel.app/workbench/offer |
-| /workbench/optimus | Model 3 sealed + Optimus 2026 proof | https://shiyan-dap.vercel.app/workbench/optimus |
+| /workbench/shiyan | Shiyan plant + Model 3 sealed proof | https://shiyan-dap.vercel.app/workbench/shiyan |
+| /workbench/self | Level 3 closed loop (Self() from persistent experience) | https://shiyan-dap.vercel.app/workbench/self |
 | /workbench/client | Target-client pipeline + exportable Run | https://shiyan-dap.vercel.app/workbench/client |
 | /workbench/pilot | Paid pilot gate (behind measured benefit) | https://shiyan-dap.vercel.app/workbench/pilot |
 | /workbench/history | Inspectable Runs | https://shiyan-dap.vercel.app/workbench/history |
 | /workbench/marketplace | Verified sequences (not settled) | https://shiyan-dap.vercel.app/workbench/marketplace |
 | /workbench/proof | Safety proof (Φ 0.014 / 0.065 / 0.065) | https://shiyan-dap.vercel.app/workbench/proof |
+| /workbench/relative | Relative-scope mathematics and reference algorithm | https://shiyan-dap.vercel.app/workbench/relative |
 
-Φ only when final e falls. Same sealed sequence across Safety, Optimus, and Client plants.  
+Φ only when final e falls. Same sealed sequence across Safety, Shiyan, and Client plants.  
 Not a diagnosis. No PHI. Not revenue until a client settles.  
 Healthcare diagnostics remains a higher-risk, later vertical.  
 
-Self() now consumes approved experience from previous Runs through a defined interface. Level 3 milestone is partially implemented behind the existing A/B interface.
+Self() can consume approved experience from previous Runs through a defined interface. Baseline Self() remains memory-free for comparison. Level 3 closed loop is live on `/workbench/self`.
 
 ## What this is
 
@@ -102,6 +104,8 @@ Core loop = kept. Commercialization = additive.
 The MCP refactor moves that same pair across JSON-RPC.  
 The actor network does not replace that pair.
 
+Prior to this slice the commercial center already pointed at a sealed Model 3 reference and the Client pipeline. Those surfaces stay. The plant formerly called Optimus is now the Shiyan plant; the route is `/workbench/shiyan`. The measurement contract and Φ rule are unchanged.
+
 ## Autonomy levels
 
 Level 1 — Execute and measure  
@@ -114,8 +118,10 @@ Level 3 is the current architectural milestone: Self() consumes approved experie
 
 ## Level 3 commercial surfaces (this slice)
 
-- Server-side Run persistence with workspace/client ID, workflow version, model version, metrics, and provenance (`run-store.ts`).
+- Server-side Run persistence with workspace/client ID, workflow version, model version, metrics, and provenance (`run-store.ts`). KV is preferred; an in-memory fallback exists when KV is not configured.
 - Self() retrieves only approved, safety-passed, positive-Φ experience (`approved-experience.ts`).
+- Closed-loop route (`/api/loop/step/self`) executes a step and persists the Run only when reduced > 0.
+- Live demonstration surface (`/workbench/self`) compares baseline Self() (memory-free) with the experience path. A real Run that reduced error was written; the next Self() call consumed that persisted experience under the same client. A later step that increased error was correctly refused.
 - Causal comparison of cold vs reuse on matched cases (`causal-proof.ts`).
 - Client proof record: inspect a Run and export JSON evidence without internal architecture (`/workbench/client`).
 - Paid pilot gate remains behind a confirmed improved Run under safety constraints (`/workbench/pilot`).
@@ -127,3 +133,9 @@ Marketplace stays downstream of the proof system. A tie in final e is not an imp
 Do not orphan traction while the engine generalizes.
 
 Music is the first vertical, not the product boundary.
+Commit + push
+powershell
+git add README.md
+git commit -m "docs: update README with Level 3 closed-loop proof, Shiyan plant, and commercial center surfaces
+
+Preserves prior evolutionary notes. Adds live Level 3 Self() surface, real client scope, and Shiyan rename. Φ rule and engine unchanged."
