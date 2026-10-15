@@ -31,7 +31,7 @@ export default function ReviewPage() {
           <h2 className="text-white font-semibold mb-2">Public proof</h2>
           <p>Model 3 2018 sealed reference. Shiyan 2026 pipeline criteria. Same sealed sequence. Positive Φ.</p>
           <p className="mt-2">
-            <Link className="underline" href="/workbench/optimus">Shiyan + Model 3</Link>
+            <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3</Link>
             {" · "}
             <Link className="underline" href="/workbench/proof">Safety proof</Link>
           </p>
