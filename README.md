@@ -21,20 +21,18 @@ Developmental stack is the product. Public packs are the proof. Client reference
 | /workbench | Commercial center | https://shiyan-dap.vercel.app/workbench |
 | /workbench/review | Acquirer / funding one-pager | https://shiyan-dap.vercel.app/workbench/review |
 | /workbench/offer | Solicitation | https://shiyan-dap.vercel.app/workbench/offer |
-| /workbench/shiyan | Shiyan plant + Model 3 sealed proof | https://shiyan-dap.vercel.app/workbench/shiyan |
-| /workbench/self | Level 3 closed loop (Self() from persistent experience) | https://shiyan-dap.vercel.app/workbench/self |
+| /workbench/optimus | Model 3 sealed + Optimus 2026 proof | https://shiyan-dap.vercel.app/workbench/optimus |
 | /workbench/client | Target-client pipeline + exportable Run | https://shiyan-dap.vercel.app/workbench/client |
 | /workbench/pilot | Paid pilot gate (behind measured benefit) | https://shiyan-dap.vercel.app/workbench/pilot |
+| /workbench/autonomous | Level 4 autonomous-run view | https://shiyan-dap.vercel.app/workbench/autonomous |
+| /workbench/autonomous/proof | Level 4 proof suite | https://shiyan-dap.vercel.app/workbench/autonomous/proof |
 | /workbench/history | Inspectable Runs | https://shiyan-dap.vercel.app/workbench/history |
 | /workbench/marketplace | Verified sequences (not settled) | https://shiyan-dap.vercel.app/workbench/marketplace |
 | /workbench/proof | Safety proof (Φ 0.014 / 0.065 / 0.065) | https://shiyan-dap.vercel.app/workbench/proof |
-| /workbench/relative | Relative-scope mathematics and reference algorithm | https://shiyan-dap.vercel.app/workbench/relative |
 
-Φ only when final e falls. Same sealed sequence across Safety, Shiyan, and Client plants.  
+Φ only when final e falls. Same sealed sequence across Safety, Optimus, and Client plants.  
 Not a diagnosis. No PHI. Not revenue until a client settles.  
-Healthcare diagnostics remains a higher-risk, later vertical.  
-
-Self() can consume approved experience from previous Runs through a defined interface. Baseline Self() remains memory-free for comparison. Level 3 closed loop is live on `/workbench/self`.
+Healthcare diagnostics remains a higher-risk, later vertical.
 
 ## What this is
 
@@ -44,98 +42,50 @@ They buy a system that repeatedly takes an action, observes the result, measures
 
 - Sales: turn operational experience into the next best action.
 - Technical: a model-portable closed-loop execution system where intelligence is measured by reduction of error, not by model output alone.
-- Unit they operate: a **Run** on **Workbench B**. Metric: **Δe**.
+- Unit they operate: a **Run** on **Workbench**. Metric: **Δe**.
 
-HOME A controller · music vertical · namers of y │ ▼ WORKBENCH B commercial plant · SaaS surface Run | Diagnostic | Proof | Audit | Experience │ ▼ W(B,y) → measured z → error e → Self() → y' → repeat
-
-Organization → Workspace A → Workbench B → Run → Experience → Marketplace
-
-The proof object, on Safety, is:
-
-RUN cold is Self().  
-RUN reuse may use a sequence outside Self().  
-Better, for a listing, only if the later final e is lower.  
-A shorter path is a note. A tie on final e is not a win.
-
-The peer proof does not replace that object. Same A. Two MCP servers. Φ stays inside the plant that produced it.
-
-Engine and commercial layer stay separate.
-
-A ↔ B ↔ Run ↔ Measurement
-
-Organization → Workspace → Workbench → Usage → Billing → Marketplace
-
-A Run may carry a network version:
-
-R = (N, A, B, y, z, e, Δe, Φ)
-
-N is context. It is not e. An observed relationship is not causation.
+Home (Workspace A) is the controller. Workbench (Workbench B) is the execution environment.
 
 ## Navigation strategy
 
-Home is A. Workbench is B. That split is the product, not a layout preference.
+Home is the controller. Workbench is the environment. That split is the product.
 
 | Surface | Role | Customer meaning |
 | --- | --- | --- |
-| / Home A | Controller | Goal, task, namer of y. Music is the first vertical. |
-| /workbench Workbench B | Environment | The SaaS plant. Runs, domains, audit, listed experience. |
-| Diagnostic | Plant on B | Validation of y against a reference. Not a header product. |
-| Proof | Plant on B | Cold plant, then reuse plant. Not a header product. |
-| Audit | Plant on B | Frozen run + digest when Δe stalls. Human review desk. |
-| MCP | Plant on B | Open host/server contract. Not a header product. |
-| Peer proof | Plant on B | Same A, B1 and B2. Not a header product. |
-| Actor network | Context on B | Documented actors and handoffs. Not a controller. |
+| / Home | Controller | Goal, task, namer of y. Music is the first vertical. |
+| /workbench Workbench | Environment | The SaaS plant. Runs, domains, audit, listed experience, autonomous control. |
+| Diagnostic | Plant on Workbench | Validation of y against a reference. Not a header product. |
+| Proof | Plant on Workbench | Cold plant, then reuse plant. Not a header product. |
+| Audit | Plant on Workbench | Frozen run + digest when Δe stalls. Human review desk. |
+| MCP | Plant on Workbench | Open host/server contract. Not a header product. |
+| Peer proof | Plant on Workbench | Same controller, two environments. Not a header product. |
+| Actor network | Context on Workbench | Documented actors and handoffs. Not a controller. |
 | Marketplace / Playlist / Songs | Kept rails | Assets already listed. Traction stays on the page. |
 
-Diagnostic, Proof, Audit, MCP, the peer proof, and the actor network do not sit next to Home as sibling products.  
-They open from Workbench B.
-
-Domain select `safety` / `compliance` lands on `/workbench`.  
-Domain select `music` lands on `/`.
-
-Header chrome stays: Aethel Node, section label, Home, Workbench, Marketplace, Playlist, Songs, Domain, Upload.
-
-## What was built (and is kept)
-
-Shiyan already shipped the loop. Aethel Node commercializes that loop without replacing it.
-
-Core loop = kept. Commercialization = additive.  
-`mark_boundary` and `seal_pack` were added to W.  
-The MCP refactor moves that same pair across JSON-RPC.  
-The actor network does not replace that pair.
-
-Prior to this slice the commercial center already pointed at a sealed Model 3 reference and the Client pipeline. Those surfaces stay. The plant formerly called Optimus is now the Shiyan plant; the route is `/workbench/shiyan`. The measurement contract and Φ rule are unchanged.
+Diagnostic, Proof, Audit, MCP, the peer proof, and the actor network open from Workbench.
 
 ## Autonomy levels
 
 Level 1 — Execute and measure  
 Level 2 — Reuse verified experience  
-Level 3 — Learn across runs (Self() uses historical experience)  
-Level 4 — Operate autonomously within constraints
+Level 3 — Learn across Runs (Self() uses approved historical experience)  
+Level 4 — Operate autonomously within constraints  
 
-The repository documents parts of Levels 1 and 2.  
-Level 3 is the current architectural milestone: Self() consumes approved experience from previous Runs through a defined interface. Unsafe or unverified experience is rejected. Causal improvement is measured under matched conditions (improved / tied / regressed).
+Level 3 is implemented: Self() retrieves only approved, safety-passed, positive-Φ experience; causal comparison distinguishes improved / tied / regressed; Runs are persisted; clients can export evidence.
 
-## Level 3 commercial surfaces (this slice)
+Level 4 is the current architectural milestone. A bounded control loop plans, checks a safety gate before every action, executes only permitted actions, records every transition, and can resume from the last known state. It is not declared complete until recovery-from-restart, side-effect safety, and one external client with a predeclared measurable outcome are demonstrated.
 
-- Server-side Run persistence with workspace/client ID, workflow version, model version, metrics, and provenance (`run-store.ts`). KV is preferred; an in-memory fallback exists when KV is not configured.
-- Self() retrieves only approved, safety-passed, positive-Φ experience (`approved-experience.ts`).
-- Closed-loop route (`/api/loop/step/self`) executes a step and persists the Run only when reduced > 0.
-- Live demonstration surface (`/workbench/self`) compares baseline Self() (memory-free) with the experience path. A real Run that reduced error was written; the next Self() call consumed that persisted experience under the same client. A later step that increased error was correctly refused.
-- Causal comparison of cold vs reuse on matched cases (`causal-proof.ts`).
-- Client proof record: inspect a Run and export JSON evidence without internal architecture (`/workbench/client`).
-- Paid pilot gate remains behind a confirmed improved Run under safety constraints (`/workbench/pilot`).
+## Level 4 surfaces
 
-Marketplace stays downstream of the proof system. A tie in final e is not an improvement.
+- Goal contract, durable state machine, and safety gate (`src/lib/level4/`).
+- Autonomous-run view at `/workbench/autonomous`.
+- Proof suite at `/workbench/autonomous/proof` (bounded completion, safety and budget enforcement, experience reuse, audit trail).
+- Controller records can be persisted for recovery.
+
+Marketplace remains downstream of the proof system. A lower aggregate error does not override a failed safety constraint or a required human review.
 
 ## Assets that stay listed
 
 Do not orphan traction while the engine generalizes.
 
 Music is the first vertical, not the product boundary.
-Commit + push
-powershell
-git add README.md
-git commit -m "docs: update README with Level 3 closed-loop proof, Shiyan plant, and commercial center surfaces
-
-Preserves prior evolutionary notes. Adds live Level 3 Self() surface, real client scope, and Shiyan rename. Φ rule and engine unchanged."
