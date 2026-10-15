@@ -6,7 +6,7 @@ import SiteHeader from "@/components/SiteHeader";
 export default function ReviewPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Workbench B" />
+      <SiteHeader section="Workbench" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           Review
@@ -29,9 +29,9 @@ export default function ReviewPage() {
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
           <h2 className="text-white font-semibold mb-2">Public proof</h2>
-          <p>Model 3 2018 sealed reference. Optimus 2026 pipeline criteria. Same sealed sequence. Positive Φ.</p>
+          <p>Model 3 2018 sealed reference. Shiyan 2026 pipeline criteria. Same sealed sequence. Positive Φ.</p>
           <p className="mt-2">
-            <Link className="underline" href="/workbench/optimus">Optimus + Model 3</Link>
+            <Link className="underline" href="/workbench/optimus">Shiyan + Model 3</Link>
             {" · "}
             <Link className="underline" href="/workbench/proof">Safety proof</Link>
           </p>
@@ -67,12 +67,12 @@ export default function ReviewPage() {
           <p>
             Not a diagnosis. No PHI. Not revenue until a client settles.
             Healthcare diagnostics remains a higher-risk, later vertical.
-            Self() does not yet read prior Runs. Level 3 is the next architectural milestone.
+            Level 4 is the current architectural milestone: operate autonomously within constraints.
           </p>
         </section>
 
         <nav className="flex flex-wrap gap-4 text-sm mt-8">
-          <Link className="underline" href="/workbench">Workbench B</Link>
+          <Link className="underline" href="/workbench">Workbench</Link>
           <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
           <Link className="underline" href="/workbench/compare">Peer proof</Link>
