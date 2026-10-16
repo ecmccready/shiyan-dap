@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 
-const redis = Redis.fromEnv();
+const redis = new Redis({
+  url: process.env.UPSTASH_KV_REST_API_URL!,
+  token: process.env.UPSTASH_KV_REST_API_TOKEN!,
+});
+
 const STARTS_KEY = "level4:acquisition:starts";
 const RECENT_KEY = "level4:acquisition:recent";
 
