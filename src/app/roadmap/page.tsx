@@ -71,6 +71,12 @@ export default function RoadmapPage() {
           </a>
           {" — Workspace, Workbench, Runs, Self(), safety, and history as one system."}
         </p>
+        <p className="text-sm">
+          <a href="/workbench/status" className="underline text-blue-600 hover:text-blue-800">
+            Level 4 status
+          </a>
+          {" — current surfaces, measured outcome, acquisition readiness."}
+        </p>
       </header>
 
       <section className="space-y-4">
