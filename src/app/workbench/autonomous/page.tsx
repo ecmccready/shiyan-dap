@@ -7,6 +7,7 @@ import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 import { alreadyApplied, markApplied, clearSeen } from "@/lib/level4/idempotency";
 import { precheckAction } from "@/lib/level4/precheck";
+import { recordVerified, clearVerified } from "@/lib/level4/verified";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -85,6 +86,13 @@ export default function AutonomousPage() {
       0
     );
 
+    const verified = recordVerified(next, next.last_e, true);
+    next.history.push({
+      state: next.state,
+      at: verified.verified_at,
+      note: `verified result recorded (eligible=${verified.eligible})`,
+    });
+
     markApplied(actionKey);
     setRec(next);
     saveCheckpoint(next);
@@ -93,6 +101,7 @@ export default function AutonomousPage() {
   function reset() {
     clearCheckpoint();
     clearSeen();
+    clearVerified();
     setRec(INITIAL);
     setRecovered(false);
   }
