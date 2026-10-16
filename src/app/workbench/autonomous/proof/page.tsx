@@ -4,12 +4,11 @@ import { useState } from "react";
 import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
-import { checkSafety } from "@/lib/level4/safety-gate";
-import { compareColdReuse } from "@/lib/causal-proof";
+import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 
-const GOAL: GoalContract = {
+const DEMO_GOAL: GoalContract = {
   id: "goal_proof",
-  desired_outcome: "reduce final e under safety constraints",
+  desired_outcome: "reduce final e below 0.16 under safety constraints",
   permitted_actions: ["request_independent_check", "seal_pack", "hold"],
   max_iterations: 5,
   max_cost: 10,
@@ -18,81 +17,80 @@ const GOAL: GoalContract = {
   created_at: new Date().toISOString(),
 };
 
-export default function Level4ProofPage() {
-  const [log, setLog] = useState<string[]>([]);
+const INITIAL: ControllerRecord = {
+  goal_id: DEMO_GOAL.id,
+  state: "READY",
+  iteration: 0,
+  last_e: null,
+  history: [],
+};
 
-  function add(line: string) {
-    setLog((prev) => [...prev, line]);
+export default function ProofPage() {
+  const [log, setLog] = useState<string[]>([]);
+  const [passed, setPassed] = useState<boolean | null>(null);
+
+  function add(msg: string) {
+    setLog((l) => [...l, `${new Date().toISOString().slice(11, 19)} · ${msg}`]);
   }
 
   async function runProof() {
     setLog([]);
-    add("Level 4 proof suite — bounded autonomous loop");
+    setPassed(null);
+    clearCheckpoint();
+    add("cleared prior checkpoint");
 
-    let rec: ControllerRecord = {
-      goal_id: GOAL.id,
-      state: "READY",
-      iteration: 0,
-      last_e: 0.216,
-      history: [],
-    };
+    let rec = INITIAL;
+    add("started fresh run");
 
-    // Cold baseline
-    const coldE = 0.216;
-    add(`Cold baseline e = ${coldE}`);
+    // step once and checkpoint
+    rec = await autonomousStep(DEMO_GOAL, rec, "client_demo", "safety_v1", "model_3", "hold", 0);
+    saveCheckpoint(rec);
+    add(`stepped to iteration ${rec.iteration}, state ${rec.state}, checkpoint saved`);
 
-    for (let i = 0; i < GOAL.max_iterations; i++) {
-      rec = await autonomousStep(
-        GOAL,
-        rec,
-        "client_proof",
-        "safety_v1",
-        "model_3",
-        "hold",
-        0
-      );
-      add(`Step ${i + 1}: state=${rec.state}, iteration=${rec.iteration}`);
-      if (rec.state === "BLOCKED" || rec.state === "COMPLETE") break;
+    // simulate restart
+    const loaded = loadCheckpoint();
+    if (!loaded?.rec) {
+      add("FAIL: no checkpoint recovered");
+      setPassed(false);
+      return;
     }
+    add("recovered checkpoint after simulated restart");
 
-    // Simulated measured outcome after reuse
-    const reuseE = 0.151;
-    const cmp = compareColdReuse(coldE, reuseE, true);
-    add(
-      `Measured: cold ${cmp.cold_e} → reuse ${cmp.reuse_e} → ${cmp.outcome} (Φ ${cmp.phi.toFixed(3)})`
-    );
+    // continue from recovered state
+    rec = await autonomousStep(DEMO_GOAL, loaded.rec, "client_demo", "safety_v1", "model_3", "hold", 0);
+    add(`continued to iteration ${rec.iteration}, state ${rec.state}`);
 
-    // Safety
-    const payment = checkSafety(GOAL, "payment", 0, 0);
-    add(`Safety: payment → ${payment.allowed ? "allowed" : "blocked"} (${payment.reason})`);
+    const ok =
+      rec.iteration > loaded.rec.iteration &&
+      rec.state !== "BLOCKED" &&
+      rec.history.length > loaded.rec.history.length;
 
-    // Budget
-    const over = checkSafety(GOAL, "seal_pack", GOAL.max_iterations, 0);
-    add(`Budget: max iterations → ${over.allowed ? "allowed" : "blocked"}`);
-
-    add(`Audit: ${rec.history.length} transitions recorded`);
-    add("Recovery: controller record is persisted (see level4/persist)");
-    add("Regression: Level 1–3 surfaces unchanged");
+    add(ok ? "PASS: recovery preserved progress and allowed continuation" : "FAIL: recovery did not advance cleanly");
+    setPassed(ok);
   }
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
-      <h1 className="text-xl font-semibold">Level 4 proof</h1>
+      <h1 className="text-xl font-semibold">Level 4 — End-to-end recovery proof</h1>
       <p className="text-sm text-neutral-600">
-        Demonstrates bounded autonomous completion, measurement against a cold baseline,
-        safety and budget enforcement, experience reuse, and an audit trail.
+        Steps once, checkpoints, simulates restart, recovers, and continues. Not a full safety suite.
       </p>
       <button
         onClick={runProof}
         className="rounded bg-neutral-900 px-4 py-2 text-sm text-white"
       >
-        Run proof
+        Run recovery proof
       </button>
-      <ul className="space-y-1 font-mono text-xs">
-        {log.map((l, i) => (
-          <li key={i}>{l}</li>
+      {passed !== null && (
+        <p className={`text-sm font-medium ${passed ? "text-green-700" : "text-red-700"}`}>
+          {passed ? "PASS" : "FAIL"}
+        </p>
+      )}
+      <section className="space-y-1 text-xs font-mono">
+        {log.map((line, i) => (
+          <div key={i}>{line}</div>
         ))}
-      </ul>
+      </section>
     </main>
   );
 }
