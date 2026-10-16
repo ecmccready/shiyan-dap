@@ -1,4 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { loadStarts } from "@/lib/level4/acquisition";
+
 export default function StatusPage() {
+  const [starts, setStarts] = useState(0);
+
+  useEffect(() => {
+    setStarts(loadStarts());
+  }, []);
+
   const items = [
     { surface: "/roadmap", status: "live", note: "durability + acquisition priorities" },
     { surface: "/workbench/start", status: "live", note: "guided first run" },
@@ -43,6 +54,7 @@ export default function StatusPage() {
           <li>Understandable outcome without algorithm knowledge</li>
           <li>Reason to return: progress survives reload via server record</li>
         </ul>
+        <p className="text-neutral-700">Guided starts recorded: {starts}</p>
         <p className="text-neutral-500">
           Ready for measured traffic once durable store is connected.
         </p>
