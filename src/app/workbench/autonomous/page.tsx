@@ -138,8 +138,15 @@ export default function AutonomousPage() {
         </a>
         {" — one path from goal to verified result."}
       </p>
+      <p className="text-sm">
+        <a href="/api/level4/run?id=demo-run" className="underline text-blue-600" target="_blank">
+          Inspect server record
+        </a>
+      </p>
       {recovered && (
-        <p className="text-sm text-amber-700">Recovered from last record.</p>
+        <p className="text-sm text-amber-700">
+          Recovered from server record.
+        </p>
       )}
 
       <dl className="grid grid-cols-2 gap-2 text-sm">
