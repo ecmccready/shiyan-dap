@@ -37,6 +37,8 @@ export default function SpinePage() {
         {" · "}
         <a href="/workbench/autonomous/proof" className="underline text-blue-600">Recovery proof</a>
         {" · "}
+        <a href="/workbench/status" className="underline text-blue-600">Status</a>
+        {" · "}
         <a href="/roadmap" className="underline text-blue-600">Roadmap</a>
       </p>
     </main>
