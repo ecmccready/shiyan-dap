@@ -2,21 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { recordStart, loadStarts, newRunId, recordRecentRun } from "@/lib/level4/acquisition";
+import { recordStartServer, newRunId, loadAcquisitionServer } from "@/lib/level4/acquisition";
 
 export default function StartPage() {
   const router = useRouter();
   const [starts, setStarts] = useState(0);
 
   useEffect(() => {
-    setStarts(loadStarts());
+    async function load() {
+      const data = await loadAcquisitionServer();
+      setStarts(data.starts);
+    }
+    load();
   }, []);
 
-  function begin() {
+  async function begin() {
     const id = newRunId();
-    recordStart();
-    recordRecentRun(id);
-    setStarts(loadStarts());
+    await recordStartServer(id);
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem("aethel-active-run-id", id);
     }
