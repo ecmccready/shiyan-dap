@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
@@ -30,7 +30,7 @@ const INITIAL: ControllerRecord = {
   history: [],
 };
 
-export default function AutonomousPage() {
+function AutonomousInner() {
   const searchParams = useSearchParams();
   const RUN_ID =
     searchParams.get("run") ||
@@ -197,5 +197,13 @@ export default function AutonomousPage() {
         ))}
       </section>
     </main>
+  );
+}
+
+export default function AutonomousPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading run…</div>}>
+      <AutonomousInner />
+    </Suspense>
   );
 }
