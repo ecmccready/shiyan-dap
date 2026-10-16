@@ -8,6 +8,7 @@ import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/ch
 import { alreadyApplied, markApplied, clearSeen } from "@/lib/level4/idempotency";
 import { precheckAction } from "@/lib/level4/precheck";
 import { recordVerified, clearVerified } from "@/lib/level4/verified";
+import { saveServerRecord, loadServerRecord, clearServerRecord } from "@/lib/level4/server-record";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -28,16 +29,27 @@ const INITIAL: ControllerRecord = {
   history: [],
 };
 
+const RUN_ID = "demo-run";
+
 export default function AutonomousPage() {
   const [rec, setRec] = useState<ControllerRecord>(INITIAL);
   const [recovered, setRecovered] = useState(false);
 
   useEffect(() => {
-    const saved = loadCheckpoint();
-    if (saved?.rec) {
-      setRec(saved.rec);
-      setRecovered(true);
+    async function load() {
+      const serverRec = await loadServerRecord(RUN_ID);
+      if (serverRec) {
+        setRec(serverRec);
+        setRecovered(true);
+        return;
+      }
+      const saved = loadCheckpoint();
+      if (saved?.rec) {
+        setRec(saved.rec);
+        setRecovered(true);
+      }
     }
+    load();
   }, []);
 
   async function step() {
@@ -96,12 +108,14 @@ export default function AutonomousPage() {
     markApplied(actionKey);
     setRec(next);
     saveCheckpoint(next);
+    await saveServerRecord(RUN_ID, next);
   }
 
-  function reset() {
+  async function reset() {
     clearCheckpoint();
     clearSeen();
     clearVerified();
+    await clearServerRecord(RUN_ID);
     setRec(INITIAL);
     setRecovered(false);
   }
@@ -125,7 +139,7 @@ export default function AutonomousPage() {
         {" — one path from goal to verified result."}
       </p>
       {recovered && (
-        <p className="text-sm text-amber-700">Recovered from last checkpoint.</p>
+        <p className="text-sm text-amber-700">Recovered from last record.</p>
       )}
 
       <dl className="grid grid-cols-2 gap-2 text-sm">
