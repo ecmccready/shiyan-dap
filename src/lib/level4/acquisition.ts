@@ -18,3 +18,7 @@ export function loadStarts(): number {
     return 0;
   }
 }
+
+export function newRunId(): string {
+  return `run_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
