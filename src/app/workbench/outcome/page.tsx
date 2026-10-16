@@ -45,6 +45,12 @@ export default function OutcomePage() {
         Start measured run
       </button>
 
+      <p className="text-sm">
+        <a href="/workbench/result" className="underline text-blue-600">
+          View latest result
+        </a>
+      </p>
+
       <p className="text-xs text-neutral-500">
         Progress is kept. You can leave and return. The result is recorded for reuse.
       </p>
