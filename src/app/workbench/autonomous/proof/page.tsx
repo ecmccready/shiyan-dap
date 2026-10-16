@@ -5,6 +5,7 @@ import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
+import { precheckAction } from "@/lib/level4/precheck";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_proof",
@@ -60,10 +61,14 @@ export default function ProofPage() {
     rec = await autonomousStep(DEMO_GOAL, loaded.rec, "client_demo", "safety_v1", "model_3", "hold", 0);
     add(`continued to iteration ${rec.iteration}, state ${rec.state}`);
 
+    const gate = precheckAction(DEMO_GOAL, rec, "hold", 0);
+    add(gate.ok ? "precheck passed on recovered state" : `precheck blocked: ${gate.reason}`);
+
     const ok =
       rec.iteration > loaded.rec.iteration &&
       rec.state !== "BLOCKED" &&
-      rec.history.length > loaded.rec.history.length;
+      rec.history.length > loaded.rec.history.length &&
+      gate.ok;
 
     add(ok ? "PASS: recovery preserved progress and allowed continuation" : "FAIL: recovery did not advance cleanly");
     setPassed(ok);
@@ -73,7 +78,7 @@ export default function ProofPage() {
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-xl font-semibold">Level 4 — End-to-end recovery proof</h1>
       <p className="text-sm text-neutral-600">
-        Steps once, checkpoints, simulates restart, recovers, and continues. Not a full safety suite.
+        Steps once, checkpoints, simulates restart, recovers, continues, and re-checks the pre-action gate.
       </p>
       <button
         onClick={runProof}
