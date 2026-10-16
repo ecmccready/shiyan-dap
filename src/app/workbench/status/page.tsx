@@ -34,6 +34,7 @@ export default function StatusPage() {
   const items = [
     { surface: "/roadmap", status: "live", note: "durability + acquisition priorities" },
     { surface: "/workbench/start", status: "live", note: "guided first run" },
+    { surface: "/workbench/outcome", status: "live", note: "external client declares a measurable goal" },
     { surface: "/workbench/spine", status: "live", note: "product spine view" },
     { surface: "/workbench/autonomous", status: "live", note: "checkpoint, idempotency, precheck, verified, server record" },
     { surface: "/workbench/autonomous/proof", status: "live", note: "recovery + gate proof" },
@@ -46,6 +47,12 @@ export default function StatusPage() {
         <h1 className="text-2xl font-semibold">Durability status</h1>
         <p className="text-neutral-700">
           Current surfaces from this exploratory slice. Run records, acquisition counters, and verified experience persist in Upstash.
+        </p>
+        <p className="text-sm">
+          <a href="/workbench/outcome" className="underline text-blue-600">
+            Declare an outcome
+          </a>
+          {" — external client path."}
         </p>
       </header>
 
