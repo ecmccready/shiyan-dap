@@ -59,6 +59,12 @@ export default function RoadmapPage() {
         <p className="text-neutral-700">
           Next architectural milestone on the existing Level 4 controller, safety gate, and history. Not declared complete until recovery, idempotency, and an end-to-end proof are demonstrated.
         </p>
+        <p className="text-sm">
+          <a href="/workbench/start" className="underline text-blue-600 hover:text-blue-800">
+            Start a guided run
+          </a>
+          {" — clear path from goal to verified result."}
+        </p>
       </header>
 
       <section className="space-y-4">
