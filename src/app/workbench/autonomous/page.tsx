@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
+import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -16,14 +17,25 @@ const DEMO_GOAL: GoalContract = {
   created_at: new Date().toISOString(),
 };
 
+const INITIAL: ControllerRecord = {
+  goal_id: DEMO_GOAL.id,
+  state: "READY",
+  iteration: 0,
+  last_e: null,
+  history: [],
+};
+
 export default function AutonomousPage() {
-  const [rec, setRec] = useState<ControllerRecord>({
-    goal_id: DEMO_GOAL.id,
-    state: "READY",
-    iteration: 0,
-    last_e: null,
-    history: [],
-  });
+  const [rec, setRec] = useState<ControllerRecord>(INITIAL);
+  const [recovered, setRecovered] = useState(false);
+
+  useEffect(() => {
+    const saved = loadCheckpoint();
+    if (saved?.rec) {
+      setRec(saved.rec);
+      setRecovered(true);
+    }
+  }, []);
 
   async function step() {
     const next = await autonomousStep(
@@ -36,6 +48,13 @@ export default function AutonomousPage() {
       0
     );
     setRec(next);
+    saveCheckpoint(next);
+  }
+
+  function reset() {
+    clearCheckpoint();
+    setRec(INITIAL);
+    setRecovered(false);
   }
 
   return (
@@ -50,6 +69,9 @@ export default function AutonomousPage() {
         </a>
         {" — recovery, idempotency, safety gates, end-to-end proof."}
       </p>
+      {recovered && (
+        <p className="text-sm text-amber-700">Recovered from last checkpoint.</p>
+      )}
 
       <dl className="grid grid-cols-2 gap-2 text-sm">
         <dt>State</dt>
@@ -62,13 +84,21 @@ export default function AutonomousPage() {
         <dd>{DEMO_GOAL.desired_outcome}</dd>
       </dl>
 
-      <button
-        onClick={step}
-        disabled={rec.state === "COMPLETE" || rec.state === "BLOCKED"}
-        className="rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
-      >
-        Advance loop
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={step}
+          disabled={rec.state === "COMPLETE" || rec.state === "BLOCKED"}
+          className="rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+        >
+          Advance loop
+        </button>
+        <button
+          onClick={reset}
+          className="rounded border px-4 py-2 text-sm"
+        >
+          Reset
+        </button>
+      </div>
 
       <section className="space-y-1 text-xs font-mono">
         {rec.history.map((h, i) => (
