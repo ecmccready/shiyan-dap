@@ -51,6 +51,12 @@ export default function StartPage() {
       </button>
 
       <p className="text-xs text-neutral-500">Guided starts so far: {starts}</p>
+      <p className="text-sm">
+        <a href="/workbench/status" className="underline text-blue-600">
+          Level 4 status
+        </a>
+        {" — current surfaces and measured outcome."}
+      </p>
       <p className="text-xs text-neutral-500">
         No algorithm knowledge required. Safety and recovery are enforced before any action is applied.
       </p>
