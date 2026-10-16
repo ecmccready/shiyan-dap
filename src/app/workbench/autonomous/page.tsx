@@ -8,7 +8,7 @@ import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 import { alreadyApplied, markApplied, clearSeen } from "@/lib/level4/idempotency";
 import { precheckAction } from "@/lib/level4/precheck";
-import { recordVerified, clearVerified } from "@/lib/level4/verified";
+import { recordVerified, clearVerified, recordExperienceServer } from "@/lib/level4/verified";
 import { saveServerRecord, loadServerRecord, clearServerRecord } from "@/lib/level4/server-record";
 
 const DEMO_GOAL: GoalContract = {
@@ -36,6 +36,15 @@ function AutonomousInner() {
     searchParams.get("run") ||
     (typeof window !== "undefined" ? window.sessionStorage.getItem("aethel-active-run-id") : null) ||
     "demo-run";
+
+  const declaredGoal =
+    typeof window !== "undefined"
+      ? window.sessionStorage.getItem("aethel-declared-goal")
+      : null;
+
+  const GOAL: GoalContract = declaredGoal
+    ? { ...DEMO_GOAL, desired_outcome: declaredGoal }
+    : DEMO_GOAL;
 
   const [rec, setRec] = useState<ControllerRecord>(INITIAL);
   const [recovered, setRecovered] = useState(false);
@@ -75,7 +84,7 @@ function AutonomousInner() {
       return;
     }
 
-    const check = precheckAction(DEMO_GOAL, rec, "hold", 0);
+    const check = precheckAction(GOAL, rec, "hold", 0);
     if (!check.ok) {
       setRec({
         ...rec,
@@ -94,7 +103,7 @@ function AutonomousInner() {
     }
 
     const next = await autonomousStep(
-      DEMO_GOAL,
+      GOAL,
       rec,
       "client_demo",
       "safety_v1",
@@ -108,6 +117,14 @@ function AutonomousInner() {
       state: next.state,
       at: verified.verified_at,
       note: `verified result recorded (eligible=${verified.eligible})`,
+    });
+
+    await recordExperienceServer({
+      run_id: RUN_ID,
+      iteration: next.iteration,
+      e: next.last_e,
+      verified_at: verified.verified_at,
+      eligible: true,
     });
 
     markApplied(actionKey);
@@ -165,10 +182,10 @@ function AutonomousInner() {
         <dd className="font-medium">{rec.state}</dd>
         <dt>Iterations</dt>
         <dd>
-          {rec.iteration} / {DEMO_GOAL.max_iterations}
+          {rec.iteration} / {GOAL.max_iterations}
         </dd>
         <dt>Goal</dt>
-        <dd>{DEMO_GOAL.desired_outcome}</dd>
+        <dd>{GOAL.desired_outcome}</dd>
         <dt>Run</dt>
         <dd className="font-mono text-xs">{RUN_ID}</dd>
       </dl>
