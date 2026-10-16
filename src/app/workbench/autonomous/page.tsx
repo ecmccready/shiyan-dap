@@ -44,6 +44,12 @@ export default function AutonomousPage() {
       <p className="text-sm text-neutral-600">
         Persistent, bounded control loop. Plans, acts, verifies, and stops under explicit constraints.
       </p>
+      <p className="text-sm">
+        <a href="/roadmap" className="underline text-blue-600 hover:text-blue-800">
+          Level 4 durability roadmap
+        </a>
+        {" — recovery, idempotency, safety gates, end-to-end proof."}
+      </p>
 
       <dl className="grid grid-cols-2 gap-2 text-sm">
         <dt>State</dt>
