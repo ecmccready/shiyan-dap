@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 import type { ControllerRecord } from "@/lib/level4/controller";
 
-const redis = Redis.fromEnv();
+const redis = new Redis({
+  url: process.env.UPSTASH_KV_REST_API_URL!,
+  token: process.env.UPSTASH_KV_REST_API_TOKEN!,
+});
+
 const key = (id: string) => `level4:run:${id}`;
 
 export async function GET(req: NextRequest) {
