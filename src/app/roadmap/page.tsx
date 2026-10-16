@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 const PRIORITIES = [
   {
     title: "Make Aethel Node a durable, bounded autonomous system",
