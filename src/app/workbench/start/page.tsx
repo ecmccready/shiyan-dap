@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { recordStart, loadStarts } from "@/lib/level4/acquisition";
+import { recordStart, loadStarts, newRunId } from "@/lib/level4/acquisition";
 
 export default function StartPage() {
   const router = useRouter();
@@ -13,9 +13,13 @@ export default function StartPage() {
   }, []);
 
   function begin() {
+    const id = newRunId();
     recordStart();
     setStarts(loadStarts());
-    router.push("/workbench/autonomous");
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("aethel-active-run-id", id);
+    }
+    router.push(`/workbench/autonomous?run=${id}`);
   }
 
   return (
