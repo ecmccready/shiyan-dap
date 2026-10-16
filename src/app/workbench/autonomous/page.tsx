@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
@@ -29,9 +30,13 @@ const INITIAL: ControllerRecord = {
   history: [],
 };
 
-const RUN_ID = "demo-run";
-
 export default function AutonomousPage() {
+  const searchParams = useSearchParams();
+  const RUN_ID =
+    searchParams.get("run") ||
+    (typeof window !== "undefined" ? window.sessionStorage.getItem("aethel-active-run-id") : null) ||
+    "demo-run";
+
   const [rec, setRec] = useState<ControllerRecord>(INITIAL);
   const [recovered, setRecovered] = useState(false);
 
@@ -50,7 +55,7 @@ export default function AutonomousPage() {
       }
     }
     load();
-  }, []);
+  }, [RUN_ID]);
 
   async function step() {
     const actionKey = `${rec.goal_id}:${rec.iteration}:hold`;
@@ -139,7 +144,7 @@ export default function AutonomousPage() {
         {" — one path from goal to verified result."}
       </p>
       <p className="text-sm">
-        <a href="/api/level4/run?id=demo-run" className="underline text-blue-600" target="_blank">
+        <a href={`/api/level4/run?id=${RUN_ID}`} className="underline text-blue-600" target="_blank">
           Inspect server record
         </a>
       </p>
@@ -151,7 +156,7 @@ export default function AutonomousPage() {
       </p>
       {recovered && (
         <p className="text-sm text-amber-700">
-          Recovered from server record.
+          Recovered from server record ({RUN_ID}).
         </p>
       )}
 
@@ -164,6 +169,8 @@ export default function AutonomousPage() {
         </dd>
         <dt>Goal</dt>
         <dd>{DEMO_GOAL.desired_outcome}</dd>
+        <dt>Run</dt>
+        <dd className="font-mono text-xs">{RUN_ID}</dd>
       </dl>
 
       <div className="flex gap-2">
