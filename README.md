@@ -47,6 +47,17 @@ Customers do not buy an AI or a state machine. They buy a system that repeatedly
 Not a diagnosis. No PHI. Not revenue until a client settles.  
 Healthcare diagnostics remains a higher-risk, later vertical.
 
+## Autonomy levels
+
+Level 1 — Execute and measure  
+Level 2 — Reuse verified experience  
+Level 3 — Learn across Runs (Self() uses approved historical experience)  
+Level 4 — Operate autonomously within constraints  
+
+Level 3 is implemented and remains in use: Self() retrieves only approved, safety-passed, positive-Φ experience; causal comparison distinguishes improved / tied / regressed; Runs are persisted; clients can export evidence.
+
+Level 4 is the current plant and is live. A bounded control loop plans, checks a safety gate before every action, executes only permitted actions, records every transition, recovers from interruption, and records eligible experience for reuse. Recovery, idempotency, safety/budget enforcement, and an end-to-end proof are demonstrated. An external client path (declare outcome → run → verified result) is open.
+
 ## What’s built
 
 Level 4 durability plant (this slice):
@@ -77,9 +88,7 @@ Supporting modules under `src/lib/level4/`: checkpoint, idempotency, precheck, v
 
 ## Continuity
 
-This plant builds on the existing Level 3 implementation (Self() retrieves only approved, safety-passed, positive-Φ experience; causal comparison; persisted Runs; client export).
-
-Level 4 does not replace the engine. It adds durability, recovery, and a measurable external path on top of the same controller, safety gate, and history.
+This plant builds on the existing Level 3 implementation and does not replace it. Level 4 adds durability, recovery, and a measurable external path on top of the same controller, safety gate, and history.
 
 Marketplace remains downstream of the proof system. A lower aggregate error does not override a failed safety constraint or a required human review.
 
