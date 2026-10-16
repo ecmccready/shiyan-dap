@@ -65,6 +65,12 @@ export default function RoadmapPage() {
           </a>
           {" — clear path from goal to verified result."}
         </p>
+        <p className="text-sm">
+          <a href="/workbench/spine" className="underline text-blue-600 hover:text-blue-800">
+            Product spine
+          </a>
+          {" — Workspace, Workbench, Runs, Self(), safety, and history as one system."}
+        </p>
       </header>
 
       <section className="space-y-4">
