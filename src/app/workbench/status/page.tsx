@@ -35,6 +35,7 @@ export default function StatusPage() {
     { surface: "/roadmap", status: "live", note: "durability + acquisition priorities" },
     { surface: "/workbench/start", status: "live", note: "guided first run" },
     { surface: "/workbench/outcome", status: "live", note: "external client declares a measurable goal" },
+    { surface: "/workbench/result", status: "live", note: "simple external verified result" },
     { surface: "/workbench/spine", status: "live", note: "product spine view" },
     { surface: "/workbench/autonomous", status: "live", note: "checkpoint, idempotency, precheck, verified, server record" },
     { surface: "/workbench/autonomous/proof", status: "live", note: "recovery + gate proof" },
@@ -53,6 +54,11 @@ export default function StatusPage() {
             Declare an outcome
           </a>
           {" — external client path."}
+        </p>
+        <p className="text-sm">
+          <a href="/workbench/result" className="underline text-blue-600">
+            Latest result
+          </a>
         </p>
       </header>
 
