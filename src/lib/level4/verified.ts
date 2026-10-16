@@ -49,3 +49,17 @@ export function clearVerified() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(VERIFIED_KEY);
 }
+
+export async function recordExperienceServer(entry: {
+  run_id: string;
+  iteration: number;
+  e: number | null;
+  verified_at: string;
+  eligible: boolean;
+}) {
+  await fetch("/api/level4/experience", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(entry),
+  });
+}
