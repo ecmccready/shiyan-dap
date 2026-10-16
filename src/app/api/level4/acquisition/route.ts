@@ -1,61 +1,27 @@
-const KEY = "aethel-level4-starts";
-const RECENT_KEY = "aethel-level4-recent-runs";
+import { NextRequest, NextResponse } from "next/server";
+import { kv } from "@vercel/kv";
 
-export function recordStart() {
-  if (typeof window === "undefined") return;
-  try {
-    const n = Number(window.localStorage.getItem(KEY) || "0");
-    window.localStorage.setItem(KEY, String(n + 1));
-  } catch {
-    // non-fatal
+const STARTS_KEY = "level4:acquisition:starts";
+const RECENT_KEY = "level4:acquisition:recent";
+
+export async function GET() {
+  const starts = (await kv.get<number>(STARTS_KEY)) ?? 0;
+  const recent = (await kv.get<string[]>(RECENT_KEY)) ?? [];
+  return NextResponse.json({ starts, recent });
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const { id } = body as { id?: string };
+
+  const starts = ((await kv.get<number>(STARTS_KEY)) ?? 0) + 1;
+  await kv.set(STARTS_KEY, starts);
+
+  if (id) {
+    const recent = (await kv.get<string[]>(RECENT_KEY)) ?? [];
+    const next = [id, ...recent.filter((x) => x !== id)].slice(0, 8);
+    await kv.set(RECENT_KEY, next);
   }
-}
 
-export function loadStarts(): number {
-  if (typeof window === "undefined") return 0;
-  try {
-    return Number(window.localStorage.getItem(KEY) || "0");
-  } catch {
-    return 0;
-  }
-}
-
-export function newRunId(): string {
-  return `run_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-export function recordRecentRun(id: string) {
-  if (typeof window === "undefined") return;
-  try {
-    const raw = window.localStorage.getItem(RECENT_KEY);
-    const list: string[] = raw ? JSON.parse(raw) : [];
-    const next = [id, ...list.filter((x) => x !== id)].slice(0, 8);
-    window.localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-  } catch {
-    // non-fatal
-  }
-}
-
-export function loadRecentRuns(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(RECENT_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-export async function recordStartServer(id: string) {
-  await fetch("/api/level4/acquisition", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  });
-}
-
-export async function loadAcquisitionServer(): Promise<{ starts: number; recent: string[] }> {
-  const res = await fetch("/api/level4/acquisition");
-  if (!res.ok) return { starts: 0, recent: [] };
-  return res.json();
+  return NextResponse.json({ ok: true, starts });
 }
