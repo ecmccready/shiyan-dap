@@ -5,9 +5,13 @@ import { loadStarts } from "@/lib/level4/acquisition";
 
 export default function StatusPage() {
   const [starts, setStarts] = useState(0);
+  const [activeRun, setActiveRun] = useState<string | null>(null);
 
   useEffect(() => {
     setStarts(loadStarts());
+    if (typeof window !== "undefined") {
+      setActiveRun(window.sessionStorage.getItem("aethel-active-run-id"));
+    }
   }, []);
 
   const items = [
@@ -55,6 +59,14 @@ export default function StatusPage() {
           <li>Reason to return: progress survives reload via server record</li>
         </ul>
         <p className="text-neutral-700">Guided starts recorded: {starts}</p>
+        {activeRun && (
+          <p className="text-neutral-700">
+            Active run:{" "}
+            <a href={`/workbench/autonomous?run=${activeRun}`} className="underline">
+              {activeRun}
+            </a>
+          </p>
+        )}
         <p className="text-neutral-500">
           Ready for measured traffic once durable store is connected.
         </p>
