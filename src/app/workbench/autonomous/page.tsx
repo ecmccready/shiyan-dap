@@ -143,6 +143,12 @@ export default function AutonomousPage() {
           Inspect server record
         </a>
       </p>
+      <p className="text-sm">
+        <a href="/workbench/status" className="underline text-blue-600 hover:text-blue-800">
+          Level 4 status
+        </a>
+        {" — measured outcome and acquisition readiness."}
+      </p>
       {recovered && (
         <p className="text-sm text-amber-700">
           Recovered from server record.
