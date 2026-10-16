@@ -84,6 +84,17 @@ Level 4 is the current architectural milestone. A bounded control loop plans, ch
 
 Marketplace remains downstream of the proof system. A lower aggregate error does not override a failed safety constraint or a required human review.
 
+## Next development priorities (Level 4 durability)
+
+- Durable, bounded autonomous system: plan/act/observe/verify/learn with checkpoint recovery after restart.
+- Connected path: Workspace goal → Workbench execution; Workspace, Workbench, Runs, Self(), safety, and history as one system.
+- Idempotent retries with duplicate-side-effect safeguards.
+- Safety and budget enforcement before every permitted action.
+- Verified results in existing run history and eligible experience store.
+- End-to-end test proving recovery, safety, and completion (not just a demo).
+- Acquisition-ready: guided first run, understandable result, demonstrable benefit without requiring users to understand the algorithm.
+- Measure distribution and onboarding only after the above is coherent.
+
 ## Assets that stay listed
 
 Do not orphan traction while the engine generalizes.
