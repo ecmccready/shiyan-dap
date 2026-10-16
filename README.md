@@ -29,7 +29,6 @@ Customers do not buy an AI or a state machine. They buy a system that repeatedly
 | /workbench | Commercial center | https://shiyan-dap.vercel.app/workbench |
 | /workbench/review | Acquirer / funding one-pager | https://shiyan-dap.vercel.app/workbench/review |
 | /workbench/offer | Solicitation | https://shiyan-dap.vercel.app/workbench/offer |
-| /workbench/optimus | Model 3 sealed + Optimus 2026 proof | https://shiyan-dap.vercel.app/workbench/optimus |
 | /workbench/client | Target-client pipeline + exportable Run | https://shiyan-dap.vercel.app/workbench/client |
 | /workbench/pilot | Paid pilot gate | https://shiyan-dap.vercel.app/workbench/pilot |
 | /workbench/autonomous | Level 4 autonomous run | https://shiyan-dap.vercel.app/workbench/autonomous |
@@ -83,6 +82,8 @@ This plant builds on the existing Level 3 implementation (Self() retrieves only 
 Level 4 does not replace the engine. It adds durability, recovery, and a measurable external path on top of the same controller, safety gate, and history.
 
 Marketplace remains downstream of the proof system. A lower aggregate error does not override a failed safety constraint or a required human review.
+
+The Model 3 sealed sequence and Optimus reference remain in the continuity and proof language. `/workbench/optimus` currently returns 404 and is not a live surface.
 
 ## Next
 
