@@ -6,6 +6,7 @@ import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 import { alreadyApplied, markApplied, clearSeen } from "@/lib/level4/idempotency";
+import { precheckAction } from "@/lib/level4/precheck";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -42,7 +43,6 @@ export default function AutonomousPage() {
     const actionKey = `${rec.goal_id}:${rec.iteration}:hold`;
 
     if (alreadyApplied(actionKey)) {
-      // idempotent: retry is a no-op for side effects
       setRec({
         ...rec,
         history: [
@@ -51,6 +51,24 @@ export default function AutonomousPage() {
             state: rec.state,
             at: new Date().toISOString(),
             note: "idempotent skip (already applied)",
+          },
+        ],
+      });
+      return;
+    }
+
+    const check = precheckAction(DEMO_GOAL, rec, "hold", 0);
+    if (!check.ok) {
+      setRec({
+        ...rec,
+        state: "BLOCKED",
+        blocked_reason: check.reason,
+        history: [
+          ...rec.history,
+          {
+            state: "BLOCKED",
+            at: new Date().toISOString(),
+            note: `precheck blocked: ${check.reason}`,
           },
         ],
       });
