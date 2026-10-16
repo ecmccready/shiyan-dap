@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { recordStart, loadStarts, newRunId } from "@/lib/level4/acquisition";
+import { recordStart, loadStarts, newRunId, recordRecentRun } from "@/lib/level4/acquisition";
 
 export default function StartPage() {
   const router = useRouter();
@@ -15,6 +15,7 @@ export default function StartPage() {
   function begin() {
     const id = newRunId();
     recordStart();
+    recordRecentRun(id);
     setStarts(loadStarts());
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem("aethel-active-run-id", id);
