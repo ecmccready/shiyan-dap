@@ -1,12 +1,21 @@
-"use client";
+use client";
 
 import { useEffect, useState } from "react";
 import { loadAcquisitionServer } from "@/lib/level4/acquisition";
+
+type ExperienceEntry = {
+  run_id: string;
+  iteration: number;
+  e: number | null;
+  verified_at: string;
+  eligible: boolean;
+};
 
 export default function StatusPage() {
   const [starts, setStarts] = useState(0);
   const [activeRun, setActiveRun] = useState<string | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
+  const [experience, setExperience] = useState<ExperienceEntry[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -16,6 +25,8 @@ export default function StatusPage() {
       if (typeof window !== "undefined") {
         setActiveRun(window.sessionStorage.getItem("aethel-active-run-id"));
       }
+      const res = await fetch("/api/level4/experience");
+      if (res.ok) setExperience(await res.json());
     }
     load();
   }, []);
@@ -34,7 +45,7 @@ export default function StatusPage() {
         <p className="text-sm uppercase tracking-wide text-neutral-500">Level 4</p>
         <h1 className="text-2xl font-semibold">Durability status</h1>
         <p className="text-neutral-700">
-          Current surfaces from this exploratory slice. Run records and acquisition counters persist in Vercel KV.
+          Current surfaces from this exploratory slice. Run records, acquisition counters, and verified experience persist in Upstash.
         </p>
       </header>
 
@@ -87,9 +98,21 @@ export default function StatusPage() {
             </ul>
           </div>
         )}
-        <p className="text-neutral-500">
-          Counts and run records persist across cold starts once KV is connected.
-        </p>
+      </section>
+
+      <section className="rounded border p-4 text-sm">
+        <p className="font-medium">Verified experience</p>
+        {experience.length === 0 ? (
+          <p className="text-neutral-600">None yet.</p>
+        ) : (
+          <ul className="mt-2 space-y-1 text-xs font-mono">
+            {experience.slice(-5).map((e, i) => (
+              <li key={i}>
+                {e.run_id} · iter {e.iteration} · e={e.e} · eligible={String(e.eligible)}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </main>
   );
