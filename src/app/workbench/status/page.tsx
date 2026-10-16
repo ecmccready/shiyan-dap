@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadStarts, loadRecentRuns } from "@/lib/level4/acquisition";
+import { loadAcquisitionServer } from "@/lib/level4/acquisition";
 
 export default function StatusPage() {
   const [starts, setStarts] = useState(0);
@@ -9,11 +9,15 @@ export default function StatusPage() {
   const [recent, setRecent] = useState<string[]>([]);
 
   useEffect(() => {
-    setStarts(loadStarts());
-    setRecent(loadRecentRuns());
-    if (typeof window !== "undefined") {
-      setActiveRun(window.sessionStorage.getItem("aethel-active-run-id"));
+    async function load() {
+      const data = await loadAcquisitionServer();
+      setStarts(data.starts);
+      setRecent(data.recent);
+      if (typeof window !== "undefined") {
+        setActiveRun(window.sessionStorage.getItem("aethel-active-run-id"));
+      }
     }
+    load();
   }, []);
 
   const items = [
@@ -30,7 +34,7 @@ export default function StatusPage() {
         <p className="text-sm uppercase tracking-wide text-neutral-500">Level 4</p>
         <h1 className="text-2xl font-semibold">Durability status</h1>
         <p className="text-neutral-700">
-          Current surfaces from this exploratory slice. Server record is in-memory for the plant; durable store is the next step.
+          Current surfaces from this exploratory slice. Run records and acquisition counters persist in Vercel KV.
         </p>
       </header>
 
@@ -48,7 +52,7 @@ export default function StatusPage() {
       <section className="rounded border p-4 text-sm">
         <p className="font-medium">Measured outcome</p>
         <p className="text-neutral-600">
-          Demo goal: reduce final e below 0.16 under safety constraints. Φ is recorded when verified results are eligible. Server record survives page reload within the same instance.
+          Demo goal: reduce final e below 0.16 under safety constraints. Φ is recorded when verified results are eligible.
         </p>
       </section>
 
@@ -84,13 +88,9 @@ export default function StatusPage() {
           </div>
         )}
         <p className="text-neutral-500">
-          Ready for measured traffic once durable store is connected.
+          Counts and run records persist across cold starts once KV is connected.
         </p>
       </section>
-
-      <p className="text-sm text-neutral-500">
-        Next: durable store (Vercel KV or existing run persistence), measured acquisition, external client with predeclared outcome.
-      </p>
     </main>
   );
 }
