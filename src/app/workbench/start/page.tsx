@@ -1,11 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { recordStart } from "@/lib/level4/acquisition";
 
 export default function StartPage() {
   const router = useRouter();
 
   function begin() {
+    recordStart();
     router.push("/workbench/autonomous");
   }
 
