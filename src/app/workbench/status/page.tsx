@@ -35,6 +35,19 @@ export default function StatusPage() {
         </p>
       </section>
 
+      <section className="rounded border p-4 text-sm space-y-2">
+        <p className="font-medium">Acquisition readiness</p>
+        <ul className="list-disc list-inside text-neutral-600">
+          <li>Clear starting point: /workbench/start</li>
+          <li>Guided first run that ends in a verified result</li>
+          <li>Understandable outcome without algorithm knowledge</li>
+          <li>Reason to return: progress survives reload via server record</li>
+        </ul>
+        <p className="text-neutral-500">
+          Ready for measured traffic once durable store is connected.
+        </p>
+      </section>
+
       <p className="text-sm text-neutral-500">
         Next: durable store (Vercel KV or existing run persistence), measured acquisition, external client with predeclared outcome.
       </p>
