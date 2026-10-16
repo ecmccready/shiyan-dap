@@ -118,6 +118,12 @@ export default function AutonomousPage() {
         </a>
         {" — recovery, idempotency, safety gates, end-to-end proof."}
       </p>
+      <p className="text-sm">
+        <a href="/workbench/start" className="underline text-blue-600 hover:text-blue-800">
+          Guided start
+        </a>
+        {" — one path from goal to verified result."}
+      </p>
       {recovered && (
         <p className="text-sm text-amber-700">Recovered from last checkpoint.</p>
       )}
