@@ -5,6 +5,7 @@ import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
+import { alreadyApplied, markApplied, clearSeen } from "@/lib/level4/idempotency";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -38,6 +39,24 @@ export default function AutonomousPage() {
   }, []);
 
   async function step() {
+    const actionKey = `${rec.goal_id}:${rec.iteration}:hold`;
+
+    if (alreadyApplied(actionKey)) {
+      // idempotent: retry is a no-op for side effects
+      setRec({
+        ...rec,
+        history: [
+          ...rec.history,
+          {
+            state: rec.state,
+            at: new Date().toISOString(),
+            note: "idempotent skip (already applied)",
+          },
+        ],
+      });
+      return;
+    }
+
     const next = await autonomousStep(
       DEMO_GOAL,
       rec,
@@ -47,12 +66,15 @@ export default function AutonomousPage() {
       "hold",
       0
     );
+
+    markApplied(actionKey);
     setRec(next);
     saveCheckpoint(next);
   }
 
   function reset() {
     clearCheckpoint();
+    clearSeen();
     setRec(INITIAL);
     setRecovered(false);
   }
