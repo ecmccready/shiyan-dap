@@ -12,9 +12,17 @@ The engine did not get replaced.
 
 Keep what works. Add the next commercial plant. Do not reset traction.
 
-## Live commercial path
+## What it is now
 
-Developmental stack is the product. Public packs are the proof. Client reference is the next plant.
+A durable, bounded autonomous system that takes a goal, plans, acts, observes, verifies, and resumes after interruption without losing state or repeating unintended actions.
+
+Customers do not buy an AI or a state machine. They buy a system that repeatedly reduces error against a reference, under explicit safety and budget constraints, and records eligible experience for reuse.
+
+- Unit of operation: a **Run** on **Workbench**. Metric: **Δe**.
+- Home (Workspace) is the controller. Workbench is the execution environment.
+- Level 4 is the current plant: plan, act, observe, verify, learn, and recover.
+
+## Live commercial path
 
 | Surface | Role | Live |
 | --- | --- | --- |
@@ -23,77 +31,65 @@ Developmental stack is the product. Public packs are the proof. Client reference
 | /workbench/offer | Solicitation | https://shiyan-dap.vercel.app/workbench/offer |
 | /workbench/optimus | Model 3 sealed + Optimus 2026 proof | https://shiyan-dap.vercel.app/workbench/optimus |
 | /workbench/client | Target-client pipeline + exportable Run | https://shiyan-dap.vercel.app/workbench/client |
-| /workbench/pilot | Paid pilot gate (behind measured benefit) | https://shiyan-dap.vercel.app/workbench/pilot |
-| /workbench/autonomous | Level 4 autonomous-run view | https://shiyan-dap.vercel.app/workbench/autonomous |
-| /workbench/autonomous/proof | Level 4 proof suite | https://shiyan-dap.vercel.app/workbench/autonomous/proof |
+| /workbench/pilot | Paid pilot gate | https://shiyan-dap.vercel.app/workbench/pilot |
+| /workbench/autonomous | Level 4 autonomous run | https://shiyan-dap.vercel.app/workbench/autonomous |
+| /workbench/autonomous/proof | End-to-end recovery + gate proof | https://shiyan-dap.vercel.app/workbench/autonomous/proof |
+| /workbench/start | Guided first run | https://shiyan-dap.vercel.app/workbench/start |
+| /workbench/outcome | External client declares a measurable goal | https://shiyan-dap.vercel.app/workbench/outcome |
+| /workbench/result | Simple verified result view | https://shiyan-dap.vercel.app/workbench/result |
+| /workbench/status | Level 4 durability and acquisition status | https://shiyan-dap.vercel.app/workbench/status |
+| /workbench/spine | Product spine view | https://shiyan-dap.vercel.app/workbench/spine |
+| /roadmap | Durability and acquisition priorities | https://shiyan-dap.vercel.app/roadmap |
 | /workbench/history | Inspectable Runs | https://shiyan-dap.vercel.app/workbench/history |
-| /workbench/marketplace | Verified sequences (not settled) | https://shiyan-dap.vercel.app/workbench/marketplace |
-| /workbench/proof | Safety proof (Φ 0.014 / 0.065 / 0.065) | https://shiyan-dap.vercel.app/workbench/proof |
+| /workbench/marketplace | Verified sequences | https://shiyan-dap.vercel.app/workbench/marketplace |
+| /workbench/proof | Safety proof | https://shiyan-dap.vercel.app/workbench/proof |
 
 Φ only when final e falls. Same sealed sequence across Safety, Optimus, and Client plants.  
 Not a diagnosis. No PHI. Not revenue until a client settles.  
 Healthcare diagnostics remains a higher-risk, later vertical.
 
-## What this is
+## What’s built
 
-Customers do not buy "Shiyan DAP," an AI, or a state machine.
+Level 4 durability plant (this slice):
 
-They buy a system that repeatedly takes an action, observes the result, measures the error against a reference, and uses that experience to choose the next action.
+- Durable state and checkpoint recovery (client + server).
+- Server record in Upstash Redis (`/api/level4/run`) that survives cold starts and redeploys.
+- Idempotent handling of retried actions.
+- Pre-action safety and budget gate before every permitted action.
+- Verified results recorded in run history and the durable experience store (`/api/level4/experience`).
+- End-to-end recovery proof that also exercises the pre-action gate.
+- Unique run id per guided start; recent runs tracked.
+- Acquisition counters that persist (`/api/level4/acquisition`).
+- Guided first-run entry (`/workbench/start`).
+- External client path: declare a measurable goal (`/workbench/outcome`) → run → view verified result (`/workbench/result`).
+- Product spine view and status summary with cross-links.
+- Roadmap that surfaces the priorities and links.
 
-- Sales: turn operational experience into the next best action.
-- Technical: a model-portable closed-loop execution system where intelligence is measured by reduction of error, not by model output alone.
-- Unit they operate: a **Run** on **Workbench**. Metric: **Δe**.
+Supporting modules under `src/lib/level4/`: checkpoint, idempotency, precheck, verified, server-record, acquisition.
 
-Home (Workspace A) is the controller. Workbench (Workbench B) is the execution environment.
+## Wins
 
-## Navigation strategy
+- A run can be interrupted and resumed without losing progress or repeating side effects.
+- Safety and budget limits are enforced before any action is applied.
+- Eligible verified results are stored durably and available for reuse by Self().
+- New users have a clear starting point and an understandable result without needing to understand the algorithm.
+- Acquisition is measured: guided starts and recent runs are recorded and persist.
+- The external client path is closed: declare outcome → bounded run → verified result.
 
-Home is the controller. Workbench is the environment. That split is the product.
+## Continuity
 
-| Surface | Role | Customer meaning |
-| --- | --- | --- |
-| / Home | Controller | Goal, task, namer of y. Music is the first vertical. |
-| /workbench Workbench | Environment | The SaaS plant. Runs, domains, audit, listed experience, autonomous control. |
-| Diagnostic | Plant on Workbench | Validation of y against a reference. Not a header product. |
-| Proof | Plant on Workbench | Cold plant, then reuse plant. Not a header product. |
-| Audit | Plant on Workbench | Frozen run + digest when Δe stalls. Human review desk. |
-| MCP | Plant on Workbench | Open host/server contract. Not a header product. |
-| Peer proof | Plant on Workbench | Same controller, two environments. Not a header product. |
-| Actor network | Context on Workbench | Documented actors and handoffs. Not a controller. |
-| Marketplace / Playlist / Songs | Kept rails | Assets already listed. Traction stays on the page. |
+This plant builds on the existing Level 3 implementation (Self() retrieves only approved, safety-passed, positive-Φ experience; causal comparison; persisted Runs; client export).
 
-Diagnostic, Proof, Audit, MCP, the peer proof, and the actor network open from Workbench.
-
-## Autonomy levels
-
-Level 1 — Execute and measure  
-Level 2 — Reuse verified experience  
-Level 3 — Learn across Runs (Self() uses approved historical experience)  
-Level 4 — Operate autonomously within constraints  
-
-Level 3 is implemented: Self() retrieves only approved, safety-passed, positive-Φ experience; causal comparison distinguishes improved / tied / regressed; Runs are persisted; clients can export evidence.
-
-Level 4 is the current architectural milestone. A bounded control loop plans, checks a safety gate before every action, executes only permitted actions, records every transition, and can resume from the last known state. It is not declared complete until recovery-from-restart, side-effect safety, and one external client with a predeclared measurable outcome are demonstrated.
-
-## Level 4 surfaces
-
-- Goal contract, durable state machine, and safety gate (`src/lib/level4/`).
-- Autonomous-run view at `/workbench/autonomous`.
-- Proof suite at `/workbench/autonomous/proof` (bounded completion, safety and budget enforcement, experience reuse, audit trail).
-- Controller records can be persisted for recovery.
+Level 4 does not replace the engine. It adds durability, recovery, and a measurable external path on top of the same controller, safety gate, and history.
 
 Marketplace remains downstream of the proof system. A lower aggregate error does not override a failed safety constraint or a required human review.
 
-## Next development priorities (Level 4 durability)
+## Next
 
-- Durable, bounded autonomous system: plan/act/observe/verify/learn with checkpoint recovery after restart.
-- Connected path: Workspace goal → Workbench execution; Workspace, Workbench, Runs, Self(), safety, and history as one system.
-- Idempotent retries with duplicate-side-effect safeguards.
-- Safety and budget enforcement before every permitted action.
-- Verified results in existing run history and eligible experience store.
-- End-to-end test proving recovery, safety, and completion (not just a demo).
-- Acquisition-ready: guided first run, understandable result, demonstrable benefit without requiring users to understand the algorithm.
-- Measure distribution and onboarding only after the above is coherent.
+- External client with a predeclared measurable outcome that settles.
+- Measured acquisition traffic against the durable counters.
+- Server-side verified experience available to Self() across runs and restarts.
+- Durable store already live (Upstash); next is volume and external settlement.
 
 ## Assets that stay listed
 
