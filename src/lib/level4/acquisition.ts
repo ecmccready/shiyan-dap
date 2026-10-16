@@ -45,3 +45,17 @@ export function loadRecentRuns(): string[] {
     return [];
   }
 }
+
+export async function recordStartServer(id: string) {
+  await fetch("/api/level4/acquisition", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+}
+
+export async function loadAcquisitionServer(): Promise<{ starts: number; recent: string[] }> {
+  const res = await fetch("/api/level4/acquisition");
+  if (!res.ok) return { starts: 0, recent: [] };
+  return res.json();
+}
