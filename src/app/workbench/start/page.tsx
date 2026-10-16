@@ -1,13 +1,20 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { recordStart } from "@/lib/level4/acquisition";
+import { recordStart, loadStarts } from "@/lib/level4/acquisition";
 
 export default function StartPage() {
   const router = useRouter();
+  const [starts, setStarts] = useState(0);
+
+  useEffect(() => {
+    setStarts(loadStarts());
+  }, []);
 
   function begin() {
     recordStart();
+    setStarts(loadStarts());
     router.push("/workbench/autonomous");
   }
 
@@ -43,6 +50,7 @@ export default function StartPage() {
         Begin guided run
       </button>
 
+      <p className="text-xs text-neutral-500">Guided starts so far: {starts}</p>
       <p className="text-xs text-neutral-500">
         No algorithm knowledge required. Safety and recovery are enforced before any action is applied.
       </p>
