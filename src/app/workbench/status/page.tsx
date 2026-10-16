@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadStarts } from "@/lib/level4/acquisition";
+import { loadStarts, loadRecentRuns } from "@/lib/level4/acquisition";
 
 export default function StatusPage() {
   const [starts, setStarts] = useState(0);
   const [activeRun, setActiveRun] = useState<string | null>(null);
+  const [recent, setRecent] = useState<string[]>([]);
 
   useEffect(() => {
     setStarts(loadStarts());
+    setRecent(loadRecentRuns());
     if (typeof window !== "undefined") {
       setActiveRun(window.sessionStorage.getItem("aethel-active-run-id"));
     }
@@ -66,6 +68,20 @@ export default function StatusPage() {
               {activeRun}
             </a>
           </p>
+        )}
+        {recent.length > 0 && (
+          <div className="mt-2">
+            <p className="font-medium">Recent runs</p>
+            <ul className="list-disc list-inside">
+              {recent.map((id) => (
+                <li key={id}>
+                  <a href={`/workbench/autonomous?run=${id}`} className="underline">
+                    {id}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
         <p className="text-neutral-500">
           Ready for measured traffic once durable store is connected.
