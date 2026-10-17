@@ -1,24 +1,33 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { Redis } from "@upstash/redis";
 import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
-import {
-  loadExperienceServer,
-  latestVerified,
-  type ExperienceEntry,
-} from "@/lib/level4/experience-client";
+import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
-export default function ResultPage() {
-  const [experience, setExperience] = useState<ExperienceEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+// Server-rendered on every request so the latest verified result is in the HTML
+// (visible without JavaScript, to crawlers, and to buyers' link previews).
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    loadExperienceServer().then((list) => {
-      setExperience(list);
-      setLoading(false);
+async function loadExperience(): Promise<ExperienceEntry[]> {
+  const url = process.env.UPSTASH_KV_REST_API_URL;
+  const token = process.env.UPSTASH_KV_REST_API_TOKEN;
+  if (!url || !token) return [];
+  try {
+    const list = (await new Redis({ url, token }).lrange<ExperienceEntry>("level4:experience", 0, -1)) ?? [];
+    // Same defensive dedupe as GET /api/level4/experience: first entry per run+iteration.
+    const seen = new Set<string>();
+    return list.filter((e) => {
+      const k = `${e.run_id}:${e.iteration}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
     });
-  }, []);
+  } catch {
+    return [];
+  }
+}
+
+export default async function ResultPage() {
+  const experience = await loadExperience();
 
   return (
     <Level4Shell>
@@ -31,7 +40,7 @@ export default function ResultPage() {
           </p>
         </header>
 
-        <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loading} />
+        <LatestVerified entry={latestVerified(experience)} total={experience.length} />
 
         <p className="text-sm">
           <a href="/workbench/outcome" className="underline text-emerald-400">Declare another outcome</a>
