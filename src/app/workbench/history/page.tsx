@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import LatestVerified from "@/components/LatestVerified";
+import {
+  loadExperienceServer,
+  latestVerified,
+  type ExperienceEntry,
+} from "@/lib/level4/experience-client";
 
 type StoredRun = {
   id: string;
@@ -15,6 +21,20 @@ type StoredRun = {
 
 export default function HistoryPage() {
   const [runs, setRuns] = useState<StoredRun[]>([]);
+  const [experience, setExperience] = useState<ExperienceEntry[]>([]);
+  const [loadingExp, setLoadingExp] = useState(true);
+
+  useEffect(() => {
+    let live = true;
+    loadExperienceServer().then((list) => {
+      if (!live) return;
+      setExperience(list);
+      setLoadingExp(false);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -41,9 +61,15 @@ export default function HistoryPage() {
           Client pipeline Runs export from <Link className="underline" href="/workbench/client">/workbench/client</Link>. Public proof remains on the <Link className="underline" href="/workbench/shiyan">Shiyan plant</Link>.
         </p>
 
+        <h2 className="text-lg font-semibold mb-3">Level 4 · server record</h2>
+        <div className="mb-8">
+          <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loadingExp} />
+        </div>
+
+        <h2 className="text-lg font-semibold mb-3">Client pipeline · this browser</h2>
         {runs.length === 0 ? (
           <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-400 mb-6">
-            No client Runs stored in this browser yet. Export one from the client pipeline.
+            No client pipeline Runs exported in this browser.
           </section>
         ) : (
           runs.map((run) => (
@@ -57,7 +83,7 @@ export default function HistoryPage() {
         )}
 
         <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-400 mb-8">
-          <p>Runs stored in this browser are inspectable here. Server-side permanent records are the next plant.</p>
+          <p>Level 4 verified results are stored on the server. Client pipeline exports are stored in this browser.</p>
           <p className="mt-2">Same sealed sequence as Safety and Shiyan. Φ stays inside the plant that produced it. Not a diagnosis. No PHI.</p>
         </section>
 

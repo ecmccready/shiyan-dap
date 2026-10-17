@@ -19,7 +19,8 @@ export default function StartPage() {
 
   async function begin() {
     const id = newRunId();
-    await recordStartServer(id);
+    const count = await recordStartServer(id);
+    if (count !== null) setStarts(count);
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem("aethel-active-run-id", id);
     }

@@ -3,20 +3,19 @@
 import { useEffect, useState } from "react";
 import { loadAcquisitionServer } from "@/lib/level4/acquisition";
 import Level4Shell from "@/components/Level4Shell";
-
-type ExperienceEntry = {
-  run_id: string;
-  iteration: number;
-  e: number | null;
-  verified_at: string;
-  eligible: boolean;
-};
+import LatestVerified from "@/components/LatestVerified";
+import {
+  loadExperienceServer,
+  latestVerified,
+  type ExperienceEntry,
+} from "@/lib/level4/experience-client";
 
 export default function StatusPage() {
   const [starts, setStarts] = useState(0);
   const [activeRun, setActiveRun] = useState<string | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const [experience, setExperience] = useState<ExperienceEntry[]>([]);
+  const [loadingExp, setLoadingExp] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -26,8 +25,8 @@ export default function StatusPage() {
       if (typeof window !== "undefined") {
         setActiveRun(window.sessionStorage.getItem("aethel-active-run-id"));
       }
-      const res = await fetch("/api/level4/experience");
-      if (res.ok) setExperience(await res.json());
+      setExperience(await loadExperienceServer());
+      setLoadingExp(false);
     }
     load();
   }, []);
@@ -49,7 +48,7 @@ export default function StatusPage() {
         <p className="text-sm uppercase tracking-wide text-zinc-500">Level 4</p>
         <h1 className="text-2xl font-semibold">Durability status</h1>
         <p className="text-zinc-300">
-          Current surfaces from this exploratory slice. Run records, acquisition counters, and verified experience persist in Upstash.
+          Run records, guided-start counters, and verified experience persist in Upstash and survive reloads and redeploys.
         </p>
         <p className="text-sm">
           <a href="/workbench/outcome" className="underline text-emerald-400">
@@ -115,20 +114,21 @@ export default function StatusPage() {
         )}
       </section>
 
-      <section className="rounded-xl border border-zinc-800 p-4 text-sm">
-        <p className="font-medium">Verified experience</p>
-        {experience.length === 0 ? (
-          <p className="text-zinc-400">None yet.</p>
-        ) : (
-          <ul className="mt-2 space-y-1 text-xs font-mono">
-            {experience.slice(-5).map((e, i) => (
-              <li key={i}>
-                {e.run_id} · iter {e.iteration} · e={e.e} · eligible={String(e.eligible)}
+      <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loadingExp} />
+
+      {experience.length > 1 && (
+        <section className="rounded-xl border border-zinc-800 p-4 text-sm">
+          <p className="font-medium">Recent verified steps</p>
+          <ul className="mt-2 space-y-1 text-xs font-mono text-zinc-300">
+            {experience.slice(-5).map((e) => (
+              <li key={`${e.run_id}:${e.iteration}`}>
+                {e.run_id} · iter {e.iteration} · e={e.e ?? "—"}
+                {typeof e.delta_e === "number" ? ` · Δe=${e.delta_e}` : ""} · eligible={String(e.eligible)}
               </li>
             ))}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
     </main>
     </Level4Shell>
   );

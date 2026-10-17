@@ -29,6 +29,20 @@ export type ExperienceEntry = {
 
 const KEY = "level4:experience";
 const MAX_ENTRIES = 200;
+const SEEN_TTL_SECONDS = 60 * 60 * 24 * 30;
+const seenKey = (run_id: string, iteration: number) =>
+  `level4:experience:seen:${run_id}:${iteration}`;
+
+/** Keep the first entry per (run_id, iteration); preserves order. */
+function dedupe(list: ExperienceEntry[]): ExperienceEntry[] {
+  const seen = new Set<string>();
+  return list.filter((x) => {
+    const k = `${x.run_id}:${x.iteration}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
 
 function client(): Redis | null {
   const url = process.env.UPSTASH_KV_REST_API_URL;
@@ -43,7 +57,7 @@ export async function GET() {
   const redis = client();
   if (!redis) return NextResponse.json([]);
   const list = (await redis.lrange<ExperienceEntry>(KEY, 0, -1)) ?? [];
-  return NextResponse.json(list);
+  return NextResponse.json(dedupe(list));
 }
 
 export async function POST(req: NextRequest) {
@@ -79,6 +93,15 @@ export async function POST(req: NextRequest) {
     phi: num(body.phi),
     state: typeof body.state === "string" ? body.state.slice(0, 16) : undefined,
   };
+
+  // Idempotent: one entry per (run_id, iteration). SET NX is atomic.
+  const first = await redis.set(seenKey(run_id, iteration), 1, {
+    nx: true,
+    ex: SEEN_TTL_SECONDS,
+  });
+  if (first !== "OK") {
+    return NextResponse.json({ ok: true, duplicate: true });
+  }
 
   await redis.rpush(KEY, entry);
   await redis.ltrim(KEY, -MAX_ENTRIES, -1);

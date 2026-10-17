@@ -46,16 +46,31 @@ export function loadRecentRuns(): string[] {
   }
 }
 
-export async function recordStartServer(id: string) {
-  await fetch("/api/level4/acquisition", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  });
+/** Records a guided start on the server. Returns the new count, or null on failure. */
+export async function recordStartServer(id: string): Promise<number | null> {
+  try {
+    const res = await fetch("/api/level4/acquisition", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+      cache: "no-store",
+      keepalive: true, // survives the navigation that follows
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { starts?: number };
+    return typeof data.starts === "number" ? data.starts : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function loadAcquisitionServer(): Promise<{ starts: number; recent: string[] }> {
-  const res = await fetch("/api/level4/acquisition");
-  if (!res.ok) return { starts: 0, recent: [] };
-  return res.json();
+  try {
+    const res = await fetch("/api/level4/acquisition", { cache: "no-store" });
+    if (!res.ok) return { starts: 0, recent: [] };
+    const data = await res.json();
+    return { starts: Number(data?.starts ?? 0) || 0, recent: Array.isArray(data?.recent) ? data.recent : [] };
+  } catch {
+    return { starts: 0, recent: [] };
+  }
 }
