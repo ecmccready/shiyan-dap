@@ -7,7 +7,7 @@ import Level4Shell from "@/components/Level4Shell";
 
 export default function StartPage() {
   const router = useRouter();
-  const [starts, setStarts] = useState(0);
+  const [starts, setStarts] = useState<number | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -60,7 +60,7 @@ export default function StartPage() {
         Begin guided run
       </button>
 
-      <p className="text-xs text-zinc-500">Guided starts so far: {starts}</p>
+      <p className="text-xs text-zinc-500">Guided starts so far: {starts ?? "…"}</p>
       <p className="text-sm">
         <a href="/workbench/status" className="underline text-emerald-400">
           Level 4 status

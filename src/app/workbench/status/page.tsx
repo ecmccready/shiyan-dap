@@ -11,7 +11,7 @@ import {
 } from "@/lib/level4/experience-client";
 
 export default function StatusPage() {
-  const [starts, setStarts] = useState(0);
+  const [starts, setStarts] = useState<number | null>(null);
   const [activeRun, setActiveRun] = useState<string | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const [experience, setExperience] = useState<ExperienceEntry[]>([]);
@@ -89,7 +89,7 @@ export default function StatusPage() {
           <li>Understandable outcome without algorithm knowledge</li>
           <li>Reason to return: progress survives reload via server record</li>
         </ul>
-        <p className="text-zinc-300">Guided starts recorded: {starts}</p>
+        <p className="text-zinc-300">Guided starts recorded: {starts ?? "…"}</p>
         {activeRun && (
           <p className="text-zinc-300">
             Active run:{" "}
