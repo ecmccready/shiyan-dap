@@ -1,16 +1,9 @@
 # Aethel Node
 
-Sovereign multi-model orchestration and multi-domain workspace infrastructure (formerly Shiyan-DAP).
+Sovereign Operating System for distributed AI compute.
 
 Live: [https://shiyan-dap.vercel.app](https://shiyan-dap.vercel.app)  
 Repo: [https://github.com/ecmccready/shiyan-dap](https://github.com/ecmccready/shiyan-dap)
-
-Aethel Node is commercial development on what Shiyan already built.  
-The repo name is still `shiyan-dap`.  
-The product name is Aethel Node.  
-The engine did not get replaced.
-
-Keep what works. Add the next commercial plant. Do not reset traction.
 
 ## What it is now
 
@@ -106,3 +99,14 @@ The Model 3 sealed sequence and Optimus reference remain in the continuity and p
 Do not orphan traction while the engine generalizes.
 
 Music is the first vertical, not the product boundary.
+
+## Architectural Leverage & Enterprise Readiness
+
+Aethel Node does not rely on fragile prompting or linear agent chains. Under the hood, it operates as a model-portable cognitive engine built for zero-downtime corporate environments:
+
+* **Decoupled Orchestration:** Separates cognitive planning from tool execution, enabling seamless hot-swapping of underlying LLMs based on cost, latency, or compute needs.
+
+* **Topological Fault Isolation:** Uses mereotopological boundaries instead of standard graph networks, allowing the system to naturally isolate, bypass, and recover from localized environment failures.
+
+* **Enterprise Data Sovereignty:** Powered by a clean Model Context Protocol (MCP) refactor, ensuring client data layers never bleed into the orchestration loop, fulfilling strict security compliance out of the box.
+
