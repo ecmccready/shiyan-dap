@@ -79,7 +79,7 @@ Supporting modules under `src/lib/level4/`: controller, goal, loop, safety-gate,
 
 - A run can be interrupted and resumed without losing progress or repeating side effects.
 - Safety and budget limits are enforced before any action is applied.
-- Eligible verified results are stored durably and available for reuse by Self().
+- Eligible verified results are stored durably and are publicly inspectable (`/api/level4/experience`). Feeding them back into Self() across runs is not live yet (see Next).
 - New users have a clear starting point and an understandable result without needing to understand the algorithm.
 - Acquisition is measured: guided starts and recent runs are recorded and persist.
 - The external client path is closed: declare outcome → bounded run → verified result.
