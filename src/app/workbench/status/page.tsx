@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { loadAcquisitionServer } from "@/lib/level4/acquisition";
+import Level4Shell from "@/components/Level4Shell";
 
 type ExperienceEntry = {
   run_id: string;
@@ -42,21 +43,22 @@ export default function StatusPage() {
   ];
 
   return (
+    <Level4Shell>
     <main className="mx-auto max-w-2xl space-y-8 p-6">
       <header className="space-y-2">
-        <p className="text-sm uppercase tracking-wide text-neutral-500">Level 4</p>
+        <p className="text-sm uppercase tracking-wide text-zinc-500">Level 4</p>
         <h1 className="text-2xl font-semibold">Durability status</h1>
-        <p className="text-neutral-700">
+        <p className="text-zinc-300">
           Current surfaces from this exploratory slice. Run records, acquisition counters, and verified experience persist in Upstash.
         </p>
         <p className="text-sm">
-          <a href="/workbench/outcome" className="underline text-blue-600">
+          <a href="/workbench/outcome" className="underline text-emerald-400">
             Declare an outcome
           </a>
           {" — external client path."}
         </p>
         <p className="text-sm">
-          <a href="/workbench/result" className="underline text-blue-600">
+          <a href="/workbench/result" className="underline text-emerald-400">
             Latest result
           </a>
         </p>
@@ -64,33 +66,33 @@ export default function StatusPage() {
 
       <ul className="space-y-3">
         {items.map((item) => (
-          <li key={item.surface} className="rounded border p-4">
+          <li key={item.surface} className="rounded-xl border border-zinc-800 p-4">
             <a href={item.surface} className="font-medium underline">
               {item.surface}
             </a>
-            <p className="text-sm text-neutral-600">{item.note}</p>
+            <p className="text-sm text-zinc-400">{item.note}</p>
           </li>
         ))}
       </ul>
 
-      <section className="rounded border p-4 text-sm">
+      <section className="rounded-xl border border-zinc-800 p-4 text-sm">
         <p className="font-medium">Measured outcome</p>
-        <p className="text-neutral-600">
+        <p className="text-zinc-400">
           Demo goal: reduce final e below 0.16 under safety constraints. Φ is recorded when verified results are eligible.
         </p>
       </section>
 
-      <section className="rounded border p-4 text-sm space-y-2">
+      <section className="rounded-xl border border-zinc-800 p-4 text-sm space-y-2">
         <p className="font-medium">Acquisition readiness</p>
-        <ul className="list-disc list-inside text-neutral-600">
+        <ul className="list-disc list-inside text-zinc-400">
           <li>Clear starting point: /workbench/start</li>
           <li>Guided first run that ends in a verified result</li>
           <li>Understandable outcome without algorithm knowledge</li>
           <li>Reason to return: progress survives reload via server record</li>
         </ul>
-        <p className="text-neutral-700">Guided starts recorded: {starts}</p>
+        <p className="text-zinc-300">Guided starts recorded: {starts}</p>
         {activeRun && (
-          <p className="text-neutral-700">
+          <p className="text-zinc-300">
             Active run:{" "}
             <a href={`/workbench/autonomous?run=${activeRun}`} className="underline">
               {activeRun}
@@ -113,10 +115,10 @@ export default function StatusPage() {
         )}
       </section>
 
-      <section className="rounded border p-4 text-sm">
+      <section className="rounded-xl border border-zinc-800 p-4 text-sm">
         <p className="font-medium">Verified experience</p>
         {experience.length === 0 ? (
-          <p className="text-neutral-600">None yet.</p>
+          <p className="text-zinc-400">None yet.</p>
         ) : (
           <ul className="mt-2 space-y-1 text-xs font-mono">
             {experience.slice(-5).map((e, i) => (
@@ -128,5 +130,6 @@ export default function StatusPage() {
         )}
       </section>
     </main>
+    </Level4Shell>
   );
 }

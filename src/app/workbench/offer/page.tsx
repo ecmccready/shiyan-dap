@@ -28,7 +28,7 @@ export default function OfferPage() {
           Model 3 2018 sealed reference and Optimus 2026 pipeline criteria. Same loop. Φ only when final e falls.
         </p>
         <nav className="flex flex-wrap gap-4 text-sm mb-8">
-          <Link className="underline" href="/workbench/optimus">Optimus + Model 3 proof</Link>
+          <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
         </nav>
 

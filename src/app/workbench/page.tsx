@@ -35,6 +35,7 @@ export default function WorkbenchPage() {
         </p>
 
         <nav className="flex flex-wrap gap-4 text-sm mb-8">
+          <Link className="underline text-emerald-400" href="/workbench/start">Level 4 · Start a run</Link>
           <Link className="underline" href="/workbench/review">Review</Link>
           <Link className="underline" href="/workbench/offer">Offer</Link>
           <Link className="underline" href="/workbench/client">Client pipeline</Link>

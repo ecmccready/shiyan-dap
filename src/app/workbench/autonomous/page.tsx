@@ -10,6 +10,7 @@ import { alreadyApplied, markApplied, clearSeen } from "@/lib/level4/idempotency
 import { precheckAction } from "@/lib/level4/precheck";
 import { recordVerified, clearVerified, recordExperienceServer } from "@/lib/level4/verified";
 import { saveServerRecord, loadServerRecord, clearServerRecord } from "@/lib/level4/server-record";
+import Level4Shell from "@/components/Level4Shell";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -145,34 +146,34 @@ function AutonomousInner() {
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-xl font-semibold">Level 4 — Autonomous Run</h1>
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-zinc-400">
         Persistent, bounded control loop. Plans, acts, verifies, and stops under explicit constraints.
       </p>
       <p className="text-sm">
-        <a href="/roadmap" className="underline text-blue-600 hover:text-blue-800">
+        <a href="/roadmap" className="underline text-emerald-400 hover:text-emerald-300">
           Level 4 durability roadmap
         </a>
         {" — recovery, idempotency, safety gates, end-to-end proof."}
       </p>
       <p className="text-sm">
-        <a href="/workbench/start" className="underline text-blue-600 hover:text-blue-800">
+        <a href="/workbench/start" className="underline text-emerald-400 hover:text-emerald-300">
           Guided start
         </a>
         {" — one path from goal to verified result."}
       </p>
       <p className="text-sm">
-        <a href={`/api/level4/run?id=${RUN_ID}`} className="underline text-blue-600" target="_blank">
+        <a href={`/api/level4/run?id=${RUN_ID}`} className="underline text-emerald-400" target="_blank">
           Inspect server record
         </a>
       </p>
       <p className="text-sm">
-        <a href="/workbench/status" className="underline text-blue-600 hover:text-blue-800">
+        <a href="/workbench/status" className="underline text-emerald-400 hover:text-emerald-300">
           Level 4 status
         </a>
         {" — measured outcome and acquisition readiness."}
       </p>
       {recovered && (
-        <p className="text-sm text-amber-700">
+        <p className="text-sm text-amber-400">
           Recovered from server record ({RUN_ID}).
         </p>
       )}
@@ -194,13 +195,13 @@ function AutonomousInner() {
         <button
           onClick={step}
           disabled={rec.state === "COMPLETE" || rec.state === "BLOCKED"}
-          className="rounded bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="rounded-full bg-emerald-600 px-4 py-2 text-sm text-white disabled:opacity-50"
         >
           Advance loop
         </button>
         <button
           onClick={reset}
-          className="rounded border px-4 py-2 text-sm"
+          className="rounded-full border border-zinc-700 px-4 py-2 text-sm"
         >
           Reset
         </button>
@@ -219,8 +220,10 @@ function AutonomousInner() {
 
 export default function AutonomousPage() {
   return (
-    <Suspense fallback={<div className="p-6">Loading run…</div>}>
-      <AutonomousInner />
-    </Suspense>
+    <Level4Shell>
+      <Suspense fallback={<div className="p-6 text-zinc-400">Loading run…</div>}>
+        <AutonomousInner />
+      </Suspense>
+    </Level4Shell>
   );
 }

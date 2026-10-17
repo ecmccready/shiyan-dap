@@ -6,6 +6,7 @@ import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 import { precheckAction } from "@/lib/level4/precheck";
+import Level4Shell from "@/components/Level4Shell";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_proof",
@@ -75,19 +76,20 @@ export default function ProofPage() {
   }
 
   return (
+    <Level4Shell>
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-xl font-semibold">Level 4 — End-to-end recovery proof</h1>
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-zinc-400">
         Steps once, checkpoints, simulates restart, recovers, continues, and re-checks the pre-action gate.
       </p>
       <button
         onClick={runProof}
-        className="rounded bg-neutral-900 px-4 py-2 text-sm text-white"
+        className="rounded-full bg-emerald-600 px-4 py-2 text-sm text-white"
       >
         Run recovery proof
       </button>
       {passed !== null && (
-        <p className={`text-sm font-medium ${passed ? "text-green-700" : "text-red-700"}`}>
+        <p className={`text-sm font-medium ${passed ? "text-emerald-400" : "text-red-400"}`}>
           {passed ? "PASS" : "FAIL"}
         </p>
       )}
@@ -97,5 +99,6 @@ export default function ProofPage() {
         ))}
       </section>
     </main>
+    </Level4Shell>
   );
 }

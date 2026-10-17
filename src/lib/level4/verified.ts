@@ -56,10 +56,21 @@ export async function recordExperienceServer(entry: {
   e: number | null;
   verified_at: string;
   eligible: boolean;
+  y?: string;
+  e0?: number | null;
+  delta_e?: number | null;
+  cold_e?: number | null;
+  phi?: number | null;
+  state?: string;
 }) {
-  await fetch("/api/level4/experience", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(entry),
-  });
+  // Non-fatal: the run continues even if the durable store is unavailable.
+  try {
+    await fetch("/api/level4/experience", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entry),
+    });
+  } catch {
+    // offline or store not configured
+  }
 }
