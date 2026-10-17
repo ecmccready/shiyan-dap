@@ -11,18 +11,24 @@ export async function autonomousStep(
   workflow_version: string,
   model_version: string,
   fallbackY: string,
-  currentCost: number
+  currentCost: number,
+  /**
+   * Optional proposer. Defaults to SelfFromApproved (server-side KV).
+   * Client pages pass a browser-safe proposer, since @vercel/kv cannot run in the browser.
+   */
+  propose: () => Promise<{ y: string; source?: string }> = () =>
+    SelfFromApproved(client_id, workflow_version, model_version, fallbackY)
 ): Promise<ControllerRecord> {
   if (rec.state === "COMPLETE" || rec.state === "BLOCKED") return rec;
 
   let next = transition(rec, "PLANNING", "planning next action");
 
-  const proposal = await SelfFromApproved(
-    client_id,
-    workflow_version,
-    model_version,
-    fallbackY
-  );
+  let proposal: { y: string; source?: string };
+  try {
+    proposal = await propose();
+  } catch {
+    proposal = { y: fallbackY, source: "fallback" };
+  }
 
   const safety = checkSafety(goal, proposal.y, next.iteration, currentCost);
   if (!safety.allowed) {

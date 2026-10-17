@@ -1,219 +1,287 @@
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Level4Shell from "@/components/Level4Shell";
 import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
+import { transition } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 import { alreadyApplied, markApplied, clearSeen } from "@/lib/level4/idempotency";
 import { precheckAction } from "@/lib/level4/precheck";
 import { recordVerified, clearVerified, recordExperienceServer } from "@/lib/level4/verified";
 import { saveServerRecord, loadServerRecord, clearServerRecord } from "@/lib/level4/server-record";
-import Level4Shell from "@/components/Level4Shell";
+import {
+  REUSE_SEQUENCE,
+  coldBaseline,
+  experienceProposer,
+  measureActions,
+  nextFromExperience,
+  successThreshold,
+} from "@/lib/level4/measured";
+import type { YAction } from "@/lib/closed-loop";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
   desired_outcome: "reduce final e below 0.16 under safety constraints",
-  permitted_actions: ["request_independent_check", "seal_pack", "hold"],
+  // The approved reuse sequence plus a safe no-op.
+  permitted_actions: [...REUSE_SEQUENCE, "hold"],
   max_iterations: 5,
   max_cost: 10,
   success_condition: "e < 0.16 && safety_passed",
   require_approval_for: ["payment", "production_change"],
-  created_at: new Date().toISOString(),
+  created_at: "2026-10-15T00:00:00.000Z",
 };
+
+const E0 = measureActions([]).e0;
 
 const INITIAL: ControllerRecord = {
   goal_id: DEMO_GOAL.id,
   state: "READY",
   iteration: 0,
-  last_e: null,
+  last_e: E0,
+  e0: E0,
+  actions: [],
   history: [],
 };
 
+function fmt(n: number | null | undefined) {
+  return typeof n === "number" ? n.toFixed(3) : "—";
+}
+
 function AutonomousInner() {
   const searchParams = useSearchParams();
-  const RUN_ID =
-    searchParams.get("run") ||
-    (typeof window !== "undefined" ? window.sessionStorage.getItem("aethel-active-run-id") : null) ||
-    "demo-run";
-
-  const declaredGoal =
-    typeof window !== "undefined"
-      ? window.sessionStorage.getItem("aethel-declared-goal")
-      : null;
-
-  const GOAL: GoalContract = declaredGoal
-    ? { ...DEMO_GOAL, desired_outcome: declaredGoal }
-    : DEMO_GOAL;
-
+  // Same lookup order as before: ?run= → session → demo-run.
+  const [runId] = useState<string>(
+    () =>
+      searchParams.get("run") ||
+      (typeof window !== "undefined" ? window.sessionStorage.getItem("aethel-active-run-id") : null) ||
+      "demo-run"
+  );
+  const [goal] = useState<GoalContract>(() => {
+    const declared =
+      typeof window !== "undefined" ? window.sessionStorage.getItem("aethel-declared-goal") : null;
+    return declared ? { ...DEMO_GOAL, desired_outcome: declared } : DEMO_GOAL;
+  });
   const [rec, setRec] = useState<ControllerRecord>(INITIAL);
   const [recovered, setRecovered] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const serverRec = await loadServerRecord(RUN_ID);
+      const serverRec = await loadServerRecord(runId).catch(() => null);
       if (serverRec) {
-        setRec(serverRec);
+        setRec({ actions: [], e0: E0, ...serverRec });
         setRecovered(true);
         return;
       }
       const saved = loadCheckpoint();
-      if (saved?.rec) {
-        setRec(saved.rec);
+      if (saved?.rec && saved.rec.goal_id === DEMO_GOAL.id) {
+        setRec({ actions: [], e0: E0, ...saved.rec });
         setRecovered(true);
       }
     }
     load();
-  }, [RUN_ID]);
+  }, [runId]);
+
+  const applied = (rec.actions ?? []) as YAction[];
+  const threshold = successThreshold(goal.success_condition);
+  const cold = applied.length > 0 ? coldBaseline(applied.length) : null;
+  const deltaE = rec.e0 != null && rec.last_e != null ? rec.e0 - rec.last_e : null;
+  const phi = cold != null && rec.last_e != null ? cold - rec.last_e : null;
 
   async function step() {
-    const actionKey = `${rec.goal_id}:${rec.iteration}:hold`;
+    if (busy) return;
+    setBusy(true);
+    try {
+      const y = nextFromExperience(applied);
+      const actionKey = `${runId}:${rec.goal_id}:${rec.iteration}:${y}`;
 
-    if (alreadyApplied(actionKey)) {
-      setRec({
-        ...rec,
+      if (alreadyApplied(actionKey)) {
+        setRec({
+          ...rec,
+          history: [
+            ...rec.history,
+            { state: rec.state, at: new Date().toISOString(), note: `idempotent skip (${y} already applied)` },
+          ],
+        });
+        return;
+      }
+
+      const check = precheckAction(goal, rec, y, 0);
+      if (!check.ok) {
+        const blocked = {
+          ...transition(rec, "BLOCKED", `precheck blocked: ${check.reason}`),
+          blocked_reason: check.reason,
+        };
+        setRec(blocked);
+        saveCheckpoint(blocked);
+        await saveServerRecord(runId, blocked).catch(() => undefined);
+        return;
+      }
+
+      let next = await autonomousStep(
+        goal,
+        rec,
+        "client_demo",
+        "safety_v1",
+        "model_3",
+        "hold",
+        0,
+        experienceProposer(applied)
+      );
+      if (next.state === "BLOCKED") {
+        setRec(next);
+        return;
+      }
+
+      // Measure on the core plant (closed-loop.ts) — the engine is not modified.
+      const actions = [...applied, y];
+      const m = measureActions(actions);
+      const coldE = coldBaseline(actions.length);
+      next = { ...next, actions, e0: m.e0, last_e: m.e };
+
+      const success = threshold != null && m.e < threshold;
+      next = transition(
+        next,
+        success ? "COMPLETE" : "CONTINUE",
+        `${y}: e ${fmt(rec.last_e)} → ${fmt(m.e)} (Δe ${fmt(m.delta_e)} from start)${
+          success ? ` — goal met (e < ${threshold})` : ""
+        }`
+      );
+
+      const verified = recordVerified(next, m.e, success);
+      next = {
+        ...next,
         history: [
-          ...rec.history,
-          {
-            state: rec.state,
-            at: new Date().toISOString(),
-            note: "idempotent skip (already applied)",
-          },
+          ...next.history,
+          { state: next.state, at: verified.verified_at, note: `verified result recorded (eligible=${success})` },
         ],
+      };
+
+      await recordExperienceServer({
+        run_id: runId,
+        iteration: next.iteration,
+        e: m.e,
+        verified_at: verified.verified_at,
+        eligible: success,
+        y,
+        e0: m.e0,
+        delta_e: m.delta_e,
+        cold_e: coldE,
+        phi: Number((coldE - m.e).toFixed(3)),
+        state: next.state,
       });
-      return;
+
+      markApplied(actionKey);
+      setRec(next);
+      saveCheckpoint(next);
+      await saveServerRecord(runId, next).catch(() => undefined);
+    } finally {
+      setBusy(false);
     }
-
-    const check = precheckAction(GOAL, rec, "hold", 0);
-    if (!check.ok) {
-      setRec({
-        ...rec,
-        state: "BLOCKED",
-        blocked_reason: check.reason,
-        history: [
-          ...rec.history,
-          {
-            state: "BLOCKED",
-            at: new Date().toISOString(),
-            note: `precheck blocked: ${check.reason}`,
-          },
-        ],
-      });
-      return;
-    }
-
-    const next = await autonomousStep(
-      GOAL,
-      rec,
-      "client_demo",
-      "safety_v1",
-      "model_3",
-      "hold",
-      0
-    );
-
-    const verified = recordVerified(next, next.last_e, true);
-    next.history.push({
-      state: next.state,
-      at: verified.verified_at,
-      note: `verified result recorded (eligible=${verified.eligible})`,
-    });
-
-    await recordExperienceServer({
-      run_id: RUN_ID,
-      iteration: next.iteration,
-      e: next.last_e,
-      verified_at: verified.verified_at,
-      eligible: true,
-    });
-
-    markApplied(actionKey);
-    setRec(next);
-    saveCheckpoint(next);
-    await saveServerRecord(RUN_ID, next);
   }
 
   async function reset() {
     clearCheckpoint();
     clearSeen();
     clearVerified();
-    await clearServerRecord(RUN_ID);
+    await clearServerRecord(runId).catch(() => undefined);
     setRec(INITIAL);
     setRecovered(false);
   }
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
-      <h1 className="text-xl font-semibold">Level 4 — Autonomous Run</h1>
-      <p className="text-sm text-zinc-400">
-        Persistent, bounded control loop. Plans, acts, verifies, and stops under explicit constraints.
-      </p>
-      <p className="text-sm">
-        <a href="/roadmap" className="underline text-emerald-400 hover:text-emerald-300">
-          Level 4 durability roadmap
-        </a>
-        {" — recovery, idempotency, safety gates, end-to-end proof."}
-      </p>
-      <p className="text-sm">
-        <a href="/workbench/start" className="underline text-emerald-400 hover:text-emerald-300">
-          Guided start
-        </a>
-        {" — one path from goal to verified result."}
-      </p>
-      <p className="text-sm">
-        <a href={`/api/level4/run?id=${RUN_ID}`} className="underline text-emerald-400" target="_blank">
-          Inspect server record
-        </a>
-      </p>
-      <p className="text-sm">
-        <a href="/workbench/status" className="underline text-emerald-400 hover:text-emerald-300">
-          Level 4 status
-        </a>
-        {" — measured outcome and acquisition readiness."}
-      </p>
+      <header className="space-y-2">
+        <p className="text-emerald-400 text-xs uppercase tracking-widest">Level 4</p>
+        <h1 className="text-2xl font-semibold">Autonomous run</h1>
+        <p className="text-sm text-zinc-400">
+          Bounded control loop. Each step is pre-checked, applied once, measured on the plant, and recorded.
+          It stops when the goal is met or a limit is hit.
+        </p>
+      </header>
+
       {recovered && (
-        <p className="text-sm text-amber-400">
-          Recovered from server record ({RUN_ID}).
+        <p className="text-sm text-amber-400">Recovered from saved record ({runId}).</p>
+      )}
+
+      <section className="grid grid-cols-3 gap-3 text-center">
+        <div className="rounded-xl border border-zinc-800 p-4">
+          <p className="text-xs text-zinc-500">Start e</p>
+          <p className="text-xl font-mono">{fmt(rec.e0)}</p>
+        </div>
+        <div className="rounded-xl border border-zinc-800 p-4">
+          <p className="text-xs text-zinc-500">Current e</p>
+          <p className="text-xl font-mono">{fmt(rec.last_e)}</p>
+        </div>
+        <div className="rounded-xl border border-emerald-800 p-4">
+          <p className="text-xs text-zinc-500">Δe (reduction)</p>
+          <p className="text-xl font-mono text-emerald-400">{fmt(deltaE)}</p>
+        </div>
+      </section>
+      {phi != null && (
+        <p className="text-xs text-zinc-500">
+          Cold Self() after {applied.length} step(s): e = {fmt(cold)}. Φ vs cold = {fmt(phi)}
+          {phi > 0 ? " · reuse wins" : phi === 0 ? " · tie (not a win)" : " · cold is ahead so far"}.
         </p>
       )}
 
       <dl className="grid grid-cols-2 gap-2 text-sm">
-        <dt>State</dt>
+        <dt className="text-zinc-500">State</dt>
         <dd className="font-medium">{rec.state}</dd>
-        <dt>Iterations</dt>
+        <dt className="text-zinc-500">Iterations</dt>
         <dd>
-          {rec.iteration} / {GOAL.max_iterations}
+          {rec.iteration} / {goal.max_iterations}
         </dd>
-        <dt>Goal</dt>
-        <dd>{GOAL.desired_outcome}</dd>
-        <dt>Run</dt>
-        <dd className="font-mono text-xs">{RUN_ID}</dd>
+        <dt className="text-zinc-500">Goal</dt>
+        <dd>{goal.desired_outcome}</dd>
+        <dt className="text-zinc-500">Next action</dt>
+        <dd className="font-mono text-xs">{nextFromExperience(applied)}</dd>
+        <dt className="text-zinc-500">Run</dt>
+        <dd className="font-mono text-xs">{runId}</dd>
       </dl>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={step}
-          disabled={rec.state === "COMPLETE" || rec.state === "BLOCKED"}
-          className="rounded-full bg-emerald-600 px-4 py-2 text-sm text-white disabled:opacity-50"
+          disabled={busy || rec.state === "COMPLETE" || rec.state === "BLOCKED"}
+          className="h-10 rounded-full bg-emerald-600 px-5 text-sm text-white disabled:opacity-40"
         >
-          Advance loop
+          {busy ? "Working…" : "Advance loop"}
         </button>
-        <button
-          onClick={reset}
-          className="rounded-full border border-zinc-700 px-4 py-2 text-sm"
-        >
+        <button onClick={reset} className="h-10 rounded-full border border-zinc-700 px-5 text-sm">
           Reset
         </button>
+        {rec.state === "COMPLETE" && (
+          <Link
+            href="/workbench/result"
+            className="h-10 rounded-full border border-emerald-600 px-5 text-sm inline-flex items-center"
+          >
+            View verified result
+          </Link>
+        )}
       </div>
 
-      <section className="space-y-1 text-xs font-mono">
-        {rec.history.map((h, i) => (
-          <div key={i}>
-            {h.at.slice(11, 19)} · {h.state} — {h.note}
-          </div>
-        ))}
+      <section className="space-y-1 rounded-xl border border-zinc-800 p-4 text-xs font-mono text-zinc-300">
+        {rec.history.length === 0 ? (
+          <p className="text-zinc-500">No steps yet.</p>
+        ) : (
+          rec.history.map((h, i) => (
+            <div key={i}>
+              {h.at.slice(11, 19)} · {h.state} — {h.note}
+            </div>
+          ))
+        )}
       </section>
+
+      <p className="text-xs text-zinc-500">
+        <a href={`/api/level4/run?id=${encodeURIComponent(runId)}`} className="underline" target="_blank" rel="noreferrer">
+          Inspect server record
+        </a>
+      </p>
     </main>
   );
 }

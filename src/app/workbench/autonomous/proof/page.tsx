@@ -6,6 +6,10 @@ import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 import { precheckAction } from "@/lib/level4/precheck";
+import { measureActions } from "@/lib/level4/measured";
+
+// Browser-safe proposer: SelfFromApproved reads @vercel/kv, which cannot run client-side.
+const holdProposer = async () => ({ y: "hold" });
 import Level4Shell from "@/components/Level4Shell";
 
 const DEMO_GOAL: GoalContract = {
@@ -45,7 +49,7 @@ export default function ProofPage() {
     add("started fresh run");
 
     // step once and checkpoint
-    rec = await autonomousStep(DEMO_GOAL, rec, "client_demo", "safety_v1", "model_3", "hold", 0);
+    rec = await autonomousStep(DEMO_GOAL, rec, "client_demo", "safety_v1", "model_3", "hold", 0, holdProposer);
     saveCheckpoint(rec);
     add(`stepped to iteration ${rec.iteration}, state ${rec.state}, checkpoint saved`);
 
@@ -59,7 +63,7 @@ export default function ProofPage() {
     add("recovered checkpoint after simulated restart");
 
     // continue from recovered state
-    rec = await autonomousStep(DEMO_GOAL, loaded.rec, "client_demo", "safety_v1", "model_3", "hold", 0);
+    rec = await autonomousStep(DEMO_GOAL, loaded.rec, "client_demo", "safety_v1", "model_3", "hold", 0, holdProposer);
     add(`continued to iteration ${rec.iteration}, state ${rec.state}`);
 
     const gate = precheckAction(DEMO_GOAL, rec, "hold", 0);
@@ -70,6 +74,9 @@ export default function ProofPage() {
       rec.state !== "BLOCKED" &&
       rec.history.length > loaded.rec.history.length &&
       gate.ok;
+
+    const m = measureActions(["mark_boundary", "complete_field", "request_independent_check", "seal_pack"]);
+    add(`core plant (reuse sequence): e ${m.e0} → ${m.e}, Δe ${m.delta_e}`);
 
     add(ok ? "PASS: recovery preserved progress and allowed continuation" : "FAIL: recovery did not advance cleanly");
     setPassed(ok);

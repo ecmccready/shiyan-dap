@@ -14,6 +14,10 @@ export type ControllerRecord = {
   last_e: number | null;
   history: { state: ControllerState; at: string; note: string }[];
   blocked_reason?: string;
+  /** Applied actions, in order. Replayed on the core plant to measure e. */
+  actions?: string[];
+  /** Error before the first action (from the core engine). */
+  e0?: number | null;
 };
 
 export function transition(
