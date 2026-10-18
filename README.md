@@ -126,6 +126,11 @@ Aethel Node does not rely on fragile prompting or linear agent chains. Under the
 * **Additive by Construction:** Level 4 wraps the existing closed loop, `Self()`, measurement of e, and safety modules without modifying them. Commercial surfaces read from the same evidence the engine writes.
 
 
+## Model Portability & Open Evidence
+
+* **Model-portable proposer:** Models only propose; they never bypass the loop. One adapter (`src/lib/model-adapter.ts`) puts Grok (xAI API), Hy4, OpenAI, and a deterministic mock behind the same interface. The Grok Bot routing layer (`src/lib/router.ts`) runs Grok alone on the fast path and Grok and Hy4 in parallel on the deep path, scoring how much they disagree. In Level 4, the proposer is an injectable function, so a different model can be swapped in without changing the closed loop, the safety gate, measurement of e, or the experience store. Hy4 falls back to a stub unless `HY4_API_URL` is set. The live Level 4 demo run uses the deterministic experience proposer, not a hosted model.
+* **Open evidence dataset (founder-z):** Outcome, event, and mint records are published to the public Hugging Face dataset [shiyan-dap/founder-z](https://huggingface.co/datasets/shiyan-dap/founder-z). `/api/memory` reads its `latest-z.json` head (overridable with `HF_DATASET`) and commits new records when a Hugging Face token is configured. The dataset has no dataset card yet.
+
 ## Decentralized Asset Engine & Independent Settlement
 
 The system’s primary commercial goal is to let external clients declare a measurable outcome that eventually settles based on verified performance. Settlement is the goal, not a live function today.
