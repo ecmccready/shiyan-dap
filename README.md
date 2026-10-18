@@ -15,6 +15,18 @@ Customers do not buy an AI or a state machine. They buy a system that repeatedly
 - Home (Workspace) is the controller. Workbench is the execution environment.
 - Level 4 is the current plant: plan, act, observe, verify, learn, and recover.
 
+## Global value: ending the misdiagnosis of the next action
+
+In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. It means a systemic error that happens in every domain: picking a next action that changes the state of a system without moving it closer to its reference. That action can look like progress while variance stays the same or a structural defect stays hidden. Left unchecked, these errors compound across teams, tools, and models.
+
+**Global value.** The engine ends the misdiagnosis of the next action. It measures error (e) against a reference before and after each step, enforces safety and budget constraints before anything is applied, and records durable proof of what worked: Δe, and Φ against a cold `Self()` baseline.
+
+**Pain point solved.** An unverified proposal does not become accepted experience. Every action passes the pre-action safety and budget gate and an idempotency check before it is applied. Each step is then scored by measuring e on the core plant. Only a step that reaches the goal is marked eligible and kept as experience. Proposals that change state but fail to reduce error stay on the record as ineligible and are never kept as experience, and a lower error never overrides a failed safety constraint. What's live today: run records and verified experience stored in Upstash, the pre-action gate, idempotent experience writes, measured Δe, and a public experience API (`/api/level4/experience`).
+
+**Domain-agnostic by design.** The loop, the safety gate, and the experience store make no assumptions about the domain. Anything that can be expressed as observed variance against a reference can use them, whether that's software delivery, logistics, clinical workflows, or creative assets. Today the engine runs on the reference cases in the live plants, with music as the first vertical. Healthcare diagnostics stays a later, higher-risk vertical: this is not a diagnosis tool and handles no PHI.
+
+**Engineering direction (intentional abstraction, not yet shipped as a multi-domain simulation):** generalized plant and reference types, one uniform variance formula for e across domains, a safety gate that doesn't depend on the domain, and a tamper-evident public ledger for verified experience.
+
 ## Live commercial path
 
 | Surface | Role | Live |
