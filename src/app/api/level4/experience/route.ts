@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
+import { toLedger } from "@/lib/level4/ledger";
 
 /**
  * Durable Level 4 experience store.
  *
  * GET  → ExperienceEntry[] (oldest first; consumers read the last item as "latest").
+ * GET ?format=ledger (or ?view=ledger) → { entries, ledger } — uniform,
+ *      domain-neutral audit view: DOMAIN, E0, E1, DELTA_E, PHI, STATUS
+ *      (ELIGIBLE_EXPERIENCE when Δe > 0, else MISDIAGNOSIS_REJECTED).
+ *      The default response above is unchanged.
  * POST → append one verified result from /workbench/autonomous.
  *
  * Read by: /workbench/status, /workbench/result.
@@ -25,6 +30,8 @@ export type ExperienceEntry = {
   cold_e?: number | null;
   phi?: number | null;
   state?: string;
+  /** Optional domain label (software, logistics, clinical, ...). Absent on older entries. */
+  system?: string;
 };
 
 const KEY = "level4:experience";
@@ -53,11 +60,17 @@ function client(): Redis | null {
 
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 
-export async function GET() {
+function wantsLedger(req: NextRequest | undefined): boolean {
+  const q = req?.nextUrl?.searchParams;
+  return q?.get("format") === "ledger" || q?.get("view") === "ledger";
+}
+
+export async function GET(req: NextRequest) {
+  const ledger = wantsLedger(req);
   const redis = client();
-  if (!redis) return NextResponse.json([]);
-  const list = (await redis.lrange<ExperienceEntry>(KEY, 0, -1)) ?? [];
-  return NextResponse.json(dedupe(list));
+  if (!redis) return NextResponse.json(ledger ? toLedger([]) : []);
+  const list = dedupe((await redis.lrange<ExperienceEntry>(KEY, 0, -1)) ?? []);
+  return NextResponse.json(ledger ? toLedger(list) : list);
 }
 
 export async function POST(req: NextRequest) {
@@ -93,6 +106,10 @@ export async function POST(req: NextRequest) {
     phi: num(body.phi),
     state: typeof body.state === "string" ? body.state.slice(0, 16) : undefined,
   };
+  // Optional domain label; stored only when provided, so older clients are unaffected.
+  if (typeof body.system === "string" && body.system.trim()) {
+    entry.system = body.system.trim().slice(0, 32);
+  }
 
   // Idempotent: one entry per (run_id, iteration). SET NX is atomic.
   const first = await redis.set(seenKey(run_id, iteration), 1, {

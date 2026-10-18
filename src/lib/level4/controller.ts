@@ -34,3 +34,7 @@ export function transition(
     ],
   };
 }
+
+// Domain-agnostic view of a controller record (additive). See ./systemic.ts.
+export { controllerToWorkbenchRun } from "./systemic";
+export type { SystemicState, WorkbenchRun } from "./systemic";
