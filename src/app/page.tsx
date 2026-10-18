@@ -35,14 +35,15 @@ export default function HomePage() {
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 mb-3">First vertical · Music</p>
         <h1 className="text-3xl font-bold mb-3">Aethel Node</h1>
-        <p className="text-zinc-400 max-w-2xl mb-4">
-          Sovereign multi-model orchestration and multi-domain workspace
-          infrastructure (formerly shiyan-dap).
+        <p className="text-zinc-200 text-lg max-w-2xl mb-4">
+          Aethel Node proves that the next action is no longer a misdiagnosis.
         </p>
         <p className="text-zinc-500 max-w-2xl mb-8 text-sm">
-          Autonomous outcome-learning home: Workbench B is the environment.
-          Marketplace lists experience. Playlist and Songs are the Music
-          rail. A and B stay in the engine, not as separate products.
+          A durable, bounded autonomous system. Every proposed action passes a
+          safety and budget gate before it runs, every step is measured for
+          error (e) against a reference, and only steps that reduce it become
+          verified experience, recorded with proof (Δe, Φ). Music is the first
+          vertical.
         </p>
 
         <div className="flex flex-wrap gap-3 mb-8">
