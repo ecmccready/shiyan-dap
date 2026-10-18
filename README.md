@@ -35,8 +35,9 @@ Customers do not buy an AI or a state machine. They buy a system that repeatedly
 | /workbench/history | Inspectable Runs | https://shiyan-dap.vercel.app/workbench/history |
 | /workbench/marketplace | Verified sequences | https://shiyan-dap.vercel.app/workbench/marketplace |
 | /workbench/proof | Safety proof | https://shiyan-dap.vercel.app/workbench/proof |
+| /workbench/shiyan | Shiyan plant | https://shiyan-dap.vercel.app/workbench/shiyan |
 
-Φ only when final e falls. Same sealed sequence across Safety, Optimus, and Client plants.  
+Φ only when final e falls. Same sealed sequence across Safety, Shiyan, and Client plants.  
 Not a diagnosis. No PHI. Not revenue until a client settles.  
 Healthcare diagnostics remains a higher-risk, later vertical.
 
@@ -91,7 +92,7 @@ This plant builds on the existing Level 3 implementation and does not replace it
 
 Marketplace remains downstream of the proof system. A lower aggregate error does not override a failed safety constraint or a required human review.
 
-The Model 3 sealed sequence and Optimus reference remain in the continuity and proof language. `/workbench/optimus` is not a live surface; links that pointed to it now point to `/workbench/shiyan`.
+The Model 3 sealed sequence remains in the continuity and proof language. The Shiyan plant is live at [/workbench/shiyan](https://shiyan-dap.vercel.app/workbench/shiyan).
 
 ## Next
 
