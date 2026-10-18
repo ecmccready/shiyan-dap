@@ -125,3 +125,35 @@ Aethel Node does not rely on fragile prompting or linear agent chains. Under the
 
 * **Additive by Construction:** Level 4 wraps the existing closed loop, `Self()`, measurement of e, and safety modules without modifying them. Commercial surfaces read from the same evidence the engine writes.
 
+
+## Decentralized Asset Engine & Independent Settlement
+
+The system’s primary commercial goal is to let external clients declare a measurable outcome that eventually settles based on verified performance.
+
+- **State Inscription as a Ledger:** The Level 4 plant utilizes a durable, idempotent control loop powered by Upstash Redis. Every transition, execution step, and error reduction (Δe) is deterministically recorded and publicly inspectable. This architecture mirrors an immutable blockchain ledger, where computation cannot be forged or misreported.
+- **Cryptographic Signatures:** The architecture is built to support independent test transactions. Instead of relying solely on fiat platforms (like the Buy Me a Coffee API actuators), the controller can be refactored to accept free cryptographic text signatures from browser wallets to authenticate and trigger runtime operations securely.
+
+## Tokenization of Verified Experience
+
+The core engine operates on a loop that captures positive experiences (Φ) where error successfully falls.
+
+- **Data Provenance:** In a tokenized ecosystem, these sealed sequences represent the tokenization of AI compute history. By proving that a specific sequence of actions reduced error under strict safety and budget constraints, the software transforms raw compute data into a valuable, reusable digital asset.
+- **Distributed Compute Marketplace:** The long-term roadmap positions a verified marketplace downstream of the proof system. This allows verified autonomous sequences to be discovered, traded, or utilized across different distributed AI nodes, establishing a framework for tokenized software agents.
+
+## NFT Analogy: Runs as Unique Digital Assets
+
+While the repo does not explicitly mint ERC-721 tokens in its current plant layer, the structural blueprint treats individual execution records like NFTs:
+
+- **Unique Run Identities:** Every guided workflow generates a unique, immutable run ID.
+- **Idempotency and Non-Fungibility:** Because writes are strictly idempotent per run and iteration, a Run cannot be duplicated, overwritten, or modified post-verification. The resulting durable experience entry stands as a unique, non-fungible proof of work that human or non-human operators can audit globally.
+
+## Technical Continuity Matrix
+
+| Component | Current Software Implementation | Crypto/Tokenization Mapping |
+| --- | --- | --- |
+| The Ledger | Idempotent Upstash Redis state records (`/api/level4/run`) | On-chain state persistence / Distributed Ledger Technology (DLT) |
+| The Asset | Verified Experience sequences with calculated Δe values | Tokenized data assets / Provenance protocol layers |
+| The Smart Contract | Pre-action safety & budget gates checking execution boundaries | Programmable, trustless execution constraints |
+| Commercial Vector | Autonomous Client Settlement paths (`/workbench/pilot`) | Escrow, Web3 transaction triggers, and utility token gates |
+
+Aethel Node provides the sovereign infrastructure needed to orchestrate AI models safely, leaving the door completely open to plug into Web3 rails for decentralized compute funding, wallet-based access controls, and programmatic settlement.
