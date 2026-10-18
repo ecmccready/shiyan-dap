@@ -128,32 +128,32 @@ Aethel Node does not rely on fragile prompting or linear agent chains. Under the
 
 ## Decentralized Asset Engine & Independent Settlement
 
-The system’s primary commercial goal is to let external clients declare a measurable outcome that eventually settles based on verified performance.
+The system’s primary commercial goal is to let external clients declare a measurable outcome that eventually settles based on verified performance. Settlement is the goal, not a live function today.
 
-- **State Inscription as a Ledger:** The Level 4 plant utilizes a durable, idempotent control loop powered by Upstash Redis. Every transition, execution step, and error reduction (Δe) is deterministically recorded and publicly inspectable. This architecture mirrors an immutable blockchain ledger, where computation cannot be forged or misreported.
-- **Cryptographic Signatures:** The architecture is built to support independent test transactions. Instead of relying solely on fiat platforms (like the Buy Me a Coffee API actuators), the controller can be refactored to accept free cryptographic text signatures from browser wallets to authenticate and trigger runtime operations securely.
+- **State Inscription for Inspection:** The Level 4 plant records run state and verified experience in a durable Upstash Redis store. Every verified step carries e, Δe, the cold baseline, and Φ, and is publicly inspectable at `/api/level4/experience`. Redis is a durable store, not an immutable ledger: records can be overwritten or deleted. It mirrors a ledger for inspection; on-chain persistence is the planned rail for tamper-evident records.
+- **Authentication and Signatures (planned):** The Level 4 write endpoints currently have no authentication. Endpoint auth and free cryptographic text signatures from browser wallets, to authenticate and trigger runtime operations, are planned, not live.
 
 ## Tokenization of Verified Experience
 
 The core engine operates on a loop that captures positive experiences (Φ) where error successfully falls.
 
-- **Data Provenance:** In a tokenized ecosystem, these sealed sequences represent the tokenization of AI compute history. By proving that a specific sequence of actions reduced error under strict safety and budget constraints, the software transforms raw compute data into a valuable, reusable digital asset.
-- **Distributed Compute Marketplace:** The long-term roadmap positions a verified marketplace downstream of the proof system. This allows verified autonomous sequences to be discovered, traded, or utilized across different distributed AI nodes, establishing a framework for tokenized software agents.
+- **Data Provenance:** In a tokenized ecosystem, these sealed sequences would represent the tokenization of AI compute history. Each verified step records that a specific sequence of actions reduced error under safety and budget constraints, which is the provenance a reusable digital asset would need.
+- **Distributed Compute Marketplace:** The long-term roadmap positions a verified marketplace downstream of the proof system, so verified autonomous sequences could be discovered, traded, or used across distributed AI nodes. Today `/workbench/marketplace` lists verified sequences; trading and settlement are not live.
 
 ## NFT Analogy: Runs as Unique Digital Assets
 
-While the repo does not explicitly mint ERC-721 tokens in its current plant layer, the structural blueprint treats individual execution records like NFTs:
+The repo does not mint ERC-721 tokens. Structurally, individual execution records resemble NFTs:
 
-- **Unique Run Identities:** Every guided workflow generates a unique, immutable run ID.
-- **Idempotency and Non-Fungibility:** Because writes are strictly idempotent per run and iteration, a Run cannot be duplicated, overwritten, or modified post-verification. The resulting durable experience entry stands as a unique, non-fungible proof of work that human or non-human operators can audit globally.
+- **Unique Run Identities:** Every guided start generates a unique run id.
+- **Idempotency and Non-Fungibility:** Experience writes are idempotent per run and iteration, and a double-action guard keeps an action from being applied twice. The run record itself is overwritten at each step, and duplicate protection on experience entries expires after 30 days. Each verified experience entry is a unique, non-fungible proof of work for audit; it is not tamper-proof until records move to a tamper-evident rail.
 
 ## Technical Continuity Matrix
 
-| Component | Current Software Implementation | Crypto/Tokenization Mapping |
+| Component | Current Software Implementation | Planned mapping |
 | --- | --- | --- |
-| The Ledger | Idempotent Upstash Redis state records (`/api/level4/run`) | On-chain state persistence / Distributed Ledger Technology (DLT) |
-| The Asset | Verified Experience sequences with calculated Δe values | Tokenized data assets / Provenance protocol layers |
+| The Ledger | Durable Upstash Redis records (`/api/level4/run`, `/api/level4/experience`); overwritable | On-chain state persistence / Distributed Ledger Technology (DLT) |
+| The Asset | Verified experience entries with calculated Δe and Φ | Tokenized data assets / Provenance protocol layers |
 | The Smart Contract | Pre-action safety & budget gates checking execution boundaries | Programmable, trustless execution constraints |
-| Commercial Vector | Autonomous Client Settlement paths (`/workbench/pilot`) | Escrow, Web3 transaction triggers, and utility token gates |
+| Commercial Vector | Paid-pilot gate (`/workbench/pilot`); settlement not live | Escrow, Web3 transaction triggers, and utility token gates |
 
-Aethel Node provides the sovereign infrastructure needed to orchestrate AI models safely, leaving the door completely open to plug into Web3 rails for decentralized compute funding, wallet-based access controls, and programmatic settlement.
+Aethel Node provides the infrastructure to orchestrate AI models within safety and budget constraints, with Web3 rails as a planned path for decentralized compute funding, wallet-based access controls, and programmatic settlement.
