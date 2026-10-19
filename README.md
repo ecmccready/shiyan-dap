@@ -73,6 +73,7 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
 - **Share polish 5.** The latest-result card has "Copy all metrics" (`run=<id> e=… Δe=… Φ=…`, as displayed). Result and status show the latest eligible ledger line with "Copy ledger line" (hidden when unavailable). A sticky "Copied: <label> · Clear" pill on Level 4 pages replaces the inline "Clear copied". `/workbench/pilot` lists "Proof you can send".
 - **Share polish 6.** Result and status have "Copy full evidence pack" (run id, e, Δe, Φ, latest eligible ledger line, public proof URL, verify URL). Result and proof have "Copy verify summary" (built from the live `/api/level4/verify` response). The Copied pill clears on Esc and can be collapsed. `/offer` has a one-line "Send the proof" CTA.
 - **Share polish 7.** Next to "Copy full evidence pack" on result and status: "Copy as Markdown" (same data as simple Markdown) and "Copy public URL only". The proof page Share section now carries both evidence pack buttons. `/workbench/pilot` has a one-line "Get the proof".
+- **Share polish 8.** The evidence pack group (result, status, proof) adds "Copy as JSON", "Copy verify URL only" and "Share pack" (native share sheet, else a mailto with no recipient, carrying the Markdown pack). `/offer` has a one-line "Proof ready" note.
 
 ## Live commercial path
 
