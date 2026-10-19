@@ -47,7 +47,7 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
 
 **Directional, not live:**
 
-- Anchoring commitments on-chain.
+- Submitting anchor roots on-chain. The anchor payload, Merkle root, and `AnchorAdapter` interface exist (see below); only a dry-run `NullAnchorAdapter` ships and nothing is submitted.
 - Settlement or monetization of verified tensor transformations (T_in → T_out).
 - FLOP-based micro-payments.
 - Tensors from hosted models in the live demo. The live Level 4 demo uses a deterministic proposer and a deterministic demo sensor tensor, not a model's embeddings, activations, or logits.
@@ -57,9 +57,12 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
 
 ## Level 4: durable feed, write gate, dataset card
 
-- **Self() durable feed.** `src/lib/level4/durable-self.ts` (client) and `durable-self-server.ts` (server, direct Upstash) read the experience store, keep entries that are `eligible`, `COMPLETE`, Φ > 0 (and within the demo tensor ε when a distance is stored), map them to the `ApprovedExperience` shape, and pick the highest Φ with the same rule as `SelfFromApproved`. The winning run's ordered action sequence is reused. Entries do not record a `safety_passed` flag; reaching `COMPLETE` implies every step passed the precheck and safety gate. Opt-in on `/workbench/autonomous?durable=1`. With no usable experience or on any error, the built-in approved sequence is used.
-- **Level 4 write gate.** Optional `LEVEL4_WRITE_TOKEN` (bearer), `LEVEL4_ALLOW_SAME_ORIGIN`, and `LEVEL4_ALLOWED_ORIGINS` gate POST/DELETE on `/api/level4/run`, `/experience`, and `/acquisition`. Unset means unchanged behavior. GETs stay public. See [docs/level4-write-auth.md](docs/level4-write-auth.md).
-- **founder-z dataset card.** [docs/founder-z-dataset-card.md](docs/founder-z-dataset-card.md), ready to copy to Hugging Face as the dataset's README.
+- **Self() durable feed.** `src/lib/level4/durable-self.ts` (client) and `durable-self-server.ts` (server, direct Upstash) read the experience store, keep entries that are `eligible`, `COMPLETE`, Φ > 0 (and within the demo tensor ε when a distance is stored), map them to the `ApprovedExperience` shape, and pick the highest Φ with the same rule as `SelfFromApproved`. The winning run's ordered action sequence is reused. Entries do not record a `safety_passed` flag; reaching `COMPLETE` implies every step passed the precheck and safety gate. On by default on `/workbench/autonomous` (`?durable=0` disables; `?durable=1` still accepted). Before use, the durable sequence is replayed client-side and used only if its final e is ≤ the built-in sequence's and meets the goal (e < 0.16); the page shows the source (durable run id or built-in). With no usable experience or on any error, the built-in approved sequence is used.
+- **Level 4 write gate.** Optional `LEVEL4_WRITE_TOKEN` (bearer), `LEVEL4_ALLOW_SAME_ORIGIN`, and `LEVEL4_ALLOWED_ORIGINS` gate POST/DELETE on `/api/level4/run`, `/experience`, and `/acquisition`, and POST on `/api/memory` and `/api/mint` (both commit to the founder-z Hugging Face dataset). Unset means unchanged behavior. GETs stay public. See [docs/level4-write-auth.md](docs/level4-write-auth.md).
+- **founder-z dataset card.** [docs/founder-z-dataset-card.md](docs/founder-z-dataset-card.md), ready to copy to Hugging Face as the dataset's README. Its YAML validates with `huggingface_hub`'s `DatasetCard`. Not yet published: it is pending upload by the dataset owner.
+- **Request a pilot.** `/workbench/pilot`, `/offer`, and `/workbench/offer` carry a "Request a pilot" call to action that leads to the existing client pipeline (`/workbench/client`) and pilot terms. No new prices.
+- **Anchoring path (directional).** `src/lib/level4/anchor.ts` builds a canonical `aethel-anchor/1` payload of a run's tensor commitments and a SHA-256 Merkle root (leaf = H(0x00‖canonical JSON), node = H(0x01‖left‖right), odd node promoted), plus an `AnchorAdapter` interface with only a dry-run `NullAnchorAdapter`. `GET /api/level4/anchor?run_id=` returns the payload and root with `anchored: false`. Nothing is submitted on-chain.
+- **Independent run verification.** `GET /api/level4/verify?run_id=` replays a stored run's actions on a fresh plant and recomputes e, e0, cold e, Φ, eligibility, the demo tensor commitments and distances, and the anchor Merkle root, returning PASS/FAIL/SKIP per check, so the ledger can be checked without trusting it.
 
 ## Live commercial path
 
@@ -175,7 +178,7 @@ Aethel Node does not rely on fragile prompting or linear agent chains. Under the
 ## Model Portability & Open Evidence
 
 * **Model-portable proposer:** Models only propose; they never bypass the loop. One adapter (`src/lib/model-adapter.ts`) puts Grok (xAI API), Hy4, OpenAI, and a deterministic mock behind the same interface. The Grok Bot routing layer (`src/lib/router.ts`) runs Grok alone on the fast path and Grok and Hy4 in parallel on the deep path, scoring how much they disagree. In Level 4, the proposer is an injectable function, so a different model can be swapped in without changing the closed loop, the safety gate, measurement of e, or the experience store. Hy4 falls back to a stub unless `HY4_API_URL` is set. The live Level 4 demo run uses the deterministic experience proposer, not a hosted model.
-* **Open evidence dataset (founder-z):** Outcome, event, and mint records are published to the public Hugging Face dataset [shiyan-dap/founder-z](https://huggingface.co/datasets/shiyan-dap/founder-z). `/api/memory` reads its `latest-z.json` head (overridable with `HF_DATASET`) and commits new records when a Hugging Face token is configured. The dataset has no dataset card yet.
+* **Open evidence dataset (founder-z):** Outcome, event, and mint records are published to the public Hugging Face dataset [shiyan-dap/founder-z](https://huggingface.co/datasets/shiyan-dap/founder-z). `/api/memory` reads its `latest-z.json` head (overridable with `HF_DATASET`) and commits new records when a Hugging Face token is configured. A dataset card is drafted at `docs/founder-z-dataset-card.md`, pending upload.
 
 ## Decentralized Asset Engine & Independent Settlement
 
