@@ -6,6 +6,7 @@ import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
 import AnchorRoot from "@/components/AnchorRoot";
+import ShareResult from "@/components/ShareResult";
 import {
   loadExperienceServer,
   latestVerified,
@@ -89,6 +90,7 @@ export default function StatusPage() {
       </section>
 
       <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loadingExp} />
+      <ShareResult runId={latestVerified(experience)?.run_id} />
 
       <ul className="space-y-3">
         {items.map((item) => (
