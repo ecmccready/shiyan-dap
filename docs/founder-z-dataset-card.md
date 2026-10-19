@@ -31,6 +31,19 @@ configs:
 
 # founder-z
 
+> **Dataset Viewer note.** The Hub's Dataset Viewer shows a `CastError` for this repo because the JSON files have mixed schemas (older and newer outcome files, events, mints and `latest-z.json` differ in shape). The data is intact; load files directly instead:
+>
+> ```python
+> import json, pandas as pd
+> from huggingface_hub import hf_hub_download
+> path = hf_hub_download("shiyan-dap/founder-z", "latest-z.json", repo_type="dataset")
+> print(json.load(open(path)))
+>
+> # or one file / one glob with datasets:
+> from datasets import load_dataset
+> ds = load_dataset("json", data_files=hf_hub_download("shiyan-dap/founder-z", "latest-z.json", repo_type="dataset"), split="train")
+> ```
+
 ## Summary
 
 `shiyan-dap/founder-z` is the public outcome log written by the Shiyan / Aethel Node web app (`shiyan-dap.vercel.app`). Each file is a small JSON record of an action taken in the app's music vertical, with the six-dimension outcome vector before and after the action (`y_before`, `y_after`) and the app's next-action note (`z`). `latest-z.json` holds the most recent `z` and is what the app reads back as its "head z".
