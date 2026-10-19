@@ -1,6 +1,7 @@
 import Link from "next/link";
 import LastVerified from "@/components/LastVerified";
 import CopyRunId from "@/components/CopyRunId";
+import CopyValue from "@/components/CopyValue";
 import { fmtE, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 /** Latest verified Level 4 result from the durable experience store. */
@@ -58,7 +59,7 @@ export default function LatestVerified({
           <CopyRunId runId={entry.run_id} />
         </dd>
         <dt className="text-zinc-500">Final e</dt>
-        <dd className="font-mono">{fmtE(entry.e)}</dd>
+        <dd className="font-mono">{fmtE(entry.e)}<CopyValue value={fmtE(entry.e)} label="e" /></dd>
         {typeof entry.delta_e === "number" && (
           <>
             <dt className="text-zinc-500">Δe (from start)</dt>
@@ -71,7 +72,7 @@ export default function LatestVerified({
         {typeof entry.phi === "number" && (
           <>
             <dt className="text-zinc-500">Φ vs cold Self()</dt>
-            <dd className="font-mono">{fmtE(entry.phi)}</dd>
+            <dd className="font-mono">{fmtE(entry.phi)}<CopyValue value={fmtE(entry.phi)} label="Φ" /></dd>
           </>
         )}
         <dt className="text-zinc-500">Eligible</dt>
