@@ -104,6 +104,15 @@ z`}
         <Link className="underline text-emerald-400" href="/workbench/pilot">Request a pilot →</Link>
       </p>
 
+      <p className="text-xs text-zinc-400">
+        <span className="rounded-full border border-emerald-700 px-2 py-0.5 text-emerald-400">Proof ready</span>{" "}
+        <Link className="underline text-emerald-400" href="/workbench/result">public proof URL</Link>
+        {" · "}
+        <a className="underline text-emerald-400" href="/api/level4/verify">verify endpoint</a>
+        {" · "}
+        <Link className="underline text-emerald-400" href="/workbench/pilot">Request a pilot →</Link>
+      </p>
+
       <section className="rounded-lg border border-zinc-800 p-4 text-sm space-y-2">
         <p className="font-medium">Beyond music: request a pilot</p>
         <p className="text-zinc-400">
