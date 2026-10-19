@@ -27,6 +27,33 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
 
 **Engineering direction (intentional abstraction, not yet shipped as a multi-domain simulation):** generalized plant and reference types, one uniform variance formula for e across domains, a safety gate that doesn't depend on the domain, and a tamper-evident public ledger for verified experience.
 
+## Tensor Scope: Verifying Latent State
+
+**Definition.** The tensor scope brings tensors into verification alongside the text and state logs. A tensor T ∈ ℝ^(d₁×…×dₙ) can be an embedding, an activation state, a logit distribution, or a sensor vector. It is stored row-major with its shape.
+
+- **Commitment.** H(T) = sha256(serialize(T)), written `sha256:<64 hex>`. A ledger stores the hash and the distance, never the raw tensor. `serialize` is the ASCII header `AETHEL-T1;<dtype>;<d₁>x…x<dₙ>;` followed by the values as little-endian IEEE-754 (f64 by default, or f32). The bytes, and therefore the hash, are the same in Node and in the browser.
+- **Independent check.** At `request_independent_check`, T_out is compared with a sealed T_ref using the Frobenius norm ‖T_out − T_ref‖_F or the cosine distance 1 − cos(T_out, T_ref). If a sealed H(T_ref) is supplied, T_ref must hash to it.
+- **Seal.** If the distance is greater than ε, or T_ref does not match its sealed hash, the step is a **misdiagnosis violation** (`MISDIAGNOSIS_VIOLATION`). The `seal_pack` step then fails and nothing is marked eligible. Otherwise the step is `TENSOR_VERIFIED`, and H(T_out), H(T_ref), and the distance are bound into the seal.
+- **Additional gate.** The tensor check is an extra gate alongside Δe and Φ, not a replacement for them. A step is eligible only if the existing logic marks it eligible and, when a tensor was supplied, the tensor check also passes. Without a tensor, behavior is unchanged.
+
+**Implemented now:**
+
+- `src/lib/level4/tensor.ts`: the `Tensor` type, `validateTensor`, `serializeTensor`, `commitTensor` (a synchronous, dependency-free SHA-256), `frobeniusDistance`, `cosineSimilarity`, `cosineDistance`, `independentTensorCheck`, and `combineEligibility`.
+- `src/lib/level4/seal.ts`: `parseTensorPayload`, `requestIndependentTensorCheck`, `sealTensorBinding`, and `experienceTensorFields`.
+- `src/lib/mcp/handler.ts` (Workbench B MCP server, `/api/mcp`): `request_independent_check`, `seal_pack`, and `run_sealed_sequence` accept an optional `tensor` argument (`{ out, ref, epsilon, metric?, refCommitment? }`). On a violation, `seal_pack` is not applied and the result reports `sealed: false`. Calls without a tensor return exactly what they did before.
+- `/api/level4/tensor-check`: a stateless POST endpoint that runs the independent check and returns the seal fields. It stores nothing.
+- `/api/level4/experience`: optional `tensor_commitment` and `tensor_distance` fields on POST. The default GET is unchanged. In `?format=ledger`, entries that carry tensor fields gain `TENSOR=<sha256:…> T_DIST=<x>`.
+
+**Directional, not live:**
+
+- Anchoring commitments on-chain.
+- Settlement or monetization of verified tensor transformations (T_in → T_out).
+- FLOP-based micro-payments.
+- Tensors from hosted models in the live demo. The live Level 4 demo uses a deterministic proposer and does not send tensors.
+- Multi-domain simulation.
+
+**Commercial framing.** The tensor scope points toward verifiable AI audit trails: cryptographic proof of the latent state, not only of the outcome. It also lays a path toward monetizing verified tensor transformations that come with a measured reduction in error. That is a path, not a live product. Today the commitment, the distance check, and the seal binding are implemented.
+
 ## Live commercial path
 
 | Surface | Role | Live |

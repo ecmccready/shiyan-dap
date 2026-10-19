@@ -62,6 +62,9 @@ export async function recordExperienceServer(entry: {
   cold_e?: number | null;
   phi?: number | null;
   state?: string;
+  /** Optional tensor scope (see experienceTensorFields in seal.ts). Omitted when absent. */
+  tensor_commitment?: string;
+  tensor_distance?: number;
 }) {
   // Non-fatal: the run continues even if the durable store is unavailable.
   try {

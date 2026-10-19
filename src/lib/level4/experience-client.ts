@@ -11,6 +11,9 @@ export type ExperienceEntry = {
   cold_e?: number | null;
   phi?: number | null;
   state?: string;
+  /** Optional tensor scope fields (absent on entries without a tensor check). */
+  tensor_commitment?: string;
+  tensor_distance?: number;
 };
 
 export async function loadExperienceServer(): Promise<ExperienceEntry[]> {

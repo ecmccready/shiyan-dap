@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 import { toLedger } from "@/lib/level4/ledger";
+import { TENSOR_COMMITMENT_RE } from "@/lib/level4/tensor";
 
 /**
  * Durable Level 4 experience store.
@@ -10,6 +11,7 @@ import { toLedger } from "@/lib/level4/ledger";
  *      domain-neutral audit view: DOMAIN, E0, E1, DELTA_E, PHI, STATUS
  *      (ELIGIBLE_EXPERIENCE when Δe > 0, else MISDIAGNOSIS_REJECTED).
  *      The default response above is unchanged.
+ *      Entries with tensor fields also carry TENSOR=<sha256:…> T_DIST=<x>.
  * POST → append one verified result from /workbench/autonomous.
  *
  * Read by: /workbench/status, /workbench/result.
@@ -32,6 +34,10 @@ export type ExperienceEntry = {
   state?: string;
   /** Optional domain label (software, logistics, clinical, ...). Absent on older entries. */
   system?: string;
+  /** Optional tensor scope: H(T_out) as "sha256:<64 hex>". Never the raw tensor. */
+  tensor_commitment?: string;
+  /** Optional tensor scope: distance of T_out from the sealed T_ref. */
+  tensor_distance?: number;
 };
 
 const KEY = "level4:experience";
@@ -110,6 +116,12 @@ export async function POST(req: NextRequest) {
   if (typeof body.system === "string" && body.system.trim()) {
     entry.system = body.system.trim().slice(0, 32);
   }
+  // Optional tensor scope; stored only when valid, so older clients are unaffected.
+  if (typeof body.tensor_commitment === "string" && TENSOR_COMMITMENT_RE.test(body.tensor_commitment)) {
+    entry.tensor_commitment = body.tensor_commitment;
+  }
+  const tensorDistance = num(body.tensor_distance);
+  if (tensorDistance !== null) entry.tensor_distance = tensorDistance;
 
   // Idempotent: one entry per (run_id, iteration). SET NX is atomic.
   const first = await redis.set(seenKey(run_id, iteration), 1, {

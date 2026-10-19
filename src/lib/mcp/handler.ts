@@ -16,10 +16,14 @@ import {
   type LoopObservation,
   type YName,
 } from "./schema";
+import { parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "../level4/seal";
+import { combineEligibility, type TensorCheck } from "../level4/tensor";
 
 type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Record<string, unknown> };
 
 const plants = new Map<string, PlantB>();
+/** Tensor check from request_independent_check, bound by the next seal_pack. Only set when a tensor was sent. */
+const tensorChecks = new Map<string, TensorCheck>();
 
 function fresh(caseId: string): PlantB {
   return {
@@ -119,8 +123,23 @@ export function handleMcp(msg: Rpc): unknown {
 
   if (msg.method === "tools/call") {
     const name = String(msg.params?.name || "");
-    const args = (msg.params?.arguments || {}) as { case_id?: string; cold_final_e?: number };
+    const args = (msg.params?.arguments || {}) as { case_id?: string; cold_final_e?: number; tensor?: unknown };
     const caseId = args.case_id || "mcp-pack";
+
+    // Tensor scope (optional). Without args.tensor every branch below returns
+    // exactly what it returned before; tensor fields are omitted, not null.
+    const tensorStep =
+      name === "request_independent_check" || name === "seal_pack" || name === "run_sealed_sequence";
+    const tensor = tensorStep ? parseTensorPayload(args.tensor) : undefined;
+    if (tensor === null) return fail(-32602, "invalid tensor payload: { out, ref, epsilon, metric?, refCommitment? }");
+    let check: TensorCheck | undefined;
+    if (tensor) {
+      try {
+        check = requestIndependentTensorCheck(tensor);
+      } catch (err) {
+        return fail(-32602, err instanceof Error ? err.message : "tensor check failed");
+      }
+    }
     if (name === "score_error") {
       const B = plant(caseId);
       return ok(toolResult({ case_id: caseId, e: defaultError(B, safetySchema), gate: gateOf(B) }));
@@ -128,6 +147,30 @@ export function handleMcp(msg: Rpc): unknown {
     if (name === "run_sealed_sequence") {
       if (typeof args.cold_final_e !== "number") return fail(-32602, "cold_final_e is required. the server does not read M.");
       plants.set(caseId, fresh(caseId));
+      tensorChecks.delete(caseId);
+      if (check) {
+        // Independent check runs before seal_pack; a violation fails the seal (seal_pack is not applied).
+        const binding = sealTensorBinding(check);
+        const steps: LoopObservation[] = [];
+        for (const y of SEALED_SEQUENCE) {
+          if (y === "seal_pack" && !binding.sealed) break;
+          steps.push(observe(plant(caseId), y, args.cold_final_e));
+        }
+        const finalE = steps[steps.length - 1]?.e_next ?? null;
+        const phi = typeof finalE === "number" ? phiOf(args.cold_final_e, finalE) : 0;
+        return ok(toolResult({
+          sequence: SEALED_SEQUENCE,
+          outside_self: true,
+          steps,
+          final_e: finalE,
+          phi,
+          better: combineEligibility(isErrorWin(phi), check),
+          mark_changes_e: false,
+          seal_is_the_drop: true,
+          sealed: binding.sealed,
+          tensor_seal: binding.seal,
+        }));
+      }
       const steps = SEALED_SEQUENCE.map((y) => observe(plant(caseId), y, args.cold_final_e));
       const finalE = steps[steps.length - 1]?.e_next ?? null;
       const phi = typeof finalE === "number" ? phiOf(args.cold_final_e, finalE) : 0;
@@ -142,6 +185,27 @@ export function handleMcp(msg: Rpc): unknown {
         seal_is_the_drop: true,
       }));
     }
+    // A plain re-check (no tensor) drops any tensor check pending from an earlier call.
+    if (!check && name === "request_independent_check") tensorChecks.delete(caseId);
+    if (check && name === "request_independent_check") {
+      tensorChecks.set(caseId, check);
+      return ok(toolResult({ ...observe(plant(caseId), name as YName, args.cold_final_e), tensor_check: check }));
+    }
+    if (name === "seal_pack" && (check || tensorChecks.has(caseId))) {
+      const bound = check ?? (tensorChecks.get(caseId) as TensorCheck);
+      tensorChecks.delete(caseId);
+      const binding = sealTensorBinding(bound);
+      if (!binding.sealed) {
+        // Seal fails: the plant is not transitioned and nothing is eligible.
+        const B = plant(caseId);
+        const e = defaultError(B, safetySchema);
+        return ok({
+          ...toolResult({ y: name, sealed: false, e, e_next: e, delta_e: 0, gate: gateOf(B), eligible: false, tensor_seal: binding.seal }),
+          isError: true,
+        });
+      }
+      return ok(toolResult({ ...observe(plant(caseId), name as YName, args.cold_final_e), sealed: true, tensor_seal: binding.seal }));
+    }
     if (SEALED_SEQUENCE.includes(name as YName) || name === "hold") {
       return ok(toolResult(observe(plant(caseId), name as YName, args.cold_final_e)));
     }
@@ -153,4 +217,5 @@ export function handleMcp(msg: Rpc): unknown {
 
 export function resetPlant(caseId = "mcp-pack") {
   plants.set(caseId, fresh(caseId));
+  tensorChecks.delete(caseId);
 }

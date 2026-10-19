@@ -16,6 +16,9 @@ export type LedgerEntry = {
   status: SystemicStatus;
   run_id: string;
   iteration: number;
+  /** Present only when the stored entry has tensor fields. */
+  tensor_commitment?: string;
+  tensor_distance?: number;
 };
 
 const finite = (v: unknown): number | null =>
@@ -32,7 +35,12 @@ export function toLedgerEntry(entry: ExperienceEntry & { system?: string }): Led
     typeof entry.system === "string" && entry.system ? entry.system : UNSPECIFIED_DOMAIN;
   const e0 = finite(entry.e0);
   const e1 = finite(entry.e);
-  const base = { domain, e0, e1, run_id: entry.run_id, iteration: entry.iteration };
+  const base: Pick<LedgerEntry, "domain" | "e0" | "e1" | "run_id" | "iteration" | "tensor_commitment" | "tensor_distance"> =
+    { domain, e0, e1, run_id: entry.run_id, iteration: entry.iteration };
+  // Tensor fields are added only when stored, so entries without them are unchanged.
+  if (typeof entry.tensor_commitment === "string") base.tensor_commitment = entry.tensor_commitment;
+  const td = finite(entry.tensor_distance);
+  if (td != null) base.tensor_distance = td;
   if (e0 == null || e1 == null) {
     return { ...base, deltaE: null, phi: null, status: "MISDIAGNOSIS_REJECTED" };
   }
@@ -42,9 +50,12 @@ export function toLedgerEntry(entry: ExperienceEntry & { system?: string }): Led
 
 const fx = (n: number | null) => (n == null ? "NA" : n.toFixed(3));
 
-/** DOMAIN=<d> E0=<x> E1=<y> DELTA_E=<z> PHI=<p> STATUS=<s> RUN=<id> ITER=<n> */
+/**
+ * DOMAIN=<d> E0=<x> E1=<y> DELTA_E=<z> PHI=<p> STATUS=<s> RUN=<id> ITER=<n>
+ * plus " TENSOR=<sha256:…|NA> T_DIST=<x|NA>" only when the entry has a tensor field.
+ */
 export function formatLedgerLine(x: LedgerEntry): string {
-  return [
+  const parts = [
     `DOMAIN=${x.domain}`,
     `E0=${fx(x.e0)}`,
     `E1=${fx(x.e1)}`,
@@ -53,7 +64,11 @@ export function formatLedgerLine(x: LedgerEntry): string {
     `STATUS=${x.status}`,
     `RUN=${x.run_id}`,
     `ITER=${x.iteration}`,
-  ].join(" ");
+  ];
+  if (x.tensor_commitment !== undefined || x.tensor_distance !== undefined) {
+    parts.push(`TENSOR=${x.tensor_commitment ?? "NA"}`, `T_DIST=${fx(x.tensor_distance ?? null)}`);
+  }
+  return parts.join(" ");
 }
 
 export function toLedger(list: (ExperienceEntry & { system?: string })[]): {
