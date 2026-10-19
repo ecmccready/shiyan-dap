@@ -90,7 +90,17 @@ export default function StatusPage() {
       </section>
 
       <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loadingExp} />
-      <ShareResult runId={latestVerified(experience)?.run_id} />
+      {latestVerified(experience)?.run_id ? (
+        <section aria-labelledby="share-heading" className="rounded-xl border border-zinc-800 p-4 space-y-2">
+          <h2 id="share-heading" className="text-lg font-semibold">Share</h2>
+          <p className="text-xs text-zinc-500">Public proof URL for the latest eligible run:</p>
+          <p className="font-mono text-xs break-all text-zinc-300">
+            {(typeof window !== "undefined" ? window.location.origin : "") +
+              `/workbench/result?run_id=${encodeURIComponent(latestVerified(experience)!.run_id)}`}
+          </p>
+          <ShareResult runId={latestVerified(experience)?.run_id} />
+        </section>
+      ) : null}
 
       <ul className="space-y-3">
         {items.map((item) => (
