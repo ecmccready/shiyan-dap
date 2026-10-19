@@ -76,7 +76,10 @@ export async function GET(req: NextRequest) {
   const ledger = wantsLedger(req);
   const redis = client();
   if (!redis) return NextResponse.json(ledger ? toLedger([]) : []);
-  const list = dedupe((await redis.lrange<ExperienceEntry>(KEY, 0, -1)) ?? []);
+  const all = dedupe((await redis.lrange<ExperienceEntry>(KEY, 0, -1)) ?? []);
+  // Optional, additive: ?run_id= narrows to one run. Absent → unchanged response.
+  const runFilter = req?.nextUrl?.searchParams?.get("run_id");
+  const list = runFilter ? all.filter((x) => x.run_id === runFilter) : all;
   return NextResponse.json(ledger ? toLedger(list) : list);
 }
 
