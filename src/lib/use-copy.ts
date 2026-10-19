@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 
 /** Hidden-textarea execCommand copy; fallback when the Clipboard API fails. */
 export function legacyCopy(text: string): boolean {
@@ -21,9 +21,32 @@ export function legacyCopy(text: string): boolean {
   }
 }
 
-/** Copy with Clipboard API → execCommand fallback; status auto-resets to idle. */
-export function useCopy(resetMs = 2500) {
-  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
+/**
+ * Page-wide "last copied" key: whichever copy button copied most recently
+ * shows "Copied" until the next successful copy anywhere on the page.
+ */
+let lastCopiedKey: string | null = null;
+const listeners = new Set<() => void>();
+function setLastCopied(key: string | null) {
+  lastCopiedKey = key;
+  listeners.forEach((l) => l());
+}
+function subscribe(l: () => void) {
+  listeners.add(l);
+  return () => { listeners.delete(l); };
+}
+const getSnapshot = () => lastCopiedKey;
+const getServerSnapshot = () => null;
+
+/**
+ * Copy with Clipboard API → execCommand fallback. A successful copy stays
+ * "copied" until another copy (any button) succeeds; failures show briefly.
+ */
+export function useCopy(failResetMs = 4000, key?: string) {
+  const autoKey = useId();
+  const myKey = key ?? autoKey;
+  const last = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [failed, setFailed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
@@ -38,11 +61,18 @@ export function useCopy(resetMs = 2500) {
       ok = false;
     }
     if (!ok) ok = legacyCopy(text);
-    setStatus(ok ? "copied" : "failed");
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setStatus("idle"), ok ? resetMs : 4000);
+    if (ok) {
+      setFailed(false);
+      setLastCopied(myKey);
+    } else {
+      if (lastCopiedKey === myKey) setLastCopied(null);
+      setFailed(true);
+      timer.current = setTimeout(() => setFailed(false), failResetMs);
+    }
     return ok;
   }
 
+  const status: "idle" | "copied" | "failed" = failed ? "failed" : last === myKey ? "copied" : "idle";
   return { status, copy };
 }
