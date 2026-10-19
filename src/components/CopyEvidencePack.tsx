@@ -86,6 +86,28 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
       >
         {verifyCopy.status === "copied" ? "Copied ✓" : verifyCopy.status === "failed" ? "Copy failed" : "Copy verify URL only"}
       </button>
+      <button
+        type="button"
+        onClick={async () => {
+          const title = `Shiyan evidence — run ${runId}`;
+          const nav = typeof navigator !== "undefined" ? (navigator as Navigator & { share?: (d: ShareData) => Promise<void> }) : null;
+          if (nav && typeof nav.share === "function") {
+            try {
+              await nav.share({ title, text: md });
+              showToast("Share opened");
+            } catch (err) {
+              if ((err as { name?: string })?.name !== "AbortError") showToast("Share failed");
+            }
+            return;
+          }
+          window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(md)}`;
+          showToast("Share opened");
+        }}
+        className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-emerald-400"
+        title="Share the Markdown evidence pack (native share sheet, or an email draft with no recipient)"
+      >
+        Share pack
+      </button>
     </p>
   );
 }
