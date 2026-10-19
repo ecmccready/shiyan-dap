@@ -26,6 +26,7 @@ import { demoTensorCheck, DEMO_TENSOR_EPSILON } from "@/lib/level4/demo-tensor";
 import { combineEligibility, type TensorCheck } from "@/lib/level4/tensor";
 import { experienceTensorFields } from "@/lib/level4/seal";
 import { loadDurablePlan, nextFromPlan, type DurablePlan } from "@/lib/level4/durable-self";
+import { vetDurablePlan, type DurableVet } from "@/lib/level4/durable-vet";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -73,14 +74,20 @@ function AutonomousInner() {
   const [recovered, setRecovered] = useState(false);
   const [busy, setBusy] = useState(false);
   const [tensor, setTensor] = useState<TensorCheck | null>(null);
-  // Self() durable feed, opt-in with ?durable=1. Default runs use the built-in sequence.
-  const [durableOn] = useState(() => searchParams.get("durable") === "1");
+  // Self() durable feed, on by default; ?durable=0 disables (?durable=1 still accepted).
+  // A durable plan is used only after a client-side replay vets it (see durable-vet.ts).
+  const [durableOn] = useState(() => searchParams.get("durable") !== "0");
   const [plan, setPlan] = useState<DurablePlan | null>(null);
+  const [vet, setVet] = useState<DurableVet | null>(null);
 
   useEffect(() => {
     if (!durableOn) return;
-    loadDurablePlan(goal.permitted_actions, runId).then(setPlan);
-  }, [durableOn, goal.permitted_actions, runId]);
+    loadDurablePlan(goal.permitted_actions, runId).then((p) => {
+      const v = vetDurablePlan(p, successThreshold(goal.success_condition));
+      setVet(v);
+      setPlan(v.ok ? p : null);
+    });
+  }, [durableOn, goal.permitted_actions, goal.success_condition, runId]);
 
   useEffect(() => {
     async function load() {
@@ -262,13 +269,15 @@ function AutonomousInner() {
         </p>
       )}
 
-      {durableOn && (
-        <p className="text-xs text-zinc-500">
-          {plan
-            ? `Durable experience: reusing the action sequence of verified run ${plan.run_id} (Φ ${plan.phi}, e ${plan.e}; ${plan.candidates} eligible COMPLETE candidate(s) in the store).`
-            : "Durable experience: none usable in the store, using the built-in approved sequence."}
-        </p>
-      )}
+      <p className="text-xs text-zinc-500">
+        {!durableOn
+          ? "Source: built-in approved sequence (durable feed disabled with ?durable=0)."
+          : plan
+            ? `Source: durable run ${plan.run_id} (Φ ${plan.phi}, e ${plan.e}; ${plan.candidates} eligible COMPLETE candidate(s); replay e ${vet?.replay_e?.toFixed(3)} ≤ built-in ${vet?.builtin_e.toFixed(3)}).`
+            : vet
+              ? `Source: built-in approved sequence (durable feed fell back: ${vet.reason}).`
+              : "Source: checking durable experience…"}
+      </p>
 
       {tensor && (
         <p className="text-xs text-zinc-500">
