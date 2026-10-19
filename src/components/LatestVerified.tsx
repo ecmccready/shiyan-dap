@@ -7,10 +7,13 @@ export default function LatestVerified({
   entry,
   total,
   loading,
+  scopedToRun,
 }: {
   entry: ExperienceEntry | null;
   total: number;
   loading?: boolean;
+  /** True when the page selected a run via ?run_id= (total is that run's count). */
+  scopedToRun?: boolean;
 }) {
   if (loading) {
     return (
@@ -75,7 +78,9 @@ export default function LatestVerified({
         <dd className="text-xs">{entry.verified_at}</dd>
       </dl>
       <p className="text-xs text-zinc-500">
-        {total} verified step{total === 1 ? "" : "s"} in the durable experience store.
+        {scopedToRun
+          ? `${total} step${total === 1 ? "" : "s"} in this run.`
+          : `${total} verified step${total === 1 ? "" : "s"} in the durable experience store.`}
       </p>
     </section>
   );

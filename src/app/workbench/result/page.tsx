@@ -62,7 +62,7 @@ export default async function ResultPage({
         )}
         {(!requested || entry) && (
           <>
-            <LatestVerified entry={entry} total={scoped.length} />
+            <LatestVerified entry={entry} total={scoped.length} scopedToRun={Boolean(requested)} />
             <VerifyVerdict runId={runId} />
             <AnchorRoot runId={runId} />
             <RunEndpoints variant="inline" runId={runId} />
