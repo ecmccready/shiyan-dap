@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useCopy } from "@/lib/use-copy";
 import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-client";
 
 /**
@@ -9,6 +10,7 @@ import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-cl
  * (anchored:false). Fails soft: renders nothing without run data or a root.
  */
 export default function AnchorRoot({ runId: fixedRunId }: { runId?: string } = {}) {
+  const { status: copyStatus, copy } = useCopy();
   const [data, setData] = useState<{ runId: string; root: string; anchored: boolean } | null>(null);
 
   useEffect(() => {
@@ -37,7 +39,15 @@ export default function AnchorRoot({ runId: fixedRunId }: { runId?: string } = {
       </a>{" "}
       <span className="text-xs text-zinc-500">
         {data.anchored ? "(anchored)" : "(prepared Merkle root; not on-chain, anchored:false)"}
-      </span>
+      </span>{" "}
+      <button
+        type="button"
+        onClick={() => copy(data.root)}
+        className="rounded-full border border-zinc-700 px-2 py-0.5 text-xs text-emerald-400"
+        title="Copy the full anchor root"
+      >
+        {copyStatus === "copied" ? "Copied ✓" : copyStatus === "failed" ? "Copy failed" : "Copy anchor root"}
+      </button>
     </p>
   );
 }
