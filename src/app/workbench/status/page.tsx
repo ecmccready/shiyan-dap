@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { loadAcquisitionServer } from "@/lib/level4/acquisition";
 import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
+import RunEndpoints from "@/components/RunEndpoints";
 import {
   loadExperienceServer,
   latestVerified,
@@ -131,6 +132,7 @@ export default function StatusPage() {
           </ul>
         </section>
       )}
+      <RunEndpoints />
     </main>
     </Level4Shell>
   );

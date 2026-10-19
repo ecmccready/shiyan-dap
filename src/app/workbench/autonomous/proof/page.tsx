@@ -11,6 +11,7 @@ import { measureActions } from "@/lib/level4/measured";
 // Browser-safe proposer: SelfFromApproved reads @vercel/kv, which cannot run client-side.
 const holdProposer = async () => ({ y: "hold" });
 import Level4Shell from "@/components/Level4Shell";
+import RunEndpoints from "@/components/RunEndpoints";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_proof",
@@ -105,6 +106,7 @@ export default function ProofPage() {
           <div key={i}>{line}</div>
         ))}
       </section>
+      <RunEndpoints />
     </main>
     </Level4Shell>
   );
