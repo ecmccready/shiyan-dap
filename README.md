@@ -70,6 +70,7 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
 - **Share polish 2.** Copy actions ("Copy anchor root", "Share this result", "Copy full public link") show a bottom-center toast (aria-live, ~2.5 s) alongside the button text. Result and status add "Copy full public link" (absolute URL). Status has a labeled "Share" section with the public URL for the latest eligible run.
 - **Share polish 3.** Copy buttons (anchor root, share, full public link, run id) stay "Copied ✓" until the next copy anywhere on the page (shared last-copied key); failures still show briefly. `/workbench/result` has the labeled Share section (honors `?run_id=`). "Copy run id" sits next to the run id on result and status. `/workbench/pilot` lists "Evidence you can share".
 - **Share polish 4.** The most recently copied button gets an emerald ring; a "Clear copied" text button (in the Share controls, shown only while something is Copied) resets the shared state. `/workbench/autonomous/proof` has the Share section for the latest eligible run (hidden without data). The latest-result card has "Copy Φ" and "Copy e" (copies the displayed value). `/offer` lists "Share the proof".
+- **Share polish 5.** The latest-result card has "Copy all metrics" (`run=<id> e=… Δe=… Φ=…`, as displayed). Result and status show the latest eligible ledger line with "Copy ledger line" (hidden when unavailable). A sticky "Copied: <label> · Clear" pill on Level 4 pages replaces the inline "Clear copied". `/workbench/pilot` lists "Proof you can send".
 
 ## Live commercial path
 
