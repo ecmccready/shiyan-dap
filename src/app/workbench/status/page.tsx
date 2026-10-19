@@ -7,6 +7,7 @@ import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
 import AnchorRoot from "@/components/AnchorRoot";
 import ShareSection from "@/components/ShareSection";
+import CopyLedgerLine from "@/components/CopyLedgerLine";
 import {
   loadExperienceServer,
   latestVerified,
@@ -91,6 +92,7 @@ export default function StatusPage() {
 
       <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loadingExp} />
       <ShareSection runId={latestVerified(experience)?.run_id} />
+      <CopyLedgerLine runId={latestVerified(experience)?.run_id} iteration={latestVerified(experience)?.iteration} />
 
       <ul className="space-y-3">
         {items.map((item) => (
