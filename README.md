@@ -43,16 +43,23 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
 - `src/lib/mcp/handler.ts` (Workbench B MCP server, `/api/mcp`): `request_independent_check`, `seal_pack`, and `run_sealed_sequence` accept an optional `tensor` argument (`{ out, ref, epsilon, metric?, refCommitment? }`). On a violation, `seal_pack` is not applied and the result reports `sealed: false`. Calls without a tensor return exactly what they did before.
 - `/api/level4/tensor-check`: a stateless POST endpoint that runs the independent check and returns the seal fields. It stores nothing.
 - `/api/level4/experience`: optional `tensor_commitment` and `tensor_distance` fields on POST. The default GET is unchanged. In `?format=ledger`, entries that carry tensor fields gain `TENSOR=<sha256:…> T_DIST=<x>`.
+- `src/lib/level4/demo-tensor.ts` (`/workbench/autonomous`): a deterministic demo tensor, the plant's 4-component sensor vector, checked against measureE's sealed reference at `request_independent_check` and `seal_pack` (Frobenius, ε = 0.16). It is an observation only and does not change e or the proposer. In the demo, iteration 3 is a real `MISDIAGNOSIS_VIOLATION` (distance 0.594, not yet eligible anyway) and iteration 4 is `TENSOR_VERIFIED` (distance 0.151). Both entries carry `tensor_commitment` and `tensor_distance`. See [docs/level4-tensor-demo.md](docs/level4-tensor-demo.md), including an `/api/mcp` `run_sealed_sequence` example.
 
 **Directional, not live:**
 
 - Anchoring commitments on-chain.
 - Settlement or monetization of verified tensor transformations (T_in → T_out).
 - FLOP-based micro-payments.
-- Tensors from hosted models in the live demo. The live Level 4 demo uses a deterministic proposer and does not send tensors.
+- Tensors from hosted models in the live demo. The live Level 4 demo uses a deterministic proposer and a deterministic demo sensor tensor, not a model's embeddings, activations, or logits.
 - Multi-domain simulation.
 
 **Commercial framing.** The tensor scope points toward verifiable AI audit trails: cryptographic proof of the latent state, not only of the outcome. It also lays a path toward monetizing verified tensor transformations that come with a measured reduction in error. That is a path, not a live product. Today the commitment, the distance check, and the seal binding are implemented.
+
+## Level 4: durable feed, write gate, dataset card
+
+- **Self() durable feed.** `src/lib/level4/durable-self.ts` (client) and `durable-self-server.ts` (server, direct Upstash) read the experience store, keep entries that are `eligible`, `COMPLETE`, Φ > 0 (and within the demo tensor ε when a distance is stored), map them to the `ApprovedExperience` shape, and pick the highest Φ with the same rule as `SelfFromApproved`. The winning run's ordered action sequence is reused. Entries do not record a `safety_passed` flag; reaching `COMPLETE` implies every step passed the precheck and safety gate. Opt-in on `/workbench/autonomous?durable=1`. With no usable experience or on any error, the built-in approved sequence is used.
+- **Level 4 write gate.** Optional `LEVEL4_WRITE_TOKEN` (bearer), `LEVEL4_ALLOW_SAME_ORIGIN`, and `LEVEL4_ALLOWED_ORIGINS` gate POST/DELETE on `/api/level4/run`, `/experience`, and `/acquisition`. Unset means unchanged behavior. GETs stay public. See [docs/level4-write-auth.md](docs/level4-write-auth.md).
+- **founder-z dataset card.** [docs/founder-z-dataset-card.md](docs/founder-z-dataset-card.md), ready to copy to Hugging Face as the dataset's README.
 
 ## Live commercial path
 
