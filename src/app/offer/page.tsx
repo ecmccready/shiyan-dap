@@ -97,6 +97,13 @@ z`}
         on-chain.
       </p>
 
+      <p className="text-sm text-zinc-300">
+        Send the proof:{" "}
+        <Link className="underline text-emerald-400" href="/workbench/result">public proof URL</Link>
+        {" · "}
+        <Link className="underline text-emerald-400" href="/workbench/pilot">Request a pilot →</Link>
+      </p>
+
       <section className="rounded-lg border border-zinc-800 p-4 text-sm space-y-2">
         <p className="font-medium">Beyond music: request a pilot</p>
         <p className="text-zinc-400">
