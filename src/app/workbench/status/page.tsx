@@ -124,6 +124,8 @@ export default function StatusPage() {
               <li key={`${e.run_id}:${e.iteration}`}>
                 {e.run_id} · iter {e.iteration} · e={e.e ?? "—"}
                 {typeof e.delta_e === "number" ? ` · Δe=${e.delta_e}` : ""} · eligible={String(e.eligible)}
+                {e.tensor_commitment ? ` · T=${e.tensor_commitment.slice(0, 15)}…` : ""}
+                {typeof e.tensor_distance === "number" ? ` · T_dist=${e.tensor_distance.toFixed(3)}` : ""}
               </li>
             ))}
           </ul>

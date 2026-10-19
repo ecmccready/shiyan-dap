@@ -22,6 +22,9 @@ import {
   successThreshold,
 } from "@/lib/level4/measured";
 import type { YAction } from "@/lib/closed-loop";
+import { demoTensorCheck, DEMO_TENSOR_EPSILON } from "@/lib/level4/demo-tensor";
+import { combineEligibility, type TensorCheck } from "@/lib/level4/tensor";
+import { experienceTensorFields } from "@/lib/level4/seal";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -68,6 +71,7 @@ function AutonomousInner() {
   const [rec, setRec] = useState<ControllerRecord>(INITIAL);
   const [recovered, setRecovered] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [tensor, setTensor] = useState<TensorCheck | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -144,6 +148,11 @@ function AutonomousInner() {
       next = { ...next, actions, e0: m.e0, last_e: m.e };
 
       const success = threshold != null && m.e < threshold;
+      // Demo tensor: a pure observation of plant state at request_independent_check /
+      // seal_pack. It does not change e or the proposer; it is an additional gate on
+      // the stored eligible flag only (combineEligibility).
+      const tcheck = demoTensorCheck(actions);
+      const eligible = combineEligibility(success, tcheck);
       next = transition(
         next,
         success ? "COMPLETE" : "CONTINUE",
@@ -152,12 +161,21 @@ function AutonomousInner() {
         }`
       );
 
-      const verified = recordVerified(next, m.e, success);
+      const verified = recordVerified(next, m.e, eligible);
       next = {
         ...next,
         history: [
           ...next.history,
-          { state: next.state, at: verified.verified_at, note: `verified result recorded (eligible=${success})` },
+          ...(tcheck
+            ? [
+                {
+                  state: next.state,
+                  at: verified.verified_at,
+                  note: `demo tensor ${tcheck.status} · ${tcheck.outCommitment.slice(0, 19)}… · d ${tcheck.distance.toFixed(3)} (ε ${DEMO_TENSOR_EPSILON})`,
+                },
+              ]
+            : []),
+          { state: next.state, at: verified.verified_at, note: `verified result recorded (eligible=${eligible})` },
         ],
       };
 
@@ -166,14 +184,16 @@ function AutonomousInner() {
         iteration: next.iteration,
         e: m.e,
         verified_at: verified.verified_at,
-        eligible: success,
+        eligible,
         y,
         e0: m.e0,
         delta_e: m.delta_e,
         cold_e: coldE,
         phi: Number((coldE - m.e).toFixed(3)),
         state: next.state,
+        ...(tcheck ? experienceTensorFields(tcheck) : {}),
       });
+      setTensor(tcheck);
 
       markApplied(actionKey);
       setRec(next);
@@ -190,6 +210,7 @@ function AutonomousInner() {
     clearVerified();
     await clearServerRecord(runId).catch(() => undefined);
     setRec(INITIAL);
+    setTensor(null);
     setRecovered(false);
   }
 
@@ -226,6 +247,14 @@ function AutonomousInner() {
         <p className="text-xs text-zinc-500">
           Cold Self() after {applied.length} step(s): e = {fmt(cold)}. Φ vs cold = {fmt(phi)}
           {phi > 0 ? " · reuse wins" : phi === 0 ? " · tie (not a win)" : " · cold is ahead so far"}.
+        </p>
+      )}
+
+      {tensor && (
+        <p className="text-xs text-zinc-500">
+          Demo tensor (deterministic plant sensor vector, shape [4]):{" "}
+          <span className="font-mono">{tensor.outCommitment.slice(0, 19)}…</span> · distance{" "}
+          {tensor.distance.toFixed(3)} vs ε {DEMO_TENSOR_EPSILON} · {tensor.status}
         </p>
       )}
 
