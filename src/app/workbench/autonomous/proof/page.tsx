@@ -15,7 +15,7 @@ import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
 import CopyVerifySummary from "@/components/CopyVerifySummary";
 import ShareSection from "@/components/ShareSection";
-import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-client";
+import { loadExperienceServer, latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_proof",
@@ -40,9 +40,10 @@ export default function ProofPage() {
   const [log, setLog] = useState<string[]>([]);
   const [passed, setPassed] = useState<boolean | null>(null);
   const [shareRunId, setShareRunId] = useState<string | null>(null);
+  const [shareEntry, setShareEntry] = useState<ExperienceEntry | null>(null);
   useEffect(() => {
     loadExperienceServer()
-      .then((list) => { const l = latestVerified(list); setShareRunId(l?.eligible ? l.run_id : null); })
+      .then((list) => { const l = latestVerified(list); setShareRunId(l?.eligible ? l.run_id : null); setShareEntry(l?.eligible ? l : null); })
       .catch(() => setShareRunId(null));
   }, []);
 
@@ -118,7 +119,7 @@ export default function ProofPage() {
       </section>
       <VerifyVerdict />
       <CopyVerifySummary />
-      <ShareSection runId={shareRunId} />
+      <ShareSection runId={shareRunId} entry={shareEntry} />
       <RunEndpoints variant="inline" />
       <RunEndpoints />
     </main>

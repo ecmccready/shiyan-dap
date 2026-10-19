@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import ShareResult from "@/components/ShareResult";
+import CopyEvidencePack from "@/components/CopyEvidencePack";
+import type { ExperienceEntry } from "@/lib/level4/experience-client";
 
 /**
  * Labeled Share section: public proof URL for a run plus share/copy controls.
@@ -10,9 +12,12 @@ import ShareResult from "@/components/ShareResult";
 export default function ShareSection({
   runId,
   label = "Public proof URL for the latest eligible run:",
+  entry,
 }: {
   runId: string | null | undefined;
   label?: string;
+  /** Optional: when given, the evidence pack buttons render prominently in this section. */
+  entry?: ExperienceEntry | null;
 }) {
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
@@ -24,6 +29,7 @@ export default function ShareSection({
       <p className="font-mono text-xs break-all text-zinc-300">
         {origin + `/workbench/result?run_id=${encodeURIComponent(runId)}`}
       </p>
+      {entry && entry.run_id === runId && <CopyEvidencePack entry={entry} />}
       <ShareResult runId={runId} />
     </section>
   );
