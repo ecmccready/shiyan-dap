@@ -17,6 +17,7 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
   const { status, copy } = useCopy(4000, undefined, "evidence pack");
   const mdCopy = useCopy(4000, undefined, "evidence (Markdown)");
   const urlCopy = useCopy(4000, undefined, "public URL");
+  const verifyCopy = useCopy(4000, undefined, "verify URL");
   const jsonCopy = useCopy(4000, undefined, "evidence (JSON)");
   const runId = entry?.run_id;
   const iteration = entry?.iteration;
@@ -41,6 +42,7 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
   const pack = buildPlainPack(entry, line, origin);
   const md = buildMarkdownPack(entry, line, origin);
   const publicUrl = packUrls(origin, runId).proof;
+  const verifyUrl = packUrls(origin, runId).verify;
   const json = buildJsonPack(entry, line, origin);
   return (
     <p className="text-xs flex flex-wrap gap-2">
@@ -75,6 +77,14 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
         title="Copy only the public proof URL"
       >
         {urlCopy.status === "copied" ? "Copied ✓" : urlCopy.status === "failed" ? "Copy failed" : "Copy public URL only"}
+      </button>
+      <button
+        type="button"
+        onClick={async () => showToast((await verifyCopy.copy(verifyUrl)) ? "Verify URL copied" : "Verify URL copy failed")}
+        className={"rounded-full border border-zinc-700 px-2 py-0.5 text-xs text-emerald-400" + copiedRing(verifyCopy.status)}
+        title="Copy only the verify endpoint URL for this run"
+      >
+        {verifyCopy.status === "copied" ? "Copied ✓" : verifyCopy.status === "failed" ? "Copy failed" : "Copy verify URL only"}
       </button>
     </p>
   );
