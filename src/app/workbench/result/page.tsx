@@ -1,6 +1,7 @@
 import { Redis } from "@upstash/redis";
 import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
+import RunEndpoints from "@/components/RunEndpoints";
 import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 // Server-rendered on every request so the latest verified result is in the HTML
@@ -41,6 +42,7 @@ export default async function ResultPage() {
         </header>
 
         <LatestVerified entry={latestVerified(experience)} total={experience.length} />
+        <RunEndpoints variant="inline" />
 
         <p className="text-sm">
           <a href="/workbench/outcome" className="underline text-emerald-400">Declare another outcome</a>

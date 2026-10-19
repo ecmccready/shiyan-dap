@@ -116,6 +116,7 @@ export default function StatusPage() {
       </section>
 
       <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loadingExp} />
+      <RunEndpoints variant="inline" />
 
       {experience.length > 1 && (
         <section className="rounded-xl border border-zinc-800 p-4 text-sm">
