@@ -91,6 +91,12 @@ z`}
         charge on ties or regressions.
       </p>
 
+      <p className="text-sm text-zinc-300">
+        Share the proof: a public proof URL (/workbench/result?run_id=…), a downloadable ledger, and read-only verify
+        and anchor endpoints (/api/level4/verify, /api/level4/anchor); the anchor root is a prepared Merkle root, not
+        on-chain.
+      </p>
+
       <section className="rounded-lg border border-zinc-800 p-4 text-sm space-y-2">
         <p className="font-medium">Beyond music: request a pilot</p>
         <p className="text-zinc-400">
