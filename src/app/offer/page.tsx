@@ -45,13 +45,14 @@ export default function OfferPage() {
   return (
     <main className="min-h-screen bg-black text-zinc-100 p-8 max-w-2xl mx-auto space-y-6">
       <p className="text-xs uppercase tracking-widest text-emerald-400">
-        Buy as B · potential customer in scope
+        First vertical · Music
       </p>
       <h1 className="text-2xl font-semibold">Offer</h1>
       <p className="text-sm text-zinc-400">
-        You Buy as B. This page is the potential-customer rail and is in
-        scope versus an environment-only out-of-scope B. Stripe Checkout is
-        external. Returning with a query string does not settle Shiyan state.
+        Aethel Node proves that the next action is no longer a misdiagnosis. This is the music offer: a purchase of
+        the first single through Stripe Checkout, which is external. Returning
+        with a query string does not settle anything; the payment is observed
+        only through the Stripe webhook.
       </p>
 
       <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-auto">

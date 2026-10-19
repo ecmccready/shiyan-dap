@@ -6,14 +6,14 @@ import SiteHeader from "@/components/SiteHeader";
 export default function OfferPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Workbench B" />
+      <SiteHeader section="Workbench" />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           Solicitation
         </p>
         <h1 className="text-3xl font-bold mb-3">Aethel Node · workbench offer</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
-          Know which AI workflow works, prove that it works, and reuse it when the evidence supports doing so.
+          Aethel Node proves that the next action is no longer a misdiagnosis. Know which AI workflow works, prove that it works, and reuse it only when the measured evidence supports doing so.
         </p>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300 space-y-3">
@@ -25,7 +25,7 @@ export default function OfferPage() {
 
         <h2 className="text-xl font-semibold mb-3">Public proof</h2>
         <p className="text-zinc-400 text-sm mb-4">
-          Model 3 2018 sealed reference and Optimus 2026 pipeline criteria. Same loop. Φ only when final e falls.
+          Sealed reference packs on the plant. Every step is gated, measured for error e, and recorded. Φ only when final e falls.
         </p>
         <nav className="flex flex-wrap gap-4 text-sm mb-8">
           <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
@@ -60,7 +60,7 @@ export default function OfferPage() {
         </section>
 
         <nav className="flex flex-wrap gap-4 text-sm mt-8">
-          <Link className="underline" href="/workbench">Workbench B</Link>
+          <Link className="underline" href="/workbench">Workbench</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
           <Link className="underline" href="/workbench/compare">Peer proof</Link>
           <Link className="underline" href="/workbench/review">Review</Link>

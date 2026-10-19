@@ -1,7 +1,10 @@
+import Link from "next/link";
+
 export default function PilotPage() {
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-xl font-semibold">Paid pilot</h1>
+      <p className="text-sm text-neutral-700">Aethel Node proves that the next action is no longer a misdiagnosis.</p>
       <p className="text-sm text-neutral-700">
         Available only after the workflow is reliable and a measurable business
         outcome has been demonstrated on matched cases.
@@ -26,9 +29,9 @@ export default function PilotPage() {
 
       <p className="text-xs text-neutral-500">
         Client handoff:{" "}
-        <a href="/workbench/client" className="underline">
+        <Link href="/workbench/client" className="underline">
           /workbench/client
-        </a>
+        </Link>
         . Export the JSON from there before any commercial discussion.
       </p>
     </main>

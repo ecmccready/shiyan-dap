@@ -12,6 +12,8 @@ export default function MarketPage() {
 
   useEffect(() => {
     const all = readLedger();
+    // localStorage is read after mount to avoid a hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAssets(
       all.filter((a) => KEEP.some((k) => a.title.includes(k))).slice(0, 2)
     );
@@ -21,8 +23,11 @@ export default function MarketPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Market" />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">Music rail</p>
-        <h1 className="text-3xl font-bold mb-8">Marketplace</h1>
+        <p className="text-emerald-400 mb-3">First vertical · Music</p>
+        <h1 className="text-3xl font-bold mb-3">Marketplace</h1>
+        <p className="text-zinc-400 max-w-2xl mb-8">
+          Aethel Node proves that the next action is no longer a misdiagnosis. Music is the first vertical: each catalog asset here can be proved on the Prove rail. A listing is not a sale.
+        </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {assets.map((asset) => (

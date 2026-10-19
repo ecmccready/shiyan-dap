@@ -30,7 +30,7 @@ export default function MarketplacePage() {
         </p>
         <h1 className="text-3xl font-bold mb-3">Verified reusable workflows</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
-          Later paid access to sequences that have already lowered final e on a reference.
+          Aethel Node proves that the next action is no longer a misdiagnosis. Later paid access to sequences that have already lowered final e on a reference.
           A listing is not a settled sale. An unsettled receipt is not revenue.
         </p>
 
