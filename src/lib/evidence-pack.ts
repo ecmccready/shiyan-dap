@@ -32,3 +32,20 @@ export function buildMarkdownPack(entry: ExperienceEntry, line: string | null, o
     `[Proof](${proof}) · [Verify](${verify})`,
   ].join("\n");
 }
+
+export function buildJsonPack(entry: ExperienceEntry, line: string | null, origin: string): string {
+  const { proof, verify } = packUrls(origin, entry.run_id);
+  return JSON.stringify(
+    {
+      run_id: entry.run_id,
+      e: entry.e,
+      delta_e: typeof entry.delta_e === "number" ? entry.delta_e : null,
+      phi: typeof entry.phi === "number" ? entry.phi : null,
+      ledger_line: line ?? null,
+      proof_url: proof,
+      verify_url: verify,
+    },
+    null,
+    2,
+  );
+}

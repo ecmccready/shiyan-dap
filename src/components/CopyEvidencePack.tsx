@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { showToast } from "@/lib/toast";
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
-import { buildPlainPack, buildMarkdownPack, packUrls } from "@/lib/evidence-pack";
+import { buildPlainPack, buildMarkdownPack, buildJsonPack, packUrls } from "@/lib/evidence-pack";
 
 /**
  * Copies a short multi-line evidence pack for a run: run id, e, Δe, Φ, the
@@ -17,6 +17,7 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
   const { status, copy } = useCopy(4000, undefined, "evidence pack");
   const mdCopy = useCopy(4000, undefined, "evidence (Markdown)");
   const urlCopy = useCopy(4000, undefined, "public URL");
+  const jsonCopy = useCopy(4000, undefined, "evidence (JSON)");
   const runId = entry?.run_id;
   const iteration = entry?.iteration;
   useEffect(() => { setOrigin(window.location.origin); }, []);
@@ -40,6 +41,7 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
   const pack = buildPlainPack(entry, line, origin);
   const md = buildMarkdownPack(entry, line, origin);
   const publicUrl = packUrls(origin, runId).proof;
+  const json = buildJsonPack(entry, line, origin);
   return (
     <p className="text-xs flex flex-wrap gap-2">
       <button
@@ -57,6 +59,14 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
         title="Same evidence pack, formatted as simple Markdown"
       >
         {mdCopy.status === "copied" ? "Copied ✓" : mdCopy.status === "failed" ? "Copy failed" : "Copy as Markdown"}
+      </button>
+      <button
+        type="button"
+        onClick={async () => showToast((await jsonCopy.copy(json)) ? "JSON evidence copied" : "JSON evidence copy failed")}
+        className={"rounded-full border border-zinc-700 px-3 py-1 text-xs text-emerald-400" + copiedRing(jsonCopy.status)}
+        title="Same evidence pack as pretty-printed JSON"
+      >
+        {jsonCopy.status === "copied" ? "Copied ✓" : jsonCopy.status === "failed" ? "Copy failed" : "Copy as JSON"}
       </button>
       <button
         type="button"
