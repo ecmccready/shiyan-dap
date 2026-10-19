@@ -25,6 +25,7 @@ import type { YAction } from "@/lib/closed-loop";
 import { demoTensorCheck, DEMO_TENSOR_EPSILON } from "@/lib/level4/demo-tensor";
 import { combineEligibility, type TensorCheck } from "@/lib/level4/tensor";
 import { experienceTensorFields } from "@/lib/level4/seal";
+import { loadDurablePlan, nextFromPlan, type DurablePlan } from "@/lib/level4/durable-self";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -72,6 +73,14 @@ function AutonomousInner() {
   const [recovered, setRecovered] = useState(false);
   const [busy, setBusy] = useState(false);
   const [tensor, setTensor] = useState<TensorCheck | null>(null);
+  // Self() durable feed, opt-in with ?durable=1. Default runs use the built-in sequence.
+  const [durableOn] = useState(() => searchParams.get("durable") === "1");
+  const [plan, setPlan] = useState<DurablePlan | null>(null);
+
+  useEffect(() => {
+    if (!durableOn) return;
+    loadDurablePlan(goal.permitted_actions, runId).then(setPlan);
+  }, [durableOn, goal.permitted_actions, runId]);
 
   useEffect(() => {
     async function load() {
@@ -91,6 +100,7 @@ function AutonomousInner() {
   }, [runId]);
 
   const applied = (rec.actions ?? []) as YAction[];
+  const nextY = (plan ? nextFromPlan(plan, applied.length) : nextFromExperience(applied)) as YAction;
   const threshold = successThreshold(goal.success_condition);
   const cold = applied.length > 0 ? coldBaseline(applied.length) : null;
   const deltaE = rec.e0 != null && rec.last_e != null ? rec.e0 - rec.last_e : null;
@@ -100,7 +110,7 @@ function AutonomousInner() {
     if (busy) return;
     setBusy(true);
     try {
-      const y = nextFromExperience(applied);
+      const y = nextY;
       const actionKey = `${runId}:${rec.goal_id}:${rec.iteration}:${y}`;
 
       if (alreadyApplied(actionKey)) {
@@ -134,7 +144,9 @@ function AutonomousInner() {
         "model_3",
         "hold",
         0,
-        experienceProposer(applied)
+        plan
+          ? async () => ({ y: nextY as string, source: "durable" })
+          : experienceProposer(applied)
       );
       if (next.state === "BLOCKED") {
         setRec(next);
@@ -250,6 +262,14 @@ function AutonomousInner() {
         </p>
       )}
 
+      {durableOn && (
+        <p className="text-xs text-zinc-500">
+          {plan
+            ? `Durable experience: reusing the action sequence of verified run ${plan.run_id} (Φ ${plan.phi}, e ${plan.e}; ${plan.candidates} eligible COMPLETE candidate(s) in the store).`
+            : "Durable experience: none usable in the store, using the built-in approved sequence."}
+        </p>
+      )}
+
       {tensor && (
         <p className="text-xs text-zinc-500">
           Demo tensor (deterministic plant sensor vector, shape [4]):{" "}
@@ -268,7 +288,7 @@ function AutonomousInner() {
         <dt className="text-zinc-500">Goal</dt>
         <dd>{goal.desired_outcome}</dd>
         <dt className="text-zinc-500">Next action</dt>
-        <dd className="font-mono text-xs">{nextFromExperience(applied)}</dd>
+        <dd className="font-mono text-xs">{nextY}</dd>
         <dt className="text-zinc-500">Run</dt>
         <dd className="font-mono text-xs">{runId}</dd>
       </dl>
