@@ -3,7 +3,7 @@ import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
-import ShareResult from "@/components/ShareResult";
+import ShareSection from "@/components/ShareSection";
 import AnchorRoot from "@/components/AnchorRoot";
 import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
@@ -66,7 +66,10 @@ export default async function ResultPage({
             <VerifyVerdict runId={runId} />
             <AnchorRoot runId={runId} />
             <RunEndpoints variant="inline" runId={runId} />
-            <ShareResult runId={entry?.run_id} />
+            <ShareSection
+              runId={entry?.run_id}
+              label={requested ? "Public proof URL for this run:" : "Public proof URL for the latest eligible run:"}
+            />
           </>
         )}
 
