@@ -86,6 +86,11 @@ z`}
 
       <WhatYouGet />
 
+      <p className="text-sm text-zinc-300">
+        What success looks like: the run reaches the goal threshold e &lt; 0.16 with a positive Φ vs cold Self(); no
+        charge on ties or regressions.
+      </p>
+
       <section className="rounded-lg border border-zinc-800 p-4 text-sm space-y-2">
         <p className="font-medium">Beyond music: request a pilot</p>
         <p className="text-zinc-400">
