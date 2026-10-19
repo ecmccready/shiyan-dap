@@ -4,6 +4,7 @@ import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
 import ShareResult from "@/components/ShareResult";
+import AnchorRoot from "@/components/AnchorRoot";
 import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 // Server-rendered on every request so the latest verified result is in the HTML
@@ -63,6 +64,7 @@ export default async function ResultPage({
           <>
             <LatestVerified entry={entry} total={scoped.length} />
             <VerifyVerdict runId={runId} />
+            <AnchorRoot runId={runId} />
             <RunEndpoints variant="inline" runId={runId} />
             <ShareResult runId={entry?.run_id} />
           </>

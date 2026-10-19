@@ -5,6 +5,7 @@ import { loadAcquisitionServer } from "@/lib/level4/acquisition";
 import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
+import AnchorRoot from "@/components/AnchorRoot";
 import {
   loadExperienceServer,
   latestVerified,
@@ -140,6 +141,7 @@ export default function StatusPage() {
       </section>
 
       <RunEndpoints variant="inline" />
+      <AnchorRoot />
 
       {experience.length > 1 && (
         <section className="rounded-xl border border-zinc-800 p-4 text-sm">
