@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
 
 const OFFER = {
@@ -82,6 +83,8 @@ z`}
       </button>
 
       {err ? <p className="text-sm text-red-400">{err}</p> : null}
+
+      <WhatYouGet />
 
       <section className="rounded-lg border border-zinc-800 p-4 text-sm space-y-2">
         <p className="font-medium">Beyond music: request a pilot</p>

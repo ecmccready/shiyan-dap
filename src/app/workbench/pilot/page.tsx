@@ -1,3 +1,4 @@
+import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
 
 export default function PilotPage() {
@@ -47,6 +48,8 @@ export default function PilotPage() {
           <Link href="/workbench/status" className="underline">/workbench/status</Link>.
         </p>
       </section>
+
+      <WhatYouGet tone="light" />
 
       <p className="text-xs text-neutral-500">
         Client handoff:{" "}

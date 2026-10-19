@@ -1,5 +1,6 @@
 "use client";
 
+import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
@@ -45,6 +46,8 @@ export default function OfferPage() {
           Pilot pricing: set per pilot against the measured Φ; no charge on ties or regressions. Check the evidence first on{" "}
           <Link className="underline" href="/workbench/status">status</Link>.
         </p>
+
+        <div className="mb-8"><WhatYouGet /></div>
 
         <h2 className="text-xl font-semibold mb-3">Verified sequences</h2>
         <p className="text-zinc-400 text-sm mb-4">
