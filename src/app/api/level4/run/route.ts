@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireLevel4Write } from "@/lib/level4/write-auth";
 import { Redis } from "@upstash/redis";
 import type { ControllerRecord } from "@/lib/level4/controller";
 
@@ -17,6 +18,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = requireLevel4Write(req);
+  if (denied) return denied;
   const body = await req.json();
   const { id, rec } = body as { id: string; rec: ControllerRecord };
   if (!id || !rec) return NextResponse.json({ error: "id and rec required" }, { status: 400 });
@@ -25,6 +28,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = requireLevel4Write(req);
+  if (denied) return denied;
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   await redis.del(key(id));

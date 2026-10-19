@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireLevel4Write } from "@/lib/level4/write-auth";
 import { Redis } from "@upstash/redis";
 import { toLedger } from "@/lib/level4/ledger";
 import { TENSOR_COMMITMENT_RE } from "@/lib/level4/tensor";
@@ -80,6 +81,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = requireLevel4Write(req);
+  if (denied) return denied;
   const redis = client();
   if (!redis) {
     return NextResponse.json({ error: "experience store not configured" }, { status: 503 });

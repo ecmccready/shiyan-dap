@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireLevel4Write } from "@/lib/level4/write-auth";
 import { Redis } from "@upstash/redis";
 
 // Always read the live counter (never a cached response).
@@ -30,6 +31,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = requireLevel4Write(req);
+  if (denied) return denied;
   const redis = client();
   if (!redis) {
     return NextResponse.json({ error: "acquisition store not configured" }, { status: 503 });
