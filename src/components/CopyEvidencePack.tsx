@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { showToast } from "@/lib/toast";
-import { fmtE, type ExperienceEntry } from "@/lib/level4/experience-client";
+import type { ExperienceEntry } from "@/lib/level4/experience-client";
+import { buildPlainPack, buildMarkdownPack } from "@/lib/evidence-pack";
 
 /**
  * Copies a short multi-line evidence pack for a run: run id, e, Δe, Φ, the
@@ -14,6 +15,7 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
   const [line, setLine] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
   const { status, copy } = useCopy(4000, undefined, "evidence pack");
+  const mdCopy = useCopy(4000, undefined, "evidence (Markdown)");
   const runId = entry?.run_id;
   const iteration = entry?.iteration;
   useEffect(() => { setOrigin(window.location.origin); }, []);
@@ -34,18 +36,10 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
     return () => { alive = false; };
   }, [runId, iteration]);
   if (!entry || !runId) return null;
-  const q = encodeURIComponent(runId);
-  const pack = [
-    `run=${runId}`,
-    `e=${fmtE(entry.e)}`,
-    ...(typeof entry.delta_e === "number" ? [`Δe=${fmtE(entry.delta_e)}`] : []),
-    ...(typeof entry.phi === "number" ? [`Φ=${fmtE(entry.phi)}`] : []),
-    ...(line ? [`ledger: ${line}`] : []),
-    `proof: ${origin}/workbench/result?run_id=${q}`,
-    `verify: ${origin}/api/level4/verify?run_id=${q}`,
-  ].join("\n");
+  const pack = buildPlainPack(entry, line, origin);
+  const md = buildMarkdownPack(entry, line, origin);
   return (
-    <p className="text-xs">
+    <p className="text-xs flex flex-wrap gap-2">
       <button
         type="button"
         onClick={async () => showToast((await copy(pack)) ? "Evidence pack copied" : "Evidence pack copy failed")}
@@ -53,6 +47,14 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
         title="Run id, e, Δe, Φ, latest eligible ledger line, public proof URL and verify URL"
       >
         {status === "copied" ? "Copied ✓" : status === "failed" ? "Copy failed" : "Copy full evidence pack"}
+      </button>
+      <button
+        type="button"
+        onClick={async () => showToast((await mdCopy.copy(md)) ? "Markdown evidence copied" : "Markdown evidence copy failed")}
+        className={"rounded-full border border-zinc-700 px-3 py-1 text-xs text-emerald-400" + copiedRing(mdCopy.status)}
+        title="Same evidence pack, formatted as simple Markdown"
+      >
+        {mdCopy.status === "copied" ? "Copied ✓" : mdCopy.status === "failed" ? "Copy failed" : "Copy as Markdown"}
       </button>
     </p>
   );
