@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LastVerified from "@/components/LastVerified";
+import CopyRunId from "@/components/CopyRunId";
 import { fmtE, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 /** Latest verified Level 4 result from the durable experience store. */
@@ -54,6 +55,7 @@ export default function LatestVerified({
           <Link href={`/workbench/autonomous?run=${encodeURIComponent(entry.run_id)}`} className="underline">
             {entry.run_id}
           </Link>
+          <CopyRunId runId={entry.run_id} />
         </dd>
         <dt className="text-zinc-500">Final e</dt>
         <dd className="font-mono">{fmtE(entry.e)}</dd>
