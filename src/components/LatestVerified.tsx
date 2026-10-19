@@ -13,8 +13,17 @@ export default function LatestVerified({
 }) {
   if (loading) {
     return (
-      <section className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-500">
-        Loading verified experience…
+      <section className="rounded-xl border border-zinc-800 p-4 text-sm space-y-2" aria-busy="true">
+        <p className="font-medium">Latest verified result</p>
+        <p className="text-xs text-zinc-500">Reading the durable experience store…</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 animate-pulse">
+          {["Run", "Final e", "Φ vs cold Self()", "Eligible"].map((l) => (
+            <div key={l} className="contents">
+              <span className="text-zinc-500">{l}</span>
+              <span className="h-4 w-24 rounded bg-zinc-800" />
+            </div>
+          ))}
+        </div>
       </section>
     );
   }

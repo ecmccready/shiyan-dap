@@ -17,11 +17,13 @@ export default function StatusPage() {
   const [recent, setRecent] = useState<string[]>([]);
   const [experience, setExperience] = useState<ExperienceEntry[]>([]);
   const [loadingExp, setLoadingExp] = useState(true);
+  const [loadingStarts, setLoadingStarts] = useState(true);
 
   useEffect(() => {
     async function load() {
       const data = await loadAcquisitionServer();
       setStarts(data.starts);
+      setLoadingStarts(false);
       setRecent(data.recent);
       if (typeof window !== "undefined") {
         setActiveRun(window.sessionStorage.getItem("aethel-active-run-id"));
@@ -64,6 +66,29 @@ export default function StatusPage() {
         </p>
       </header>
 
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Live counters">
+        <div className="rounded-xl border border-zinc-800 p-4">
+          <p className="text-xs uppercase tracking-wide text-zinc-500">Guided starts recorded</p>
+          {loadingStarts ? (
+            <p className="mt-1 h-8 w-16 rounded bg-zinc-800 animate-pulse" aria-label="Loading guided-start count" />
+          ) : (
+            <p className="mt-1 text-3xl font-semibold font-mono">{starts ?? "—"}</p>
+          )}
+          <p className="text-xs text-zinc-500">from /api/level4/acquisition</p>
+        </div>
+        <div className="rounded-xl border border-zinc-800 p-4">
+          <p className="text-xs uppercase tracking-wide text-zinc-500">Verified steps stored</p>
+          {loadingExp ? (
+            <p className="mt-1 h-8 w-16 rounded bg-zinc-800 animate-pulse" aria-label="Loading verified steps" />
+          ) : (
+            <p className="mt-1 text-3xl font-semibold font-mono">{experience.length}</p>
+          )}
+          <p className="text-xs text-zinc-500">from /api/level4/experience</p>
+        </div>
+      </section>
+
+      <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loadingExp} />
+
       <ul className="space-y-3">
         {items.map((item) => (
           <li key={item.surface} className="rounded-xl border border-zinc-800 p-4">
@@ -90,7 +115,6 @@ export default function StatusPage() {
           <li>Understandable outcome without algorithm knowledge</li>
           <li>Reason to return: progress survives reload via server record</li>
         </ul>
-        <p className="text-zinc-300">Guided starts recorded: {starts ?? "…"}</p>
         {activeRun && (
           <p className="text-zinc-300">
             Active run:{" "}
@@ -115,7 +139,6 @@ export default function StatusPage() {
         )}
       </section>
 
-      <LatestVerified entry={latestVerified(experience)} total={experience.length} loading={loadingExp} />
       <RunEndpoints variant="inline" />
 
       {experience.length > 1 && (
