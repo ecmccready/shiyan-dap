@@ -60,6 +60,11 @@ export default function PilotPage() {
         not on-chain.
       </p>
 
+      <p className="text-sm">
+        Proof you can send: the run&apos;s public URL (/workbench/result?run_id=…), which anyone can check against
+        /api/level4/verify, plus the copied metrics string (run, e, Δe, Φ) or the latest eligible ledger line.
+      </p>
+
       <WhatYouGet tone="light" />
 
       <p className="text-xs text-neutral-500">
