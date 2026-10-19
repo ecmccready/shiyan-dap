@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import CopyToast from "@/components/CopyToast";
 
 /**
  * Copies a stable public URL for a run (/workbench/result?run_id=<id>) to the
@@ -58,6 +59,7 @@ export default function ShareResult({ runId }: { runId: string | null | undefine
       <span role="status" aria-live="polite" className="text-xs text-zinc-400">
         {status === "copied" ? "Link copied" : status === "failed" ? "Copy failed — use the link" : ""}
       </span>
+      <CopyToast status={status} copied="Public link copied" />
     </p>
   );
 }

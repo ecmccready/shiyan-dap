@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useCopy } from "@/lib/use-copy";
+import CopyToast from "@/components/CopyToast";
 import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-client";
 
 /**
@@ -48,6 +49,7 @@ export default function AnchorRoot({ runId: fixedRunId }: { runId?: string } = {
       >
         {copyStatus === "copied" ? "Copied ✓" : copyStatus === "failed" ? "Copy failed" : "Copy anchor root"}
       </button>
+      <CopyToast status={copyStatus} copied="Anchor root copied" failed="Anchor root copy failed" />
     </p>
   );
 }
