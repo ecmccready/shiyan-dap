@@ -27,6 +27,21 @@ export default function PilotPage() {
         </p>
       </div>
 
+      <section className="rounded border p-4 text-sm">
+        <p className="font-medium">Request a pilot</p>
+        <p className="mt-1 text-neutral-600">
+          Aethel Node proves that the next action is no longer a misdiagnosis. Start a pilot request
+          by running your repeated workflow and reference through the client pipeline and exporting
+          the Run. Pricing is set per pilot against the measured Φ; no charge on ties or regressions.
+        </p>
+        <Link
+          href="/workbench/client"
+          className="mt-3 inline-block rounded bg-neutral-900 px-3 py-1.5 text-white"
+        >
+          Request a pilot →
+        </Link>
+      </section>
+
       <p className="text-xs text-neutral-500">
         Client handoff:{" "}
         <Link href="/workbench/client" className="underline">

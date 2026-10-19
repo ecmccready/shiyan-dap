@@ -83,6 +83,17 @@ z`}
 
       {err ? <p className="text-sm text-red-400">{err}</p> : null}
 
+      <section className="rounded-lg border border-zinc-800 p-4 text-sm space-y-2">
+        <p className="font-medium">Beyond music: request a pilot</p>
+        <p className="text-zinc-400">
+          The $1 single above is the music vertical&apos;s live offer. For a pilot on your own repeated
+          workflow, see the paid pilot terms: priced against measured Φ, no charge on ties or regressions.
+        </p>
+        <Link className="inline-block underline text-emerald-400" href="/workbench/pilot">
+          Request a pilot →
+        </Link>
+      </section>
+
       <p className="text-xs text-zinc-500">
         Buyer B is in scope. Use another email and browser if A and B must
         stay distinct. Prove rail remains{" "}

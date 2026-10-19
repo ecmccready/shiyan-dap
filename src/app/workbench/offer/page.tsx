@@ -38,6 +38,7 @@ export default function OfferPage() {
         </p>
         <nav className="flex flex-wrap gap-4 text-sm mb-8">
           <Link className="underline" href="/workbench/client">Client pipeline</Link>
+          <Link className="underline font-medium text-emerald-400" href="/workbench/pilot">Request a pilot →</Link>
           <Link className="underline" href="/workbench/history">History</Link>
         </nav>
 
