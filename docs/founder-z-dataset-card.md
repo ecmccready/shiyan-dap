@@ -2,7 +2,7 @@
 pretty_name: founder-z
 license: other
 license_name: unspecified
-license_details: "No license has been declared in the shiyan-dap repository or on the dataset. Contact the maintainer before reuse."
+license_link: https://github.com/ecmccready/shiyan-dap
 language:
   - en
 tags:
@@ -16,11 +16,17 @@ size_categories:
   - n<1K
 configs:
   - config_name: outcomes
-    data_files: "outcome-*.json"
+    data_files:
+      - split: train
+        path: "outcome-*.json"
   - config_name: events
-    data_files: "events/*.json"
+    data_files:
+      - split: train
+        path: "events/*.json"
   - config_name: mints
-    data_files: "mints/*.json"
+    data_files:
+      - split: train
+        path: "mints/*.json"
 ---
 
 # founder-z
