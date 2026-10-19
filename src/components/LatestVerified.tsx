@@ -80,6 +80,18 @@ export default function LatestVerified({
         <dt className="text-zinc-500">Verified at</dt>
         <dd className="text-xs">{entry.verified_at}</dd>
       </dl>
+      <p className="text-xs">
+        <CopyValue
+          value={[
+            `run=${entry.run_id}`,
+            `e=${fmtE(entry.e)}`,
+            ...(typeof entry.delta_e === "number" ? [`Δe=${fmtE(entry.delta_e)}`] : []),
+            ...(typeof entry.phi === "number" ? [`Φ=${fmtE(entry.phi)}`] : []),
+          ].join(" ")}
+          label="all metrics"
+          toast="Metrics copied"
+        />
+      </p>
       <p className="text-xs text-zinc-500">
         {scopedToRun
           ? `${total} step${total === 1 ? "" : "s"} in this run.`
