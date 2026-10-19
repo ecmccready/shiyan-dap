@@ -5,7 +5,7 @@ import { showToast } from "@/lib/toast";
 
 /** Copies a run id; shares the page-wide Copied state and the toast. */
 export default function CopyRunId({ runId }: { runId: string }) {
-  const { status, copy } = useCopy();
+  const { status, copy } = useCopy(4000, undefined, "run id");
   return (
     <button
       type="button"

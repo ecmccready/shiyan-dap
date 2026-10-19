@@ -2,7 +2,6 @@
 
 import { showToast } from "@/lib/toast";
 import { useCopy, copiedRing } from "@/lib/use-copy";
-import ClearCopied from "@/components/ClearCopied";
 
 /**
  * Copies a stable public URL for a run (/workbench/result?run_id=<id>) to the
@@ -10,8 +9,8 @@ import ClearCopied from "@/components/ClearCopied";
  * stays as the fallback either way.
  */
 export default function ShareResult({ runId }: { runId: string | null | undefined }) {
-  const share = useCopy();
-  const full = useCopy();
+  const share = useCopy(4000, undefined, "public link");
+  const full = useCopy(4000, undefined, "full public link");
   if (!runId) return null;
   const path = `/workbench/result?run_id=${encodeURIComponent(runId)}`;
   const status = share.status;
@@ -39,7 +38,6 @@ export default function ShareResult({ runId }: { runId: string | null | undefine
       <span role="status" aria-live="polite" className="text-xs text-zinc-400">
         {status === "copied" ? "Link copied" : status === "failed" ? "Copy failed — use the link" : ""}
       </span>
-      <ClearCopied />
     </p>
   );
 }

@@ -5,7 +5,7 @@ import { showToast } from "@/lib/toast";
 
 /** Copies a displayed value as shown; shares the page-wide Copied state and the toast. */
 export default function CopyValue({ value, label, toast }: { value: string; label: string; toast?: string }) {
-  const { status, copy } = useCopy();
+  const { status, copy } = useCopy(4000, undefined, label);
   return (
     <button
       type="button"

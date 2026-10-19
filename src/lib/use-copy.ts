@@ -26,9 +26,11 @@ export function legacyCopy(text: string): boolean {
  * shows "Copied" until the next successful copy anywhere on the page.
  */
 let lastCopiedKey: string | null = null;
+let lastCopiedLabel: string | null = null;
 const listeners = new Set<() => void>();
-function setLastCopied(key: string | null) {
+function setLastCopied(key: string | null, label: string | null = null) {
   lastCopiedKey = key;
+  lastCopiedLabel = key ? label : null;
   listeners.forEach((l) => l());
 }
 function subscribe(l: () => void) {
@@ -42,7 +44,7 @@ const getServerSnapshot = () => null;
  * Copy with Clipboard API → execCommand fallback. A successful copy stays
  * "copied" until another copy (any button) succeeds; failures show briefly.
  */
-export function useCopy(failResetMs = 4000, key?: string) {
+export function useCopy(failResetMs = 4000, key?: string, label?: string) {
   const autoKey = useId();
   const myKey = key ?? autoKey;
   const last = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
@@ -64,7 +66,7 @@ export function useCopy(failResetMs = 4000, key?: string) {
     if (timer.current) clearTimeout(timer.current);
     if (ok) {
       setFailed(false);
-      setLastCopied(myKey);
+      setLastCopied(myKey, label ?? null);
     } else {
       if (lastCopiedKey === myKey) setLastCopied(null);
       setFailed(true);
@@ -80,6 +82,11 @@ export function useCopy(failResetMs = 4000, key?: string) {
 /** Current page-wide last-copied key (null when nothing is in the Copied state). */
 export function useLastCopied() {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+/** Human label of the last successful copy (for the Copied toolbar). */
+export function getLastCopiedLabel() {
+  return lastCopiedLabel;
 }
 
 /** Reset the shared Copied state so no button shows "Copied". */

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SiteHeader from "./SiteHeader";
+import ClearCopied from "./ClearCopied";
 
 /**
  * Shared frame for the Level 4 surfaces (start → run → result → status).
@@ -48,6 +49,7 @@ export default function Level4Shell({ children }: { children: React.ReactNode })
         })}
       </nav>
       {children}
+      <ClearCopied />
     </div>
   );
 }

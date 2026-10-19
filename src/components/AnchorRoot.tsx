@@ -11,7 +11,7 @@ import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-cl
  * (anchored:false). Fails soft: renders nothing without run data or a root.
  */
 export default function AnchorRoot({ runId: fixedRunId }: { runId?: string } = {}) {
-  const { status: copyStatus, copy } = useCopy();
+  const { status: copyStatus, copy } = useCopy(4000, undefined, "anchor root");
   const [data, setData] = useState<{ runId: string; root: string; anchored: boolean } | null>(null);
 
   useEffect(() => {

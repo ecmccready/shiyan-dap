@@ -10,7 +10,7 @@ import { showToast } from "@/lib/toast";
  */
 export default function CopyLedgerLine({ runId, iteration }: { runId?: string | null; iteration?: number | null }) {
   const [line, setLine] = useState<string | null>(null);
-  const { status, copy } = useCopy();
+  const { status, copy } = useCopy(4000, undefined, "ledger line");
   useEffect(() => {
     setLine(null);
     if (!runId || typeof iteration !== "number") return;
