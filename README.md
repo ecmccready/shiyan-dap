@@ -146,6 +146,34 @@ Supporting modules under `src/lib/level4/`: controller, goal, loop, safety-gate,
 - The external client path is closed: declare outcome → bounded run → verified result.
 - Measured Δe is inspectable: every verified step carries e, e0, Δe, the cold baseline, and Φ in a public record.
 
+## Evidence & data support
+
+What an acquirer can check today, without trusting this repo. Live unless marked directional.
+
+- **Independent verify (live).** `GET /api/level4/verify?run_id=` replays a stored run on a fresh plant and returns PASS/FAIL/SKIP per check. The demo run `run_mvculg3c_wn6w0q` returns PASS 26/26. Anyone can re-run it.
+- **Anchor root (live; on-chain anchoring directional).** `GET /api/level4/anchor?run_id=` returns the `aethel-anchor/1` payload and a SHA-256 Merkle ledger root with `anchored: false`: a prepared root, not on-chain. Only a dry-run adapter exists; on-chain submission is planned, not live.
+- **Public ledger (live).** `GET /api/level4/experience` is the durable, public record; `?format=ledger` returns ledger lines and `?run_id=` optionally filters to one run.
+- **founder-z outcome log (live).** Outcome, event, and mint records are published to the public Hugging Face dataset [shiyan-dap/founder-z](https://huggingface.co/datasets/shiyan-dap/founder-z). The dataset card is [docs/founder-z-dataset-card.md](docs/founder-z-dataset-card.md) (pending upload). The Hub's Dataset Viewer shows a `CastError` because the files have mixed schemas; the data is intact and loads file by file.
+- **Durable feed (live).** `/workbench/autonomous` uses the Self() durable feed by default (`?durable=0` opts out), vetted by client-side replay, with the built-in sequence as fallback.
+- **Write gate (live, opt-in).** With `LEVEL4_WRITE_TOKEN` set, POST on `/api/memory` (and the other Level 4 writes) needs `Authorization: Bearer <token>` or an allowed origin; unset, writes are unchanged. GETs stay public. See [docs/level4-write-auth.md](docs/level4-write-auth.md).
+
+**Copy / share controls (live).**
+
+| Control | Pages |
+| --- | --- |
+| Copy all metrics, Copy Φ, Copy e, Copy run id (latest-result card) | result, status |
+| Copy ledger line, Copy anchor root | result, status |
+| Copy full evidence pack, Copy as Markdown, Copy as JSON, Copy public URL only, Copy verify URL only, Share pack | result, status, proof (`/workbench/autonomous/proof`) |
+| Copy verify summary | result, proof |
+| Share section | result, status, proof |
+
+All copy actions share a lasting "Copied ✓" state, a high-contrast toast, and a sticky "Copied: <label> · Clear" toolbar that collapses and clears on Esc. Share pack uses the native share sheet, else a mailto with no recipient.
+
+**Commercial lines (live).**
+
+- `/offer`: "What success looks like: the run reaches the goal threshold e < 0.16 with a positive Φ vs cold Self(); no charge on ties or regressions." · "Send the proof" and a "Proof ready" badge (public proof URL, verify endpoint for the demo run, Request a pilot).
+- `/workbench/pilot`: the success metric; "Evidence you can share" (public proof URL, downloadable ledger, verify and anchor endpoints); "Proof you can send" (public URL checkable against `/api/level4/verify`); "Get the proof" (open the result, check it against verify, then Request a pilot).
+
 ## Continuity
 
 This plant builds on the existing Level 3 implementation and does not replace it. Level 4 adds durability, recovery, and a measurable external path on top of the same controller, safety gate, and history.
