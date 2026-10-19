@@ -6,6 +6,10 @@
 import type { ExperienceEntry } from "./experience-client";
 import { verifyStep } from "./measured";
 import { UNSPECIFIED_DOMAIN, type SystemDomain, type SystemicStatus } from "./systemic";
+import { DEMO_TENSOR_EPSILON } from "./demo-tensor";
+
+/** Ledger status: the Δe classification, overridden when a stored tensor check failed. */
+export type LedgerStatus = SystemicStatus | "MISDIAGNOSIS_VIOLATION";
 
 export type LedgerEntry = {
   domain: SystemDomain;
@@ -13,7 +17,7 @@ export type LedgerEntry = {
   e1: number | null;
   deltaE: number | null;
   phi: number | null;
-  status: SystemicStatus;
+  status: LedgerStatus;
   run_id: string;
   iteration: number;
   /** Present only when the stored entry has tensor fields. */
@@ -30,7 +34,9 @@ const finite = (v: unknown): number | null =>
  * are MISDIAGNOSIS_REJECTED with null Δe/Φ. Domain comes from the entry's
  * `system` field, else "unspecified" (never assumed).
  */
-export function toLedgerEntry(entry: ExperienceEntry & { system?: string }): LedgerEntry {
+export function toLedgerEntry(
+  entry: ExperienceEntry & { system?: string; tensor_status?: unknown; tensor_epsilon?: unknown }
+): LedgerEntry {
   const domain =
     typeof entry.system === "string" && entry.system ? entry.system : UNSPECIFIED_DOMAIN;
   const e0 = finite(entry.e0);
@@ -45,7 +51,25 @@ export function toLedgerEntry(entry: ExperienceEntry & { system?: string }): Led
     return { ...base, deltaE: null, phi: null, status: "MISDIAGNOSIS_REJECTED" };
   }
   const v = verifyStep({ e0, e1, coldE: finite(entry.cold_e) });
-  return { ...base, deltaE: v.deltaE, phi: v.phi, status: v.status };
+  return { ...base, deltaE: v.deltaE, phi: v.phi, status: foldTensorStatus(v.status, entry, td) };
+}
+
+/**
+ * The tensor check is an additional gate: a step whose stored tensor check
+ * failed is MISDIAGNOSIS_VIOLATION regardless of Δe. Uses a stored
+ * tensor_status / tensor_epsilon when present, else the demo ε (0.16).
+ * Entries without tensor fields keep the Δe status unchanged.
+ */
+function foldTensorStatus(
+  status: SystemicStatus,
+  entry: { tensor_status?: unknown; tensor_epsilon?: unknown },
+  distance: number | null
+): LedgerStatus {
+  if (entry.tensor_status === "MISDIAGNOSIS_VIOLATION") return "MISDIAGNOSIS_VIOLATION";
+  if (entry.tensor_status === "TENSOR_VERIFIED") return status;
+  if (distance == null) return status;
+  const eps = finite(entry.tensor_epsilon) ?? DEMO_TENSOR_EPSILON;
+  return distance > eps ? "MISDIAGNOSIS_VIOLATION" : status;
 }
 
 const fx = (n: number | null) => (n == null ? "NA" : n.toFixed(3));
