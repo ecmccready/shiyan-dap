@@ -8,16 +8,21 @@ import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-cl
  * (latest eligible entry preferred). Hidden when no experience is recorded.
  * variant="section" renders a titled section; "inline" renders compact links.
  */
-export default function RunEndpoints({ variant = "section" }: { variant?: "section" | "inline" }) {
+export default function RunEndpoints({ variant = "section", runId: fixedRunId }: { variant?: "section" | "inline"; runId?: string }) {
   const [runId, setRunId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    if (fixedRunId) {
+      setRunId(fixedRunId);
+      setLoaded(true);
+      return;
+    }
     loadExperienceServer().then((list) => {
       setRunId(latestVerified(list)?.run_id ?? null);
       setLoaded(true);
     });
-  }, []);
+  }, [fixedRunId]);
 
   if (!loaded || !runId) return null;
   const q = encodeURIComponent(runId);

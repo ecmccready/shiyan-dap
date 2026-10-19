@@ -3,6 +3,7 @@ import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
+import ShareResult from "@/components/ShareResult";
 import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 // Server-rendered on every request so the latest verified result is in the HTML
@@ -28,8 +29,18 @@ async function loadExperience(): Promise<ExperienceEntry[]> {
   }
 }
 
-export default async function ResultPage() {
+export default async function ResultPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ run_id?: string | string[] }>;
+}) {
   const experience = await loadExperience();
+  const sp = (await searchParams) ?? {};
+  const requested = typeof sp.run_id === "string" && sp.run_id ? sp.run_id : null;
+  // Optional ?run_id=: select that run's latest eligible entry; absent → today's behavior.
+  const scoped = requested ? experience.filter((e) => e.run_id === requested) : experience;
+  const entry = latestVerified(scoped);
+  const runId = requested && entry ? entry.run_id : undefined;
 
   return (
     <Level4Shell>
@@ -42,9 +53,20 @@ export default async function ResultPage() {
           </p>
         </header>
 
-        <LatestVerified entry={latestVerified(experience)} total={experience.length} />
-        <VerifyVerdict />
-        <RunEndpoints variant="inline" />
+        {requested && !entry && (
+          <p className="text-sm text-zinc-400">
+            No recorded entries for run <span className="font-mono text-xs break-all">{requested}</span>.{" "}
+            <a href="/workbench/result" className="underline text-emerald-400">Latest result</a>
+          </p>
+        )}
+        {(!requested || entry) && (
+          <>
+            <LatestVerified entry={entry} total={scoped.length} />
+            <VerifyVerdict runId={runId} />
+            <RunEndpoints variant="inline" runId={runId} />
+            <ShareResult runId={entry?.run_id} />
+          </>
+        )}
 
         <p className="text-sm">
           <a href="/workbench/outcome" className="underline text-emerald-400">Declare another outcome</a>

@@ -10,14 +10,14 @@ type Verdict = { run_id: string; verdict: string; checks: Check[] };
  * Inline verdict from GET /api/level4/verify?run_id=<latest eligible run>.
  * Fails soft: renders nothing when there is no run data or the call fails.
  */
-export default function VerifyVerdict() {
+export default function VerifyVerdict({ runId: fixedRunId }: { runId?: string } = {}) {
   const [state, setState] = useState<"loading" | "none" | "ok">("loading");
   const [v, setV] = useState<Verdict | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const runId = latestVerified(await loadExperienceServer())?.run_id;
+        const runId = fixedRunId ?? latestVerified(await loadExperienceServer())?.run_id;
         if (!runId) return setState("none");
         const res = await fetch(`/api/level4/verify?run_id=${encodeURIComponent(runId)}`, { cache: "no-store" });
         if (!res.ok) return setState("none");
@@ -29,7 +29,7 @@ export default function VerifyVerdict() {
         setState("none");
       }
     })();
-  }, []);
+  }, [fixedRunId]);
 
   if (state === "none") return null;
   if (state === "loading" || !v) {
