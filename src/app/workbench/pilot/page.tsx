@@ -65,6 +65,12 @@ export default function PilotPage() {
         /api/level4/verify, plus the copied metrics string (run, e, Δe, Φ) or the latest eligible ledger line.
       </p>
 
+      <p className="text-sm">
+        Get the proof: open the public proof URL (<Link href="/workbench/result" className="underline">/workbench/result</Link>),
+        check it against <a href="/api/level4/verify" className="underline">/api/level4/verify</a>, then{" "}
+        <Link href="/workbench/client" className="underline">Request a pilot →</Link>
+      </p>
+
       <WhatYouGet tone="light" />
 
       <p className="text-xs text-neutral-500">
