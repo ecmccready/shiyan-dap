@@ -20,11 +20,11 @@ The iteration 3 violation is real: the pack is not yet complete at that step. Th
 curl -s https://<host>/api/mcp -H 'Content-Type: application/json' -d '{
   "jsonrpc":"2.0","id":1,"method":"tools/call",
   "params":{"name":"run_sealed_sequence","arguments":{
-    "case_id":"case-incomplete-pack",
+    "case_id":"case-incomplete-pack","cold_final_e":0.165,
     "tensor":{"out":{"shape":[4],"data":[0.849,0,0,1]},
               "ref":{"shape":[4],"data":[1,0,0,1]},
               "refCommitment":"sha256:26a5e3f903b04fe473c7dd58e4215f451527ca319885d7493c108af562ff9b1f",
               "epsilon":0.16}}}}'
 ```
 
-Returns a `tensor_seal` with `tensor_status: "TENSOR_VERIFIED"` and distance 0.151. Sending the iteration 3 vector `[0.58,0,0.42,1]` returns `MISDIAGNOSIS_VIOLATION` and the seal fails.
+`cold_final_e` is required by the server. Returns `sealed: true` and a `tensor_seal` with `tensor_status: "TENSOR_VERIFIED"` and distance 0.151 (verified on a local server; the MCP plant reports its own e, 0.235 here). Sending the iteration 3 vector `[0.58,0,0.42,1]` returns `MISDIAGNOSIS_VIOLATION` and the seal fails.
