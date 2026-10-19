@@ -54,6 +54,12 @@ export default function PilotPage() {
         on ties or regressions.
       </p>
 
+      <p className="text-sm">
+        Evidence you can share: a public proof URL (/workbench/result?run_id=…), a downloadable ledger, and read-only
+        verify and anchor endpoints (/api/level4/verify, /api/level4/anchor); the anchor root is a prepared Merkle root,
+        not on-chain.
+      </p>
+
       <WhatYouGet tone="light" />
 
       <p className="text-xs text-neutral-500">
