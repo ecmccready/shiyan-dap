@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
 import { autonomousStep } from "@/lib/level4/loop";
@@ -13,6 +13,8 @@ const holdProposer = async () => ({ y: "hold" });
 import Level4Shell from "@/components/Level4Shell";
 import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
+import ShareSection from "@/components/ShareSection";
+import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-client";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_proof",
@@ -36,6 +38,12 @@ const INITIAL: ControllerRecord = {
 export default function ProofPage() {
   const [log, setLog] = useState<string[]>([]);
   const [passed, setPassed] = useState<boolean | null>(null);
+  const [shareRunId, setShareRunId] = useState<string | null>(null);
+  useEffect(() => {
+    loadExperienceServer()
+      .then((list) => { const l = latestVerified(list); setShareRunId(l?.eligible ? l.run_id : null); })
+      .catch(() => setShareRunId(null));
+  }, []);
 
   function add(msg: string) {
     setLog((l) => [...l, `${new Date().toISOString().slice(11, 19)} · ${msg}`]);
@@ -108,6 +116,7 @@ export default function ProofPage() {
         ))}
       </section>
       <VerifyVerdict />
+      <ShareSection runId={shareRunId} />
       <RunEndpoints variant="inline" />
       <RunEndpoints />
     </main>
