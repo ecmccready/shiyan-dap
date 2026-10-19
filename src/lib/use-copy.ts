@@ -76,3 +76,18 @@ export function useCopy(failResetMs = 4000, key?: string) {
   const status: "idle" | "copied" | "failed" = failed ? "failed" : last === myKey ? "copied" : "idle";
   return { status, copy };
 }
+
+/** Current page-wide last-copied key (null when nothing is in the Copied state). */
+export function useLastCopied() {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+/** Reset the shared Copied state so no button shows "Copied". */
+export function clearCopied() {
+  setLastCopied(null);
+}
+
+/** Extra classes marking the most recently copied button. */
+export function copiedRing(status: "idle" | "copied" | "failed") {
+  return status === "copied" ? " ring-2 ring-emerald-500 ring-offset-1 ring-offset-zinc-950" : "";
+}
