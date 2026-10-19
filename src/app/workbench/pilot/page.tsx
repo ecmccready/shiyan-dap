@@ -49,6 +49,11 @@ export default function PilotPage() {
         </p>
       </section>
 
+      <p className="text-sm font-medium">
+        Success metric: the run reaches the goal threshold e &lt; 0.16 with a positive Φ vs cold Self(); no charge
+        on ties or regressions.
+      </p>
+
       <WhatYouGet tone="light" />
 
       <p className="text-xs text-neutral-500">
