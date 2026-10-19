@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LastVerified from "@/components/LastVerified";
 import { fmtE, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 /** Latest verified Level 4 result from the durable experience store. */
@@ -43,6 +44,7 @@ export default function LatestVerified({
   return (
     <section className="rounded-xl border border-emerald-800 p-4 text-sm space-y-2">
       <p className="font-medium">Latest verified result</p>
+      <LastVerified at={entry.verified_at} />
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
         <dt className="text-zinc-500">Run</dt>
         <dd className="font-mono text-xs break-all">
