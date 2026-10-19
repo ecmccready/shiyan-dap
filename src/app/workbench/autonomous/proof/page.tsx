@@ -12,6 +12,7 @@ import { measureActions } from "@/lib/level4/measured";
 const holdProposer = async () => ({ y: "hold" });
 import Level4Shell from "@/components/Level4Shell";
 import RunEndpoints from "@/components/RunEndpoints";
+import VerifyVerdict from "@/components/VerifyVerdict";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_proof",
@@ -106,6 +107,8 @@ export default function ProofPage() {
           <div key={i}>{line}</div>
         ))}
       </section>
+      <VerifyVerdict />
+      <RunEndpoints variant="inline" />
       <RunEndpoints />
     </main>
     </Level4Shell>
