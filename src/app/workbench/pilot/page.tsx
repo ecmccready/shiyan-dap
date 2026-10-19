@@ -40,6 +40,12 @@ export default function PilotPage() {
         >
           Request a pilot →
         </Link>
+        <p className="mt-2 text-xs text-neutral-500">
+          One line on price: set per pilot against the measured Φ, no charge on ties or regressions. The only fixed
+          price today is the music vertical&apos;s $1 single on{" "}
+          <Link href="/offer" className="underline">/offer</Link>. Evidence first:{" "}
+          <Link href="/workbench/status" className="underline">/workbench/status</Link>.
+        </p>
       </section>
 
       <p className="text-xs text-neutral-500">

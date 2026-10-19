@@ -41,6 +41,10 @@ export default function OfferPage() {
           <Link className="underline font-medium text-emerald-400" href="/workbench/pilot">Request a pilot →</Link>
           <Link className="underline" href="/workbench/history">History</Link>
         </nav>
+        <p className="text-xs text-zinc-500 -mt-6 mb-8">
+          Pilot pricing: set per pilot against the measured Φ; no charge on ties or regressions. Check the evidence first on{" "}
+          <Link className="underline" href="/workbench/status">status</Link>.
+        </p>
 
         <h2 className="text-xl font-semibold mb-3">Verified sequences</h2>
         <p className="text-zinc-400 text-sm mb-4">

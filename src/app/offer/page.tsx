@@ -92,6 +92,10 @@ z`}
         <Link className="inline-block underline text-emerald-400" href="/workbench/pilot">
           Request a pilot →
         </Link>
+        <p className="text-xs text-zinc-500">
+          Before you ask: verify the latest run yourself on{" "}
+          <Link className="underline" href="/workbench/status">/workbench/status</Link>.
+        </p>
       </section>
 
       <p className="text-xs text-zinc-500">
