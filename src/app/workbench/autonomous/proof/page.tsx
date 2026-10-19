@@ -13,6 +13,7 @@ const holdProposer = async () => ({ y: "hold" });
 import Level4Shell from "@/components/Level4Shell";
 import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
+import CopyVerifySummary from "@/components/CopyVerifySummary";
 import ShareSection from "@/components/ShareSection";
 import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-client";
 
@@ -116,6 +117,7 @@ export default function ProofPage() {
         ))}
       </section>
       <VerifyVerdict />
+      <CopyVerifySummary />
       <ShareSection runId={shareRunId} />
       <RunEndpoints variant="inline" />
       <RunEndpoints />

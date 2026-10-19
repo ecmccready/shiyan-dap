@@ -3,6 +3,7 @@ import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
+import CopyVerifySummary from "@/components/CopyVerifySummary";
 import ShareSection from "@/components/ShareSection";
 import AnchorRoot from "@/components/AnchorRoot";
 import CopyLedgerLine from "@/components/CopyLedgerLine";
@@ -66,6 +67,7 @@ export default async function ResultPage({
           <>
             <LatestVerified entry={entry} total={scoped.length} scopedToRun={Boolean(requested)} />
             <VerifyVerdict runId={runId} />
+            <CopyVerifySummary runId={runId} />
             <AnchorRoot runId={runId} />
             <CopyLedgerLine runId={entry?.run_id} iteration={entry?.iteration} />
             <CopyEvidencePack entry={entry} />
