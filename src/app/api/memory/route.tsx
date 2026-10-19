@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireLevel4Write } from "@/lib/level4/write-auth";
 
 function ndjsonLine(key: string, value: unknown) {
   return JSON.stringify({ key, value }) + "\n";
@@ -22,6 +23,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = requireLevel4Write(req);
+  if (denied) return denied;
   const token = process.env.HF_TOKEN;
   const repo = process.env.HF_DATASET || "shiyan-dap/founder-z";
 

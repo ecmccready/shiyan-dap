@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireLevel4Write } from "@/lib/level4/write-auth";
 
 export async function POST(req: NextRequest) {
+  const denied = requireLevel4Write(req);
+  if (denied) return denied;
   const body = await req.json().catch(() => ({}));
   const assetId = body.assetId || "cl_shiyan_yishu_001";
   const standard = body.standard || "erc721";
