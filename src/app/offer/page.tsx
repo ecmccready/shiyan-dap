@@ -106,7 +106,7 @@ z`}
 
       <p className="text-xs text-zinc-400">
         <span className="rounded-full border border-emerald-700 px-2 py-0.5 text-emerald-400">Proof ready</span>{" "}
-        <Link className="underline text-emerald-400" href="/workbench/result">public proof URL</Link>
+        <Link className="underline text-emerald-400" href="/workbench/result?run_id=run_mvculg3c_wn6w0q">public proof URL</Link>
         {" · "}
         <a className="underline text-emerald-400" href="/api/level4/verify?run_id=run_mvculg3c_wn6w0q">verify endpoint</a>
         {" · "}
