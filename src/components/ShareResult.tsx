@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import CopyToast from "@/components/CopyToast";
+import { useCopy } from "@/lib/use-copy";
 
 /**
  * Copies a stable public URL for a run (/workbench/result?run_id=<id>) to the
@@ -30,6 +31,7 @@ export default function ShareResult({ runId }: { runId: string | null | undefine
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const full = useCopy();
   if (!runId) return null;
   const path = `/workbench/result?run_id=${encodeURIComponent(runId)}`;
 
@@ -56,10 +58,19 @@ export default function ShareResult({ runId }: { runId: string | null | undefine
         {status === "copied" ? "Copied ✓" : "Share this result"}
       </button>
       <a href={path} className="underline text-emerald-400">Open public link →</a>
+      <button
+        type="button"
+        onClick={() => full.copy(window.location.origin + path)}
+        className="rounded-full border border-zinc-700 px-2 py-0.5 text-xs text-emerald-400"
+        title="Copy the full public URL"
+      >
+        {full.status === "copied" ? "Copied ✓" : full.status === "failed" ? "Copy failed" : "Copy full public link"}
+      </button>
       <span role="status" aria-live="polite" className="text-xs text-zinc-400">
         {status === "copied" ? "Link copied" : status === "failed" ? "Copy failed — use the link" : ""}
       </span>
       <CopyToast status={status} copied="Public link copied" />
+      <CopyToast status={full.status} copied="Public link copied" />
     </p>
   );
 }
