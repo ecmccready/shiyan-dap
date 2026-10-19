@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useCopy } from "@/lib/use-copy";
-import CopyToast from "@/components/CopyToast";
+import { showToast } from "@/lib/toast";
 import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-client";
 
 /**
@@ -43,13 +43,12 @@ export default function AnchorRoot({ runId: fixedRunId }: { runId?: string } = {
       </span>{" "}
       <button
         type="button"
-        onClick={() => copy(data.root)}
+        onClick={async () => showToast((await copy(data.root)) ? "Anchor root copied" : "Anchor root copy failed")}
         className="rounded-full border border-zinc-700 px-2 py-0.5 text-xs text-emerald-400"
         title="Copy the full anchor root"
       >
         {copyStatus === "copied" ? "Copied ✓" : copyStatus === "failed" ? "Copy failed" : "Copy anchor root"}
       </button>
-      <CopyToast status={copyStatus} copied="Anchor root copied" failed="Anchor root copy failed" />
     </p>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import CopyToast from "@/components/CopyToast";
+import { showToast } from "@/lib/toast";
 import { useCopy } from "@/lib/use-copy";
 
 /**
@@ -48,6 +48,7 @@ export default function ShareResult({ runId }: { runId: string | null | undefine
     }
     if (!ok) ok = legacyCopy(url);
     setStatus(ok ? "copied" : "failed");
+    showToast(ok ? "Public link copied" : "Copy failed — use the link");
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setStatus("idle"), ok ? 2000 : 4000);
   }
@@ -60,7 +61,7 @@ export default function ShareResult({ runId }: { runId: string | null | undefine
       <a href={path} className="underline text-emerald-400">Open public link →</a>
       <button
         type="button"
-        onClick={() => full.copy(window.location.origin + path)}
+        onClick={async () => showToast((await full.copy(window.location.origin + path)) ? "Public link copied" : "Copy failed — use the link")}
         className="rounded-full border border-zinc-700 px-2 py-0.5 text-xs text-emerald-400"
         title="Copy the full public URL"
       >
@@ -69,8 +70,6 @@ export default function ShareResult({ runId }: { runId: string | null | undefine
       <span role="status" aria-live="polite" className="text-xs text-zinc-400">
         {status === "copied" ? "Link copied" : status === "failed" ? "Copy failed — use the link" : ""}
       </span>
-      <CopyToast status={status} copied="Public link copied" />
-      <CopyToast status={full.status} copied="Public link copied" />
     </p>
   );
 }
