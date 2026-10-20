@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "@/lib/level4/seal";
-import { MAX_TENSOR_ELEMENTS, parseTensor, verifyHolographicBound } from "@/lib/level4/tensor";
+import { MAX_TENSOR_ELEMENTS, parseTensor, verifyHolographicBound, holographicLedgerTokens } from "@/lib/level4/tensor";
 
 /**
  * Stateless independent tensor check (tensor scope, additive).
@@ -10,7 +10,7 @@ import { MAX_TENSOR_ELEMENTS, parseTensor, verifyHolographicBound } from "@/lib/
  * → { check, sealed, seal }  where seal holds only commitments and the distance.
  *
  * Opt-in: mode: "holographic" in the body (or ?mode=holographic) adds
- * `holographic: { verified, distance, maxAllowable }` with ε_dyn = ε_base·√(N/4)
+ * `holographic: { verified, distance, maxAllowable }` and `holographic_ledger: "H_MAX=… H_DIST=… H_VERIFIED=…"` with ε_dyn = ε_base·√(N/4)
  * (ε_base = optional body.baseEpsilon, default 0.16). Without it the response is unchanged.
  *
  * Reads and writes nothing. Does not touch the experience store or the live run.
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
           : 0.16;
       if (!out || !ref) throw new Error("holographic: invalid tensors");
       const holographic = verifyHolographicBound(out, ref, baseEpsilon);
-      return NextResponse.json({ check, sealed, seal, holographic });
+      return NextResponse.json({ check, sealed, seal, holographic, holographic_ledger: holographicLedgerTokens(holographic) });
     }
     return NextResponse.json({ check, sealed, seal });
   } catch (err) {

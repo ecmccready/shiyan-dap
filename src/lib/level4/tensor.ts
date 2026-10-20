@@ -352,3 +352,11 @@ export function verifyHolographicBound(
   const maxAllowable = calculateDynamicThreshold(tRef, { baseEpsilon, baseDimensions: 4 });
   return { verified: distance <= maxAllowable, distance, maxAllowable };
 }
+
+/**
+ * Ledger-style tokens for an opt-in holographic check, so maxAllowable is inspectable.
+ * Only emitted by holographic-mode responses; existing ledger lines are untouched.
+ */
+export function holographicLedgerTokens(h: HolographicBound): string {
+  return `H_MAX=${h.maxAllowable.toFixed(3)} H_DIST=${h.distance.toFixed(3)} H_VERIFIED=${h.verified}`;
+}

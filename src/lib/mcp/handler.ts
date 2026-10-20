@@ -17,7 +17,7 @@ import {
   type YName,
 } from "./schema";
 import { parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "../level4/seal";
-import { combineEligibility, parseTensor, verifyHolographicBound, type HolographicBound, type TensorCheck } from "../level4/tensor";
+import { combineEligibility, parseTensor, verifyHolographicBound, holographicLedgerTokens, type HolographicBound, type TensorCheck } from "../level4/tensor";
 
 type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Record<string, unknown> };
 
@@ -220,7 +220,7 @@ export function handleMcp(msg: Rpc): unknown {
       if (holo) holoChecks.set(caseId, holo);
       else holoChecks.delete(caseId);
       const res = { ...observe(plant(caseId), name as YName, args.cold_final_e), tensor_check: check };
-      return ok(toolResult(holo ? { ...res, holographic: holo } : res));
+      return ok(toolResult(holo ? { ...res, holographic: holo, holographic_ledger: holographicLedgerTokens(holo) } : res));
     }
     if (name === "seal_pack" && (check || tensorChecks.has(caseId))) {
       const bound = check ?? (tensorChecks.get(caseId) as TensorCheck);
@@ -236,14 +236,14 @@ export function handleMcp(msg: Rpc): unknown {
         return ok({
           ...toolResult({
             y: name, sealed: false, e, e_next: e, delta_e: 0, gate: gateOf(B), eligible: false, tensor_seal: binding.seal,
-            ...(h ? { holographic: h } : {}),
+            ...(h ? { holographic: h, holographic_ledger: holographicLedgerTokens(h) } : {}),
           }),
           isError: true,
         });
       }
       return ok(toolResult({
         ...observe(plant(caseId), name as YName, args.cold_final_e), sealed: true, tensor_seal: binding.seal,
-        ...(h ? { holographic: h } : {}),
+        ...(h ? { holographic: h, holographic_ledger: holographicLedgerTokens(h) } : {}),
       }));
     }
     if (SEALED_SEQUENCE.includes(name as YName) || name === "hold") {
