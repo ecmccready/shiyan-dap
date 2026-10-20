@@ -309,3 +309,46 @@ export function parseTensor(v: unknown, maxElements = MAX_TENSOR_ELEMENTS): Tens
   }
   return t;
 }
+
+/* ------------------------------------------------------------------------ */
+/* Holographic (dynamic) Frobenius bound — opt-in, additive                 */
+/* ------------------------------------------------------------------------ */
+
+export type DynamicThresholdConfig = { baseEpsilon: number; baseDimensions: number };
+
+/**
+ * ε_dyn = ε_base · √(N / N_base), N = total elements (product(shape) = data.length).
+ * With the defaults a 4-element tensor gets exactly 0.16. Opt-in only: the live
+ * run and independentTensorCheck keep their fixed ε.
+ */
+export function calculateDynamicThreshold(
+  tensor: Tensor,
+  config: DynamicThresholdConfig = { baseEpsilon: 0.16, baseDimensions: 4 }
+): number {
+  validateTensor(tensor);
+  const { baseEpsilon, baseDimensions } = config;
+  if (!Number.isFinite(baseEpsilon) || baseEpsilon < 0) {
+    throw new Error("calculateDynamicThreshold: baseEpsilon must be a finite number >= 0");
+  }
+  if (!Number.isFinite(baseDimensions) || baseDimensions <= 0) {
+    throw new Error("calculateDynamicThreshold: baseDimensions must be a finite number > 0");
+  }
+  const totalElements = tensor.data.length;
+  return baseEpsilon * Math.sqrt(totalElements / baseDimensions);
+}
+
+export type HolographicBound = { verified: boolean; distance: number; maxAllowable: number };
+
+/**
+ * ‖T_out − T_ref‖_F ≤ ε_dyn(T_ref). Same comparison (≤) as independentTensorCheck.
+ * Throws on invalid tensors or shape mismatch (via frobeniusDistance).
+ */
+export function verifyHolographicBound(
+  tOut: Tensor,
+  tRef: Tensor,
+  baseEpsilon = 0.16
+): HolographicBound {
+  const distance = frobeniusDistance(tOut, tRef);
+  const maxAllowable = calculateDynamicThreshold(tRef, { baseEpsilon, baseDimensions: 4 });
+  return { verified: distance <= maxAllowable, distance, maxAllowable };
+}
