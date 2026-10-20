@@ -16,6 +16,7 @@ import VerifyVerdict from "@/components/VerifyVerdict";
 import CopyVerifySummary from "@/components/CopyVerifySummary";
 import ShareSection from "@/components/ShareSection";
 import HolographicToggle from "@/components/HolographicToggle";
+import HolographicDensity from "@/components/HolographicDensity";
 import { loadExperienceServer, latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 const DEMO_GOAL: GoalContract = {
@@ -121,6 +122,7 @@ export default function ProofPage() {
       <VerifyVerdict />
       <CopyVerifySummary />
       <ShareSection runId={shareRunId} entry={shareEntry} />
+      <HolographicDensity distance={shareEntry?.tensor_distance ?? null} showPerElement />
       <HolographicToggle distance={shareEntry?.tensor_distance ?? null} />
       <RunEndpoints variant="inline" />
       <RunEndpoints />
