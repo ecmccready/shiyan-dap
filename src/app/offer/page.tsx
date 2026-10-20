@@ -113,6 +113,11 @@ z`}
         <Link className="underline text-emerald-400" href="/workbench/pilot">Request a pilot →</Link>
       </p>
 
+      <p className="text-xs text-zinc-400">
+        {"Boundary density: the dynamic limit keeps per-element tolerance constant (ε = 0.16·√(N/4)), so tensor size alone does not trigger a misdiagnosis."}{" "}
+        <Link className="underline text-emerald-400" href="/workbench/autonomous/proof">proof page</Link>
+      </p>
+
       <section className="rounded-lg border border-zinc-800 p-4 text-sm space-y-2">
         <p className="font-medium">Beyond music: request a pilot</p>
         <p className="text-zinc-400">

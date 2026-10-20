@@ -71,6 +71,11 @@ export default function PilotPage() {
         <Link href="/workbench/client" className="underline">Request a pilot →</Link>
       </p>
 
+      <p className="text-xs text-neutral-500">
+        {"Boundary density: the dynamic limit keeps per-element tolerance constant (ε = 0.16·√(N/4)), so tensor size alone does not trigger a misdiagnosis."}{" "}
+        <Link href="/workbench/autonomous/proof" className="underline">proof page</Link>
+      </p>
+
       <WhatYouGet tone="light" />
 
       <p className="text-xs text-neutral-500">
