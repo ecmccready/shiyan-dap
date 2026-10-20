@@ -112,12 +112,26 @@ export const MCP_TOOLS: McpTool[] = [
   {
     name: "request_independent_check",
     description: "Request the independent check. Rescore e. Does not settle.",
-    inputSchema: { type: "object", properties: { case_id: { type: "string" } } },
+    inputSchema: {
+      type: "object",
+      properties: {
+        case_id: { type: "string" },
+        holographic: { type: "boolean", description: "Optional. With a tensor, also return holographic: { verified, distance, maxAllowable }, ε_dyn = ε_base·√(N/4). Default off: fixed ε only." },
+        baseEpsilon: { type: "number", description: "Optional ε_base for holographic mode. Default 0.16." },
+      },
+    },
   },
   {
     name: "seal_pack",
     description: "Seal the pack. The seal is the drop. Returns z and scored e.",
-    inputSchema: { type: "object", properties: { case_id: { type: "string" } } },
+    inputSchema: {
+      type: "object",
+      properties: {
+        case_id: { type: "string" },
+        holographic: { type: "boolean", description: "Optional. With a tensor, also return holographic: { verified, distance, maxAllowable }, ε_dyn = ε_base·√(N/4). Default off: fixed ε only." },
+        baseEpsilon: { type: "number", description: "Optional ε_base for holographic mode. Default 0.16." },
+      },
+    },
   },
   {
     name: "score_error",

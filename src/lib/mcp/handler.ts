@@ -17,13 +17,24 @@ import {
   type YName,
 } from "./schema";
 import { parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "../level4/seal";
-import { combineEligibility, type TensorCheck } from "../level4/tensor";
+import { combineEligibility, parseTensor, verifyHolographicBound, type HolographicBound, type TensorCheck } from "../level4/tensor";
 
 type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Record<string, unknown> };
 
 const plants = new Map<string, PlantB>();
 /** Tensor check from request_independent_check, bound by the next seal_pack. Only set when a tensor was sent. */
 const tensorChecks = new Map<string, TensorCheck>();
+/** Opt-in holographic bound (args.holographic === true). Absent by default; never alters the fixed-ε check. */
+const holoChecks = new Map<string, HolographicBound>();
+
+function holographicOf(tensor: unknown, baseEpsilon: unknown): HolographicBound {
+  const t = (tensor || {}) as { out?: unknown; ref?: unknown };
+  const out = parseTensor(t.out);
+  const ref = parseTensor(t.ref);
+  if (!out || !ref) throw new Error("holographic: invalid tensors");
+  const base = typeof baseEpsilon === "number" && Number.isFinite(baseEpsilon) && baseEpsilon >= 0 ? baseEpsilon : 0.16;
+  return verifyHolographicBound(out, ref, base);
+}
 
 function fresh(caseId: string): PlantB {
   return {
@@ -123,7 +134,13 @@ export function handleMcp(msg: Rpc): unknown {
 
   if (msg.method === "tools/call") {
     const name = String(msg.params?.name || "");
-    const args = (msg.params?.arguments || {}) as { case_id?: string; cold_final_e?: number; tensor?: unknown };
+    const args = (msg.params?.arguments || {}) as {
+      case_id?: string;
+      cold_final_e?: number;
+      tensor?: unknown;
+      holographic?: boolean;
+      baseEpsilon?: number;
+    };
     const caseId = args.case_id || "mcp-pack";
 
     // Tensor scope (optional). Without args.tensor every branch below returns
@@ -138,6 +155,14 @@ export function handleMcp(msg: Rpc): unknown {
         check = requestIndependentTensorCheck(tensor);
       } catch (err) {
         return fail(-32602, err instanceof Error ? err.message : "tensor check failed");
+      }
+    }
+    let holo: HolographicBound | undefined;
+    if (check && args.holographic === true && (name === "request_independent_check" || name === "seal_pack")) {
+      try {
+        holo = holographicOf(args.tensor, args.baseEpsilon);
+      } catch (err) {
+        return fail(-32602, err instanceof Error ? err.message : "holographic check failed");
       }
     }
     if (name === "score_error") {
@@ -186,25 +211,40 @@ export function handleMcp(msg: Rpc): unknown {
       }));
     }
     // A plain re-check (no tensor) drops any tensor check pending from an earlier call.
-    if (!check && name === "request_independent_check") tensorChecks.delete(caseId);
+    if (!check && name === "request_independent_check") {
+      tensorChecks.delete(caseId);
+      holoChecks.delete(caseId);
+    }
     if (check && name === "request_independent_check") {
       tensorChecks.set(caseId, check);
-      return ok(toolResult({ ...observe(plant(caseId), name as YName, args.cold_final_e), tensor_check: check }));
+      if (holo) holoChecks.set(caseId, holo);
+      else holoChecks.delete(caseId);
+      const res = { ...observe(plant(caseId), name as YName, args.cold_final_e), tensor_check: check };
+      return ok(toolResult(holo ? { ...res, holographic: holo } : res));
     }
     if (name === "seal_pack" && (check || tensorChecks.has(caseId))) {
       const bound = check ?? (tensorChecks.get(caseId) as TensorCheck);
+      // Holographic info: from this call's flag, or carried from the pending check that requested it.
+      const h = check ? holo : holoChecks.get(caseId);
       tensorChecks.delete(caseId);
+      holoChecks.delete(caseId);
       const binding = sealTensorBinding(bound);
       if (!binding.sealed) {
         // Seal fails: the plant is not transitioned and nothing is eligible.
         const B = plant(caseId);
         const e = defaultError(B, safetySchema);
         return ok({
-          ...toolResult({ y: name, sealed: false, e, e_next: e, delta_e: 0, gate: gateOf(B), eligible: false, tensor_seal: binding.seal }),
+          ...toolResult({
+            y: name, sealed: false, e, e_next: e, delta_e: 0, gate: gateOf(B), eligible: false, tensor_seal: binding.seal,
+            ...(h ? { holographic: h } : {}),
+          }),
           isError: true,
         });
       }
-      return ok(toolResult({ ...observe(plant(caseId), name as YName, args.cold_final_e), sealed: true, tensor_seal: binding.seal }));
+      return ok(toolResult({
+        ...observe(plant(caseId), name as YName, args.cold_final_e), sealed: true, tensor_seal: binding.seal,
+        ...(h ? { holographic: h } : {}),
+      }));
     }
     if (SEALED_SEQUENCE.includes(name as YName) || name === "hold") {
       return ok(toolResult(observe(plant(caseId), name as YName, args.cold_final_e)));
@@ -218,4 +258,5 @@ export function handleMcp(msg: Rpc): unknown {
 export function resetPlant(caseId = "mcp-pack") {
   plants.set(caseId, fresh(caseId));
   tensorChecks.delete(caseId);
+  holoChecks.delete(caseId);
 }
