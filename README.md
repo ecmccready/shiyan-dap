@@ -49,6 +49,7 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
   - *Why √(N/4).* The base is ε = 0.16 at N_base = 4 (a 2×2 tensor), so √(4/4) = 1 and the demo tensor keeps exactly 0.16.
   - *Inspectable.* Holographic-mode responses (tensor-check and MCP) also carry `holographic_ledger: "H_MAX=<maxAllowable> H_DIST=<d> H_VERIFIED=<bool>"`. Stored experience entries and existing ledger lines are unchanged.
   - *Status.* This is an engineering heuristic, not a physical derivation. It is opt-in on `/api/level4/tensor-check` and the MCP tools (`holographic: true`); the live demo default stays fixed ε = 0.16.
+  - *Default (update).* For new calls, the holographic bound is now the default verdict on `/api/level4/tensor-check` (mode omitted) and on MCP `request_independent_check` / `seal_pack` (with a Frobenius tensor). `check` gains `bound`, `max_allowable` and `fixed_epsilon`. For the old fixed-ε path, pass `mode: "fixed"` (body or `?mode=fixed`) or `holographic: false` on MCP. The live demo, verify replay and stored results stay pinned to fixed ε = 0.16 (they call `independentTensorCheck` directly). `GET /api/level4/verify` adds an informational `holographic` array per tensor iteration; verdict and checks are unchanged. A 4-element tensor gets the same verdict either way.
 
 **Directional, not live:**
 
