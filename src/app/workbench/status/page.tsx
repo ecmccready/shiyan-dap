@@ -9,6 +9,7 @@ import AnchorRoot from "@/components/AnchorRoot";
 import ShareSection from "@/components/ShareSection";
 import CopyLedgerLine from "@/components/CopyLedgerLine";
 import CopyEvidencePack from "@/components/CopyEvidencePack";
+import HolographicDensity from "@/components/HolographicDensity";
 import {
   loadExperienceServer,
   latestVerified,
@@ -95,6 +96,7 @@ export default function StatusPage() {
       <ShareSection runId={latestVerified(experience)?.run_id} />
       <CopyLedgerLine runId={latestVerified(experience)?.run_id} iteration={latestVerified(experience)?.iteration} />
       <CopyEvidencePack entry={latestVerified(experience)} />
+      <HolographicDensity distance={latestVerified(experience)?.tensor_distance ?? null} />
 
       <ul className="space-y-3">
         {items.map((item) => (
