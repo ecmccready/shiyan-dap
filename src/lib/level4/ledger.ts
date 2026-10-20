@@ -23,6 +23,9 @@ export type LedgerEntry = {
   /** Present only when the stored entry has tensor fields. */
   tensor_commitment?: string;
   tensor_distance?: number;
+  /** Present only when the stored entry recorded its tensor bound. */
+  tensor_bound?: "holographic" | "fixed";
+  tensor_max_allowable?: number;
 };
 
 const finite = (v: unknown): number | null =>
@@ -41,12 +44,16 @@ export function toLedgerEntry(
     typeof entry.system === "string" && entry.system ? entry.system : UNSPECIFIED_DOMAIN;
   const e0 = finite(entry.e0);
   const e1 = finite(entry.e);
-  const base: Pick<LedgerEntry, "domain" | "e0" | "e1" | "run_id" | "iteration" | "tensor_commitment" | "tensor_distance"> =
+  const base: Pick<LedgerEntry, "domain" | "e0" | "e1" | "run_id" | "iteration" | "tensor_commitment" | "tensor_distance" | "tensor_bound" | "tensor_max_allowable"> =
     { domain, e0, e1, run_id: entry.run_id, iteration: entry.iteration };
   // Tensor fields are added only when stored, so entries without them are unchanged.
   if (typeof entry.tensor_commitment === "string") base.tensor_commitment = entry.tensor_commitment;
   const td = finite(entry.tensor_distance);
   if (td != null) base.tensor_distance = td;
+  // Bound fields are added only when stored, so older entries render exactly as before.
+  if (entry.tensor_bound === "holographic" || entry.tensor_bound === "fixed") base.tensor_bound = entry.tensor_bound;
+  const tm = finite(entry.tensor_max_allowable);
+  if (tm != null) base.tensor_max_allowable = tm;
   if (e0 == null || e1 == null) {
     return { ...base, deltaE: null, phi: null, status: "MISDIAGNOSIS_REJECTED" };
   }
@@ -76,7 +83,8 @@ const fx = (n: number | null) => (n == null ? "NA" : n.toFixed(3));
 
 /**
  * DOMAIN=<d> E0=<x> E1=<y> DELTA_E=<z> PHI=<p> STATUS=<s> RUN=<id> ITER=<n>
- * plus " TENSOR=<sha256:…|NA> T_DIST=<x|NA>" only when the entry has a tensor field.
+ * plus " TENSOR=<sha256:…|NA> T_DIST=<x|NA>" only when the entry has a tensor field,
+ * plus " BOUND=<holographic|fixed> H_MAX=<x|NA>" only when the entry stored a tensor bound.
  */
 export function formatLedgerLine(x: LedgerEntry): string {
   const parts = [
@@ -91,6 +99,9 @@ export function formatLedgerLine(x: LedgerEntry): string {
   ];
   if (x.tensor_commitment !== undefined || x.tensor_distance !== undefined) {
     parts.push(`TENSOR=${x.tensor_commitment ?? "NA"}`, `T_DIST=${fx(x.tensor_distance ?? null)}`);
+  }
+  if (x.tensor_bound !== undefined || x.tensor_max_allowable !== undefined) {
+    parts.push(`BOUND=${x.tensor_bound ?? "NA"}`, `H_MAX=${fx(x.tensor_max_allowable ?? null)}`);
   }
   return parts.join(" ");
 }

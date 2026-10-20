@@ -14,6 +14,10 @@ export type ExperienceEntry = {
   /** Optional tensor scope fields (absent on entries without a tensor check). */
   tensor_commitment?: string;
   tensor_distance?: number;
+  /** Optional: which tensor bound produced the check ("holographic" | "fixed"). Absent on older entries. */
+  tensor_bound?: "holographic" | "fixed";
+  /** Optional: the bound's maxAllowable used for the check. Absent on older entries. */
+  tensor_max_allowable?: number;
 };
 
 export async function loadExperienceServer(): Promise<ExperienceEntry[]> {

@@ -1,3 +1,4 @@
+import { toLedger } from "../src/lib/level4/ledger";
 // Run: npx tsx scripts/check-holographic.ts
 import assert from "node:assert/strict";
 import {
@@ -63,5 +64,19 @@ console.log("shape mismatch throws (same as frobeniusDistance)");
   const c = holographicDefaultCheck({ ...p16, metric: "cosine" });
   assert.equal(c.bound, "fixed");
   console.log("cosine metric stays fixed:", c.bound);
+}
+// Ledger: bound fields render only when stored; old entries unchanged.
+{
+  const old = { run_id: "run_mvculg3c_wn6w0q", iteration: 4, e: 0.151, e0: 1.561, verified_at: "x", eligible: true,
+    tensor_commitment: "sha256:" + "a".repeat(64), tensor_distance: 0.151 };
+  const oldLine = toLedger([old]).ledger[0];
+  assert.ok(!/BOUND=|H_MAX=/.test(oldLine));
+  assert.ok(oldLine.endsWith("T_DIST=0.151"));
+  console.log("old entry:", oldLine);
+  const holo = { ...old, run_id: "run_example", tensor_bound: "holographic" as const, tensor_max_allowable: 0.32 };
+  const hLine = toLedger([holo]).ledger[0];
+  assert.ok(hLine.endsWith(" BOUND=holographic H_MAX=0.320"));
+  assert.equal(hLine.replace(" BOUND=holographic H_MAX=0.320", ""), oldLine.replace("run_mvculg3c_wn6w0q", "run_example"));
+  console.log("holographic entry:", hLine);
 }
 console.log("ALL CHECKS PASSED");

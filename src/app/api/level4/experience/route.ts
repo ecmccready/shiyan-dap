@@ -39,6 +39,10 @@ export type ExperienceEntry = {
   tensor_commitment?: string;
   /** Optional tensor scope: distance of T_out from the sealed T_ref. */
   tensor_distance?: number;
+  /** Optional: which tensor bound produced the check ("holographic" | "fixed"). Absent on older entries. */
+  tensor_bound?: "holographic" | "fixed";
+  /** Optional: the bound's maxAllowable used for the check. Absent on older entries. */
+  tensor_max_allowable?: number;
 };
 
 const KEY = "level4:experience";
@@ -128,6 +132,10 @@ export async function POST(req: NextRequest) {
   }
   const tensorDistance = num(body.tensor_distance);
   if (tensorDistance !== null) entry.tensor_distance = tensorDistance;
+  // Optional bound label + maxAllowable; stored only when valid, so older clients are unaffected.
+  if (body.tensor_bound === "holographic" || body.tensor_bound === "fixed") entry.tensor_bound = body.tensor_bound;
+  const tensorMax = num(body.tensor_max_allowable);
+  if (tensorMax !== null && tensorMax > 0) entry.tensor_max_allowable = tensorMax;
 
   // Idempotent: one entry per (run_id, iteration). SET NX is atomic.
   const first = await redis.set(seenKey(run_id, iteration), 1, {
