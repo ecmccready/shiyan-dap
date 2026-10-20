@@ -16,7 +16,7 @@ import {
   type LoopObservation,
   type YName,
 } from "./schema";
-import { parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "../level4/seal";
+import { holographicDefaultCheck, parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "../level4/seal";
 import { combineEligibility, parseTensor, verifyHolographicBound, holographicLedgerTokens, type HolographicBound, type TensorCheck } from "../level4/tensor";
 
 type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Record<string, unknown> };
@@ -24,7 +24,7 @@ type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Reco
 const plants = new Map<string, PlantB>();
 /** Tensor check from request_independent_check, bound by the next seal_pack. Only set when a tensor was sent. */
 const tensorChecks = new Map<string, TensorCheck>();
-/** Opt-in holographic bound (args.holographic === true). Absent by default; never alters the fixed-ε check. */
+/** Holographic bound info (default for request_independent_check / seal_pack with a tensor; absent when holographic:false). */
 const holoChecks = new Map<string, HolographicBound>();
 
 function holographicOf(tensor: unknown, baseEpsilon: unknown): HolographicBound {
@@ -158,8 +158,13 @@ export function handleMcp(msg: Rpc): unknown {
       }
     }
     let holo: HolographicBound | undefined;
-    if (check && args.holographic === true && (name === "request_independent_check" || name === "seal_pack")) {
+    // Default for NEW calls: holographic verdict (ε_dyn = ε_base·√(N/4), Frobenius only).
+    // holographic: false gives exactly the old fixed-ε response. run_sealed_sequence stays fixed.
+    if (tensor && check && args.holographic !== false && (name === "request_independent_check" || name === "seal_pack")
+      && (tensor.metric ?? "frobenius") === "frobenius") {
       try {
+        const base = typeof args.baseEpsilon === "number" && Number.isFinite(args.baseEpsilon) && args.baseEpsilon >= 0 ? args.baseEpsilon : 0.16;
+        check = holographicDefaultCheck(tensor, base);
         holo = holographicOf(args.tensor, args.baseEpsilon);
       } catch (err) {
         return fail(-32602, err instanceof Error ? err.message : "holographic check failed");

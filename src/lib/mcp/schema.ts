@@ -116,8 +116,8 @@ export const MCP_TOOLS: McpTool[] = [
       type: "object",
       properties: {
         case_id: { type: "string" },
-        holographic: { type: "boolean", description: "Optional. With a tensor, also return holographic: { verified, distance, maxAllowable }, ε_dyn = ε_base·√(N/4). Default off: fixed ε only." },
-        baseEpsilon: { type: "number", description: "Optional ε_base for holographic mode. Default 0.16." },
+        holographic: { type: "boolean", description: "Optional. With a tensor (frobenius), default true: the verdict uses ε_dyn = ε_base·√(N/4) and the result adds holographic: { verified, distance, maxAllowable } and holographic_ledger. Pass false for the original fixed-ε path (tensor.epsilon)." },
+        baseEpsilon: { type: "number", description: "Optional ε_base for the holographic bound. Default 0.16." },
       },
     },
   },
@@ -128,8 +128,8 @@ export const MCP_TOOLS: McpTool[] = [
       type: "object",
       properties: {
         case_id: { type: "string" },
-        holographic: { type: "boolean", description: "Optional. With a tensor, also return holographic: { verified, distance, maxAllowable }, ε_dyn = ε_base·√(N/4). Default off: fixed ε only." },
-        baseEpsilon: { type: "number", description: "Optional ε_base for holographic mode. Default 0.16." },
+        holographic: { type: "boolean", description: "Optional. With a tensor (frobenius), default true: the verdict uses ε_dyn = ε_base·√(N/4) and the result adds holographic: { verified, distance, maxAllowable } and holographic_ledger. Pass false for the original fixed-ε path (tensor.epsilon)." },
+        baseEpsilon: { type: "number", description: "Optional ε_base for the holographic bound. Default 0.16." },
       },
     },
   },
