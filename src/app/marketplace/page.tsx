@@ -23,7 +23,6 @@ export default function MarketPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Market" />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">First vertical · Music</p>
         <h1 className="text-3xl font-bold mb-3">Marketplace</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
           Aethel Node proves that the next action is no longer a misdiagnosis. Music is the first vertical: each catalog asset here can be proved on the Prove rail. A listing is not a sale.
