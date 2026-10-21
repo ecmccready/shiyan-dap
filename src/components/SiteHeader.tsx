@@ -18,7 +18,7 @@ const NAV = [
 ];
 
 // Hidden on the Home page (/workbench) only; other pages keep them.
-const HOME_HIDDEN = new Set(["/", "/workbench/start", "/marketplace", "/playlist", "/single"]);
+const HOME_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
 // Hidden on /workbench/start only.
 const START_HIDDEN = new Set(["/workbench", "/", "/workbench/start", "/marketplace", "/playlist", "/single"]);
 
