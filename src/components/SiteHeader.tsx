@@ -20,7 +20,7 @@ const NAV = [
 // Hidden on the Home page (/workbench) only; other pages keep them.
 const HOME_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
 // Hidden on /workbench/start only.
-const START_HIDDEN = new Set(["/workbench", "/", "/marketplace", "/playlist", "/single"]);
+const START_HIDDEN = new Set(["/workbench", "/", "/workbench/start", "/marketplace", "/playlist", "/single"]);
 
 export default function SiteHeader({ section }: { section?: string }) {
   const [vertical, setVertical] = useState("music");
@@ -45,7 +45,7 @@ export default function SiteHeader({ section }: { section?: string }) {
           <Link href="/workbench" className="font-semibold">
             Aethel Node
           </Link>
-          {section ? (
+          {pathname === "/workbench/start" ? null : section ? (
             <span className="text-zinc-500 text-sm">{section}</span>
           ) : (
             <Link href="/" className="text-zinc-500 text-sm hover:text-white">
