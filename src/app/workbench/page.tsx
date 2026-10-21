@@ -25,10 +25,41 @@ export default function WorkbenchPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Workbench" />
       <main className="max-w-4xl mx-auto px-6 py-12">
+        <h1 className="text-4xl font-bold mb-4">Aethel Node</h1>
+        <p className="text-zinc-300 max-w-2xl mb-2">
+          Aethel Node proves that the next action is no longer a misdiagnosis.
+        </p>
+        <p className="text-zinc-300 max-w-2xl mb-8">
+          A durable, bounded autonomous system. Every proposed action passes a safety and budget gate before it runs,
+          every step is measured for error (e) against a reference, and only steps that reduce it become verified
+          experience, recorded with proof (Δe, Φ).
+        </p>
+
+        <section className="mb-10 border border-zinc-800 rounded-2xl p-5">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">Conceptual framing</p>
+          <ul className="space-y-3 text-sm text-zinc-400">
+            <li>
+              <span className="text-white font-medium">Endogenous Drive &amp; Strategy.</span>{" "}
+              Self() durable feed: Self() reuses the highest-Φ verified experience from the durable store, and
+              only after replay shows it does not raise final e.
+            </li>
+            <li>
+              <span className="text-white font-medium">Endogenous Spatial Reasoning.</span>{" "}
+              Mereotopology / topological fault isolation: a design direction in which faults are isolated by
+              boundaries between parts of the environment rather than graph edges.
+            </li>
+            <li>
+              <span className="text-white font-medium">Space-Time Analogy of a Planck Cube (analogy).</span>{" "}
+              The record as an emergent fabric of discrete cells: tensor verifications, safety gates, and state
+              records. This is a way of describing the evidence, not a physical model.
+            </li>
+          </ul>
+        </section>
+
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           One commercial plant
         </p>
-        <h1 className="text-3xl font-bold mb-3">One Run. Measured. Kept.</h1>
+        <h2 className="text-3xl font-bold mb-3">One Run. Measured. Kept.</h2>
         <p className="text-zinc-400 max-w-2xl mb-6">
           Give A a task. Let the plant execute it. Measure the result. Improve the next run. Preserve the evidence.
           Customers are not buying an AI or a state machine. They are buying that loop.
@@ -46,6 +77,9 @@ export default function WorkbenchPage() {
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
           <Link className="underline" href="/workbench/network">Actor network</Link>
           <Link className="underline" href="/workbench/compare">Peer proof</Link>
+          <Link className="underline" href="/workbench/autonomous">Autonomous run</Link>
+          <Link className="underline" href="/workbench/pilot">Pilot</Link>
+          <Link className="underline" href="/offer">Offer (public)</Link>
         </nav>
 
         {phase === "empty" && (
