@@ -46,8 +46,9 @@ export default function SiteHeader({ section }: { section?: string }) {
         : TRIMMED_PATHS.has(pathname)
           ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
           : NAV;
-  // Upload is hidden on Home (/workbench) and Start (/workbench/start) only.
-  const showUpload = pathname !== "/workbench" && pathname !== "/workbench/start";
+  // Upload is hidden on Home (/workbench), Start (/workbench/start) and all TRIMMED_PATHS.
+  const showUpload =
+    pathname !== "/workbench" && pathname !== "/workbench/start" && !TRIMMED_PATHS.has(pathname);
 
   useEffect(() => {
     setVertical(readVertical());
