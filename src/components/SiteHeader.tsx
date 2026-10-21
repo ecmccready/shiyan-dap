@@ -19,11 +19,20 @@ const NAV = [
 
 // Hidden on the Home page (/workbench) only; other pages keep them.
 const HOME_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
+// Hidden on /workbench/start only.
+const START_HIDDEN = new Set(["/workbench", "/", "/marketplace", "/playlist", "/single"]);
 
 export default function SiteHeader({ section }: { section?: string }) {
   const [vertical, setVertical] = useState("music");
   const pathname = usePathname();
-  const nav = pathname === "/workbench" ? NAV.filter((n) => !HOME_HIDDEN.has(n.href)) : NAV;
+  const nav =
+    pathname === "/workbench"
+      ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
+      : pathname === "/workbench/start"
+        ? NAV.filter((n) => !START_HIDDEN.has(n.href))
+        : NAV;
+  // Upload is hidden on Home (/workbench) and Start (/workbench/start) only.
+  const showUpload = pathname !== "/workbench" && pathname !== "/workbench/start";
 
   useEffect(() => {
     setVertical(readVertical());
@@ -79,12 +88,14 @@ export default function SiteHeader({ section }: { section?: string }) {
             ))}
           </select>
         </label>
-        <Link
-          href="/upload"
-          className="h-10 px-4 rounded-full bg-emerald-600 text-sm inline-flex items-center"
-        >
-          Upload
-        </Link>
+        {showUpload && (
+          <Link
+            href="/upload"
+            className="h-10 px-4 rounded-full bg-emerald-600 text-sm inline-flex items-center"
+          >
+            Upload
+          </Link>
+        )}
       </div>
     </header>
   );
