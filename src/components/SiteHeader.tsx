@@ -24,6 +24,16 @@ const START_HIDDEN = new Set(["/workbench", "/", "/workbench/start", "/marketpla
 
 // Hidden on /workbench/status only (Home stays).
 const STATUS_HIDDEN = new Set(["/", "/workbench/start", "/marketplace", "/playlist", "/single"]);
+// Level 4 pages that share the trimmed /workbench/status header (exact paths; query ignored).
+const TRIMMED_PATHS = new Set([
+  "/workbench/status",
+  "/workbench/outcome",
+  "/workbench/autonomous",
+  "/workbench/result",
+  "/workbench/autonomous/proof",
+  "/workbench/spine",
+  "/roadmap",
+]);
 
 export default function SiteHeader({ section }: { section?: string }) {
   const [vertical, setVertical] = useState("music");
@@ -33,7 +43,7 @@ export default function SiteHeader({ section }: { section?: string }) {
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : pathname === "/workbench/start"
         ? NAV.filter((n) => !START_HIDDEN.has(n.href))
-        : pathname === "/workbench/status"
+        : TRIMMED_PATHS.has(pathname)
           ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
           : NAV;
   // Upload is hidden on Home (/workbench) and Start (/workbench/start) only.
@@ -52,7 +62,7 @@ export default function SiteHeader({ section }: { section?: string }) {
           </Link>
           {pathname === "/workbench/start" ? null : section ? (
             <span className="text-zinc-500 text-sm">
-              {pathname === "/workbench/status" ? section.replace(/\s*·\s*Level 4$/, "") : section}
+              {TRIMMED_PATHS.has(pathname) ? section.replace(/\s*·\s*Level 4$/, "") : section}
             </span>
           ) : (
             <Link href="/" className="text-zinc-500 text-sm hover:text-white">
