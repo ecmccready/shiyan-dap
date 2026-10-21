@@ -33,8 +33,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 mb-3">First vertical · Music</p>
-        <h1 className="text-3xl font-bold mb-3">Aethel Node</h1>
+        <h1 className="text-3xl font-bold mb-3">ECMcCready&apos;s Emergence</h1>
+        <p className="text-emerald-400 mb-4">Beyond here be dragons!</p>
         <p className="text-zinc-200 text-lg max-w-2xl mb-4">
           Aethel Node proves that the next action is no longer a misdiagnosis.
         </p>

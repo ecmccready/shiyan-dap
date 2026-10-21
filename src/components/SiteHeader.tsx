@@ -39,7 +39,9 @@ export default function SiteHeader({ section }: { section?: string }) {
   const [vertical, setVertical] = useState("music");
   const pathname = usePathname();
   const nav =
-    pathname === "/workbench"
+    pathname === "/"
+      ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
+      : pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : pathname === "/workbench/start"
         ? NAV.filter((n) => !START_HIDDEN.has(n.href))
