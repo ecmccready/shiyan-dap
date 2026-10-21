@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-
-type Phase = "empty" | "setup" | "running" | "closed" | "error";
 
 const LOOP = [
   ["Give A a task", "Objective and reference, not a prompt."],
@@ -15,12 +12,6 @@ const LOOP = [
 ];
 
 export default function WorkbenchPage() {
-  const [phase, setPhase] = useState<Phase>("empty");
-
-  function start() {
-    setPhase("setup");
-  }
-
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Workbench" />
@@ -59,14 +50,12 @@ export default function WorkbenchPage() {
           </div>
         </nav>
 
-        {phase === "empty" && (
-          <button
-            onClick={start}
-            className="h-12 shrink-0 rounded-full bg-emerald-500 px-6 text-sm font-medium text-black"
-          >
-            Create Run
-          </button>
-        )}
+        <Link
+          href="/workbench/start"
+          className="inline-flex items-center h-12 shrink-0 rounded-full bg-emerald-500 px-6 text-sm font-medium text-black"
+        >
+          Create Run
+        </Link>
 
         <section className="mt-10 space-y-6">
           {LOOP.map(([title, body], i) => (
