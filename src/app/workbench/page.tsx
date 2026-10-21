@@ -35,21 +35,28 @@ export default function WorkbenchPage() {
           experience, recorded with proof (Δe, Φ).
         </p>
 
-        <nav className="flex flex-wrap gap-4 text-sm mb-8">
-          <Link className="underline text-emerald-400" href="/workbench/start">Level 4 · Start a run</Link>
-          <Link className="underline" href="/workbench/review">Review</Link>
-          <Link className="underline" href="/workbench/offer">Offer</Link>
-          <Link className="underline" href="/workbench/client">Client pipeline</Link>
-          <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
-          <Link className="underline" href="/workbench/self">Level 3 Self()</Link>
-          <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
-          <Link className="underline" href="/workbench/history">History</Link>
-          <Link className="underline" href="/workbench/proof">Safety proof</Link>
-          <Link className="underline" href="/workbench/network">Actor network</Link>
-          <Link className="underline" href="/workbench/compare">Peer proof</Link>
-          <Link className="underline" href="/workbench/autonomous">Autonomous run</Link>
-          <Link className="underline" href="/workbench/pilot">Pilot</Link>
-          <Link className="underline" href="/offer">Offer (public)</Link>
+        <nav className="flex flex-col gap-3 text-sm mb-8">
+          <div className="flex flex-wrap items-baseline gap-4">
+            <span className="text-xs uppercase tracking-wide text-zinc-500 w-32 shrink-0">1 · Run &amp; review</span>
+            <Link className="underline" href="/workbench/review">Review</Link>
+            <Link className="underline" href="/workbench/history">History</Link>
+            <Link className="underline" href="/workbench/self">Level 3 Self()</Link>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-4">
+            <span className="text-xs uppercase tracking-wide text-zinc-500 w-32 shrink-0">2 · Proof</span>
+            <Link className="underline" href="/workbench/proof">Safety proof</Link>
+            <Link className="underline" href="/workbench/compare">Peer proof</Link>
+            <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
+            <Link className="underline" href="/workbench/network">Actor network</Link>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-4">
+            <span className="text-xs uppercase tracking-wide text-zinc-500 w-32 shrink-0">3 · Commercial</span>
+            <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
+            <Link className="underline" href="/workbench/client">Client pipeline</Link>
+            <Link className="underline" href="/workbench/pilot">Pilot</Link>
+            <Link className="underline" href="/workbench/offer">Offer</Link>
+            <Link className="underline" href="/offer">Offer (public)</Link>
+          </div>
         </nav>
 
         {phase === "empty" && (
