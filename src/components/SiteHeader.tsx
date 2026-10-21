@@ -22,6 +22,9 @@ const HOME_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
 // Hidden on /workbench/start only.
 const START_HIDDEN = new Set(["/workbench", "/", "/workbench/start", "/marketplace", "/playlist", "/single"]);
 
+// Hidden on /workbench/status only (Home stays).
+const STATUS_HIDDEN = new Set(["/", "/workbench/start", "/marketplace", "/playlist", "/single"]);
+
 export default function SiteHeader({ section }: { section?: string }) {
   const [vertical, setVertical] = useState("music");
   const pathname = usePathname();
@@ -30,7 +33,9 @@ export default function SiteHeader({ section }: { section?: string }) {
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : pathname === "/workbench/start"
         ? NAV.filter((n) => !START_HIDDEN.has(n.href))
-        : NAV;
+        : pathname === "/workbench/status"
+          ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
+          : NAV;
   // Upload is hidden on Home (/workbench) and Start (/workbench/start) only.
   const showUpload = pathname !== "/workbench" && pathname !== "/workbench/start";
 
@@ -46,7 +51,9 @@ export default function SiteHeader({ section }: { section?: string }) {
             Aethel Node
           </Link>
           {pathname === "/workbench/start" ? null : section ? (
-            <span className="text-zinc-500 text-sm">{section}</span>
+            <span className="text-zinc-500 text-sm">
+              {pathname === "/workbench/status" ? section.replace(/\s*·\s*Level 4$/, "") : section}
+            </span>
           ) : (
             <Link href="/" className="text-zinc-500 text-sm hover:text-white">
               Music
