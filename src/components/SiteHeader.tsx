@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
+import { VERTICALS as ALL_VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
+
+// Header dropdown hides Diagnostic Safety / Regulatory Validation; their pages remain.
+const VERTICALS = ALL_VERTICALS.filter((v) => v.id !== "safety" && v.id !== "compliance");
 
 const NAV = [
-  { href: "/", label: "Home" },
-  { href: "/workbench", label: "Workbench" },
+  { href: "/workbench", label: "Home" },
+  { href: "/", label: "Music" },
   { href: "/workbench/start", label: "Start a run" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
@@ -24,7 +27,7 @@ export default function SiteHeader({ section }: { section?: string }) {
     <header className="border-b border-zinc-800">
       <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Link href="/" className="font-semibold">
+          <Link href="/workbench" className="font-semibold">
             Aethel Node
           </Link>
           {section ? (
