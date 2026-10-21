@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { VERTICALS as ALL_VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
 
@@ -16,8 +17,13 @@ const NAV = [
   { href: "/single", label: "Songs" },
 ];
 
+// Hidden on the Home page (/workbench) only; other pages keep them.
+const HOME_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
+
 export default function SiteHeader({ section }: { section?: string }) {
   const [vertical, setVertical] = useState("music");
+  const pathname = usePathname();
+  const nav = pathname === "/workbench" ? NAV.filter((n) => !HOME_HIDDEN.has(n.href)) : NAV;
 
   useEffect(() => {
     setVertical(readVertical());
@@ -37,7 +43,7 @@ export default function SiteHeader({ section }: { section?: string }) {
           )}
         </div>
         <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
-          {NAV.map((n) => (
+          {nav.map((n) => (
             <Link key={n.href} href={n.href} className="hover:text-white">
               {n.label}
             </Link>
