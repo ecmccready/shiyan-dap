@@ -35,27 +35,6 @@ export default function WorkbenchPage() {
           experience, recorded with proof (Δe, Φ).
         </p>
 
-        <section className="mb-10 border border-zinc-800 rounded-2xl p-5">
-          <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">Conceptual framing</p>
-          <ul className="space-y-3 text-sm text-zinc-400">
-            <li>
-              <span className="text-white font-medium">Endogenous Drive &amp; Strategy.</span>{" "}
-              Self() durable feed: Self() reuses the highest-Φ verified experience from the durable store, and
-              only after replay shows it does not raise final e.
-            </li>
-            <li>
-              <span className="text-white font-medium">Endogenous Spatial Reasoning.</span>{" "}
-              Mereotopology / topological fault isolation: a design direction in which faults are isolated by
-              boundaries between parts of the environment rather than graph edges.
-            </li>
-            <li>
-              <span className="text-white font-medium">Space-Time Analogy of a Planck Cube (analogy).</span>{" "}
-              The record as an emergent fabric of discrete cells: tensor verifications, safety gates, and state
-              records. This is a way of describing the evidence, not a physical model.
-            </li>
-          </ul>
-        </section>
-
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           One commercial plant
         </p>
