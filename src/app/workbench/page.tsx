@@ -35,15 +35,6 @@ export default function WorkbenchPage() {
           experience, recorded with proof (Δe, Φ).
         </p>
 
-        <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          One commercial plant
-        </p>
-        <h2 className="text-3xl font-bold mb-3">One Run. Measured. Kept.</h2>
-        <p className="text-zinc-400 max-w-2xl mb-6">
-          Give A a task. Let the plant execute it. Measure the result. Improve the next run. Preserve the evidence.
-          Customers are not buying an AI or a state machine. They are buying that loop.
-        </p>
-
         <nav className="flex flex-wrap gap-4 text-sm mb-8">
           <Link className="underline text-emerald-400" href="/workbench/start">Level 4 · Start a run</Link>
           <Link className="underline" href="/workbench/review">Review</Link>
