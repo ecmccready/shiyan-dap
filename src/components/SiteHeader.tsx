@@ -39,7 +39,9 @@ export default function SiteHeader({ section }: { section?: string }) {
           {section ? (
             <span className="text-zinc-500 text-sm">{section}</span>
           ) : (
-            <span className="text-zinc-500 text-sm">Music</span>
+            <Link href="/" className="text-zinc-500 text-sm hover:text-white">
+              Music
+            </Link>
           )}
         </div>
         <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
@@ -52,7 +54,8 @@ export default function SiteHeader({ section }: { section?: string }) {
         <label className="flex items-center gap-2 text-sm text-zinc-400">
           Domain
           <select
-            value={vertical}
+            // Off the root page, Music shows as a neutral placeholder so choosing Music fires onChange and goes to "/".
+            value={pathname !== "/" && vertical === "music" ? "" : vertical}
             onChange={(e) => {
               const id = e.target.value;
               setVertical(id);
@@ -64,6 +67,11 @@ export default function SiteHeader({ section }: { section?: string }) {
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
           >
+            {pathname !== "/" && (
+              <option value="" disabled hidden>
+                Select…
+              </option>
+            )}
             {VERTICALS.map((v) => (
               <option key={v.id} value={v.id}>
                 {v.label}
