@@ -18,7 +18,6 @@ export const LEVEL4_NAV = [
   { href: "/workbench/autonomous/proof", label: "Recovery proof" },
   { href: "/workbench/status", label: "Status" },
   { href: "/workbench/spine", label: "Spine" },
-  { href: "/roadmap", label: "Roadmap" },
 ];
 
 export default function Level4Shell({ children }: { children: React.ReactNode }) {
