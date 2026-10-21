@@ -23,10 +23,7 @@ export default function MarketPage() {
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Market" />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-3xl font-bold mb-3">Marketplace</h1>
-        <p className="text-zinc-400 max-w-2xl mb-8">
-          Aethel Node proves that the next action is no longer a misdiagnosis. Music is the first vertical: each catalog asset here can be proved on the Prove rail. A listing is not a sale.
-        </p>
+        <h1 className="text-3xl font-bold mb-8">Marketplace</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {assets.map((asset) => (
@@ -34,9 +31,9 @@ export default function MarketPage() {
               key={asset.id}
               className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6"
             >
-              <p className="text-xs text-emerald-400 mb-2">
-                {asset.founder ? "User A · founder" : "User B · creator"}
-              </p>
+              {!asset.founder && (
+                <p className="text-xs text-emerald-400 mb-2">User B · creator</p>
+              )}
               <h2 className="text-lg font-semibold mb-2">{asset.title}</h2>
               <p className="text-sm text-zinc-500 mb-1">Owner {asset.owner}</p>
               <p className="text-sm text-zinc-500 mb-4">State {asset.state}</p>
