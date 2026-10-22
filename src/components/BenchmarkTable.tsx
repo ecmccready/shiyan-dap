@@ -26,7 +26,7 @@ export default function BenchmarkTable() {
   if (!rows) return null;
   return (
     <section className="rounded-xl border border-zinc-800 p-4 text-sm" aria-label="Cross-run benchmark">
-      <p className="font-medium">Cross-run benchmark: cold start vs reuse</p>
+      <p className="font-medium">Cross-run benchmark: cold start vs reuse{" "}<a href="/api/level4/benchmark" target="_blank" rel="noopener" className="ml-1 text-xs font-normal underline text-zinc-400">raw</a></p>
       <table className="mt-2 w-full text-xs font-mono text-zinc-300">
         <thead className="text-zinc-500">
           <tr><th className="text-left">step</th><th className="text-left">action</th><th className="text-right">e reuse</th><th className="text-right">e cold</th><th className="text-right">Δe</th><th className="text-right">Φ</th><th className="text-right">I_t</th></tr>
