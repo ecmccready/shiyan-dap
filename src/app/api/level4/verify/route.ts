@@ -46,6 +46,6 @@ export async function GET(req: NextRequest) {
   const out = holographic.length ? { ...result, holographic } : result;
   if (!roe.length) return NextResponse.json(out);
   // ROE next-action objective (additive, inspect-only): a* vs the live plan at this run's final step (applied = steps − 1).
-  const roe_next_action = roeNextAction(entries, { permitted: [...REUSE_SEQUENCE, "hold"], applied: roe.length - 1 });
+  const roe_next_action = roeNextAction(entries, { permitted: [...REUSE_SEQUENCE, "hold"], applied: roe.length - 1, per_step: true });
   return NextResponse.json({ ...out, roe, roe_next_action });
 }

@@ -24,6 +24,7 @@ import type { ExperienceEntry } from "./experience-client";
 import { isReusable, planFromEntries, nextFromPlan } from "./durable-self";
 import { DEMO_TENSOR_EPSILON } from "./demo-tensor";
 import { roeForEntry } from "./roe";
+import { REUSE_SEQUENCE } from "./measured";
 
 export type NextActionCandidate = {
   action: string;
@@ -50,7 +51,33 @@ export type RoeNextAction = {
   live_plan_run_id: string | null;
   agrees: boolean;
   note: "inspect-only; live loop unchanged";
+  step_aware: StepAware;
+  per_step?: StepAwareSummary[];
 };
+
+export type StepAwareCandidate = {
+  action: string;
+  expected_delta_e: number;
+  samples_at_state: number;
+  fallback: "state_free" | null;
+  cost: number;
+  risk: number;
+  score: number;
+};
+
+export type StepAware = {
+  objective: "argmax_{a in A_safe(s_t)} E[e_t - e_{t+1} | s_t, a] - lambda*C - mu*R";
+  state: { applied: number };
+  safe_set_rule: "A_safe (state-free rule) intersected with REUSE_SEQUENCE.slice(applied)";
+  expected_delta_e_rule: string;
+  tie_break: "earliest pending action in REUSE_SEQUENCE";
+  candidates: StepAwareCandidate[];
+  selected: string | null;
+  live_selected: string | null;
+  agrees: boolean;
+};
+
+export type StepAwareSummary = { applied: number; selected: string | null; live_selected: string | null; agrees: boolean; score: number | null };
 
 const fin = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
 const r4 = (x: number) => Math.round(x * 1e4) / 1e4;
@@ -67,7 +94,7 @@ export function stepReduction(list: ExperienceEntry[], x: ExperienceEntry): { va
 
 export function roeNextAction(
   list: ExperienceEntry[],
-  opts: { lambda?: number; mu?: number; run_id?: string | null; applied?: number; permitted?: string[] } = {}
+  opts: { lambda?: number; mu?: number; run_id?: string | null; applied?: number; permitted?: string[]; per_step?: boolean } = {}
 ): RoeNextAction {
   const lambda = fin(opts.lambda) ? opts.lambda : 0;
   const mu = fin(opts.mu) ? opts.mu : 0;
@@ -94,6 +121,35 @@ export function roeNextAction(
   const plan = opts.permitted ? planFromEntries(list, opts.permitted) : null;
   const live_selected = plan ? nextFromPlan(plan, applied) : null;
   const selected = best ? best.action : null;
+  // Step-aware objective (additive): state s_t = applied.
+  const stepAware = (k: number): StepAware => {
+    const pending = REUSE_SEQUENCE.slice(k).filter((a) => order.includes(a));
+    const cands: StepAwareCandidate[] = pending.map((action) => {
+      const sf = candidates.find((c) => c.action === action)!;
+      const at = reusable
+        .filter((x) => x.y === action && x.iteration - 1 === k)
+        .map((x) => stepReduction(list, x).value)
+        .filter((v): v is number => v != null);
+      const E = at.length ? r4(at.reduce((a, b) => a + b, 0) / at.length) : sf.expected_delta_e;
+      return { action, expected_delta_e: E, samples_at_state: at.length, fallback: at.length ? null : "state_free", cost: sf.cost, risk: sf.risk, score: r4(E - lambda * sf.cost - mu * sf.risk) };
+    });
+    // >= keeps the earliest pending action on ties
+    const top = cands.reduce<StepAwareCandidate | null>((a, b) => (a && a.score >= b.score ? a : b), null);
+    const live = plan ? nextFromPlan(plan, k) : null;
+    const sel = top ? top.action : null;
+    return {
+      objective: "argmax_{a in A_safe(s_t)} E[e_t - e_{t+1} | s_t, a] - lambda*C - mu*R",
+      state: { applied: k },
+      safe_set_rule: "A_safe (state-free rule) intersected with REUSE_SEQUENCE.slice(applied)",
+      expected_delta_e_rule: "mean(e_prev - e) over reusable-run samples with y=a at step index (iteration-1) == applied; if none, state-free mean with fallback='state_free', samples_at_state=0",
+      tie_break: "earliest pending action in REUSE_SEQUENCE",
+      candidates: cands, selected: sel, live_selected: live, agrees: sel != null && sel === live,
+    };
+  };
+  const step_aware = stepAware(applied);
+  const per_step = opts.per_step
+    ? REUSE_SEQUENCE.map((_, k) => { const s = stepAware(k); const c = s.candidates.find((x) => x.action === s.selected); return { applied: k, selected: s.selected, live_selected: s.live_selected, agrees: s.agrees, score: c ? c.score : null }; })
+    : undefined;
   return {
     objective: "argmax E[de] - lambda*C - mu*R",
     lambda, mu,
@@ -109,5 +165,7 @@ export function roeNextAction(
     live_plan_run_id: plan ? plan.run_id : null,
     agrees: selected != null && selected === live_selected,
     note: "inspect-only; live loop unchanged",
+    step_aware,
+    ...(per_step ? { per_step } : {}),
   };
 }

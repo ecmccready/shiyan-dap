@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     roe_next_action: roeNextAction(entries, {
       run_id: q.get("run_id") || null, lambda: num("lambda"), mu: num("mu"), applied: num("applied"),
-      permitted: [...REUSE_SEQUENCE, "hold"],
+      permitted: [...REUSE_SEQUENCE, "hold"], per_step: num("applied") === undefined,
     }),
   });
 }
