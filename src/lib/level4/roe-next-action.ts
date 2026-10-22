@@ -59,7 +59,7 @@ export type StepAwareCandidate = {
   action: string;
   expected_delta_e: number;
   samples_at_state: number;
-  fallback: "state_free" | null;
+  fallback: "zero" | null;
   cost: number;
   risk: number;
   score: number;
@@ -130,8 +130,8 @@ export function roeNextAction(
         .filter((x) => x.y === action && x.iteration - 1 === k)
         .map((x) => stepReduction(list, x).value)
         .filter((v): v is number => v != null);
-      const E = at.length ? r4(at.reduce((a, b) => a + b, 0) / at.length) : sf.expected_delta_e;
-      return { action, expected_delta_e: E, samples_at_state: at.length, fallback: at.length ? null : "state_free", cost: sf.cost, risk: sf.risk, score: r4(E - lambda * sf.cost - mu * sf.risk) };
+      const E = at.length ? r4(at.reduce((a, b) => a + b, 0) / at.length) : 0;
+      return { action, expected_delta_e: E, samples_at_state: at.length, fallback: at.length ? null : "zero", cost: sf.cost, risk: sf.risk, score: r4(E - lambda * sf.cost - mu * sf.risk) };
     });
     // >= keeps the earliest pending action on ties
     const top = cands.reduce<StepAwareCandidate | null>((a, b) => (a && a.score >= b.score ? a : b), null);
@@ -141,7 +141,7 @@ export function roeNextAction(
       objective: "argmax_{a in A_safe(s_t)} E[e_t - e_{t+1} | s_t, a] - lambda*C - mu*R",
       state: { applied: k },
       safe_set_rule: "A_safe (state-free rule) intersected with REUSE_SEQUENCE.slice(applied)",
-      expected_delta_e_rule: "mean(e_prev - e) over reusable-run samples with y=a at step index (iteration-1) == applied; if none, state-free mean with fallback='state_free', samples_at_state=0",
+      expected_delta_e_rule: "mean(e_prev - e) over reusable-run samples with y=a at step index (iteration-1) == applied; if none, 0 with fallback='zero', samples_at_state=0 (R(a) still applies)",
       tie_break: "earliest pending action in REUSE_SEQUENCE",
       candidates: cands, selected: sel, live_selected: live, agrees: sel != null && sel === live,
     };
