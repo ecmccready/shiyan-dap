@@ -27,6 +27,8 @@ import { combineEligibility, type TensorCheck } from "@/lib/level4/tensor";
 import { experienceTensorFields } from "@/lib/level4/seal";
 import { loadDurablePlan, nextFromPlan, type DurablePlan } from "@/lib/level4/durable-self";
 import { vetDurablePlan, type DurableVet } from "@/lib/level4/durable-vet";
+import { loadExperienceServer, type ExperienceEntry } from "@/lib/level4/experience-client";
+import { roeNextAction } from "@/lib/level4/roe-next-action";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -79,6 +81,17 @@ function AutonomousInner() {
   const [durableOn] = useState(() => searchParams.get("durable") !== "0");
   const [plan, setPlan] = useState<DurablePlan | null>(null);
   const [vet, setVet] = useState<DurableVet | null>(null);
+  // ROE drive (opt-in, ?roe_drive=1): the step-aware objective picks the action. Off by default.
+  const [roeDrive] = useState(() => searchParams.get("roe_drive") === "1");
+  const [roeLambda] = useState(() => { const v = Number(searchParams.get("lambda")); return Number.isFinite(v) ? v : 0; });
+  const [roeMu] = useState(() => { const v = Number(searchParams.get("mu")); return Number.isFinite(v) ? v : 0; });
+  const [roeEntries, setRoeEntries] = useState<ExperienceEntry[] | null>(null);
+
+  useEffect(() => {
+    if (!roeDrive) return;
+    // Same experience source and same current-run exclusion as loadDurablePlan.
+    loadExperienceServer().then((list) => setRoeEntries(list.filter((x) => x.run_id !== runId)));
+  }, [roeDrive, runId]);
 
   useEffect(() => {
     if (!durableOn) return;
@@ -108,6 +121,10 @@ function AutonomousInner() {
 
   const applied = (rec.actions ?? []) as YAction[];
   const nextY = (plan ? nextFromPlan(plan, applied.length) : nextFromExperience(applied)) as YAction;
+  const roePick = roeDrive && roeEntries
+    ? roeNextAction(roeEntries, { lambda: roeLambda, mu: roeMu, applied: applied.length }).step_aware.selected
+    : null;
+  const roeY = (roePick ?? nextY) as YAction;
   const threshold = successThreshold(goal.success_condition);
   const cold = applied.length > 0 ? coldBaseline(applied.length) : null;
   const deltaE = rec.e0 != null && rec.last_e != null ? rec.e0 - rec.last_e : null;
@@ -117,7 +134,7 @@ function AutonomousInner() {
     if (busy) return;
     setBusy(true);
     try {
-      const y = nextY;
+      const y = roeDrive ? roeY : nextY;
       const actionKey = `${runId}:${rec.goal_id}:${rec.iteration}:${y}`;
 
       if (alreadyApplied(actionKey)) {
@@ -151,7 +168,9 @@ function AutonomousInner() {
         "model_3",
         "hold",
         0,
-        plan
+        roeDrive
+          ? async () => ({ y: roeY as string, source: roePick ? "roe_step_aware" : "roe_fallback" })
+          : plan
           ? async () => ({ y: nextY as string, source: "durable" })
           : experienceProposer(applied)
       );
@@ -211,6 +230,9 @@ function AutonomousInner() {
         phi: Number((coldE - m.e).toFixed(3)),
         state: next.state,
         ...(tcheck ? experienceTensorFields(tcheck) : {}),
+        ...(roeDrive
+          ? { selector: "roe_step_aware" as const, roe_lambda: roeLambda, roe_mu: roeMu, roe_fallback: roePick == null }
+          : {}),
       });
       setTensor(tcheck);
 

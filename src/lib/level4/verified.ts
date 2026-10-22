@@ -65,6 +65,11 @@ export async function recordExperienceServer(entry: {
   /** Optional tensor scope (see experienceTensorFields in seal.ts). Omitted when absent. */
   tensor_commitment?: string;
   tensor_distance?: number;
+  /** Opt-in ROE drive only (?roe_drive=1). Omitted on default runs. */
+  selector?: "roe_step_aware";
+  roe_lambda?: number;
+  roe_mu?: number;
+  roe_fallback?: boolean;
 }) {
   // Non-fatal: the run continues even if the durable store is unavailable.
   try {

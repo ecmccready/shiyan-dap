@@ -45,6 +45,11 @@ export type ExperienceEntry = {
   tensor_bound?: "holographic" | "fixed";
   /** Optional: the bound's maxAllowable used for the check. Absent on older entries. */
   tensor_max_allowable?: number;
+  /** Opt-in ROE drive only: which selector chose y. Absent on default-path entries. */
+  selector?: "roe_step_aware";
+  roe_lambda?: number;
+  roe_mu?: number;
+  roe_fallback?: boolean;
 };
 
 const KEY = "level4:experience";
@@ -142,6 +147,13 @@ export async function POST(req: NextRequest) {
   if (body.tensor_bound === "holographic" || body.tensor_bound === "fixed") entry.tensor_bound = body.tensor_bound;
   const tensorMax = num(body.tensor_max_allowable);
   if (tensorMax !== null && tensorMax > 0) entry.tensor_max_allowable = tensorMax;
+  // Opt-in ROE drive (additive): recorded only when the client sent selector.
+  if (body.selector === "roe_step_aware") {
+    entry.selector = "roe_step_aware";
+    entry.roe_lambda = num(body.roe_lambda) ?? 0;
+    entry.roe_mu = num(body.roe_mu) ?? 0;
+    entry.roe_fallback = body.roe_fallback === true;
+  }
 
   // Idempotent: one entry per (run_id, iteration). SET NX is atomic.
   const first = await redis.set(seenKey(run_id, iteration), 1, {

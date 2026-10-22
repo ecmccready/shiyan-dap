@@ -47,5 +47,9 @@ export async function GET(req: NextRequest) {
   if (!roe.length) return NextResponse.json(out);
   // ROE next-action objective (additive, inspect-only): a* vs the live plan at this run's final step (applied = steps − 1).
   const roe_next_action = roeNextAction(entries, { permitted: [...REUSE_SEQUENCE, "hold"], applied: roe.length - 1, per_step: true });
+  // Opt-in ROE drive: surface the selector only when this run's entries carry one.
+  const sel = entries.filter((e) => e.run_id === run_id && (e as { selector?: string }).selector).sort((a, b) => a.iteration - b.iteration)
+    .map((e) => { const x = e as { selector?: string; roe_lambda?: number; roe_mu?: number; roe_fallback?: boolean; y?: string }; return { iter: e.iteration, y: x.y ?? null, selector: x.selector, lambda: x.roe_lambda ?? 0, mu: x.roe_mu ?? 0, fallback: x.roe_fallback === true }; });
+  if (sel.length) return NextResponse.json({ ...out, roe, roe_next_action, roe_selector: sel });
   return NextResponse.json({ ...out, roe, roe_next_action });
 }
