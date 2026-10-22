@@ -62,6 +62,14 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
 - *Live (opt-in drive).* `/workbench/autonomous?roe_drive=1` (optional `&lambda=&mu=`, default 0) lets `step_aware.selected` choose each next action, on the same `/api/level4/experience` data with the current run excluded (as the durable plan does). If it returns null, the existing planner's choice is used and recorded as `roe_fallback: true`. Precheck, safety gate, idempotency, measurement, tensor check, eligibility and recording are unchanged; only the action choice differs. Such entries carry `selector: "roe_step_aware"`, `roe_lambda`, `roe_mu`, `roe_fallback`; verify adds `roe_selector` only when a run's entries carry it. Without the flag the loop and all responses are unchanged (the existing planner is the default).
 - *Next contract (not live).* Using the objective to drive the autonomous loop's selection; learned cost/risk models and a richer state s_t.
 
+**Proprietary scope.** The ROE's proprietary scope is the precisely defined, tested combination of the five parts below. The potential advantage is the accumulated implementation, performance data, integration effort and trusted workflow, not any single part.
+
+1. *Domain-independent optimization engine — Live in one domain; independence directional.* The ROE slices above (normalized RMS check, gated I_t, adaptive ε_base, eligibility enforced in `isReusable`, step-aware next-action objective, opt-in `?roe_drive=1`) run on the Level 4 plant. Running on other domains is not demonstrated (multi-domain simulation is listed as not live).
+2. *Versioned Workbench contracts and independent verification — Live.* The Workbench B MCP contract `aethel.loop.v1` (`src/lib/mcp/schema.ts`) and the `aethel-anchor/1` payload; `GET /api/level4/verify` replays a stored run on a fresh plant (26/26 checks on the demo run) and `GET /api/level4/anchor` returns its Merkle root (prepared, `anchored:false`; on-chain submission directional).
+3. *Reproducible measurement of cross-run improvement — Live for the demo plant.* e, Δe, the cold `Self()` baseline, Φ and I_t are stored per step and recomputed by verify.
+4. *Durable evidence and experience system — Live.* Upstash-backed experience store, idempotent per run and iteration; Self() durable feed; ledger/evidence export.
+5. *Specialized, validated workbenches for valuable markets — Directional.* Today: the Level 4 autonomous workbench and the Shiyan plant, with music as the first vertical. Further validated market workbenches are not built; healthcare stays a later, higher-risk vertical.
+
 **Directional, not live:**
 
 - Submitting anchor roots on-chain. The anchor payload, Merkle root, and `AnchorAdapter` interface exist (see below); only a dry-run `NullAnchorAdapter` ships and nothing is submitted.
