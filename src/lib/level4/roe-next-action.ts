@@ -79,6 +79,12 @@ export type StepAware = {
 
 export type StepAwareSummary = { applied: number; selected: string | null; live_selected: string | null; agrees: boolean; score: number | null };
 
+/**
+ * Precedence constraint used only when safe_order is set: sealing requires the
+ * independent check first (a pack is not sealed on an unverified tensor).
+ */
+export const ROE_PREREQUISITES: Record<string, string[]> = { seal_pack: ["request_independent_check"] };
+
 const fin = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
 const r4 = (x: number) => Math.round(x * 1e4) / 1e4;
 
@@ -94,7 +100,7 @@ export function stepReduction(list: ExperienceEntry[], x: ExperienceEntry): { va
 
 export function roeNextAction(
   list: ExperienceEntry[],
-  opts: { lambda?: number; mu?: number; run_id?: string | null; applied?: number; permitted?: string[]; per_step?: boolean } = {}
+  opts: { lambda?: number; mu?: number; run_id?: string | null; applied?: number; permitted?: string[]; per_step?: boolean; safe_order?: boolean; applied_actions?: string[] } = {}
 ): RoeNextAction {
   const lambda = fin(opts.lambda) ? opts.lambda : 0;
   const mu = fin(opts.mu) ? opts.mu : 0;
@@ -123,7 +129,13 @@ export function roeNextAction(
   const selected = best ? best.action : null;
   // Step-aware objective (additive): state s_t = applied.
   const stepAware = (k: number): StepAware => {
-    const pending = REUSE_SEQUENCE.slice(k).filter((a) => order.includes(a));
+    let pending = REUSE_SEQUENCE.slice(k).filter((a) => order.includes(a));
+    // Opt-in safe_order (roe_drive path only): drop actions already applied, and
+    // drop any action whose prerequisites (ROE_PREREQUISITES) are not yet applied.
+    if (opts.safe_order) {
+      const done = opts.applied_actions ?? REUSE_SEQUENCE.slice(0, k);
+      pending = pending.filter((a) => !done.includes(a) && (ROE_PREREQUISITES[a] ?? []).every((p) => done.includes(p)));
+    }
     const cands: StepAwareCandidate[] = pending.map((action) => {
       const sf = candidates.find((c) => c.action === action)!;
       const at = reusable

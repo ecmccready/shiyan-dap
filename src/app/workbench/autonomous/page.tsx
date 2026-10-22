@@ -129,7 +129,7 @@ function AutonomousInner() {
   const applied = (rec.actions ?? []) as YAction[];
   const nextY = (plan ? nextFromPlan(plan, applied.length) : nextFromExperience(applied)) as YAction;
   const roePick = roeDrive && roeEntries
-    ? roeNextAction(roeEntries, { lambda: roeLambda, mu: roeMu, applied: applied.length }).step_aware.selected
+    ? roeNextAction(roeEntries, { lambda: roeLambda, mu: roeMu, applied: applied.length, safe_order: true, applied_actions: applied }).step_aware.selected
     : null;
   const roeY = (roePick ?? nextY) as YAction;
   const threshold = successThreshold(goal.success_condition);
