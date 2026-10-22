@@ -10,6 +10,7 @@ import ShareSection from "@/components/ShareSection";
 import CopyLedgerLine from "@/components/CopyLedgerLine";
 import CopyEvidencePack from "@/components/CopyEvidencePack";
 import HolographicDensity from "@/components/HolographicDensity";
+import BenchmarkTable from "@/components/BenchmarkTable";
 import {
   loadExperienceServer,
   latestVerified,
@@ -148,6 +149,7 @@ export default function StatusPage() {
         )}
       </section>
 
+      <BenchmarkTable />
       <RunEndpoints variant="inline" />
       <AnchorRoot />
 
