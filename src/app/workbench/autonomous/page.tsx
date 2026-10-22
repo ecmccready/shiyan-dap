@@ -416,6 +416,7 @@ function AutonomousInner() {
         const r = roeForEntry(last);
         const failed = r.G ? "" : ` (${r.gates.tensor === false ? "tensor" : "gate"} failed)`;
         return (
+          <>
           <p data-roe-it className="font-mono text-xs text-zinc-400">
             <a
               href={`#step-${String(last.iteration)}`}
@@ -433,6 +434,15 @@ function AutonomousInner() {
               I_t (step {String(last.iteration)} · {String(last.y)}): {r.I === null ? "n/a" : Number(r.I.toFixed(3))} · G {r.G ? "pass" : "fail"}{failed}
             </a>
           </p>
+          {typeof last.phi === "number" && typeof last.delta_e === "number" && (
+            <p data-roe-phi className="font-mono text-xs text-zinc-400">
+              Φ {Number(last.phi.toFixed(3))} · Δe {Number(last.delta_e.toFixed(3))}
+              {typeof last.e === "number" && typeof last.cold_e === "number"
+                ? ` · e ${Number(last.e.toFixed(3))} vs cold ${Number(last.cold_e.toFixed(3))}`
+                : ""}
+            </p>
+          )}
+          </>
         );
       })()}
 
