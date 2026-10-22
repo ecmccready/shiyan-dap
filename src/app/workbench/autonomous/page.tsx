@@ -281,6 +281,14 @@ function AutonomousInner() {
         </p>
       </header>
 
+      {(roeDrive || selRows.length > 0) && (
+        <p data-roe-badge className="inline-block rounded-full border border-emerald-800 px-3 py-1 font-mono text-xs text-emerald-400">
+          {roeDrive
+            ? `ROE selector active · step-aware · λ ${roeLambda} · μ ${roeMu} · safe_order on`
+            : "ROE selector used on this run"}
+        </p>
+      )}
+
       {recovered && (
         <p className="text-sm text-amber-400">Recovered from saved record ({runId}).</p>
       )}
