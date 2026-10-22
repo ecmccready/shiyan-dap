@@ -29,6 +29,7 @@ import { loadDurablePlan, nextFromPlan, type DurablePlan } from "@/lib/level4/du
 import { vetDurablePlan, type DurableVet } from "@/lib/level4/durable-vet";
 import { loadExperienceServer, type ExperienceEntry } from "@/lib/level4/experience-client";
 import { roeNextAction } from "@/lib/level4/roe-next-action";
+import { selectorRows, selectorLabel, type SelectorRow, type SelectorTagged } from "@/lib/level4/selector-label";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -86,6 +87,12 @@ function AutonomousInner() {
   const [roeLambda] = useState(() => { const v = Number(searchParams.get("lambda")); return Number.isFinite(v) ? v : 0; });
   const [roeMu] = useState(() => { const v = Number(searchParams.get("mu")); return Number.isFinite(v) ? v : 0; });
   const [roeEntries, setRoeEntries] = useState<ExperienceEntry[] | null>(null);
+  // Display only: which selector chose each step, when entries carry selector data.
+  const [selRows, setSelRows] = useState<SelectorRow[]>([]);
+
+  useEffect(() => {
+    loadExperienceServer().then((list) => setSelRows(selectorRows(list as SelectorTagged[], runId)));
+  }, [runId]);
 
   useEffect(() => {
     if (!roeDrive) return;
@@ -235,6 +242,13 @@ function AutonomousInner() {
           : {}),
       });
       setTensor(tcheck);
+      if (roeDrive) {
+        const label = selectorLabel({ selector: "roe_step_aware", roe_lambda: roeLambda, roe_mu: roeMu, roe_fallback: roePick == null });
+        if (label) {
+          const row = { iteration: next.iteration, y, label };
+          setSelRows((rows) => [...rows.filter((r) => r.iteration !== row.iteration), row].sort((a, b) => a.iteration - b.iteration));
+        }
+      }
 
       markApplied(actionKey);
       setRec(next);
@@ -252,6 +266,7 @@ function AutonomousInner() {
     await clearServerRecord(runId).catch(() => undefined);
     setRec(INITIAL);
     setTensor(null);
+    setSelRows([]);
     setRecovered(false);
   }
 
@@ -356,6 +371,17 @@ function AutonomousInner() {
           ))
         )}
       </section>
+
+      {selRows.length > 0 && (
+        <section className="space-y-1 rounded-xl border border-zinc-800 p-4 text-xs text-zinc-400">
+          <p className="text-zinc-500">Selector per step (steps not listed: existing planner)</p>
+          {selRows.map((r) => (
+            <div key={r.iteration} className="font-mono">
+              step {r.iteration} · {r.y} — {r.label}
+            </div>
+          ))}
+        </section>
+      )}
 
       <p className="text-xs text-zinc-500">
         <a href={`/api/level4/run?id=${encodeURIComponent(runId)}`} className="underline" target="_blank" rel="noreferrer">
