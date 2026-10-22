@@ -5,6 +5,8 @@ import { demoReferenceTensor } from "@/lib/level4/demo-tensor";
 import { calculateDynamicThreshold } from "@/lib/level4/tensor";
 import { roeForEntry } from "@/lib/level4/roe";
 import { roeEligibility } from "@/lib/level4/roe-eligibility";
+import { roeNextAction } from "@/lib/level4/roe-next-action";
+import { REUSE_SEQUENCE } from "@/lib/level4/measured";
 
 /**
  * GET /api/level4/verify?run_id=... — public, read-only.
@@ -42,5 +44,8 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => a.iteration - b.iteration)
     .map((e) => ({ iter: e.iteration, ...roeForEntry(e), eligibility: roeEligibility(e) }));
   const out = holographic.length ? { ...result, holographic } : result;
-  return NextResponse.json(roe.length ? { ...out, roe } : out);
+  if (!roe.length) return NextResponse.json(out);
+  // ROE next-action objective (additive, inspect-only): a* vs the live plan at this run's final step (applied = steps − 1).
+  const roe_next_action = roeNextAction(entries, { permitted: [...REUSE_SEQUENCE, "hold"], applied: roe.length - 1 });
+  return NextResponse.json({ ...out, roe, roe_next_action });
 }
