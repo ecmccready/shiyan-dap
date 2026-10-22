@@ -385,11 +385,17 @@ function AutonomousInner() {
         {rec.history.length === 0 ? (
           <p className="text-zinc-500">No steps yet.</p>
         ) : (
-          rec.history.map((h, i) => (
-            <div key={i}>
-              {h.at.slice(11, 19)} · {h.state} — {h.note}
-            </div>
-          ))
+          (() => {
+            let stepN = 0;
+            return rec.history.map((h, i) => {
+              const sid = h.note.startsWith("verified result recorded") ? `step-${++stepN}` : undefined;
+              return (
+                <div key={i} id={sid}>
+                  {h.at.slice(11, 19)} · {h.state} — {h.note}
+                </div>
+              );
+            });
+          })()
         )}
       </section>
 
@@ -411,7 +417,21 @@ function AutonomousInner() {
         const failed = r.G ? "" : ` (${r.gates.tensor === false ? "tensor" : "gate"} failed)`;
         return (
           <p data-roe-it className="font-mono text-xs text-zinc-400">
-            I_t (step {String(last.iteration)} · {String(last.y)}): {r.I === null ? "n/a" : Number(r.I.toFixed(3))} · G {r.G ? "pass" : "fail"}{failed}
+            <a
+              href={`#step-${String(last.iteration)}`}
+              className="hover:underline"
+              title="Scroll to this step in the log"
+              onClick={(ev) => {
+                const el = document.getElementById(`step-${String(last.iteration)}`);
+                if (!el) return;
+                ev.preventDefault();
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+                el.classList.add("bg-emerald-900/40");
+                window.setTimeout(() => el.classList.remove("bg-emerald-900/40"), 1500);
+              }}
+            >
+              I_t (step {String(last.iteration)} · {String(last.y)}): {r.I === null ? "n/a" : Number(r.I.toFixed(3))} · G {r.G ? "pass" : "fail"}{failed}
+            </a>
           </p>
         );
       })()}
