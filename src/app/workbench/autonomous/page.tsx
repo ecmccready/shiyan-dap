@@ -283,9 +283,16 @@ function AutonomousInner() {
 
       {(roeDrive || selRows.length > 0) && (
         <p data-roe-badge className="inline-block rounded-full border border-emerald-800 px-3 py-1 font-mono text-xs text-emerald-400">
-          {roeDrive
-            ? `ROE selector active · step-aware · λ ${roeLambda} · μ ${roeMu} · safe_order on`
-            : "ROE selector used on this run"}
+          <a
+            data-roe-badge-link
+            href="/api/level4/benchmark"
+            title="λ: cost weight, μ: risk weight in the step-aware objective; safe_order: taken actions drop off and seal_pack waits for request_independent_check. Opens the read-only cold-vs-reuse benchmark."
+            className="hover:underline"
+          >
+            {roeDrive
+              ? `ROE selector active · step-aware · λ ${roeLambda} · μ ${roeMu} · safe_order on`
+              : "ROE selector used on this run"}
+          </a>
         </p>
       )}
 
