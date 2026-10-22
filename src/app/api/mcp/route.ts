@@ -1,4 +1,5 @@
 import { handleMcp } from "@/lib/mcp/handler";
+import { adaptiveEpsBase } from "@/lib/level4/roe-adaptive";
 
 export const runtime = "nodejs";
 
@@ -6,6 +7,13 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   if (!body || body.jsonrpc !== "2.0" || !body.method) {
     return Response.json({ jsonrpc: "2.0", id: null, error: { code: -32600, message: "invalid request" } }, { status: 400 });
+  }
+  // ROE slice 2 (opt-in): precompute the adaptive ε_base only when request_independent_check asks for it.
+  const p = body.method === "tools/call" ? body.params : null;
+  const a = p?.arguments;
+  if (p?.name === "request_independent_check" && a && a.adaptive === true && (a.mode === "normalized" || a.mode === "rms")) {
+    const adaptive = await adaptiveEpsBase(typeof a.run_id === "string" ? a.run_id : null);
+    return Response.json(handleMcp(body, { adaptive }));
   }
   return Response.json(handleMcp(body));
 }

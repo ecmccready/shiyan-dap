@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { holographicDefaultCheck, parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "@/lib/level4/seal";
+import { adaptiveEpsBase, validEps, wantsAdaptive, type AdaptiveInfo, type EpsSource } from "@/lib/level4/roe-adaptive";
 import { MAX_TENSOR_ELEMENTS, verifyHolographicBound, holographicLedgerTokens, isNormalizedMode, normalizedRmsCheck } from "@/lib/level4/tensor";
 
 /**
@@ -30,6 +31,7 @@ export async function GET() {
     default_bound: "holographic: verdict uses ε_dyn = baseEpsilon·√(N/4) (baseEpsilon? default 0.16; frobenius only). Adds check.bound, check.max_allowable, check.fixed_epsilon, holographic, holographic_ledger",
     fixed_mode: "mode: 'fixed' (body or ?mode=fixed) gives the original fixed-ε response (verdict uses body.epsilon)",
     normalized_mode: "mode: 'normalized' | 'rms' (body or ?mode=) adds normalized: { mode, e_t = ‖T_out−T_ref‖_F/√N, N, eps_base, accepted = e_t ≤ eps_base } (eps_base? default body.epsilon) next to the fixed-ε check. Opt-in; ROE slice 1",
+    normalized_eps: "ROE slice 2 (normalized/rms only): baseEpsilon (alias eps_base) or adaptive: true (body or query; optional run_id). Precedence explicit > adaptive > epsilon. Adaptive = last eligible experience entry's tensor_distance (tensor gate not failed), capped at 0.16 (only tightens); no data/store → 0.16. Adds normalized.eps_source and, when adaptive, normalized.adaptive { rule, samples, base }",
     live_demo: "pinned to fixed ε 0.16; does not call this endpoint",
     stores: "nothing",
   });
@@ -58,11 +60,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ check, sealed, seal });
     }
     if (isNormalizedMode(mode)) {
-      const eps_base =
-        typeof b.eps_base === "number" && Number.isFinite(b.eps_base) && b.eps_base >= 0 ? b.eps_base : payload.epsilon;
+      const q = req.nextUrl.searchParams;
+      const qNum = (k: string) => (q.get(k) !== null && q.get(k) !== "" ? Number(q.get(k)) : undefined);
+      const explicit = [b.baseEpsilon, b.eps_base, qNum("baseEpsilon"), qNum("eps_base")].find(validEps);
+      const adaptiveReq = wantsAdaptive(b.adaptive ?? q.get("adaptive"));
       const check = requestIndependentTensorCheck(payload);
       const { sealed, seal } = sealTensorBinding(check);
-      return NextResponse.json({ check, sealed, seal, normalized: normalizedRmsCheck(payload.out, payload.ref, eps_base) });
+      const newParams = adaptiveReq || [b.baseEpsilon, qNum("baseEpsilon"), qNum("eps_base")].some(validEps);
+      if (!newParams) {
+        // Unchanged slice-1 response (body.eps_base or request epsilon, no eps_source).
+        const eps1 = validEps(b.eps_base) ? b.eps_base : payload.epsilon;
+        return NextResponse.json({ check, sealed, seal, normalized: normalizedRmsCheck(payload.out, payload.ref, eps1) });
+      }
+      // ROE slice 2: explicit baseEpsilon > adaptive > request epsilon.
+      let eps_base = payload.epsilon;
+      let eps_source: EpsSource = "default";
+      let adaptive: AdaptiveInfo | undefined;
+      if (explicit !== undefined) {
+        eps_base = explicit;
+        eps_source = "explicit";
+      } else {
+        const runId = typeof b.run_id === "string" ? b.run_id : q.get("run_id");
+        const a = await adaptiveEpsBase(runId);
+        eps_base = a.base;
+        eps_source = a.source;
+        adaptive = a.adaptive;
+      }
+      const normalized = { ...normalizedRmsCheck(payload.out, payload.ref, eps_base), eps_source, ...(adaptive ? { adaptive } : {}) };
+      return NextResponse.json({ check, sealed, seal, normalized });
     }
     const baseEpsilon =
       typeof b.baseEpsilon === "number" && Number.isFinite(b.baseEpsilon) && b.baseEpsilon >= 0

@@ -17,6 +17,7 @@ import {
   type YName,
 } from "./schema";
 import { holographicDefaultCheck, parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "../level4/seal";
+import { validEps, type AdaptiveBase } from "../level4/roe-adaptive";
 import { combineEligibility, isNormalizedMode, normalizedRmsCheck, parseTensor, verifyHolographicBound, holographicLedgerTokens, type HolographicBound, type TensorCheck } from "../level4/tensor";
 
 type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Record<string, unknown> };
@@ -80,7 +81,7 @@ function toolResult(data: unknown) {
   return { content: [{ type: "text", text: JSON.stringify(data) }], structuredContent: data, isError: false };
 }
 
-export function handleMcp(msg: Rpc): unknown {
+export function handleMcp(msg: Rpc, ctx?: { adaptive?: AdaptiveBase }): unknown {
   const id = msg.id ?? null;
   const ok = (result: unknown) => ({ jsonrpc: "2.0", id, result });
   const fail = (code: number, message: string) => ({ jsonrpc: "2.0", id, error: { code, message } });
@@ -142,6 +143,8 @@ export function handleMcp(msg: Rpc): unknown {
       baseEpsilon?: number;
       mode?: string;
       eps_base?: number;
+      adaptive?: boolean;
+      run_id?: string;
     };
     const caseId = args.case_id || "mcp-pack";
 
@@ -228,11 +231,19 @@ export function handleMcp(msg: Rpc): unknown {
       else holoChecks.delete(caseId);
       const res0 = { ...observe(plant(caseId), name as YName, args.cold_final_e), tensor_check: check };
       // ROE opt-in: mode "normalized" | "rms" adds the normalized RMS check (informational; verdict unchanged).
-      let res: typeof res0 & { normalized?: ReturnType<typeof normalizedRmsCheck> } = res0;
+      let res: typeof res0 & { normalized?: ReturnType<typeof normalizedRmsCheck> & { eps_source?: string; adaptive?: AdaptiveBase["adaptive"] } } = res0;
       if (tensor && isNormalizedMode(args.mode)) {
         const epsBase = typeof args.eps_base === "number" && Number.isFinite(args.eps_base) && args.eps_base >= 0 ? args.eps_base : tensor.epsilon;
         try {
-          res = { ...res0, normalized: normalizedRmsCheck(tensor.out, tensor.ref, epsBase) };
+          if (ctx?.adaptive && args.adaptive === true && !validEps(args.eps_base)) {
+            // ROE slice 2: adaptive base (precomputed by the route; read-only). eps_base stays explicit and wins.
+            const a = ctx.adaptive;
+            res = { ...res0, normalized: { ...normalizedRmsCheck(tensor.out, tensor.ref, a.base), eps_source: a.source, adaptive: a.adaptive } };
+          } else if (args.adaptive === true) {
+            res = { ...res0, normalized: { ...normalizedRmsCheck(tensor.out, tensor.ref, epsBase), eps_source: validEps(args.eps_base) ? "explicit" : "fallback" } };
+          } else {
+            res = { ...res0, normalized: normalizedRmsCheck(tensor.out, tensor.ref, epsBase) };
+          }
         } catch (err) {
           return fail(-32602, err instanceof Error ? err.message : "normalized check failed");
         }
