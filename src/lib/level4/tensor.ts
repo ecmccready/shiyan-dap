@@ -360,3 +360,41 @@ export function verifyHolographicBound(
 export function holographicLedgerTokens(h: HolographicBound): string {
   return `H_MAX=${h.maxAllowable.toFixed(3)} H_DIST=${h.distance.toFixed(3)} H_VERIFIED=${h.verified}`;
 }
+
+/* ------------------------------------------------------------------------ */
+/* Normalized RMS path (ROE, opt-in, additive)                              */
+/* ------------------------------------------------------------------------ */
+
+export type TensorCheckMode = "normalized" | "rms";
+
+/** True for the opt-in normalized RMS mode names ("normalized" or its alias "rms"). */
+export function isNormalizedMode(v: unknown): v is TensorCheckMode {
+  return v === "normalized" || v === "rms";
+}
+
+export type NormalizedRmsCheck = {
+  mode: "normalized";
+  /** e_t = ‖T_t − T_ref‖_F / √N. */
+  e_t: number;
+  /** Total elements, product(shape). */
+  N: number;
+  eps_base: number;
+  /** e_t ≤ eps_base. */
+  accepted: boolean;
+};
+
+/**
+ * Normalized RMS error: e_t = ‖T_t − T_ref‖_F / √N, accepted iff e_t ≤ eps_base.
+ * Opt-in only; independentTensorCheck, the fixed and the holographic paths are unchanged.
+ * eps_base is supplied by the caller (the API/MCP default it to the request's ε).
+ * N = 0 gives e_t = 0. Throws on invalid tensors, shape mismatch or invalid eps_base.
+ */
+export function normalizedRmsCheck(tOut: Tensor, tRef: Tensor, epsBase: number): NormalizedRmsCheck {
+  if (!Number.isFinite(epsBase) || epsBase < 0) {
+    throw new Error("normalizedRmsCheck: eps_base must be a finite number >= 0");
+  }
+  const fro = frobeniusDistance(tOut, tRef);
+  const N = tRef.data.length;
+  const e_t = N > 0 ? fro / Math.sqrt(N) : 0;
+  return { mode: "normalized", e_t, N, eps_base: epsBase, accepted: e_t <= epsBase };
+}

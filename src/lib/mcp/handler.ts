@@ -17,7 +17,7 @@ import {
   type YName,
 } from "./schema";
 import { holographicDefaultCheck, parseTensorPayload, requestIndependentTensorCheck, sealTensorBinding } from "../level4/seal";
-import { combineEligibility, parseTensor, verifyHolographicBound, holographicLedgerTokens, type HolographicBound, type TensorCheck } from "../level4/tensor";
+import { combineEligibility, isNormalizedMode, normalizedRmsCheck, parseTensor, verifyHolographicBound, holographicLedgerTokens, type HolographicBound, type TensorCheck } from "../level4/tensor";
 
 type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Record<string, unknown> };
 
@@ -140,6 +140,8 @@ export function handleMcp(msg: Rpc): unknown {
       tensor?: unknown;
       holographic?: boolean;
       baseEpsilon?: number;
+      mode?: string;
+      eps_base?: number;
     };
     const caseId = args.case_id || "mcp-pack";
 
@@ -224,7 +226,17 @@ export function handleMcp(msg: Rpc): unknown {
       tensorChecks.set(caseId, check);
       if (holo) holoChecks.set(caseId, holo);
       else holoChecks.delete(caseId);
-      const res = { ...observe(plant(caseId), name as YName, args.cold_final_e), tensor_check: check };
+      const res0 = { ...observe(plant(caseId), name as YName, args.cold_final_e), tensor_check: check };
+      // ROE opt-in: mode "normalized" | "rms" adds the normalized RMS check (informational; verdict unchanged).
+      let res: typeof res0 & { normalized?: ReturnType<typeof normalizedRmsCheck> } = res0;
+      if (tensor && isNormalizedMode(args.mode)) {
+        const epsBase = typeof args.eps_base === "number" && Number.isFinite(args.eps_base) && args.eps_base >= 0 ? args.eps_base : tensor.epsilon;
+        try {
+          res = { ...res0, normalized: normalizedRmsCheck(tensor.out, tensor.ref, epsBase) };
+        } catch (err) {
+          return fail(-32602, err instanceof Error ? err.message : "normalized check failed");
+        }
+      }
       return ok(toolResult(holo ? { ...res, holographic: holo, holographic_ledger: holographicLedgerTokens(holo) } : res));
     }
     if (name === "seal_pack" && (check || tensorChecks.has(caseId))) {

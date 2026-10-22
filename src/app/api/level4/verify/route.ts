@@ -3,6 +3,7 @@ import { verifyRun } from "@/lib/level4/verify-run";
 import { readExperienceStore } from "@/lib/level4/experience-store";
 import { demoReferenceTensor } from "@/lib/level4/demo-tensor";
 import { calculateDynamicThreshold } from "@/lib/level4/tensor";
+import { roeForEntry } from "@/lib/level4/roe";
 
 /**
  * GET /api/level4/verify?run_id=... — public, read-only.
@@ -34,5 +35,11 @@ export async function GET(req: NextRequest) {
       distance: e.tensor_distance as number,
       verified: (e.tensor_distance as number) <= max_allowable,
     }));
-  return NextResponse.json(holographic.length ? { ...result, holographic } : result);
+  // ROE (additive, informational): gated improvement I_t per stored step. Not a check.
+  const roe = entries
+    .filter((e) => e.run_id === run_id)
+    .sort((a, b) => a.iteration - b.iteration)
+    .map((e) => ({ iter: e.iteration, ...roeForEntry(e) }));
+  const out = holographic.length ? { ...result, holographic } : result;
+  return NextResponse.json(roe.length ? { ...out, roe } : out);
 }

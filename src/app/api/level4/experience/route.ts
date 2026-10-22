@@ -3,6 +3,7 @@ import { requireLevel4Write } from "@/lib/level4/write-auth";
 import { Redis } from "@upstash/redis";
 import { toLedger } from "@/lib/level4/ledger";
 import { TENSOR_COMMITMENT_RE } from "@/lib/level4/tensor";
+import { roeForEntry } from "@/lib/level4/roe";
 
 /**
  * Durable Level 4 experience store.
@@ -84,7 +85,11 @@ export async function GET(req: NextRequest) {
   // Optional, additive: ?run_id= narrows to one run. Absent → unchanged response.
   const runFilter = req?.nextUrl?.searchParams?.get("run_id");
   const list = runFilter ? all.filter((x) => x.run_id === runFilter) : all;
-  return NextResponse.json(ledger ? toLedger(list) : list);
+  if (ledger) return NextResponse.json(toLedger(list));
+  // Optional, additive (ROE): ?roe=1 attaches roe: { gates, G, delta_e, I } to each entry. Absent → unchanged.
+  const roe = req?.nextUrl?.searchParams?.get("roe");
+  if (roe === "1" || roe === "true") return NextResponse.json(list.map((x) => ({ ...x, roe: roeForEntry(x) })));
+  return NextResponse.json(list);
 }
 
 export async function POST(req: NextRequest) {

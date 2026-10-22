@@ -51,6 +51,12 @@ In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. I
   - *Status.* This is an engineering heuristic, not a physical derivation. It is opt-in on `/api/level4/tensor-check` and the MCP tools (`holographic: true`); the live demo default stays fixed ε = 0.16.
   - *Default (update).* For new calls, the holographic bound is now the default verdict on `/api/level4/tensor-check` (mode omitted) and on MCP `request_independent_check` / `seal_pack` (with a Frobenius tensor). `check` gains `bound`, `max_allowable` and `fixed_epsilon`. For the old fixed-ε path, pass `mode: "fixed"` (body or `?mode=fixed`) or `holographic: false` on MCP. The live demo, verify replay and stored results stay pinned to fixed ε = 0.16 (they call `independentTensorCheck` directly). `GET /api/level4/verify` adds an informational `holographic` array per tensor iteration; verdict and checks are unchanged. A 4-element tensor gets the same verdict either way.
 
+**Reciprocal Optimization Engine (directional).** A first additive slice; the live Level 4 run, the 26 verify checks, the anchor and the demo numbers are unchanged.
+
+- *Live (opt-in).* Normalized RMS error e_t = ‖T_t − T_ref‖_F / √N, accepted iff e_t ≤ ε_base (`normalizedRmsCheck` in `tensor.ts`). On `/api/level4/tensor-check` pass `mode: "normalized"` (alias `"rms"`, body or `?mode=`), optional `eps_base` (default: the request's `epsilon`); the response is the fixed-ε response plus `normalized: { mode, e_t, N, eps_base, accepted }`. MCP `request_independent_check` accepts the same optional `mode` / `eps_base` and adds `normalized` (informational; verdict unchanged). The default, fixed and holographic paths are unchanged.
+- *Live (informational).* Gated improvement I_t = 1[G_t] · max(0, Δe_t), with G_t = safety ∧ budget ∧ idempotency (`src/lib/level4/roe.ts`). `GET /api/level4/verify` adds a `roe` array per step and `GET /api/level4/experience?roe=1` attaches `roe: { gates, gate_source, G, delta_e, I }` to each entry. Entries are written only after those three gates pass, so gates are read from that record (`gate_source: "recorded_step"`); Δe_t is the stored `delta_e`. Not a verify check and not used by eligibility.
+- *Next contract (not live).* Adaptive ε_base, using I_t in eligibility or next-action selection, and running it in the autonomous loop.
+
 **Directional, not live:**
 
 - Submitting anchor roots on-chain. The anchor payload, Merkle root, and `AnchorAdapter` interface exist (see below); only a dry-run `NullAnchorAdapter` ships and nothing is submitted.
