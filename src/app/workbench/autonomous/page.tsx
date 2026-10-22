@@ -29,6 +29,7 @@ import { loadDurablePlan, nextFromPlan, type DurablePlan } from "@/lib/level4/du
 import { vetDurablePlan, type DurableVet } from "@/lib/level4/durable-vet";
 import { loadExperienceServer, type ExperienceEntry } from "@/lib/level4/experience-client";
 import { roeNextAction } from "@/lib/level4/roe-next-action";
+import { roeForEntry } from "@/lib/level4/roe";
 import { selectorRows, selectorLabel, type SelectorRow, type SelectorTagged } from "@/lib/level4/selector-label";
 
 const DEMO_GOAL: GoalContract = {
@@ -89,9 +90,14 @@ function AutonomousInner() {
   const [roeEntries, setRoeEntries] = useState<ExperienceEntry[] | null>(null);
   // Display only: which selector chose each step, when entries carry selector data.
   const [selRows, setSelRows] = useState<SelectorRow[]>([]);
+  // Display only: this run's stored entries, for the gated improvement credit I_t row.
+  const [runEntries, setRunEntries] = useState<ExperienceEntry[]>([]);
 
   useEffect(() => {
-    loadExperienceServer().then((list) => setSelRows(selectorRows(list as SelectorTagged[], runId)));
+    loadExperienceServer().then((list) => {
+      setSelRows(selectorRows(list as SelectorTagged[], runId));
+      setRunEntries(list.filter((x) => x.run_id === runId));
+    });
   }, [runId]);
 
   useEffect(() => {
@@ -397,6 +403,18 @@ function AutonomousInner() {
           ))}
         </section>
       )}
+
+      {(roeDrive || selRows.length > 0) && (() => {
+        const last = [...runEntries].sort((a, b) => Number(a.iteration) - Number(b.iteration)).pop();
+        if (!last) return <p data-roe-it className="font-mono text-xs text-zinc-500">I_t: no steps yet</p>;
+        const r = roeForEntry(last);
+        const failed = r.G ? "" : ` (${r.gates.tensor === false ? "tensor" : "gate"} failed)`;
+        return (
+          <p data-roe-it className="font-mono text-xs text-zinc-400">
+            I_t (step {String(last.iteration)} · {String(last.y)}): {r.I === null ? "n/a" : Number(r.I.toFixed(3))} · G {r.G ? "pass" : "fail"}{failed}
+          </p>
+        );
+      })()}
 
       <p className="text-xs text-zinc-500">
         <a href={`/api/level4/run?id=${encodeURIComponent(runId)}`} className="underline" target="_blank" rel="noreferrer">
