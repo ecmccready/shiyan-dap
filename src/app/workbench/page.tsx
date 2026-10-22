@@ -20,10 +20,15 @@ export default function WorkbenchPage() {
         <p className="text-zinc-300 max-w-2xl mb-2">
           Aethel Node proves that the next action is no longer a misdiagnosis.
         </p>
-        <p className="text-zinc-300 max-w-2xl mb-8">
+        <p className="text-zinc-300 max-w-2xl mb-4">
           A durable, bounded autonomous system. Every proposed action passes a safety and budget gate before it runs,
           every step is measured for error (e) against a reference, and only steps that reduce it become verified
           experience, recorded with proof (Δe, Φ).
+        </p>
+        <p className="text-zinc-400 text-sm max-w-2xl mb-8">
+          The Reciprocal Optimization Engine combines versioned contracts with independent verification, a reproducible
+          cross-run improvement measure (e, Δe, Φ, I_t), and a durable evidence store, live today on the Level 4 plant.
+          Domain independence and further market workbenches are directional.
         </p>
 
         <nav className="flex flex-col gap-3 text-sm mb-8">
