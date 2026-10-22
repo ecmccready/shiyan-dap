@@ -4,6 +4,7 @@ import { Redis } from "@upstash/redis";
 import { toLedger } from "@/lib/level4/ledger";
 import { TENSOR_COMMITMENT_RE } from "@/lib/level4/tensor";
 import { roeForEntry } from "@/lib/level4/roe";
+import { roeEligibility } from "@/lib/level4/roe-eligibility";
 
 /**
  * Durable Level 4 experience store.
@@ -88,7 +89,7 @@ export async function GET(req: NextRequest) {
   if (ledger) return NextResponse.json(toLedger(list));
   // Optional, additive (ROE): ?roe=1 attaches roe: { gates, G, delta_e, I } to each entry. Absent → unchanged.
   const roe = req?.nextUrl?.searchParams?.get("roe");
-  if (roe === "1" || roe === "true") return NextResponse.json(list.map((x) => ({ ...x, roe: roeForEntry(x) })));
+  if (roe === "1" || roe === "true") return NextResponse.json(list.map((x) => ({ ...x, roe: roeForEntry(x), roe_eligibility: roeEligibility(x) })));
   return NextResponse.json(list);
 }
 

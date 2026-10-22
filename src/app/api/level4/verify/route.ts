@@ -4,6 +4,7 @@ import { readExperienceStore } from "@/lib/level4/experience-store";
 import { demoReferenceTensor } from "@/lib/level4/demo-tensor";
 import { calculateDynamicThreshold } from "@/lib/level4/tensor";
 import { roeForEntry } from "@/lib/level4/roe";
+import { roeEligibility } from "@/lib/level4/roe-eligibility";
 
 /**
  * GET /api/level4/verify?run_id=... — public, read-only.
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
   const roe = entries
     .filter((e) => e.run_id === run_id)
     .sort((a, b) => a.iteration - b.iteration)
-    .map((e) => ({ iter: e.iteration, ...roeForEntry(e) }));
+    .map((e) => ({ iter: e.iteration, ...roeForEntry(e), eligibility: roeEligibility(e) }));
   const out = holographic.length ? { ...result, holographic } : result;
   return NextResponse.json(roe.length ? { ...out, roe } : out);
 }
