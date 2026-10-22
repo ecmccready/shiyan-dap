@@ -28,6 +28,7 @@ import type { ApprovedExperience } from "../approved-experience";
 import type { ExperienceEntry } from "./experience-client";
 import { loadExperienceServer } from "./experience-client";
 import { DEMO_TENSOR_EPSILON } from "./demo-tensor";
+import { roeEligibility } from "./roe-eligibility";
 
 export type DurablePlan = {
   source: "durable";
@@ -47,7 +48,8 @@ export function isReusable(x: ExperienceEntry): boolean {
     x.phi > 0 &&
     typeof x.e === "number" &&
     typeof x.y === "string" &&
-    (typeof x.tensor_distance !== "number" || x.tensor_distance <= DEMO_TENSOR_EPSILON)
+    (typeof x.tensor_distance !== "number" || x.tensor_distance <= DEMO_TENSOR_EPSILON) &&
+    roeEligibility(x).eligible !== false
   );
 }
 
