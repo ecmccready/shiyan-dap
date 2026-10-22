@@ -3,8 +3,10 @@
  *
  *   a* = argmax_{a ∈ A_safe} [ E(e_t − e_{t+1} | s_t, a) − λ·C(a) − μ·R(a) ]
  *
- * A_safe: the distinct actions `y` of stored entries that pass isReusable
- *   (durable-self.ts, already ROE-enforced). No action is invented.
+ * A_safe: the distinct actions `y` of every step of a reusable run — a run with
+ *   at least one entry passing isReusable (durable-self.ts, ROE-enforced). All of
+ *   that run's steps contribute samples. No action is invented.
+ *   gate_failures per candidate = samples whose roeForEntry G is false.
  * E[Δe|a]: mean per-step error reduction over those entries for action a:
  *   e_prev − e, where e_prev is the stored `e` of the same run's iteration − 1;
  *   for iteration 1, e0 − e; if neither is available, the stored cumulative
@@ -21,6 +23,7 @@
 import type { ExperienceEntry } from "./experience-client";
 import { isReusable, planFromEntries, nextFromPlan } from "./durable-self";
 import { DEMO_TENSOR_EPSILON } from "./demo-tensor";
+import { roeForEntry } from "./roe";
 
 export type NextActionCandidate = {
   action: string;
@@ -30,12 +33,15 @@ export type NextActionCandidate = {
   score: number;
   samples: number;
   fallback_samples: number;
+  gate_failures: number;
 };
 
 export type RoeNextAction = {
   objective: "argmax E[de] - lambda*C - mu*R";
   lambda: number;
   mu: number;
+  safe_set_rule: "all steps of runs with >=1 isReusable entry";
+  reusable_runs: string[];
   proxies: { expected_delta_e: string; cost: string; risk: string };
   state: { run_id: string | null; applied: number };
   candidates: NextActionCandidate[];
@@ -67,7 +73,9 @@ export function roeNextAction(
   const mu = fin(opts.mu) ? opts.mu : 0;
   const applied = fin(opts.applied) && opts.applied >= 0 ? Math.floor(opts.applied) : 0;
   const run_id = opts.run_id ?? null;
-  const reusable = list.filter(isReusable).filter((x) => !run_id || x.run_id === run_id);
+  const reusable_runs: string[] = [];
+  for (const x of list) if ((!run_id || x.run_id === run_id) && isReusable(x) && !reusable_runs.includes(x.run_id)) reusable_runs.push(x.run_id);
+  const reusable = list.filter((x) => reusable_runs.includes(x.run_id) && typeof x.y === "string");
   const order: string[] = [];
   for (const x of reusable) if (!order.includes(x.y as string)) order.push(x.y as string);
   const candidates = order.map((action) => {
@@ -80,7 +88,7 @@ export function roeNextAction(
     });
     const R = risks.length ? risks.reduce((s, v) => s + v, 0) / risks.length : 0;
     const C = 0;
-    return { action, expected_delta_e: r4(E), cost: C, risk: r4(R), score: r4(E - lambda * C - mu * R), samples: red.length, fallback_samples: red.filter((r) => r.fallback).length };
+    return { action, expected_delta_e: r4(E), cost: C, risk: r4(R), score: r4(E - lambda * C - mu * R), samples: red.length, fallback_samples: red.filter((r) => r.fallback).length, gate_failures: xs.filter((x) => roeForEntry(x).G === false).length };
   });
   const best = candidates.reduce<NextActionCandidate | null>((a, b) => (a && a.score > b.score ? a : b), null);
   const plan = opts.permitted ? planFromEntries(list, opts.permitted) : null;
@@ -89,8 +97,10 @@ export function roeNextAction(
   return {
     objective: "argmax E[de] - lambda*C - mu*R",
     lambda, mu,
+    safe_set_rule: "all steps of runs with >=1 isReusable entry",
+    reusable_runs,
     proxies: {
-      expected_delta_e: "mean(e_prev - e) over isReusable entries with y=a (iteration 1: e0 - e; else stored delta_e, counted as fallback)",
+      expected_delta_e: "mean(e_prev - e) over steps with y=a in reusable runs (iteration 1: e0 - e; else stored delta_e, counted as fallback)",
       cost: "0 (no cost/budget field stored on experience entries)",
       risk: "mean(tensor_distance / tensor_epsilon, eps default 0.16) over samples with a tensor; 0 if none",
     },
