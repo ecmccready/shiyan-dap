@@ -78,16 +78,36 @@ function rpcError(
 
 export async function GET() {
   const encoder = new TextEncoder();
+  let interval: ReturnType<typeof setInterval> | undefined;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  let closed = false;
+
+  const cleanup = () => {
+    if (interval !== undefined) clearInterval(interval);
+    if (timeout !== undefined) clearTimeout(timeout);
+  };
+
   const stream = new ReadableStream({
     start(controller) {
       const send = (event: string, data: unknown) => {
+        if (closed) return;
         controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+      };
+      const close = () => {
+        if (closed) return;
+        closed = true;
+        cleanup();
+        controller.close();
       };
       send("endpoint", { contract: "aethel.loop.v1", post: "/api/mcp" });
       send("scored", { resource: "aethel://diagnostic_cases", note: "recorded phi is not a live score" });
-      const timer = setInterval(() => send("ping", { t: Date.now() }), 15000);
-      const close = () => { clearInterval(timer); try { controller.close(); } catch { /* already closed */ } };
-      setTimeout(close, 60000);
+      interval = setInterval(() => send("ping", { t: Date.now() }), 15000);
+      timeout = setTimeout(close, 60000);
+    },
+    cancel() {
+      if (closed) return;
+      closed = true;
+      cleanup();
     },
   });
   return new Response(stream, {
