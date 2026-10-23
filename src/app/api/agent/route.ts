@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { domains, Domain } from "@/lib/domains";
 import { addClusterToMarketplace } from "@/lib/marketplace";
-import { recordOutcome, getSelfImprovementMetrics } from "@/lib/outcomes";
+import { getSelfImprovementMetrics } from "@/lib/outcomes";
 import { createToken } from "@/lib/token";
 import { computeAdSignal } from "@/lib/ads";
 import { routeModels, RoutePath } from "@/lib/router";
@@ -164,7 +164,7 @@ async function runAgent(
     zPolicy,
     emergence,
     capital,
-  } as any);
+  });
 
   let token = null;
   let playlist = null;
@@ -185,14 +185,6 @@ async function runAgent(
     domain: domain.label,
     input: seed.rawInput || seed.description,
     cleaned: modelInfo.raw?.cleanedText,
-  });
-
-  recordOutcome({
-    domain: domain.label,
-    pi_inv,
-    ell,
-    clusterId: cluster.id,
-    modelProvider: modelInfo.provider,
   });
 
   return {
@@ -217,7 +209,7 @@ async function runAgent(
     zPolicy,
     pi_inv,
     ell,
-    self_improvement: getSelfImprovementMetrics(domain.label),
+    self_improvement: getSelfImprovementMetrics(),
   };
 }
 

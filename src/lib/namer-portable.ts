@@ -86,20 +86,3 @@ async function callNamer(namer: Exclude<Namer, "operator">, prompt: string) {
   const json = await response.json();
   return json.choices[0].message.content as string;
 }
-src/lib/flywheel.ts
-
-ts
-import type { StepRec, YAction } from "./closed-loop";
-
-export type TrajectoryScore = {
-  caseId: string;
-  steps: number;
-  escalateCount: number;
-  e0: number;
-  eFinal: number;
-  deltaE: number;
-  ySequence: YAction[];
-  pathWin: boolean;
-  errorWin: boolean;
-  listable: boolean;
-};

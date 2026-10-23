@@ -11,7 +11,7 @@ export default function TrackPage() {
   useEffect(() => {
     setAssets(
       readLedger().map((a) =>
-        wasAcquired(a.id) ? { ...a, buyer: "This session", state: "reserved" } : a
+        wasAcquired(a.id) ? { ...a, buyer: "This session", state: "escrow" } : a
       )
     );
   }, []);

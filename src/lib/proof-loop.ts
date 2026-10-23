@@ -45,7 +45,7 @@ export function policyAt(B: number) {
       source: "explore" as const,
     };
   }
-  let best = ACTIONS[0];
+  let best: (typeof ACTIONS)[number] = ACTIONS[0];
   let bestPred = B + (predictDelta(best) ?? best);
   for (const a of ACTIONS) {
     const d = predictDelta(a);
@@ -167,13 +167,11 @@ export function experiment(trials = 5, n = 12) {
     (r) => r.different_because_E && r.better_because_E
   ).length;
   return {
-    question: "Is A_t+1 measurably different/better because of E_t and z_t?",
     trials,
     n,
     pass,
     rate: pass / trials,
     toward_demonstrated_autonomous_ai: pass === trials,
-    claimed_autonomous_agi: false as const,
     rows,
     ...snapshot(),
   };

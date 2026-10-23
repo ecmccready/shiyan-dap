@@ -11,7 +11,7 @@ export async function GET() {
     title: arm.title,
     y: arm.artifact.action_y,
     z: arm.artifact.result_z,
-    e: arm.artifact.e,
+    e: arm.artifact.error_e,
     delta_e: arm.delta_e,
     cold_delta_e: wheel.cold[i].delta_e,
     used_prior: arm.used_prior,

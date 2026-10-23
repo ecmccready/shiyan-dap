@@ -17,12 +17,12 @@ export interface PaymentResult {
   amount: number;
   message: string;
   clientSecret?: string; // used by Stripe Checkout / PaymentIntent
-  raw?: any;
+  raw?: Stripe.PaymentIntent;
 }
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2024-06-20",
+      apiVersion: "2026-07-29.dahlia",
     })
   : null;
 
@@ -78,13 +78,13 @@ export async function processPayment(
         message: "Stripe PaymentIntent created successfully",
         raw: paymentIntent,
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error("Stripe error:", error);
       return {
         success: false,
         provider: "stripe",
         amount: request.amount,
-        message: error.message || "Stripe payment failed",
+        message: error instanceof Error ? error.message : "Stripe payment failed",
       };
     }
   }

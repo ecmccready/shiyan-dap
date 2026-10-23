@@ -1,4 +1,5 @@
-import { BQuality, GOAL } from "./workbench";
+import { GOAL } from "./workbench";
+import type { BQuality } from "./types";
 
 export function z_scalar(Bnext: number) {
   const value = Math.abs(Bnext);

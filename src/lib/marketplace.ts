@@ -1,7 +1,7 @@
 import { persistPut } from "@/lib/persist";
 import fs from "node:fs";
 import path from "node:path";
-import { promoteLayer } from "@/lib/economy";
+import { AdPayout, ContainedHome, promoteLayer } from "@/lib/economy";
 
 export interface MarketplaceCluster {
   id: string;
@@ -15,11 +15,17 @@ export interface MarketplaceCluster {
   owner: string;
   createdAt: string;
   lastUpdated: string;
-  [key: string]: any;
+  layer?: ContainedHome["layer"];
+  containedHome?: ContainedHome;
+  adPayout?: AdPayout;
+  artistPayout?: number;
+  [key: string]: unknown;
 }
 
 const file = path.join(process.cwd(), "src/data/marketplace.json");
-const g = globalThis as any;
+const g = globalThis as typeof globalThis & {
+  __shiyanMarketplace?: MarketplaceCluster[];
+};
 
 function readDisk(): MarketplaceCluster[] | null {
   try {
@@ -40,10 +46,9 @@ function writeDisk(inventory: MarketplaceCluster[]) {
 }
 
 function store(): MarketplaceCluster[] {
-  if (!g.__shiyanMarketplace) {
-    g.__shiyanMarketplace = readDisk() || [];
-  }
-  return g.__shiyanMarketplace as MarketplaceCluster[];
+  const inventory = g.__shiyanMarketplace ?? readDisk() ?? [];
+  g.__shiyanMarketplace = inventory;
+  return inventory;
 }
 
 function save(inventory: MarketplaceCluster[]) {
@@ -52,8 +57,11 @@ function save(inventory: MarketplaceCluster[]) {
   void persistPut("marketplace.json", inventory);
 }
 
-export function getInventory() {
-  return store();
+export function getInventory(domain?: string) {
+  const inventory = store();
+  return domain
+    ? inventory.filter((cluster) => cluster.domain === domain)
+    : inventory;
 }
 
 export function addClusterToMarketplace(cluster: MarketplaceCluster) {

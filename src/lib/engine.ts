@@ -108,6 +108,7 @@ export function stepWithSpec(
       e_next,
       reduced: Number((e - e_next).toFixed(3)),
       dominant: dominantOf(B_next),
+      source: opts?.y ? "given" : "self",
     };
     return {
       rec,
