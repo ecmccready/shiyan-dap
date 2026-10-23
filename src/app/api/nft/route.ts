@@ -11,6 +11,9 @@ interface StoredNFT {
 }
 
 const nfts: StoredNFT[] = [];
+const MAX_METADATA_BYTES = 16_384;
+const MAX_OWNER_LENGTH = 200;
+const MAX_CLUSTER_ID_LENGTH = 128;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -47,17 +50,28 @@ export async function POST(request: Request) {
   const metadata = payload.metadata;
   const owner = payload.owner;
   const clusterId = payload.clusterId;
+  const metadataSize =
+    typeof metadata === "object" && metadata !== null && !Array.isArray(metadata)
+      ? new TextEncoder().encode(JSON.stringify(metadata)).byteLength
+      : 0;
   if (
     typeof metadata !== "object" ||
     metadata === null ||
     Array.isArray(metadata) ||
     typeof owner !== "string" ||
     !owner.trim() ||
+    owner.length > MAX_OWNER_LENGTH ||
     typeof clusterId !== "string" ||
-    !clusterId.trim()
+    !clusterId.trim() ||
+    clusterId.length > MAX_CLUSTER_ID_LENGTH ||
+    metadataSize > MAX_METADATA_BYTES
   ) {
     return NextResponse.json(
-      { success: false, error: "Valid metadata, owner, and clusterId are required" },
+      {
+        success: false,
+        error:
+          "Valid metadata, owner (up to 200 characters), and clusterId (up to 128 characters) are required; metadata must not exceed 16 KiB",
+      },
       { status: 400 }
     );
   }
