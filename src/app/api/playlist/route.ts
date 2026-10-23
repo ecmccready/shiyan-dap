@@ -44,5 +44,11 @@ export async function POST(request: Request) {
   const use = requestedUse || "sync";
   const id = typeof requestedId === "string" ? requestedId || "pl_label_001" : "pl_label_001";
   const result = licensePlaylist(id, use);
+  if (!result) {
+    return NextResponse.json(
+      { success: false, error: "Playlist not found" },
+      { status: 404 }
+    );
+  }
   return NextResponse.json(result);
 }

@@ -95,7 +95,8 @@ export function getPlaylists(): Playlist[] {
 
 export function licensePlaylist(id: string, use: BundleUse = "sync") {
   const playlists = store();
-  const playlist = playlists.find((item) => item.id === id) || playlists[0];
+  const playlist = playlists.find((item) => item.id === id);
+  if (!playlist) return null;
   playlist.productType = use;
   playlist.license = use === "label" ? "commercial" : "sync";
   playlist.b2bReady = true;
