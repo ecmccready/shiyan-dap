@@ -30,7 +30,8 @@ export async function POST(req: NextRequest) {
     typeof standard !== "string" ||
     !["erc721", "erc1155", "spl"].includes(standard) ||
     typeof title !== "string" ||
-    !title.trim()
+    !title.trim() ||
+    title.length > 200
   ) {
     return NextResponse.json(
       { ok: false, error: "Invalid assetId, standard, or title" },
