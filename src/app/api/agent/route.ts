@@ -13,6 +13,8 @@ import { splitAdValue, containHomePage } from "@/lib/economy";
 import { allocateCapital } from "@/lib/capital";
 import { emitTrainingRecord } from "@/lib/huggingface";
 
+const MAX_NARRATIVE_LENGTH = 4000;
+
 function isDomain(value: string | null): value is Domain {
   return value !== null && Object.prototype.hasOwnProperty.call(domains, value);
 }
@@ -255,11 +257,16 @@ export async function POST(request: Request) {
   const input = "input" in body ? body.input : undefined;
   const text = "text" in body ? body.text : undefined;
   if (
-    (input !== undefined && typeof input !== "string") ||
-    (text !== undefined && typeof text !== "string")
+    (input !== undefined &&
+      (typeof input !== "string" || input.length > MAX_NARRATIVE_LENGTH)) ||
+    (text !== undefined &&
+      (typeof text !== "string" || text.length > MAX_NARRATIVE_LENGTH))
   ) {
     return NextResponse.json(
-      { success: false, error: "input and text must be strings" },
+      {
+        success: false,
+        error: `input and text must be strings no longer than ${MAX_NARRATIVE_LENGTH} characters`,
+      },
       { status: 400 }
     );
   }
