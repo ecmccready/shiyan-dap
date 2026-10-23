@@ -19,20 +19,31 @@ export async function POST(request: Request) {
     );
   }
 
-  const message = "message" in body ? body.message : "";
-  const domain = "domain" in body ? body.domain : "music";
-  const clusterId = "clusterId" in body ? body.clusterId : undefined;
+  const payload = body as Record<string, unknown>;
+  const message = payload.message === undefined ? "" : payload.message;
+  const domain = payload.domain === undefined ? "music" : payload.domain;
+  const clusterId = payload.clusterId;
+  const mode = payload.mode === undefined ? "simulated" : payload.mode;
   if (
     typeof message !== "string" ||
+    message.length > 4000 ||
     typeof domain !== "string" ||
-    (clusterId !== undefined && typeof clusterId !== "string")
+    domain.length < 1 ||
+    domain.length > 100 ||
+    (clusterId !== undefined &&
+      (typeof clusterId !== "string" ||
+        clusterId.length < 1 ||
+        clusterId.length > 120)) ||
+    (mode !== "simulated" && mode !== "live")
   ) {
     return NextResponse.json(
-      { success: false, error: "message, domain, and clusterId have invalid types" },
+      {
+        success: false,
+        error: "Invalid message, domain, clusterId, or mode value",
+      },
       { status: 400 }
     );
   }
-  const mode = "mode" in body && body.mode === "live" ? "live" : "simulated";
 
   const bot = await runGrokBot(
     {
