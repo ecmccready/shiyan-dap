@@ -4,9 +4,9 @@ import {
   computeB,
   errorSignal,
   f,
+  isOutcomeTransition,
   Self,
   yFromAsset,
-  type OutcomeTransition,
   type YVector,
 } from "@/lib/outcomes";
 import { TOOL_SCHEMAS, type ToolName } from "@/lib/protocol";
@@ -24,20 +24,6 @@ function isYVector(value: unknown): value is YVector {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const vector = value as Record<string, unknown>;
   return Y_FIELDS.every((field) => vector[field] === 0 || vector[field] === 1);
-}
-
-function isOutcomeTransition(value: unknown): value is OutcomeTransition {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
-  const row = value as Record<string, unknown>;
-  return (
-    typeof row.asset_id === "string" &&
-    typeof row.action === "string" &&
-    typeof row.agent === "string" &&
-    typeof row.simulated === "boolean" &&
-    typeof row.transition_class === "string" &&
-    ["positive", "negative", "no_movement", "maintained"].includes(row.transition_class) &&
-    isYVector(row.y_after)
-  );
 }
 
 export async function GET() {

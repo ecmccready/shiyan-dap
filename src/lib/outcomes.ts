@@ -48,6 +48,69 @@ export type OutcomeTransition = {
   timestamp: string;
 };
 
+export function isOutcomeTransition(value: unknown): value is OutcomeTransition {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const row = value as Record<string, unknown>;
+  const isYVector = (vector: unknown) => {
+    if (typeof vector !== "object" || vector === null || Array.isArray(vector)) return false;
+    const y = vector as Record<string, unknown>;
+    return [
+      "settlement",
+      "acquisition",
+      "audience_response",
+      "conversion",
+      "revenue",
+      "retention",
+    ].every((field) => y[field] === 0 || y[field] === 1);
+  };
+  const transitionClasses = ["positive", "negative", "no_movement", "maintained"];
+  const strings = [
+    "measurement_id",
+    "asset_id",
+    "action",
+    "vertical",
+    "agent",
+    "measurement_window",
+    "baseline",
+    "timestamp",
+  ];
+  if (
+    !strings.every((field) => typeof row[field] === "string" && row[field] !== "") ||
+    typeof row.simulated !== "boolean" ||
+    !isYVector(row.y_before) ||
+    !isYVector(row.y_after) ||
+    !transitionClasses.includes(String(row.transition_class)) ||
+    typeof row.confidence !== "number" ||
+    !Number.isFinite(row.confidence) ||
+    row.confidence < 0 ||
+    row.confidence > 1 ||
+    typeof row.causal_confidence !== "number" ||
+    !Number.isFinite(row.causal_confidence) ||
+    row.causal_confidence < 0 ||
+    row.causal_confidence > 1 ||
+    typeof row.delta_y !== "object" ||
+    row.delta_y === null ||
+    Array.isArray(row.delta_y)
+  ) {
+    return false;
+  }
+  const deltaY = row.delta_y as Record<string, unknown>;
+  return [
+    "settlement",
+    "acquisition",
+    "audience_response",
+    "conversion",
+    "revenue",
+    "retention",
+  ].every(
+    (field) =>
+      typeof deltaY[field] === "number" &&
+      Number.isFinite(deltaY[field]) &&
+      deltaY[field] >= -1 &&
+      deltaY[field] <= 1
+  );
+}
+
 const KEY = "shiyan-outcomes-v1";
 const LAST = "shiyan-z";
 
