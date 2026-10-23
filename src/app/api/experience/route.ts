@@ -77,8 +77,11 @@ export async function POST(req: Request) {
     });
   }
   const caseId = payload.case_id ?? "case-incomplete-pack";
-  if (typeof caseId !== "string" || !caseId.trim()) {
-    return NextResponse.json({ error: "case_id must be a non-empty string" }, { status: 400 });
+  if (typeof caseId !== "string" || !caseId.trim() || caseId.length > 128) {
+    return NextResponse.json(
+      { error: "case_id must be a non-empty string up to 128 characters" },
+      { status: 400 }
+    );
   }
   const known = SAFETY_PACK.some((c) => c.id === caseId);
   if (!known) {
