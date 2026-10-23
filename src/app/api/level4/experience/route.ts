@@ -73,10 +73,65 @@ function client(): Redis | null {
   const url = process.env.UPSTASH_KV_REST_API_URL;
   const token = process.env.UPSTASH_KV_REST_API_TOKEN;
   if (!url || !token) return null;
-  return new Redis({ url, token });
+  try {
+    return new Redis({ url, token });
+  } catch (error) {
+    console.error("Experience store configuration is invalid:", error);
+    return null;
+  }
 }
 
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+function isRunId(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(value);
+}
+
+function isExperienceEntry(value: unknown): value is ExperienceEntry {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const entry = value as Record<string, unknown>;
+  const nullableNumbers = ["e", "e0", "delta_e", "cold_e", "phi"];
+  const optionalNumbers = [
+    "tensor_distance",
+    "tensor_max_allowable",
+    "roe_lambda",
+    "roe_mu",
+  ];
+  const optionalStrings = ["y", "state", "system"];
+  return (
+    isRunId(entry.run_id) &&
+    Number.isSafeInteger(entry.iteration) &&
+    (entry.iteration as number) >= 0 &&
+    (entry.e === null || (typeof entry.e === "number" && Number.isFinite(entry.e))) &&
+    typeof entry.verified_at === "string" &&
+    Number.isFinite(Date.parse(entry.verified_at)) &&
+    typeof entry.eligible === "boolean" &&
+    nullableNumbers.every(
+      (field) =>
+        entry[field] === undefined ||
+        entry[field] === null ||
+        (typeof entry[field] === "number" && Number.isFinite(entry[field]))
+    ) &&
+    optionalNumbers.every(
+      (field) =>
+        entry[field] === undefined ||
+        (typeof entry[field] === "number" && Number.isFinite(entry[field]))
+    ) &&
+    optionalStrings.every(
+      (field) =>
+        entry[field] === undefined ||
+        (typeof entry[field] === "string" && entry[field].length <= 200)
+    ) &&
+    (entry.tensor_commitment === undefined ||
+      (typeof entry.tensor_commitment === "string" &&
+        TENSOR_COMMITMENT_RE.test(entry.tensor_commitment))) &&
+    (entry.tensor_bound === undefined ||
+      entry.tensor_bound === "holographic" ||
+      entry.tensor_bound === "fixed") &&
+    (entry.selector === undefined || entry.selector === "roe_step_aware") &&
+    (entry.roe_fallback === undefined || typeof entry.roe_fallback === "boolean")
+  );
+}
 
 function wantsLedger(req: NextRequest | undefined): boolean {
   const q = req?.nextUrl?.searchParams;
@@ -86,16 +141,40 @@ function wantsLedger(req: NextRequest | undefined): boolean {
 export async function GET(req: NextRequest) {
   const ledger = wantsLedger(req);
   const redis = client();
-  if (!redis) return NextResponse.json(ledger ? toLedger([]) : []);
-  const all = dedupe((await redis.lrange<ExperienceEntry>(KEY, 0, -1)) ?? []);
+  if (!redis) {
+    return NextResponse.json(
+      { error: "Experience store is not configured" },
+      { status: 503 }
+    );
+  }
+  try {
+    const stored = (await redis.lrange<unknown>(KEY, 0, -1)) ?? [];
+    if (!Array.isArray(stored) || !stored.every(isExperienceEntry)) {
+      console.error("Experience store contains invalid entries");
+      return NextResponse.json(
+        { error: "Experience store contains invalid entries" },
+        { status: 502 }
+      );
+    }
+    const all = dedupe(stored);
   // Optional, additive: ?run_id= narrows to one run. Absent → unchanged response.
   const runFilter = req?.nextUrl?.searchParams?.get("run_id");
-  const list = runFilter ? all.filter((x) => x.run_id === runFilter) : all;
-  if (ledger) return NextResponse.json(toLedger(list));
+    if (runFilter !== null && runFilter !== undefined && !isRunId(runFilter)) {
+      return NextResponse.json({ error: "Invalid run_id" }, { status: 400 });
+    }
+    const list = runFilter ? all.filter((x) => x.run_id === runFilter) : all;
+    if (ledger) return NextResponse.json(toLedger(list));
   // Optional, additive (ROE): ?roe=1 attaches roe: { gates, G, delta_e, I } to each entry. Absent → unchanged.
-  const roe = req?.nextUrl?.searchParams?.get("roe");
-  if (roe === "1" || roe === "true") return NextResponse.json(list.map((x) => ({ ...x, roe: roeForEntry(x), roe_eligibility: roeEligibility(x) })));
-  return NextResponse.json(list);
+    const roe = req?.nextUrl?.searchParams?.get("roe");
+    if (roe === "1" || roe === "true") return NextResponse.json(list.map((x) => ({ ...x, roe: roeForEntry(x), roe_eligibility: roeEligibility(x) })));
+    return NextResponse.json(list);
+  } catch (error) {
+    console.error("Experience read failed:", error);
+    return NextResponse.json(
+      { error: "Unable to read experience records" },
+      { status: 502 }
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -106,65 +185,147 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "experience store not configured" }, { status: 503 });
   }
 
-  let body: Record<string, unknown>;
+  let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: "Request body must be valid JSON" }, { status: 400 });
   }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+  const payload = body as Record<string, unknown>;
 
-  const run_id = typeof body.run_id === "string" ? body.run_id.slice(0, 80) : "";
-  const iteration = num(body.iteration);
-  if (!run_id || iteration === null) {
-    return NextResponse.json({ error: "run_id and iteration required" }, { status: 400 });
+  if (
+    !isRunId(payload.run_id) ||
+    !Number.isSafeInteger(payload.iteration) ||
+    (payload.iteration as number) < 0 ||
+    typeof payload.eligible !== "boolean" ||
+    (payload.e !== null &&
+      (typeof payload.e !== "number" || !Number.isFinite(payload.e))) ||
+    (payload.verified_at !== undefined &&
+      (typeof payload.verified_at !== "string" ||
+        !Number.isFinite(Date.parse(payload.verified_at))))
+  ) {
+    return NextResponse.json(
+      { error: "Valid run_id, iteration, e, eligible, and verified_at are required" },
+      { status: 400 }
+    );
+  }
+  const optionalNumbers = [
+    "e0",
+    "delta_e",
+    "cold_e",
+    "phi",
+    "tensor_distance",
+    "tensor_max_allowable",
+    "roe_lambda",
+    "roe_mu",
+  ];
+  if (
+    optionalNumbers.some(
+      (field) =>
+        payload[field] !== undefined &&
+        payload[field] !== null &&
+        (typeof payload[field] !== "number" || !Number.isFinite(payload[field]))
+    ) ||
+    ["y", "state", "system"].some(
+      (field) =>
+        payload[field] !== undefined &&
+        (typeof payload[field] !== "string" || payload[field].length > 200)
+    ) ||
+    (payload.tensor_commitment !== undefined &&
+      (typeof payload.tensor_commitment !== "string" ||
+        !TENSOR_COMMITMENT_RE.test(payload.tensor_commitment))) ||
+    (payload.tensor_bound !== undefined &&
+      payload.tensor_bound !== "holographic" &&
+      payload.tensor_bound !== "fixed") ||
+    (payload.selector !== undefined && payload.selector !== "roe_step_aware") ||
+    (payload.roe_fallback !== undefined && typeof payload.roe_fallback !== "boolean")
+  ) {
+    return NextResponse.json({ error: "Invalid optional experience fields" }, { status: 400 });
   }
 
   const entry: ExperienceEntry = {
-    run_id,
-    iteration,
-    e: num(body.e),
+    run_id: payload.run_id,
+    iteration: payload.iteration as number,
+    e: payload.e,
     verified_at:
-      typeof body.verified_at === "string" ? body.verified_at : new Date().toISOString(),
-    eligible: body.eligible === true,
-    y: typeof body.y === "string" ? body.y.slice(0, 40) : undefined,
-    e0: num(body.e0),
-    delta_e: num(body.delta_e),
-    cold_e: num(body.cold_e),
-    phi: num(body.phi),
-    state: typeof body.state === "string" ? body.state.slice(0, 16) : undefined,
+      typeof payload.verified_at === "string" ? payload.verified_at : new Date().toISOString(),
+    eligible: payload.eligible,
+    y: typeof payload.y === "string" ? payload.y : undefined,
+    e0: num(payload.e0),
+    delta_e: num(payload.delta_e),
+    cold_e: num(payload.cold_e),
+    phi: num(payload.phi),
+    state: typeof payload.state === "string" ? payload.state : undefined,
   };
   // Optional domain label; stored only when provided, so older clients are unaffected.
-  if (typeof body.system === "string" && body.system.trim()) {
-    entry.system = body.system.trim().slice(0, 32);
+  if (typeof payload.system === "string" && payload.system.trim()) {
+    entry.system = payload.system.trim();
   }
   // Optional tensor scope; stored only when valid, so older clients are unaffected.
-  if (typeof body.tensor_commitment === "string" && TENSOR_COMMITMENT_RE.test(body.tensor_commitment)) {
-    entry.tensor_commitment = body.tensor_commitment;
+  if (typeof payload.tensor_commitment === "string") {
+    entry.tensor_commitment = payload.tensor_commitment;
   }
-  const tensorDistance = num(body.tensor_distance);
+  const tensorDistance = num(payload.tensor_distance);
   if (tensorDistance !== null) entry.tensor_distance = tensorDistance;
   // Optional bound label + maxAllowable; stored only when valid, so older clients are unaffected.
-  if (body.tensor_bound === "holographic" || body.tensor_bound === "fixed") entry.tensor_bound = body.tensor_bound;
-  const tensorMax = num(body.tensor_max_allowable);
+  if (payload.tensor_bound === "holographic" || payload.tensor_bound === "fixed") entry.tensor_bound = payload.tensor_bound;
+  const tensorMax = num(payload.tensor_max_allowable);
   if (tensorMax !== null && tensorMax > 0) entry.tensor_max_allowable = tensorMax;
   // Opt-in ROE drive (additive): recorded only when the client sent selector.
-  if (body.selector === "roe_step_aware") {
+  if (payload.selector === "roe_step_aware") {
     entry.selector = "roe_step_aware";
-    entry.roe_lambda = num(body.roe_lambda) ?? 0;
-    entry.roe_mu = num(body.roe_mu) ?? 0;
-    entry.roe_fallback = body.roe_fallback === true;
+    entry.roe_lambda = num(payload.roe_lambda) ?? 0;
+    entry.roe_mu = num(payload.roe_mu) ?? 0;
+    entry.roe_fallback = payload.roe_fallback === true;
   }
 
   // Idempotent: one entry per (run_id, iteration). SET NX is atomic.
-  const first = await redis.set(seenKey(run_id, iteration), 1, {
-    nx: true,
-    ex: SEEN_TTL_SECONDS,
-  });
-  if (first !== "OK") {
-    return NextResponse.json({ ok: true, duplicate: true });
-  }
+  const run_id = entry.run_id;
+  try {
+    const first = await redis.set(seenKey(run_id, entry.iteration), 1, {
+      nx: true,
+      ex: SEEN_TTL_SECONDS,
+    });
+    if (first !== "OK") {
+      return NextResponse.json({ ok: true, duplicate: true });
+    }
 
-  await redis.rpush(KEY, entry);
-  await redis.ltrim(KEY, -MAX_ENTRIES, -1);
-  return NextResponse.json({ ok: true });
+    try {
+      await redis.rpush(KEY, entry);
+    } catch (error) {
+      console.error("Experience record append failed:", error);
+      try {
+        await redis.del(seenKey(run_id, entry.iteration));
+      } catch (cleanupError) {
+        console.error("Failed to clear experience idempotency marker:", cleanupError);
+      }
+      return NextResponse.json(
+        { error: "Unable to save experience record" },
+        { status: 502 }
+      );
+    }
+
+    try {
+      await redis.ltrim(KEY, -MAX_ENTRIES, -1);
+      return NextResponse.json({ ok: true });
+    } catch (error) {
+      console.error("Experience record list trim failed:", error);
+      return NextResponse.json(
+        { error: "Unable to save experience record" },
+        { status: 502 }
+      );
+    }
+  } catch (error) {
+    console.error("Experience idempotency check failed:", error);
+    return NextResponse.json(
+      { error: "Unable to save experience record" },
+      { status: 502 }
+    );
+  }
 }
