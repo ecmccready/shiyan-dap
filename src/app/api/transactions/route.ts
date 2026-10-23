@@ -25,6 +25,7 @@ export async function POST(req: Request) {
   if (
     typeof id !== "string" ||
     !id.trim() ||
+    id.length > 128 ||
     typeof event !== "string" ||
     (payload.settled !== undefined && typeof payload.settled !== "boolean")
   ) {
