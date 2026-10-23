@@ -28,53 +28,57 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  let body: unknown;
   try {
-    const body = (await request.json()) as {
-      metadata?: unknown;
-      owner?: unknown;
-      clusterId?: unknown;
-    };
-    const { metadata, owner, clusterId } = body;
-
-    if (
-      !metadata ||
-      typeof owner !== "string" ||
-      !owner ||
-      typeof clusterId !== "string" ||
-      !clusterId
-    ) {
-      return NextResponse.json(
-        { success: false, error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    const nft: StoredNFT = {
-      id: `nft_${clusterId}_${Date.now()}`,
-      metadata,
-      mintedAt: new Date().toISOString(),
-      owner,
-      clusterId,
-      status: "simulated",
-    };
-
-    // Replace if already exists for this cluster
-    const exists = nfts.findIndex((n) => n.clusterId === clusterId);
-    if (exists >= 0) {
-      nfts[exists] = nft;
-    } else {
-      nfts.push(nft);
-    }
-
-    return NextResponse.json({
-      success: true,
-      nft,
-    });
-  } catch (error) {
-    console.error("Failed to save NFT:", error);
+    body = await request.json();
+  } catch {
     return NextResponse.json(
-      { success: false, error: "Failed to save NFT" },
-      { status: 500 }
+      { success: false, error: "Request body must be valid JSON" },
+      { status: 400 }
     );
   }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { success: false, error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+  const payload = body as Record<string, unknown>;
+  const metadata = payload.metadata;
+  const owner = payload.owner;
+  const clusterId = payload.clusterId;
+  if (
+    typeof metadata !== "object" ||
+    metadata === null ||
+    Array.isArray(metadata) ||
+    typeof owner !== "string" ||
+    !owner.trim() ||
+    typeof clusterId !== "string" ||
+    !clusterId.trim()
+  ) {
+    return NextResponse.json(
+      { success: false, error: "Valid metadata, owner, and clusterId are required" },
+      { status: 400 }
+    );
+  }
+  const nft: StoredNFT = {
+    id: `nft_${clusterId}_${Date.now()}`,
+    metadata,
+    mintedAt: new Date().toISOString(),
+    owner,
+    clusterId,
+    status: "simulated",
+  };
+
+  const exists = nfts.findIndex((n) => n.clusterId === clusterId);
+  if (exists >= 0) {
+    nfts[exists] = nft;
+  } else {
+    nfts.push(nft);
+  }
+
+  return NextResponse.json({
+    success: true,
+    nft,
+  });
 }

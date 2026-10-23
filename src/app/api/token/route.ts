@@ -27,32 +27,87 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  let body: unknown;
   try {
-    const body = await request.json();
-    const { action } = body;
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { success: false, error: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { success: false, error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+  const payload = body as Record<string, unknown>;
 
-    // Create a new token
-    if (action === "create") {
+  try {
+    if (payload.action === "create") {
+      if (
+        typeof payload.symbol !== "string" ||
+        !payload.symbol.trim() ||
+        typeof payload.name !== "string" ||
+        !payload.name.trim() ||
+        typeof payload.domain !== "string" ||
+        !payload.domain.trim() ||
+        typeof payload.owner !== "string" ||
+        !payload.owner.trim() ||
+        (payload.initialSupply !== undefined &&
+          (typeof payload.initialSupply !== "number" ||
+            !Number.isSafeInteger(payload.initialSupply) ||
+            payload.initialSupply <= 0)) ||
+        (payload.price !== undefined &&
+          (typeof payload.price !== "number" ||
+            !Number.isFinite(payload.price) ||
+            payload.price <= 0))
+      ) {
+        return NextResponse.json(
+          { success: false, error: "Invalid token creation fields" },
+          { status: 400 }
+        );
+      }
       const token = createToken({
-        symbol: body.symbol,
-        name: body.name,
-        domain: body.domain,
-        owner: body.owner,
-        initialSupply: body.initialSupply,
-        price: body.price,
+        symbol: payload.symbol,
+        name: payload.name,
+        domain: payload.domain,
+        owner: payload.owner,
+        initialSupply: payload.initialSupply,
+        price: payload.price,
       });
 
       return NextResponse.json({ success: true, token });
     }
 
-    // Buy / Sell / Trade
-    if (["buy", "sell", "trade"].includes(action)) {
+    if (
+      payload.action === "buy" ||
+      payload.action === "sell" ||
+      payload.action === "trade"
+    ) {
+      if (
+        typeof payload.tokenId !== "string" ||
+        !payload.tokenId ||
+        typeof payload.from !== "string" ||
+        !payload.from.trim() ||
+        typeof payload.to !== "string" ||
+        !payload.to.trim() ||
+        typeof payload.amount !== "number" ||
+        !Number.isFinite(payload.amount) ||
+        payload.amount <= 0
+      ) {
+        return NextResponse.json(
+          { success: false, error: "Invalid token transaction fields" },
+          { status: 400 }
+        );
+      }
       const tx = executeTokenAction({
-        tokenId: body.tokenId,
-        action,
-        from: body.from,
-        to: body.to,
-        amount: body.amount,
+        tokenId: payload.tokenId,
+        action: payload.action,
+        from: payload.from,
+        to: payload.to,
+        amount: payload.amount,
       });
 
       if (!tx) {
@@ -70,7 +125,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   } catch (error) {
-    console.error(error);
+    console.error("Token operation failed:", error);
     return NextResponse.json(
       { success: false, error: "Token operation failed" },
       { status: 500 }

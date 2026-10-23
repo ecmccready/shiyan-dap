@@ -75,21 +75,39 @@ export function executeTokenAction(params: {
   to: string;
   amount: number;
 }): TokenTransaction | null {
+  if (
+    (params.action !== "buy" &&
+      params.action !== "sell" &&
+      params.action !== "trade") ||
+    typeof params.from !== "string" ||
+    typeof params.to !== "string" ||
+    typeof params.tokenId !== "string" ||
+    !Number.isFinite(params.amount) ||
+    params.amount <= 0 ||
+    !params.from.trim() ||
+    !params.to.trim()
+  ) {
+    return null;
+  }
   const token = tokens.find((t) => t.id === params.tokenId);
   if (!token) return null;
 
-  const total = Number((params.amount * token.price).toFixed(2));
+  const rawTotal = params.amount * token.price;
+  if (!Number.isFinite(rawTotal)) return null;
+  const total = Number(rawTotal.toFixed(2));
 
   // Very simple balance logic for now
   if (params.action === "sell" || params.action === "trade") {
-    if (token.balance < params.amount) {
+    if (!Number.isFinite(token.balance) || token.balance < params.amount) {
       return null; // insufficient balance
     }
     token.balance -= params.amount;
   }
 
   if (params.action === "buy") {
-    token.balance += params.amount;
+    const updatedBalance = token.balance + params.amount;
+    if (!Number.isFinite(updatedBalance)) return null;
+    token.balance = updatedBalance;
   }
 
   token.lastUpdated = new Date().toISOString();
