@@ -20,7 +20,7 @@ import { holographicDefaultCheck, parseTensorPayload, requestIndependentTensorCh
 import { validEps, type AdaptiveBase } from "../level4/roe-adaptive";
 import { combineEligibility, isNormalizedMode, normalizedRmsCheck, parseTensor, verifyHolographicBound, holographicLedgerTokens, type HolographicBound, type TensorCheck } from "../level4/tensor";
 
-type Rpc = { jsonrpc: "2.0"; id?: number | string; method: string; params?: Record<string, unknown> };
+type Rpc = { jsonrpc: "2.0"; id?: number | string | null; method: string; params?: Record<string, unknown> };
 
 const plants = new Map<string, PlantB>();
 /** Tensor check from request_independent_check, bound by the next seal_pack. Only set when a tensor was sent. */
