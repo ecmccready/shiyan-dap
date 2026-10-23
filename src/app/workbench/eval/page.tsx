@@ -21,11 +21,10 @@ const NAMERS: Namer[] = ["grok_fast", "hy4_deep", "grok_bot"];
 export default function EvalPage() {
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
-  const [fault, setFault] = useState("");
 
-  const rows = useMemo<Row[]>(() => {
+  const { rows, fault } = useMemo(() => {
     try {
-      return NAMERS.flatMap((namer) => {
+      const rows = NAMERS.flatMap((namer) => {
         const wheel = safetyFlywheel(namer);
         return wheel.reuse.map((arm, i) => {
           const cold = wheel.cold[i];
@@ -41,9 +40,12 @@ export default function EvalPage() {
           };
         });
       });
+      return { rows, fault: "" };
     } catch (err) {
-      setFault(err instanceof Error ? err.message : "Harness failed.");
-      return [];
+      return {
+        rows: [] as Row[],
+        fault: err instanceof Error ? err.message : "Harness failed.",
+      };
     }
   }, []);
 
@@ -72,7 +74,6 @@ export default function EvalPage() {
           <button
             onClick={() => {
               setRunning(true);
-              setFault("");
               window.setTimeout(() => {
                 setRunning(false);
                 setDone(true);

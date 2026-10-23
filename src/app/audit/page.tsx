@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { FrozenAudit, readAudits } from "@/workbench/safety/gatekeeper";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function AuditPage() {
-  const [audits, setAudits] = useState<FrozenAudit[]>([]);
-
-  useEffect(() => {
-    setAudits(readAudits());
-  }, []);
+  const hydrated = useHydrated();
+  const audits: FrozenAudit[] = hydrated ? readAudits() : [];
 
   return (
     <div className="min-h-screen bg-black text-white">

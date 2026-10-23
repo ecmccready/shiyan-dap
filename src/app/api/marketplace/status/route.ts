@@ -1,56 +1,44 @@
 import { NextResponse } from "next/server";
-import { promoteLayer } from "@/lib/economy";
+import {
+  updateClusterStatus,
+  type MarketplaceCluster,
+} from "@/lib/marketplace";
 
-async function updateWithLayer(id: string, status: string) {
-  const market = await import("@/lib/marketplace");
-  const layer = promoteLayer(status);
-
-  const fn =
-    (market as any).updateClusterStatus ||
-    (market as any).updateStatus ||
-    (market as any).setClusterStatus;
-
-  let cluster: any = null;
-  if (typeof fn === "function") {
-    cluster = fn(id, status);
-  }
-
-  if (cluster) {
-    cluster.containedHome = {
-      ...(cluster.containedHome || {
-        href: `/home?cluster=${id}`,
-        owner: cluster.owner,
-        clusterId: id,
-      }),
-      layer,
-    };
-    cluster.layer = layer;
-  }
-
-  return { cluster, layer, payment: cluster?.payment || null };
-}
+const STATUSES: MarketplaceCluster["status"][] = [
+  "available",
+  "reserved",
+  "settled",
+];
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { id, status } = body || {};
+    const body = (await request.json()) as {
+      id?: unknown;
+      status?: unknown;
+    };
+    const { id, status } = body;
 
-    if (!id || !status) {
+    if (
+      typeof id !== "string" ||
+      typeof status !== "string" ||
+      !STATUSES.includes(status as MarketplaceCluster["status"])
+    ) {
       return NextResponse.json(
-        { success: false, error: "id and status required" },
+        { success: false, error: "id and a valid status are required" },
         { status: 400 }
       );
     }
 
-    const result = await updateWithLayer(id, status);
+    const cluster = updateClusterStatus(id, status as MarketplaceCluster["status"]);
 
     return NextResponse.json({
       success: true,
-      cluster: result.cluster,
-      layer: result.layer,
-      payment: result.payment,
+      cluster,
+      layer: cluster?.layer ?? null,
+      payment: cluster?.payment ?? null,
     });
   } catch (error) {
+    console.error("Marketplace status update failed:", error);
     return NextResponse.json(
       { success: false, error: "Status update failed" },
       { status: 500 }

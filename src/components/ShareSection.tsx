@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import ShareResult from "@/components/ShareResult";
 import CopyEvidencePack from "@/components/CopyEvidencePack";
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
+import { useHydrated } from "@/lib/use-hydrated";
 
 /**
  * Labeled Share section: public proof URL for a run plus share/copy controls.
@@ -19,8 +19,7 @@ export default function ShareSection({
   /** Optional: when given, the evidence pack buttons render prominently in this section. */
   entry?: ExperienceEntry | null;
 }) {
-  const [origin, setOrigin] = useState("");
-  useEffect(() => setOrigin(window.location.origin), []);
+  const origin = useHydrated() ? window.location.origin : "";
   if (!runId) return null;
   return (
     <section aria-labelledby="share-heading" className="rounded-xl border border-zinc-800 p-4 space-y-2">

@@ -5,6 +5,7 @@ import { useCopy, copiedRing } from "@/lib/use-copy";
 import { showToast } from "@/lib/toast";
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
 import { buildPlainPack, buildMarkdownPack, buildJsonPack, packUrls } from "@/lib/evidence-pack";
+import { useHydrated } from "@/lib/use-hydrated";
 
 /**
  * Copies a short multi-line evidence pack for a run: run id, e, Δe, Φ, the
@@ -12,8 +13,12 @@ import { buildPlainPack, buildMarkdownPack, buildJsonPack, packUrls } from "@/li
  * and verify URL. Hidden when there is no entry.
  */
 export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | null }) {
-  const [line, setLine] = useState<string | null>(null);
-  const [origin, setOrigin] = useState("");
+  const [loaded, setLoaded] = useState<{
+    runId: string;
+    iteration: number;
+    line: string | null;
+  } | null>(null);
+  const origin = useHydrated() ? window.location.origin : "";
   const { status, copy } = useCopy(4000, undefined, "evidence pack");
   const mdCopy = useCopy(4000, undefined, "evidence (Markdown)");
   const urlCopy = useCopy(4000, undefined, "public URL");
@@ -21,9 +26,11 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
   const jsonCopy = useCopy(4000, undefined, "evidence (JSON)");
   const runId = entry?.run_id;
   const iteration = entry?.iteration;
-  useEffect(() => { setOrigin(window.location.origin); }, []);
+  const line =
+    loaded && loaded.runId === runId && loaded.iteration === iteration
+      ? loaded.line
+      : null;
   useEffect(() => {
-    setLine(null);
     if (!runId || typeof iteration !== "number") return;
     let alive = true;
     fetch(`/api/level4/experience?format=ledger&run_id=${encodeURIComponent(runId)}`, { cache: "no-store" })
@@ -33,7 +40,7 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
         const match = lines.find(
           (l) => / STATUS=ELIGIBLE_EXPERIENCE( |$)/.test(" " + l) && new RegExp(`(^| )ITER=${iteration}( |$)`).test(l),
         );
-        if (alive) setLine(match ?? null);
+        if (alive) setLoaded({ runId, iteration, line: match ?? null });
       })
       .catch(() => {});
     return () => { alive = false; };

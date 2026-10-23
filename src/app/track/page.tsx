@@ -1,20 +1,17 @@
 "use client";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import RailLinks from "@/components/RailLinks";
-import { LedgerAsset, readLedger, wasAcquired } from "@/lib/ledger";
+import { readLedger, wasAcquired } from "@/lib/ledger";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function TrackPage() {
-  const [assets, setAssets] = useState<LedgerAsset[]>([]);
-
-  useEffect(() => {
-    setAssets(
-      readLedger().map((a) =>
-        wasAcquired(a.id) ? { ...a, buyer: "This session", state: "escrow" } : a
+  const hydrated = useHydrated();
+  const assets = hydrated
+    ? readLedger().map((a) =>
+        wasAcquired(a.id) ? { ...a, buyer: "This session", state: "escrow" as const } : a
       )
-    );
-  }, []);
+    : [];
 
   return (
     <div className="min-h-screen bg-black text-white">

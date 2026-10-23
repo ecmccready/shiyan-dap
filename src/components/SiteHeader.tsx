@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { VERTICALS as ALL_VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
+import { useHydrated } from "@/lib/use-hydrated";
 
 // Header dropdown hides Diagnostic Safety / Regulatory Validation; their pages remain.
 const VERTICALS = ALL_VERTICALS.filter((v) => v.id !== "safety" && v.id !== "compliance");
@@ -36,8 +37,11 @@ const TRIMMED_PATHS = new Set([
 ]);
 
 export default function SiteHeader({ section }: { section?: string }) {
-  const [vertical, setVertical] = useState("music");
+  const hydrated = useHydrated();
+  const [verticalOverride, setVerticalOverride] = useState<string | null>(null);
+  const vertical = verticalOverride ?? (hydrated ? readVertical() : "music");
   const pathname = usePathname();
+  const router = useRouter();
   const nav =
     pathname === "/"
       ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
@@ -51,10 +55,6 @@ export default function SiteHeader({ section }: { section?: string }) {
   // Upload is hidden on Home (/workbench), Start (/workbench/start) and all TRIMMED_PATHS.
   const showUpload =
     pathname !== "/workbench" && pathname !== "/workbench/start" && !TRIMMED_PATHS.has(pathname);
-
-  useEffect(() => {
-    setVertical(readVertical());
-  }, []);
 
   return (
     <header className="border-b border-zinc-800">
@@ -87,12 +87,12 @@ export default function SiteHeader({ section }: { section?: string }) {
             value={pathname !== "/" && vertical === "music" ? "" : vertical}
             onChange={(e) => {
               const id = e.target.value;
-              setVertical(id);
+              setVerticalOverride(id);
               writeVertical(id);
               if (id === "safety" || id === "compliance") {
-                window.location.href = "/workbench";
+                router.push("/workbench");
               }
-              if (id === "music") window.location.href = "/";
+              if (id === "music") router.push("/");
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
           >

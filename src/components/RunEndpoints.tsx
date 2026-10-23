@@ -9,22 +9,19 @@ import { loadExperienceServer, latestVerified } from "@/lib/level4/experience-cl
  * variant="section" renders a titled section; "inline" renders compact links.
  */
 export default function RunEndpoints({ variant = "section", runId: fixedRunId }: { variant?: "section" | "inline"; runId?: string }) {
-  const [runId, setRunId] = useState<string | null>(null);
+  const [latestRunId, setLatestRunId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (fixedRunId) {
-      setRunId(fixedRunId);
-      setLoaded(true);
-      return;
-    }
+    if (fixedRunId) return;
     loadExperienceServer().then((list) => {
-      setRunId(latestVerified(list)?.run_id ?? null);
+      setLatestRunId(latestVerified(list)?.run_id ?? null);
       setLoaded(true);
     });
   }, [fixedRunId]);
 
-  if (!loaded || !runId) return null;
+  const runId = fixedRunId ?? latestRunId;
+  if ((!fixedRunId && !loaded) || !runId) return null;
   const q = encodeURIComponent(runId);
   const verify = `/api/level4/verify?run_id=${q}`;
   const anchor = `/api/level4/anchor?run_id=${q}`;

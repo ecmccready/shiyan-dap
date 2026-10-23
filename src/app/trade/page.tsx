@@ -1,27 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { computeB, Self, recordOutcome, readOutcomes, yFromAsset } from "@/lib/outcomes";
 import { readTrades, writeTrades, type TradeRecord } from "@/lib/trade";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function TradePage() {
-  const [rows, setRows] = useState<TradeRecord[]>([]);
+  const hydrated = useHydrated();
+  const [, setRevision] = useState(0);
+  const rows: TradeRecord[] = hydrated ? readTrades() : [];
   const [offer, setOffer] = useState("LIST_INTENT");
-  const [z, setZ] = useState("");
-  const [b, setB] = useState("");
   const [acceptUrl, setAcceptUrl] = useState("");
-
-  const refresh = () => {
-    setRows(readTrades());
-    setZ(Self(readOutcomes()).z);
-    setB(computeB(readOutcomes()).action);
-  };
-
-  useEffect(() => {
-    refresh();
-  }, []);
+  const outcomes = hydrated ? readOutcomes() : [];
+  const z = hydrated ? Self(outcomes).z : "";
+  const b = hydrated ? computeB(outcomes).action : "";
+  const refresh = () => setRevision((revision) => revision + 1);
 
   const create = async () => {
     const res = await fetch("/api/trade", {

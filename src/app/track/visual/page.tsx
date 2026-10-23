@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { AgentResponse } from "@/lib/agent-response";
 
 export default function VisualTrackPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AgentResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/agent?domain=visual")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`Agent request failed (${res.status})`);
+        return res.json() as Promise<AgentResponse>;
+      })
       .then((json) => {
         setData(json);
         setLoading(false);
@@ -95,7 +99,7 @@ export default function VisualTrackPage() {
             Miller Pyramid (Visual Domain)
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {Object.entries(data.pyramid).map(([key, value]: any) => (
+            {Object.entries(data.pyramid).map(([key, value]) => (
               <div
                 key={key}
                 className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6"

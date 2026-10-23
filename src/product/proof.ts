@@ -166,6 +166,6 @@ export function readReceipts(): { id: string; status: string }[] {
   return [];
 }
 
-export function recordOutcomeIntent(_arm: Arm) {
+export function recordOutcomeIntent() {
   return { id: "use-checkout", status: "unsettled" as const };
 }

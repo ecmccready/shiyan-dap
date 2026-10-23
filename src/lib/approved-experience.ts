@@ -1,4 +1,3 @@
-import type { PersistedRun } from "./run-store";
 import { listClientRuns } from "./run-store";
 
 export type ApprovedExperience = {

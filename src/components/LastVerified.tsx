@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useHydrated } from "@/lib/use-hydrated";
 
 /**
  * "Last verified <time>" from an entry's existing verified_at timestamp, formatted
@@ -10,22 +10,19 @@ import { useEffect, useState } from "react";
 export default function LastVerified({ at }: { at: string | null | undefined }) {
   const d = at ? new Date(at) : null;
   const valid = d && !Number.isNaN(d.getTime());
-  const [label, setLabel] = useState(() => (valid ? `${d!.toISOString().slice(0, 16).replace("T", " ")} UTC` : ""));
-
-  useEffect(() => {
-    if (!valid) return;
-    setLabel(
-      d!.toLocaleString(undefined, {
+  const hydrated = useHydrated();
+  const label = valid
+    ? hydrated
+      ? d.toLocaleString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
         timeZoneName: "short",
-      }),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [at]);
+      })
+      : `${d.toISOString().slice(0, 16).replace("T", " ")} UTC`
+    : "";
 
   if (!valid) return null;
   return (

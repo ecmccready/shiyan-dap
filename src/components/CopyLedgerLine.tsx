@@ -9,10 +9,17 @@ import { showToast } from "@/lib/toast";
  * iteration (ITER=<n> and STATUS=ELIGIBLE_EXPERIENCE). Hidden when unavailable.
  */
 export default function CopyLedgerLine({ runId, iteration }: { runId?: string | null; iteration?: number | null }) {
-  const [line, setLine] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState<{
+    runId: string;
+    iteration: number;
+    line: string | null;
+  } | null>(null);
   const { status, copy } = useCopy(4000, undefined, "ledger line");
+  const line =
+    loaded && loaded.runId === runId && loaded.iteration === iteration
+      ? loaded.line
+      : null;
   useEffect(() => {
-    setLine(null);
     if (!runId || typeof iteration !== "number") return;
     let alive = true;
     fetch(`/api/level4/experience?format=ledger&run_id=${encodeURIComponent(runId)}`, { cache: "no-store" })
@@ -22,7 +29,7 @@ export default function CopyLedgerLine({ runId, iteration }: { runId?: string | 
         const match = lines.find(
           (l) => / STATUS=ELIGIBLE_EXPERIENCE( |$)/.test(" " + l) && new RegExp(`(^| )ITER=${iteration}( |$)`).test(l),
         );
-        if (alive) setLine(match ?? null);
+        if (alive) setLoaded({ runId, iteration, line: match ?? null });
       })
       .catch(() => {});
     return () => { alive = false; };

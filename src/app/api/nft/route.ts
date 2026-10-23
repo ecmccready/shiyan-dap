@@ -3,14 +3,14 @@ import { NextResponse } from "next/server";
 // Temporary in-file store (avoids the module resolution issue)
 interface StoredNFT {
   id: string;
-  metadata: any;
+  metadata: unknown;
   mintedAt: string;
   owner: string;
   clusterId: string;
   status: "simulated" | "minted";
 }
 
-let nfts: StoredNFT[] = [];
+const nfts: StoredNFT[] = [];
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -29,10 +29,20 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as {
+      metadata?: unknown;
+      owner?: unknown;
+      clusterId?: unknown;
+    };
     const { metadata, owner, clusterId } = body;
 
-    if (!metadata || !owner || !clusterId) {
+    if (
+      !metadata ||
+      typeof owner !== "string" ||
+      !owner ||
+      typeof clusterId !== "string" ||
+      !clusterId
+    ) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 }
@@ -61,7 +71,7 @@ export async function POST(request: Request) {
       nft,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Failed to save NFT:", error);
     return NextResponse.json(
       { success: false, error: "Failed to save NFT" },
       { status: 500 }

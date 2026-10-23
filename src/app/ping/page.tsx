@@ -1,26 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { recordOutcome, yFromAsset, computeB, Self, readOutcomes } from "@/lib/outcomes";
 import { readPings, writePings, type PingRecord } from "@/lib/ping";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function PingPage() {
-  const [rows, setRows] = useState<PingRecord[]>([]);
+  const hydrated = useHydrated();
+  const [, setRevision] = useState(0);
+  const rows: PingRecord[] = hydrated ? readPings() : [];
   const [url, setUrl] = useState("");
-  const [z, setZ] = useState("");
-  const [b, setB] = useState("");
-
-  const refresh = () => {
-    setRows(readPings());
-    setZ(Self(readOutcomes()).z);
-    setB(computeB(readOutcomes()).action);
-  };
-
-  useEffect(() => {
-    refresh();
-  }, []);
+  const outcomes = hydrated ? readOutcomes() : [];
+  const z = hydrated ? Self(outcomes).z : "";
+  const b = hydrated ? computeB(outcomes).action : "";
+  const refresh = () => setRevision((revision) => revision + 1);
 
   const create = async () => {
     const res = await fetch("/api/ping", {

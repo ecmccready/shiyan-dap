@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, readLedger } from "@/lib/ledger";
 import {
@@ -18,6 +19,7 @@ import {
   yFromAsset,
 } from "@/lib/outcomes";
 import { VERTICALS, readVertical } from "@/lib/verticles";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const ZERO = {
   settlement: 0 as const,
@@ -36,13 +38,16 @@ const crm = [
 ];
 
 export default function LearnPage() {
-  const [assets, setAssets] = useState<LedgerAsset[]>([]);
-  const [outcomes, setOutcomes] = useState<OutcomeTransition[]>([]);
-  const [vertical, setVertical] = useState("music");
-  const [action, setAction] = useState("INITIATE_TRADE");
+  const hydrated = useHydrated();
+  const [, refresh] = useReducer((revision: number) => revision + 1, 0);
+  const assets: LedgerAsset[] = hydrated ? readLedger() : [];
+  const outcomes: OutcomeTransition[] = hydrated ? readOutcomes() : [];
+  const vertical = hydrated ? readVertical() : "music";
   const [remoteZ, setRemoteZ] = useState("");
+  const router = useRouter();
 
   const selected = VERTICALS.find((v) => v.id === vertical) || VERTICALS[0];
+  const action = selected.actions[0] ?? "INITIATE_TRADE";
   const founder = assets.filter((a) => a.id.startsWith("cl_"));
   const clusterA = outcomes.filter((row) => row.agent.includes("Agent A"));
   const clusterB = outcomes.filter((row) => row.agent.includes("Agent B"));
@@ -55,9 +60,6 @@ export default function LearnPage() {
   const z = bState.resolution === "resolved" ? "B returned. Hold." : remoteZ || localZ;
 
   useEffect(() => {
-    setVertical(readVertical());
-    setAssets(readLedger());
-    setOutcomes(readOutcomes());
     fetch("/api/memory")
       .then((r) => r.json())
       .then((data) => {
@@ -68,10 +70,6 @@ export default function LearnPage() {
       })
       .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (selected?.actions?.[0]) setAction(selected.actions[0]);
-  }, [selected]);
 
   const measureA = (asset: LedgerAsset) => {
     const y_after = yFromAsset(asset.state);
@@ -85,7 +83,7 @@ export default function LearnPage() {
       agent: "Agent A · ECMcCready",
       simulated: false,
     });
-    setOutcomes(readOutcomes());
+    refresh();
   };
 
   return (
@@ -125,7 +123,7 @@ export default function LearnPage() {
                         <button
                           onClick={() => {
                             recordAudience(asset.id);
-                            setOutcomes(readOutcomes());
+                            refresh();
                           }}
                           className="h-10 px-4 rounded-full border border-zinc-700 text-sm"
                         >
@@ -206,10 +204,10 @@ export default function LearnPage() {
               onClick={() => {
                 try {
                   recordSelf();
-                  setOutcomes(readOutcomes());
-                  window.location.href = "/outcomes";
+                  refresh();
+                  router.push("/outcomes");
                 } catch {
-                  window.location.href = "/outcomes";
+                  router.push("/outcomes");
                 }
               }}
               className="h-11 px-5 rounded-full border border-zinc-700 text-sm"

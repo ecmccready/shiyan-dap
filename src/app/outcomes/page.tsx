@@ -1,21 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { OutcomeTransition, persistOutcome, readOutcomes, readZ } from "@/lib/outcomes";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function OutcomesPage() {
-  const [rows, setRows] = useState<OutcomeTransition[]>([]);
-  const [z, setZ] = useState("");
+  const hydrated = useHydrated();
+  const rows: OutcomeTransition[] = hydrated ? readOutcomes() : [];
+  const returned = rows.some((r) => !r.simulated && r.action === "RETURN");
+  const z = hydrated ? (returned ? "B returned. Hold." : readZ()) : "";
   const [note, setNote] = useState("");
-
-  useEffect(() => {
-    const all = readOutcomes();
-    setRows(all);
-    const returned = all.some((r) => !r.simulated && r.action === "RETURN");
-    setZ(returned ? "B returned. Hold." : readZ());
-  }, []);
 
   const persist = async () => {
     const row =
@@ -28,9 +24,7 @@ export default function OutcomesPage() {
       setNote("No row to persist.");
       return;
     }
-    const persistZ = rows.some((r) => !r.simulated && r.action === "RETURN")
-      ? "B returned. Hold."
-      : z;
+    const persistZ = returned ? "B returned. Hold." : z;
     persistOutcome(row, persistZ);
     try {
       const res = await fetch("/api/memory", {
@@ -40,7 +34,6 @@ export default function OutcomesPage() {
       });
       const data = await res.json();
       setNote(data.ok ? "Wrote " + data.url : "HF error: " + (data.error || res.status));
-      setZ(persistZ);
     } catch {
       setNote("HF request failed");
     }

@@ -7,7 +7,7 @@ import {
   QUALITY_ACTIONS,
   QualityAction,
 } from "./types";
-import { GOAL, W_quality, W_scalar } from "./workbench";
+import { W_quality, W_scalar } from "./workbench";
 import { defects } from "./measure";
 
 export function executeLocked(B: BQuality) {

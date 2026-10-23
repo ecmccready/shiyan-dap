@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { AgentResponse } from "@/lib/agent-response";
 
 export default function ShiyanYishuTrackPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AgentResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/agent")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`Agent request failed (${res.status})`);
+        return res.json() as Promise<AgentResponse>;
+      })
       .then((json) => {
         setData(json);
         setLoading(false);
@@ -87,7 +91,7 @@ export default function ShiyanYishuTrackPage() {
             Miller Pyramid
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {Object.entries(data.pyramid).map(([key, value]: any) => (
+            {Object.entries(data.pyramid).map(([key, value]) => (
               <div
                 key={key}
                 className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6"
@@ -144,31 +148,33 @@ export default function ShiyanYishuTrackPage() {
         </div>
 
         {/* Settlement */}
-        <div className="bg-zinc-900/60 border border-amber-900/20 rounded-2xl p-6">
-          <h3 className="text-sm font-medium text-amber-400 mb-5">
-            Settlement
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
-            <div>
-              <p className="text-zinc-500 text-xs mb-1">Status</p>
-              <p>{data.settlement.status}</p>
-            </div>
-            <div>
-              <p className="text-zinc-500 text-xs mb-1">Artist Share</p>
-              <p>{data.settlement.artist_share}</p>
-            </div>
-            <div>
-              <p className="text-zinc-500 text-xs mb-1">Mock Revenue</p>
-              <p>{data.settlement.mock_revenue}</p>
-            </div>
-            <div>
-              <p className="text-zinc-500 text-xs mb-1">Artist Payout</p>
-              <p className="text-emerald-400 font-medium">
-                {data.settlement.artist_payout}
-              </p>
+        {data.settlement && (
+          <div className="bg-zinc-900/60 border border-amber-900/20 rounded-2xl p-6">
+            <h3 className="text-sm font-medium text-amber-400 mb-5">
+              Settlement
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+              <div>
+                <p className="text-zinc-500 text-xs mb-1">Status</p>
+                <p>{data.settlement.status}</p>
+              </div>
+              <div>
+                <p className="text-zinc-500 text-xs mb-1">Artist Share</p>
+                <p>{data.settlement.artist_share}</p>
+              </div>
+              <div>
+                <p className="text-zinc-500 text-xs mb-1">Mock Revenue</p>
+                <p>{data.settlement.mock_revenue}</p>
+              </div>
+              <div>
+                <p className="text-zinc-500 text-xs mb-1">Artist Payout</p>
+                <p className="text-emerald-400 font-medium">
+                  {data.settlement.artist_payout}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Score */}
         <div className="bg-emerald-950/20 border border-emerald-800/40 rounded-2xl p-6">
@@ -184,7 +190,7 @@ export default function ShiyanYishuTrackPage() {
         </div>
 
         {/* Lyrics */}
-        <section>
+        {data.lyrics && <section>
           <h2 className="text-lg font-semibold mb-6 text-zinc-200 tracking-wide">
             Lyrics
           </h2>
@@ -227,7 +233,7 @@ export default function ShiyanYishuTrackPage() {
               </div>
             )}
           </div>
-        </section>
+        </section>}
       </main>
     </div>
   );

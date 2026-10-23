@@ -23,7 +23,9 @@ export interface Playlist {
 }
 
 const file = path.join(process.cwd(), "src/data/playlist.json");
-const g = globalThis as any;
+const g = globalThis as typeof globalThis & {
+  __shiyanPlaylists?: Playlist[];
+};
 
 const fallback: Playlist[] = [
   {
@@ -59,10 +61,9 @@ function writeDisk(playlists: Playlist[]) {
 }
 
 function store(): Playlist[] {
-  if (!g.__shiyanPlaylists) {
-    g.__shiyanPlaylists = readDisk() || fallback;
-  }
-  return g.__shiyanPlaylists as Playlist[];
+  const playlists = g.__shiyanPlaylists ?? readDisk() ?? fallback;
+  g.__shiyanPlaylists = playlists;
+  return playlists;
 }
 
 function save(playlists: Playlist[]) {

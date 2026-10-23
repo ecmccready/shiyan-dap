@@ -27,8 +27,8 @@ export interface TokenTransaction {
 }
 
 // Simple in-memory stores
-let tokens: Token[] = [];
-let transactions: TokenTransaction[] = [];
+const tokens: Token[] = [];
+const transactions: TokenTransaction[] = [];
 
 /**
  * Create or update a token for a cluster / domain asset

@@ -1,24 +1,19 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { LedgerAsset, readLedger } from "@/lib/ledger";
+import { readLedger } from "@/lib/ledger";
 import { LoopPlant, readPersistedPlant } from "@/lib/closed-loop";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const KEEP = ["Shiyan Yishu", "Sleep Terrors"];
 
 export default function SongsPage() {
-  const [assets, setAssets] = useState<LedgerAsset[]>([]);
-  const [plant, setPlant] = useState<LoopPlant | null>(null);
-
-  useEffect(() => {
-    const all = readLedger();
-    setAssets(
-      all.filter((a) => KEEP.some((k) => a.title.includes(k))).slice(0, 2)
-    );
-    setPlant(readPersistedPlant());
-  }, []);
+  const hydrated = useHydrated();
+  const assets = hydrated
+    ? readLedger().filter((a) => KEEP.some((k) => a.title.includes(k))).slice(0, 2)
+    : [];
+  const plant: LoopPlant | null = hydrated ? readPersistedPlant() : null;
 
   const last = plant?.M.ledger[0];
 

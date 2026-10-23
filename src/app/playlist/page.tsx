@@ -1,27 +1,22 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
-import { LedgerAsset, applyEvent, readLedger } from "@/lib/ledger";
+import { applyEvent, readLedger } from "@/lib/ledger";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const KEEP = ["Shiyan Yishu", "Sleep Terrors"];
 
 export default function PlaylistPage() {
-  const [assets, setAssets] = useState<LedgerAsset[]>([]);
-
-  useEffect(() => {
-    const all = readLedger();
-    setAssets(
-      all.filter((a) => KEEP.some((k) => a.title.includes(k))).slice(0, 2)
-    );
-  }, []);
+  const hydrated = useHydrated();
+  const [, setRevision] = useState(0);
+  const assets = hydrated
+    ? readLedger().filter((a) => KEEP.some((k) => a.title.includes(k))).slice(0, 2)
+    : [];
 
   const run = (id: string, event: "EXECUTE_SETTLEMENT" | "ABORT") => {
     applyEvent(id, event);
-    const all = readLedger();
-    setAssets(
-      all.filter((a) => KEEP.some((k) => a.title.includes(k))).slice(0, 2)
-    );
+    setRevision((revision) => revision + 1);
   };
 
   return (

@@ -5,6 +5,17 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { freshPlant, type LoopPlant, type StepRec } from "@/lib/closed-loop";
 
+type StepResponse = {
+  ok: boolean;
+  error?: string;
+  plant: LoopPlant;
+  source: string;
+  rec: StepRec;
+  persisted: { id: string; phi: number; store?: string } | null;
+  justification?: string;
+  note?: string;
+};
+
 export default function SelfPage() {
   const [plant, setPlant] = useState<LoopPlant>(() => freshPlant());
   const [last, setLast] = useState<{
@@ -33,7 +44,7 @@ export default function SelfPage() {
       }),
       });
       const text = await res.text();
-      let data: any;
+      let data: StepResponse;
       try {
         data = JSON.parse(text);
       } catch {

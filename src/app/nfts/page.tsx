@@ -1,22 +1,22 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { LedgerAsset, markAcquired, readLedger } from "@/lib/ledger";
 import { yFromAsset } from "@/lib/outcomes";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const CLUSTER_A = "cluster:A";
 const CONTAINER_A = "container:founder-music";
 const AGENT_A = "Workspace A · controller";
 
 export default function ProvePage() {
-  const [assets, setAssets] = useState<LedgerAsset[]>([]);
+  const hydrated = useHydrated();
+  const assets: LedgerAsset[] = hydrated
+    ? readLedger().filter((row) => row.id.startsWith("cl_"))
+    : [];
   const [busy, setBusy] = useState<string | null>(null);
-
-  useEffect(() => {
-    setAssets(readLedger().filter((row) => row.id.startsWith("cl_")));
-  }, []);
 
   const acquire = async (asset: LedgerAsset) => {
     setBusy(asset.id);
@@ -34,7 +34,6 @@ export default function ProvePage() {
       });
     } catch {}
     markAcquired(asset.id);
-    setAssets(readLedger().filter((row) => row.id.startsWith("cl_")));
     setBusy(null);
   };
 

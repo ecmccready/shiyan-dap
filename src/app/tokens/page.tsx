@@ -1,16 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import RailLinks from "@/components/RailLinks";
 import { LedgerAsset, MintStandard, queueMint, readLedger, readMint } from "@/lib/ledger";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function TokensPage() {
-  const [assets, setAssets] = useState<LedgerAsset[]>([]);
+  const hydrated = useHydrated();
+  const assets: LedgerAsset[] = hydrated ? readLedger() : [];
   const [note, setNote] = useState("");
-
-  useEffect(() => {
-    setAssets(readLedger());
-  }, []);
 
   const queue = (asset: LedgerAsset, standard: MintStandard) => {
     queueMint(asset.id, standard);
@@ -20,7 +18,6 @@ export default function TokensPage() {
       body: JSON.stringify({ assetId: asset.id, title: asset.title, standard }),
     }).catch(() => {});
     setNote(asset.title + " queued as " + standard + ". No chain tx.");
-    setAssets(readLedger());
   };
 
   return (

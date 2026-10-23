@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import LatestVerified from "@/components/LatestVerified";
+import { useHydrated } from "@/lib/use-hydrated";
 import {
   loadExperienceServer,
   latestVerified,
@@ -19,8 +20,18 @@ type StoredRun = {
   created_at?: string;
 };
 
+function readStoredRuns(): StoredRun[] {
+  try {
+    const raw = localStorage.getItem("aethel-client-runs");
+    return raw ? (JSON.parse(raw) as StoredRun[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export default function HistoryPage() {
-  const [runs, setRuns] = useState<StoredRun[]>([]);
+  const hydrated = useHydrated();
+  const runs = hydrated ? readStoredRuns() : [];
   const [experience, setExperience] = useState<ExperienceEntry[]>([]);
   const [loadingExp, setLoadingExp] = useState(true);
 
@@ -34,15 +45,6 @@ export default function HistoryPage() {
     return () => {
       live = false;
     };
-  }, []);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("aethel-client-runs");
-      if (raw) setRuns(JSON.parse(raw));
-    } catch {
-      // ignore
-    }
   }, []);
 
   return (

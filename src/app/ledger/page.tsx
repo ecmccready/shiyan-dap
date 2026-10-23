@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type Row = {
   at: string;
@@ -16,20 +17,25 @@ type Row = {
 
 const KEY = "shiyan-ledger-v1";
 
+function readLocalRows(): Row[] {
+  try {
+    const local = window.localStorage.getItem(KEY);
+    if (!local) return [];
+    const parsed = JSON.parse(local) as { rows?: Row[] };
+    return parsed.rows ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export default function LedgerPage() {
+  const hydrated = useHydrated();
   const [rows, setRows] = useState<Row[]>([]);
   const [note, setNote] = useState("loading");
+  const localRows = hydrated ? readLocalRows() : [];
+  const visibleRows = rows.length ? rows : localRows;
 
   useEffect(() => {
-    const local = window.localStorage.getItem(KEY);
-    if (local) {
-      try {
-        const parsed = JSON.parse(local) as { rows?: Row[] };
-        if (parsed.rows?.length) setRows(parsed.rows);
-      } catch {
-        /* ignore bad snapshot */
-      }
-    }
     fetch("/api/workspace/state")
       .then((r) => r.json())
       .then((data) => {
@@ -63,7 +69,7 @@ export default function LedgerPage() {
       </p>
       <p className="text-xs text-zinc-500">{note}</p>
 
-      {rows.length === 0 ? (
+      {visibleRows.length === 0 ? (
         <p className="text-sm text-zinc-500">
           Empty. Compute on{" "}
           <Link className="underline" href="/workspace">
@@ -77,7 +83,7 @@ export default function LedgerPage() {
         </p>
       ) : (
         <ul className="space-y-2 text-xs font-mono">
-          {rows.map((r) => (
+          {visibleRows.map((r) => (
             <li key={r.at} className="border border-zinc-800 rounded-lg p-3">
               {r.at}
               <br />

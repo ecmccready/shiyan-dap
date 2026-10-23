@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { readPings, type PingRecord } from "@/lib/ping";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function PingPanel() {
-  const [rows, setRows] = useState<PingRecord[]>([]);
-
-  useEffect(() => {
-    setRows(readPings());
-  }, []);
+  const hydrated = useHydrated();
+  const rows: PingRecord[] = hydrated ? readPings() : [];
 
   const open = rows.filter((row) => row.observed === 0).length;
   const hit = rows.filter((row) => row.observed === 1).length;

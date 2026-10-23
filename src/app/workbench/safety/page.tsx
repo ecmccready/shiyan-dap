@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import {
@@ -12,6 +12,7 @@ import {
   persistPlant,
   readPersistedPlant,
 } from "@/lib/closed-loop";
+import { useHydrated } from "@/lib/use-hydrated";
 import { SafetyWorkbench } from "@/lib/engine";
 import {
   DEFAULT_REFERENCE,
@@ -28,16 +29,14 @@ import {
 } from "@/workbench/safety/gatekeeper";
 
 export default function DiagnosticValidationPage() {
-  const [plant, setPlant] = useState<LoopPlant | null>(null);
+  const hydrated = useHydrated();
+  const [plantOverride, setPlant] = useState<LoopPlant | null>(null);
+  const plant = plantOverride ?? (hydrated ? readPersistedPlant() || freshPlant("case-contradictory-notes") : null);
   const [hypothesis, setHypothesis] = useState("candidate-pathway");
   const [confidence, setConfidence] = useState(0.82);
   const [pathway, setPathway] = useState("clinician_review");
   const [note, setNote] = useState("Load a pack, name a pathway, measure Δe.");
   const [audit, setAudit] = useState<FrozenAudit | null>(null);
-
-  useEffect(() => {
-    setPlant(readPersistedPlant() || freshPlant("case-contradictory-notes"));
-  }, []);
 
   const c = plant ? caseById(plant.case_id) : SAFETY_PACK[1];
 

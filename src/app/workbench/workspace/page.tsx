@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { readRuns, type OutcomeRun } from "@/product/run";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function WorkspacePage() {
-  const [runs, setRuns] = useState<OutcomeRun[] | null>(null);
-
-  useEffect(() => {
-    setRuns(readRuns());
-  }, []);
+  const hydrated = useHydrated();
+  const runs: OutcomeRun[] | null = hydrated ? readRuns() : null;
 
   const org = runs?.[0]?.org ?? "unsigned";
   const workspace = runs?.[0]?.workspace ?? "none";

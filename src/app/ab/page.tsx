@@ -1,34 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { runAB, type ABAction, type Actor } from "@/lib/actors";
 import { Self, computeB, readOutcomes } from "@/lib/outcomes";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const A_BUTTONS: ABAction[] = ["PROPOSE", "LIST_INTENT", "REQUEST_RESPONSE"];
 const B_BUTTONS: ABAction[] = ["ACK", "DECLINE", "REQUEST", "RETURN"];
 
 export default function ABPage() {
   const [log, setLog] = useState<string[]>([]);
-  const [z, setZ] = useState("");
-  const [bAction, setBAction] = useState("");
-
-  const refresh = () => {
-    const self = Self(readOutcomes());
-    const b = computeB(readOutcomes());
-    setZ(self.z);
-    setBAction(b.action);
-  };
-
-  useEffect(() => {
-    refresh();
-  }, []);
+  const hydrated = useHydrated();
+  const outcomes = hydrated ? readOutcomes() : [];
+  const z = hydrated ? Self(outcomes).z : "";
+  const bAction = hydrated ? computeB(outcomes).action : "";
 
   const run = (actor: Actor, action: ABAction) => {
     const result = runAB({ actor, action, asset_id: "ab_loop" });
-    setZ(result.z);
-    setBAction(result.computed_b.action);
     setLog((rows) =>
       [
         `${actor} ${action} · seat ${result.seat} → z ${result.z} · computeB ${result.computed_b.action} · settlement unchanged · level3 false`,

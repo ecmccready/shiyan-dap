@@ -17,7 +17,7 @@ export interface MintResult {
   contractAddress?: string;
   metadataUri?: string;
   message: string;
-  raw?: any;
+  raw?: unknown;
 }
 
 /**

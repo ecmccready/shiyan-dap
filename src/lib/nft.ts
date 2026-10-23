@@ -85,7 +85,10 @@ export function clusterToNFTMetadata(cluster: {
       owner: cluster.owner,
       pi_inv: cluster.pi_inv,
       similarity: cluster.similarity,
-      status: cluster.status as any,
+      status:
+        cluster.status === "reserved" || cluster.status === "settled"
+          ? cluster.status
+          : "available",
       tags: cluster.tags,
       created_at: cluster.createdAt,
       settled_at: cluster.settledAt,

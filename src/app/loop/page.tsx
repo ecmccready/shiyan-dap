@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import {
@@ -13,15 +13,14 @@ import {
   persistPlant,
   readPersistedPlant,
 } from "@/lib/closed-loop";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export default function LoopPage() {
-  const [plant, setPlant] = useState<LoopPlant | null>(null);
+  const hydrated = useHydrated();
+  const [plantOverride, setPlant] = useState<LoopPlant | null>(null);
+  const plant = plantOverride ?? (hydrated ? readPersistedPlant() || freshPlant() : null);
   const [namer, setNamer] = useState<Namer>("grok_bot");
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    setPlant(readPersistedPlant() || freshPlant());
-  }, []);
 
   const series = useMemo(
     () => (plant ? [...plant.M.ledger].reverse() : []),

@@ -30,7 +30,7 @@ Workbench Workbench
           <li>Same controller.</li>
           <li>Different environment.</li>
           <li>Measured outcome.</li>
-          <li>Reusable experience, only if that plant's final e falls.</li>
+          <li>                    Reusable experience, only when the final e value for that plant falls.</li>
         </ul>
         <p className="text-zinc-500 text-sm">
           Φ is per plant. B2 beating B1 is not an error win. The Safety rows stay 0.014, 0.065, 0.065.

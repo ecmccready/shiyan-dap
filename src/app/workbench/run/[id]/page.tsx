@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import { SAFETY_PACK } from "@/lib/closed-loop";
 import { safetyFlywheel, type Arm } from "@/product/proof";
 import { readRuns, type OutcomeRun } from "@/product/run";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const JOURNEY = ["CREATE RUN", "Objective", "A proposes", "B executes", "z", "e", "Δe", "PROOF", "REUSE", "NEW RUN"];
 
@@ -23,11 +24,24 @@ type Share = {
   outcome: string;
 };
 
+function readSharedRecord(): Share | null {
+  const raw = new URLSearchParams(window.location.search).get("proof");
+  if (!raw) return null;
+  try {
+    return JSON.parse(decodeURIComponent(raw)) as Share;
+  } catch {
+    return null;
+  }
+}
+
 export default function RunDossierPage() {
   const params = useParams<{ id: string }>();
   const id = decodeURIComponent(params.id ?? "");
-  const [stored, setStored] = useState<OutcomeRun | null | undefined>(undefined);
-  const [shared, setShared] = useState<Share | null>(null);
+  const hydrated = useHydrated();
+  const stored: OutcomeRun | null | undefined = hydrated
+    ? readRuns().find((run) => run.id === id) ?? null
+    : undefined;
+  const shared = hydrated ? readSharedRecord() : null;
   const [note, setNote] = useState("");
   const wheel = useMemo(() => safetyFlywheel("grok_bot"), []);
   const hit = useMemo(() => {
@@ -35,17 +49,6 @@ export default function RunDossierPage() {
     if (i < 0) return null;
     return { reuse: wheel.reuse[i], cold: wheel.cold[i] };
   }, [wheel, id]);
-
-  useEffect(() => {
-    setStored(readRuns().find((run) => run.id === id) ?? null);
-    const raw = new URLSearchParams(window.location.search).get("proof");
-    if (!raw) return;
-    try {
-      setShared(JSON.parse(decodeURIComponent(raw)) as Share);
-    } catch {
-      setShared(null);
-    }
-  }, [id]);
 
   const arm = stored
     ? wheel.reuse.find((item) => item.case_id === stored.plant.case_id) ?? null

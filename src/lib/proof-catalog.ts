@@ -16,7 +16,7 @@ export const proofSingle = {
   containedHome: { href: "/home", owner: "ECMcCready", layer: "C2C" },
   layer: "C2C",
   emergence: { x: 1, y: 1, z: 2, formula: "y,x + y,x = z" },
-};
+} satisfies CatalogRow;
 
 export const proofPlaylist = {
   id: "pl_label_001",
@@ -30,19 +30,25 @@ export const proofPlaylist = {
   b2bReady: true,
   createdAt: "2026-09-01T00:00:00.000Z",
   assetUrl: FIRST_SINGLE_URL,
-};
+} satisfies CatalogRow;
 
 export const proofInventory = [proofSingle];
 export const proofPlaylists = [proofPlaylist];
 
-export function mergeInventory(live: any[] | undefined) {
+export type CatalogRow = {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+};
+
+export function mergeInventory(live: CatalogRow[] | undefined) {
   const rows = Array.isArray(live) ? live : [];
-  if (rows.some((row) => row?.id === proofSingle.id || String(row?.name || "").includes("Shiyan Yishu"))) return rows;
+  if (rows.some((row) => row.id === proofSingle.id || row.name.includes("Shiyan Yishu"))) return rows;
   return [proofSingle, ...rows];
 }
 
-export function mergePlaylists(live: any[] | undefined) {
+export function mergePlaylists(live: CatalogRow[] | undefined) {
   const rows = Array.isArray(live) ? live : [];
-  if (rows.some((row) => row?.id === proofPlaylist.id)) return rows;
+  if (rows.some((row) => row.id === proofPlaylist.id)) return rows;
   return [proofPlaylist, ...rows];
 }
