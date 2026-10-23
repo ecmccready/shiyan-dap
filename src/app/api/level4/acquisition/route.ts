@@ -8,9 +8,10 @@ export const dynamic = "force-dynamic";
 const STARTS_KEY = "level4:acquisition:starts";
 const RECENT_KEY = "level4:acquisition:recent";
 const STATE_KEY = "level4:acquisition:state";
+const SEEN_TTL_SECONDS = 60 * 60 * 24 * 30;
 const RECORD_START_SCRIPT = `
 local function validStarts(value)
-  return type(value) == "number" and value >= 0 and value < 9007199254740991 and value % 1 == 0
+  return type(value) == "number" and value >= 0 and value <= 9007199254740991 and value % 1 == 0
 end
 
 local function validRecent(value)
@@ -41,7 +42,7 @@ if rawState then
   starts = state.starts
   recent = state.recent
 else
-  local rawStarts = redis.call("GET", KEYS[2])
+  local rawStarts = redis.call("GET", KEYS[3])
   if rawStarts then
     if not string.match(rawStarts, "^%d+$") then
       return redis.error_reply("invalid acquisition start counter")
@@ -51,7 +52,7 @@ else
       return redis.error_reply("invalid acquisition start counter")
     end
   end
-  local rawRecent = redis.call("GET", KEYS[3])
+  local rawRecent = redis.call("GET", KEYS[4])
   if rawRecent then
     local ok, decoded = pcall(cjson.decode, rawRecent)
     if not ok or not validRecent(decoded) then
@@ -62,6 +63,10 @@ else
 end
 
 local id = ARGV[1]
+if redis.call("EXISTS", KEYS[2]) == 1 then
+  return starts
+end
+
 local next = { id }
 local alreadyRecorded = false
 for _, runId in ipairs(recent) do
@@ -72,11 +77,16 @@ for _, runId in ipairs(recent) do
   end
 end
 if alreadyRecorded then
+  redis.call("SET", KEYS[2], "1", "EX", ARGV[2])
   return starts
 end
 
 local nextStarts = starts + 1
+if not validStarts(nextStarts) then
+  return redis.error_reply("acquisition start counter exceeded the safe integer range")
+end
 redis.call("SET", KEYS[1], cjson.encode({ starts = nextStarts, recent = next }))
+redis.call("SET", KEYS[2], "1", "EX", ARGV[2])
 return nextStarts
 `;
 
@@ -204,7 +214,10 @@ export async function POST(req: NextRequest) {
   try {
     const starts = await redis
       .createScript<number>(RECORD_START_SCRIPT)
-      .eval([STATE_KEY, STARTS_KEY, RECENT_KEY], [id]);
+      .eval(
+        [STATE_KEY, `level4:acquisition:seen:${id}`, STARTS_KEY, RECENT_KEY],
+        [id, String(SEEN_TTL_SECONDS)]
+      );
     if (!Number.isSafeInteger(starts) || starts < 0) {
       console.error("Acquisition write returned an invalid start count");
       return NextResponse.json(
