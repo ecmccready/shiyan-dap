@@ -1,4 +1,4 @@
-import { persistPut } from "@/lib/persist";
+import { persistGet, persistPut } from "@/lib/persist";
 import fs from "node:fs";
 import path from "node:path";
 import { AdPayout, ContainedHome, promoteLayer } from "@/lib/economy";
@@ -25,6 +25,7 @@ export interface MarketplaceCluster {
 const file = path.join(process.cwd(), "src/data/marketplace.json");
 const g = globalThis as typeof globalThis & {
   __shiyanMarketplace?: MarketplaceCluster[];
+  __shiyanMarketplaceLoad?: Promise<MarketplaceCluster[]>;
 };
 
 function readDisk(): MarketplaceCluster[] | null {
@@ -45,37 +46,52 @@ function writeDisk(inventory: MarketplaceCluster[]) {
   }
 }
 
-function store(): MarketplaceCluster[] {
-  const inventory = g.__shiyanMarketplace ?? readDisk() ?? [];
-  g.__shiyanMarketplace = inventory;
-  return inventory;
+async function loadInventory(): Promise<MarketplaceCluster[]> {
+  if (g.__shiyanMarketplace) return g.__shiyanMarketplace;
+  if (!g.__shiyanMarketplaceLoad) {
+    g.__shiyanMarketplaceLoad = persistGet<MarketplaceCluster[]>(
+      "marketplace.json"
+    )
+      .then((persisted) => {
+        const inventory = persisted ?? readDisk() ?? [];
+        g.__shiyanMarketplace = inventory;
+        return inventory;
+      })
+      .finally(() => {
+        g.__shiyanMarketplaceLoad = undefined;
+      });
+  }
+  return g.__shiyanMarketplaceLoad;
 }
 
-function save(inventory: MarketplaceCluster[]) {
+async function save(inventory: MarketplaceCluster[]) {
   g.__shiyanMarketplace = inventory;
   writeDisk(inventory);
-  void persistPut("marketplace.json", inventory);
+  await persistPut("marketplace.json", inventory);
 }
 
-export function getInventory(domain?: string) {
-  const inventory = store();
+export async function getInventory(domain?: string) {
+  const inventory = await loadInventory();
   return domain
     ? inventory.filter((cluster) => cluster.domain === domain)
     : inventory;
 }
 
-export function addClusterToMarketplace(cluster: MarketplaceCluster) {
-  const inventory = store();
+export async function addClusterToMarketplace(cluster: MarketplaceCluster) {
+  const inventory = await loadInventory();
   const exists = inventory.some((item) => item.id === cluster.id);
   if (!exists) {
     inventory.unshift(cluster);
-    save(inventory);
+    await save(inventory);
   }
   return cluster;
 }
 
-export function updateClusterStatus(id: string, status: MarketplaceCluster["status"]) {
-  const inventory = store();
+export async function updateClusterStatus(
+  id: string,
+  status: MarketplaceCluster["status"]
+) {
+  const inventory = await loadInventory();
   const cluster = inventory.find((item) => item.id === id);
   if (!cluster) return null;
 
@@ -96,12 +112,12 @@ export function updateClusterStatus(id: string, status: MarketplaceCluster["stat
       cluster.adPayout?.userPayout ?? Number((cluster.similarity * 10).toFixed(2));
   }
 
-  save(inventory);
+  await save(inventory);
   return cluster;
 }
 
-export function clearInventory() {
-  save([]);
+export async function clearInventory() {
+  await save([]);
   return [];
 }
 

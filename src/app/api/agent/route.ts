@@ -149,7 +149,7 @@ async function runAgent(
     z: zPolicy.z,
   };
 
-  addClusterToMarketplace({
+  await addClusterToMarketplace({
     id: cluster.id,
     name: cluster.name,
     domain: domain.label,
@@ -181,7 +181,7 @@ async function runAgent(
       initialSupply: 1000,
       price: Number((1 + cluster.similarity).toFixed(2)),
     });
-    playlist = addClusterToPlaylist(cluster.id);
+    playlist = await addClusterToPlaylist(cluster.id);
   }
 
   const hf = await emitTrainingRecord({

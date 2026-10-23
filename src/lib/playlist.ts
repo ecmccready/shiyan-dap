@@ -1,4 +1,4 @@
-import { persistPut } from "@/lib/persist";
+import { persistGet, persistPut } from "@/lib/persist";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -25,6 +25,7 @@ export interface Playlist {
 const file = path.join(process.cwd(), "src/data/playlist.json");
 const g = globalThis as typeof globalThis & {
   __shiyanPlaylists?: Playlist[];
+  __shiyanPlaylistsLoad?: Promise<Playlist[]>;
 };
 
 const fallback: Playlist[] = [
@@ -60,16 +61,26 @@ function writeDisk(playlists: Playlist[]) {
   }
 }
 
-function store(): Playlist[] {
-  const playlists = g.__shiyanPlaylists ?? readDisk() ?? fallback;
-  g.__shiyanPlaylists = playlists;
-  return playlists;
+async function loadPlaylists(): Promise<Playlist[]> {
+  if (g.__shiyanPlaylists) return g.__shiyanPlaylists;
+  if (!g.__shiyanPlaylistsLoad) {
+    g.__shiyanPlaylistsLoad = persistGet<Playlist[]>("playlist.json")
+      .then((persisted) => {
+        const playlists = persisted ?? readDisk() ?? fallback;
+        g.__shiyanPlaylists = playlists;
+        return playlists;
+      })
+      .finally(() => {
+        g.__shiyanPlaylistsLoad = undefined;
+      });
+  }
+  return g.__shiyanPlaylistsLoad;
 }
 
-function save(playlists: Playlist[]) {
+async function save(playlists: Playlist[]) {
   g.__shiyanPlaylists = playlists;
   writeDisk(playlists);
-  void persistPut("playlist.json", playlists);
+  await persistPut("playlist.json", playlists);
 }
 
 function rebuildAttribution(playlist: Playlist) {
@@ -78,30 +89,30 @@ function rebuildAttribution(playlist: Playlist) {
     playlist.clusterIds.length > 0 || playlist.license !== "personal";
 }
 
-export function addClusterToPlaylist(clusterId: string): Playlist {
-  const playlists = store();
+export async function addClusterToPlaylist(clusterId: string): Promise<Playlist> {
+  const playlists = await loadPlaylists();
   const playlist = playlists[0];
   if (!playlist.clusterIds.includes(clusterId)) {
     playlist.clusterIds.push(clusterId);
   }
   rebuildAttribution(playlist);
-  save(playlists);
+  await save(playlists);
   return playlist;
 }
 
-export function getPlaylists(): Playlist[] {
-  return store();
+export async function getPlaylists(): Promise<Playlist[]> {
+  return loadPlaylists();
 }
 
-export function licensePlaylist(id: string, use: BundleUse = "sync") {
-  const playlists = store();
+export async function licensePlaylist(id: string, use: BundleUse = "sync") {
+  const playlists = await loadPlaylists();
   const playlist = playlists.find((item) => item.id === id);
   if (!playlist) return null;
   playlist.productType = use;
   playlist.license = use === "label" ? "commercial" : "sync";
   playlist.b2bReady = true;
   rebuildAttribution(playlist);
-  save(playlists);
+  await save(playlists);
   return {
     success: true,
     playlist,

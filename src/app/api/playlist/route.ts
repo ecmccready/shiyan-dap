@@ -8,7 +8,7 @@ function isBundleUse(value: unknown): value is BundleUse {
 }
 
 export async function GET() {
-  return NextResponse.json({ playlists: getPlaylists() });
+  return NextResponse.json({ playlists: await getPlaylists() });
 }
 
 export async function POST(request: Request) {
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
   const use = requestedUse || "sync";
   const id = typeof requestedId === "string" ? requestedId || "pl_label_001" : "pl_label_001";
-  const result = licensePlaylist(id, use);
+  const result = await licensePlaylist(id, use);
   if (!result) {
     return NextResponse.json(
       { success: false, error: "Playlist not found" },

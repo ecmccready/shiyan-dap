@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const cluster = updateClusterStatus(id, status);
+    const cluster = await updateClusterStatus(id, status);
     if (!cluster) {
       return NextResponse.json(
         { success: false, error: "Marketplace cluster not found" },
