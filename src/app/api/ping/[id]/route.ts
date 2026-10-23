@@ -19,10 +19,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   }
   const row: PingRecord = existing;
 
-  row.observed = 1;
-  row.received_at = new Date().toISOString();
-  row.source = "external";
-  store().set(id, row);
+  if (row.observed === 0) {
+    row.observed = 1;
+    row.received_at = new Date().toISOString();
+    row.source = "external";
+    store().set(id, row);
+  }
 
   return NextResponse.json({
     ok: true,
