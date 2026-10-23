@@ -1,77 +1,16 @@
 import { NextResponse } from "next/server";
 import {
-  LoopPlant,
   Namer,
   YAction,
   Y_ACTIONS,
   SAFETY_PACK,
   freshPlant,
+  isLoopPlant,
   loadCase,
   stepLoop,
 } from "@/lib/closed-loop";
 
 export const runtime = "nodejs";
-
-function isPlant(x: unknown): x is LoopPlant {
-  if (typeof x !== "object" || x === null || Array.isArray(x)) return false;
-  const p = x as Record<string, unknown>;
-  if (
-    !Number.isSafeInteger(p.t) ||
-    (p.t as number) < 0 ||
-    p.domain !== "safety" ||
-    typeof p.case_id !== "string" ||
-    !SAFETY_PACK.some((c) => c.id === p.case_id) ||
-    typeof p.B !== "object" ||
-    p.B === null ||
-    Array.isArray(p.B) ||
-    typeof p.M !== "object" ||
-    p.M === null ||
-    Array.isArray(p.M)
-  ) {
-    return false;
-  }
-  const b = p.B as Record<string, unknown>;
-  const m = p.M as Record<string, unknown>;
-  if (
-    !["completeness", "contradiction", "missing", "uncertainty", "independent_check", "useful"]
-      .every(
-        (field) =>
-          typeof b[field] === "number" &&
-          Number.isFinite(b[field]) &&
-          b[field] >= 0 &&
-          b[field] <= 1
-      ) ||
-    (b.boundary_ready !== undefined &&
-      (typeof b.boundary_ready !== "number" ||
-        !Number.isFinite(b.boundary_ready) ||
-        b.boundary_ready < 0 ||
-        b.boundary_ready > 1)) ||
-    !Array.isArray(m.ledger) ||
-    m.ledger.length > 500 ||
-    (m.last_z !== null && typeof m.last_z !== "string") ||
-    typeof m.last_e !== "number" ||
-    !Number.isFinite(m.last_e) ||
-    (m.last_y !== null &&
-      (typeof m.last_y !== "string" ||
-        !Y_ACTIONS.some((action) => action === m.last_y))) ||
-    (m.last_dominant !== null && typeof m.last_dominant !== "string")
-  ) {
-    return false;
-  }
-  return m.ledger.every((entry) => {
-    if (typeof entry !== "object" || entry === null || Array.isArray(entry)) return false;
-    const row = entry as Record<string, unknown>;
-    return (
-      typeof row.t === "number" &&
-      Number.isFinite(row.t) &&
-      typeof row.reduced === "number" &&
-      Number.isFinite(row.reduced) &&
-      typeof row.dominant === "string" &&
-      typeof row.y === "string" &&
-      Y_ACTIONS.some((action) => action === row.y)
-    );
-  });
-}
 
 export async function GET() {
   const plant = freshPlant();
@@ -109,7 +48,7 @@ export async function POST(req: Request) {
   if (payload.reset !== undefined && typeof payload.reset !== "boolean") {
     return NextResponse.json({ ok: false, error: "reset must be a boolean" }, { status: 400 });
   }
-  if (payload.plant !== undefined && !isPlant(payload.plant)) {
+  if (payload.plant !== undefined && !isLoopPlant(payload.plant)) {
     return NextResponse.json({ ok: false, error: "Invalid plant state" }, { status: 400 });
   }
   if (
@@ -126,7 +65,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Unsupported namer" }, { status: 400 });
   }
 
-  let plant = isPlant(payload.plant)
+  let plant = isLoopPlant(payload.plant)
     ? payload.plant
     : freshPlant(typeof caseId === "string" ? caseId : undefined);
   if (payload.reset === true) {

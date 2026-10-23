@@ -90,6 +90,89 @@ export type LoopPlant = {
   M: MemoryM;
 };
 
+function isPlantB(value: unknown): value is PlantB {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const plant = value as Record<string, unknown>;
+  return (
+    typeof plant.case_id === "string" &&
+    ["completeness", "contradiction", "missing", "uncertainty", "independent_check", "useful"]
+      .every(
+        (field) =>
+          typeof plant[field] === "number" &&
+          Number.isFinite(plant[field]) &&
+          plant[field] >= 0 &&
+          plant[field] <= 1
+      ) &&
+    (plant.boundary_ready === undefined ||
+      (typeof plant.boundary_ready === "number" &&
+        Number.isFinite(plant.boundary_ready) &&
+        plant.boundary_ready >= 0 &&
+        plant.boundary_ready <= 1))
+  );
+}
+
+function isStepRec(value: unknown): value is StepRec {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const rec = value as Record<string, unknown>;
+  const namers: Namer[] = ["grok_fast", "hy4_deep", "grok_bot", "operator"];
+  const gates: Gate[] = ["HOLD", "CLINICIAN_REVIEW", "ESCALATE"];
+  const sources: StepRec["source"][] = ["self", "memory", "search", "hold", "given"];
+  const finite = (field: string) =>
+    typeof rec[field] === "number" && Number.isFinite(rec[field]);
+  return (
+    Number.isSafeInteger(rec.t) &&
+    (rec.t as number) >= 0 &&
+    typeof rec.case_id === "string" &&
+    namers.some((namer) => namer === rec.namer) &&
+    Y_ACTIONS.some((action) => action === rec.y) &&
+    gates.some((gate) => gate === rec.gate) &&
+    isPlantB(rec.B) &&
+    isPlantB(rec.B_next) &&
+    typeof rec.z === "string" &&
+    finite("z_value") &&
+    finite("e") &&
+    finite("e_next") &&
+    finite("reduced") &&
+    typeof rec.dominant === "string" &&
+    sources.some((source) => source === rec.source)
+  );
+}
+
+export function isLoopPlant(value: unknown): value is LoopPlant {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const plant = value as Record<string, unknown>;
+  if (
+    !Number.isSafeInteger(plant.t) ||
+    (plant.t as number) < 0 ||
+    (plant.t as number) >= Number.MAX_SAFE_INTEGER ||
+    plant.domain !== "safety" ||
+    typeof plant.case_id !== "string" ||
+    !SAFETY_PACK.some((item) => item.id === plant.case_id) ||
+    !isPlantB(plant.B) ||
+    (plant.B as PlantB).case_id !== plant.case_id ||
+    typeof plant.M !== "object" ||
+    plant.M === null ||
+    Array.isArray(plant.M)
+  ) {
+    return false;
+  }
+  const memory = plant.M as Record<string, unknown>;
+  return (
+    Array.isArray(memory.ledger) &&
+    memory.ledger.length <= 48 &&
+    memory.ledger.every(isStepRec) &&
+    (memory.last_z === null ||
+      (typeof memory.last_z === "string" && memory.last_z.length <= 1000)) &&
+    typeof memory.last_e === "number" &&
+    Number.isFinite(memory.last_e) &&
+    (memory.last_y === null ||
+      (typeof memory.last_y === "string" &&
+        Y_ACTIONS.some((action) => action === memory.last_y))) &&
+    (memory.last_dominant === null ||
+      (typeof memory.last_dominant === "string" && memory.last_dominant.length <= 100))
+  );
+}
+
 export const REQUIRED_FIELDS = [
   "patient-evidence",
   "measurements",

@@ -3,9 +3,10 @@ import { SelfFromApproved } from "@/lib/approved-experience";
 import { saveRun, type PersistedRun } from "@/lib/run-store";
 import {
   freshPlant,
+  isLoopPlant,
+  Y_ACTIONS,
   Self,
   stepLoop,
-  type LoopPlant,
   type YAction,
 } from "@/lib/closed-loop";
 
@@ -19,7 +20,8 @@ async function safeSave(run: PersistedRun): Promise<"kv" | "memory"> {
   try {
     await saveRun(run);
     return "kv";
-  } catch {
+  } catch (error) {
+    console.error("Self experience persistence failed; using process memory:", error);
     memory.set(run.id, run);
     const list = memoryByClient.get(run.client_id) ?? [];
     memoryByClient.set(run.client_id, [run.id, ...list].slice(0, 48));
@@ -31,22 +33,80 @@ async function safeList(client_id: string): Promise<PersistedRun[]> {
   try {
     const { listClientRuns } = await import("@/lib/run-store");
     return await listClientRuns(client_id);
-  } catch {
+  } catch (error) {
+    console.error("Approved experience read failed; using process memory:", error);
     const ids = memoryByClient.get(client_id) ?? [];
-    return ids.map((id) => memory.get(id)).filter(Boolean) as PersistedRun[];
+    return ids
+      .map((id) => memory.get(id))
+      .filter((run): run is PersistedRun => run !== undefined);
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const which: "self" | "experience" = body.which === "self" ? "self" : "experience";
-    const plant: LoopPlant = body.plant ?? freshPlant();
-
-    const client_id = String(body.client_id || plant.case_id || "default-client");
-    const workspace_id = String(body.workspace_id || "default-workspace");
-    const workflow_version = String(body.workflow_version || "1.0");
-    const model_version = String(body.model_version || "grok-bot");
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "Request body must be valid JSON" },
+        { status: 400 }
+      );
+    }
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      return NextResponse.json(
+        { ok: false, error: "Request body must be a JSON object" },
+        { status: 400 }
+      );
+    }
+    const payload = body as Record<string, unknown>;
+    if (
+      payload.which !== undefined &&
+      payload.which !== "self" &&
+      payload.which !== "experience"
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "which must be self or experience" },
+        { status: 400 }
+      );
+    }
+    if (payload.plant !== undefined && !isLoopPlant(payload.plant)) {
+      return NextResponse.json({ ok: false, error: "Invalid plant state" }, { status: 400 });
+    }
+    const plant = isLoopPlant(payload.plant)
+      ? payload.plant
+      : freshPlant();
+    const identifiers = [
+      ["client_id", payload.client_id],
+      ["workspace_id", payload.workspace_id],
+      ["workflow_version", payload.workflow_version],
+      ["model_version", payload.model_version],
+    ] as const;
+    for (const [field, value] of identifiers) {
+      if (
+        value !== undefined &&
+        (typeof value !== "string" ||
+          value.length < 1 ||
+          value.length > 80 ||
+          /[\u0000-\u001f]/.test(value) ||
+          ((field === "client_id" || field === "workspace_id") &&
+            !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(value)))
+      ) {
+        return NextResponse.json(
+          { ok: false, error: `${field} is invalid` },
+          { status: 400 }
+        );
+      }
+    }
+    const client_id =
+      typeof payload.client_id === "string" ? payload.client_id : plant.case_id;
+    const workspace_id =
+      typeof payload.workspace_id === "string" ? payload.workspace_id : "default-workspace";
+    const workflow_version =
+      typeof payload.workflow_version === "string" ? payload.workflow_version : "1.0";
+    const model_version =
+      typeof payload.model_version === "string" ? payload.model_version : "grok-bot";
+    const which = payload.which === "self" ? "self" : "experience";
 
     let y: YAction;
     let source: string;
@@ -67,7 +127,11 @@ export async function POST(req: Request) {
       } catch {
         const runs = await safeList(client_id);
         const eligible = runs.filter(
-          (r) => r.approved && r.safety_passed && (r.phi ?? 0) > 0
+          (r) =>
+            r.approved &&
+            r.safety_passed &&
+            (r.phi ?? 0) > 0 &&
+            Y_ACTIONS.some((action) => action === r.y)
         );
         if (eligible.length === 0) {
           approved = { y: "observe", source: "fallback" };
@@ -78,7 +142,14 @@ export async function POST(req: Request) {
           approved = { y: best.y, source: "approved", justification: best.id };
         }
       }
-      y = approved.y as YAction;
+      const approvedY = Y_ACTIONS.find((action) => action === approved.y);
+      if (!approvedY) {
+        return NextResponse.json(
+          { ok: false, error: "Approved experience contains an unsupported action" },
+          { status: 502 }
+        );
+      }
+      y = approvedY;
       source = approved.source;
       justification = approved.justification;
     }
@@ -123,6 +194,7 @@ export async function POST(req: Request) {
         : "Not persisted (reduced ≤ 0)",
     });
   } catch (err) {
+    console.error("Self experience step failed:", err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
   }
 }
