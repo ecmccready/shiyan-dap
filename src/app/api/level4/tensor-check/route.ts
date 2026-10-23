@@ -53,7 +53,70 @@ export async function POST(req: NextRequest) {
   }
   try {
     const b = body as Record<string, unknown>;
-    const mode = b.mode ?? req.nextUrl.searchParams.get("mode");
+    const queryMode = req.nextUrl.searchParams.get("mode");
+    const mode = b.mode ?? queryMode ?? "holographic";
+    if (
+      (b.mode !== undefined &&
+        b.mode !== "fixed" &&
+        b.mode !== "holographic" &&
+        !isNormalizedMode(b.mode)) ||
+      (queryMode !== null &&
+        queryMode !== "fixed" &&
+        queryMode !== "holographic" &&
+        !isNormalizedMode(queryMode)) ||
+      (b.mode !== undefined && queryMode !== null && b.mode !== queryMode)
+    ) {
+      return NextResponse.json({ error: "Unsupported or conflicting tensor-check mode" }, { status: 400 });
+    }
+    const numericOptions = ["baseEpsilon", "eps_base"];
+    if (
+      numericOptions.some(
+        (field) =>
+          b[field] !== undefined &&
+          (typeof b[field] !== "number" || !validEps(b[field]))
+      )
+    ) {
+      return NextResponse.json(
+        { error: "baseEpsilon and eps_base must be finite non-negative numbers" },
+        { status: 400 }
+      );
+    }
+    const queryEpsilonValues = ["baseEpsilon", "eps_base"]
+      .map((field) => req.nextUrl.searchParams.get(field))
+      .filter((value): value is string => value !== null);
+    if (
+      queryEpsilonValues.some((value) => {
+        const parsed = Number(value);
+        return value.trim() === "" || !validEps(parsed);
+      })
+    ) {
+      return NextResponse.json(
+        { error: "Query baseEpsilon and eps_base must be finite non-negative numbers" },
+        { status: 400 }
+      );
+    }
+    const adaptiveOption = b.adaptive ?? req.nextUrl.searchParams.get("adaptive");
+    if (
+      adaptiveOption !== undefined &&
+      adaptiveOption !== null &&
+      adaptiveOption !== true &&
+      adaptiveOption !== false &&
+      adaptiveOption !== "true" &&
+      adaptiveOption !== "false" &&
+      adaptiveOption !== "1" &&
+      adaptiveOption !== "0"
+    ) {
+      return NextResponse.json({ error: "adaptive must be a boolean" }, { status: 400 });
+    }
+    const runIdOption = b.run_id ?? req.nextUrl.searchParams.get("run_id");
+    if (
+      runIdOption !== undefined &&
+      runIdOption !== null &&
+      (typeof runIdOption !== "string" ||
+        !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(runIdOption))
+    ) {
+      return NextResponse.json({ error: "Invalid run_id" }, { status: 400 });
+    }
     if (mode === "fixed") {
       const check = requestIndependentTensorCheck(payload);
       const { sealed, seal } = sealTensorBinding(check);
@@ -80,7 +143,7 @@ export async function POST(req: NextRequest) {
         eps_base = explicit;
         eps_source = "explicit";
       } else {
-        const runId = typeof b.run_id === "string" ? b.run_id : q.get("run_id");
+        const runId = typeof runIdOption === "string" ? runIdOption : null;
         const a = await adaptiveEpsBase(runId);
         eps_base = a.base;
         eps_source = a.source;
