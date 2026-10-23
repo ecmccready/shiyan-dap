@@ -7,6 +7,10 @@ import {
   getTokenTransactions,
 } from "../../../lib/token";
 
+const MAX_TOKEN_ID_LENGTH = 128;
+const MAX_TOKEN_LABEL_LENGTH = 200;
+const MAX_DOMAIN_LENGTH = 100;
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get("domain");
@@ -49,12 +53,16 @@ export async function POST(request: Request) {
       if (
         typeof payload.symbol !== "string" ||
         !payload.symbol.trim() ||
+        payload.symbol.length > MAX_TOKEN_LABEL_LENGTH ||
         typeof payload.name !== "string" ||
         !payload.name.trim() ||
+        payload.name.length > MAX_TOKEN_LABEL_LENGTH ||
         typeof payload.domain !== "string" ||
         !payload.domain.trim() ||
+        payload.domain.length > MAX_DOMAIN_LENGTH ||
         typeof payload.owner !== "string" ||
         !payload.owner.trim() ||
+        payload.owner.length > MAX_TOKEN_LABEL_LENGTH ||
         (payload.initialSupply !== undefined &&
           (typeof payload.initialSupply !== "number" ||
             !Number.isSafeInteger(payload.initialSupply) ||
@@ -89,10 +97,13 @@ export async function POST(request: Request) {
       if (
         typeof payload.tokenId !== "string" ||
         !payload.tokenId ||
+        payload.tokenId.length > MAX_TOKEN_ID_LENGTH ||
         typeof payload.from !== "string" ||
         !payload.from.trim() ||
+        payload.from.length > MAX_TOKEN_LABEL_LENGTH ||
         typeof payload.to !== "string" ||
         !payload.to.trim() ||
+        payload.to.length > MAX_TOKEN_LABEL_LENGTH ||
         typeof payload.amount !== "number" ||
         !Number.isFinite(payload.amount) ||
         payload.amount <= 0
