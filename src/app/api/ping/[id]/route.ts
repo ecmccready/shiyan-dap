@@ -11,15 +11,13 @@ function store() {
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const existing = store().get(id);
-  const row: PingRecord = existing || {
-    ping_id: id,
-    action_id: "WAIT_EXTERNAL",
-    asset_id: "ping_ref",
-    observed: 0,
-    source: "external",
-    created_at: new Date().toISOString(),
-    received_at: null,
-  };
+  if (!existing) {
+    return NextResponse.json(
+      { ok: false, error: "Ping not found" },
+      { status: 404 }
+    );
+  }
+  const row: PingRecord = existing;
 
   row.observed = 1;
   row.received_at = new Date().toISOString();

@@ -21,11 +21,37 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
-  if (body.b || body.z || body.outcome || body.settled === true) {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { ok: false, error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+
+  const payload = body as Record<string, unknown>;
+  if ("b" in payload || "z" in payload || "outcome" in payload || payload.settled === true) {
     return NextResponse.json(
       { ok: false, error: "ping cannot specify B, z, outcome, or settlement" },
       { status: 409 }
+    );
+  }
+  const assetId = payload.asset_id ?? "ping_ref";
+  if (
+    typeof assetId !== "string" ||
+    !/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(assetId)
+  ) {
+    return NextResponse.json(
+      { ok: false, error: "asset_id must be a valid identifier" },
+      { status: 400 }
     );
   }
 
@@ -33,7 +59,7 @@ export async function POST(req: Request) {
   const row: PingRecord = {
     ping_id,
     action_id: "WAIT_EXTERNAL",
-    asset_id: String(body.asset_id || "ping_ref"),
+    asset_id: assetId,
     observed: 0,
     source: "external",
     created_at: new Date().toISOString(),
