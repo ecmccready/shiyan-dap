@@ -3,16 +3,42 @@ import { runGrokBot } from "@/lib/grok-bot";
 import { licensePlaylist } from "@/lib/playlist";
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({}));
-  const message = String(body.message || "");
-  const domain = body.domain || "music";
-  const mode = body.mode === "live" ? "live" : "simulated";
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { success: false, error: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { success: false, error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+
+  const message = "message" in body ? body.message : "";
+  const domain = "domain" in body ? body.domain : "music";
+  const clusterId = "clusterId" in body ? body.clusterId : undefined;
+  if (
+    typeof message !== "string" ||
+    typeof domain !== "string" ||
+    (clusterId !== undefined && typeof clusterId !== "string")
+  ) {
+    return NextResponse.json(
+      { success: false, error: "message, domain, and clusterId have invalid types" },
+      { status: 400 }
+    );
+  }
+  const mode = "mode" in body && body.mode === "live" ? "live" : "simulated";
 
   const bot = await runGrokBot(
     {
       message,
       domain,
-      clusterId: body.clusterId,
+      clusterId,
     },
     mode
   );

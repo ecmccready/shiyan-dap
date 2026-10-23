@@ -13,6 +13,10 @@ import { splitAdValue, containHomePage } from "@/lib/economy";
 import { allocateCapital } from "@/lib/capital";
 import { emitTrainingRecord } from "@/lib/huggingface";
 
+function isDomain(value: string | null): value is Domain {
+  return value !== null && Object.prototype.hasOwnProperty.call(domains, value);
+}
+
 async function runAgent(
   domainId: Domain = "music",
   userText: string = "",
@@ -215,10 +219,9 @@ async function runAgent(
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const domainParam = searchParams.get("domain") as Domain | null;
-  const pathParam = searchParams.get("path") as RoutePath | null;
-  const domain: Domain =
-    domainParam && domains[domainParam] ? domainParam : "music";
+  const domainParam = searchParams.get("domain");
+  const pathParam = searchParams.get("path");
+  const domain: Domain = isDomain(domainParam) ? domainParam : "music";
   const path: RoutePath = pathParam === "deep" ? "deep" : "fast";
 
   const result = await runAgent(domain, "", path);
@@ -227,20 +230,43 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
-  const domainParam = searchParams.get("domain") as Domain | null;
-  const domain: Domain =
-    domainParam && domains[domainParam] ? domainParam : "social-transmedia";
+  const domainParam = searchParams.get("domain");
+  const domain: Domain = isDomain(domainParam)
+    ? domainParam
+    : "social-transmedia";
 
-  let userText = "";
-  let path: RoutePath = "fast";
+  let body: unknown;
   try {
-    const body = await request.json();
-    userText = body?.input || body?.text || "";
-    if (body?.path === "deep") path = "deep";
+    body = await request.json();
   } catch {
-    userText = "";
+    return NextResponse.json(
+      { success: false, error: "Request body must be valid JSON" },
+      { status: 400 }
+    );
   }
 
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { success: false, error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+
+  const input = "input" in body ? body.input : undefined;
+  const text = "text" in body ? body.text : undefined;
+  if (
+    (input !== undefined && typeof input !== "string") ||
+    (text !== undefined && typeof text !== "string")
+  ) {
+    return NextResponse.json(
+      { success: false, error: "input and text must be strings" },
+      { status: 400 }
+    );
+  }
+
+  const userText =
+    typeof input === "string" && input ? input : typeof text === "string" ? text : "";
+  const path: RoutePath = "path" in body && body.path === "deep" ? "deep" : "fast";
   const result = await runAgent(domain, userText, path);
   return NextResponse.json(result);
 }
