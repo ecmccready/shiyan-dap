@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { readExperienceStore } from "@/lib/level4/experience-store";
 import { coldBaseline, measureActions } from "@/lib/level4/measured";
 import { roeForEntry } from "@/lib/level4/roe";
-import type { YAction } from "@/lib/closed-loop";
+import { Y_ACTIONS, type YAction } from "@/lib/closed-loop";
 
 /**
  * GET /api/level4/benchmark — public, read-only, reproducible.
@@ -15,23 +15,86 @@ const RUN_ID = "run_mvculg3c_wn6w0q";
 const r3 = (n: number) => Number(n.toFixed(3));
 
 export async function GET() {
-  const entries = await readExperienceStore().catch(() => null);
-  if (entries == null) return NextResponse.json({ version: "aethel-benchmark/1", run_id: RUN_ID, error: "experience store not configured" });
-  const steps = entries.filter((e) => e.run_id === RUN_ID).sort((a, b) => a.iteration - b.iteration);
-  const actions: YAction[] = [];
-  const rows = [];
-  for (const s of steps) {
-    if (typeof s.y !== "string") break;
-    actions.push(s.y as YAction);
-    const m = measureActions(actions);
-    const cold = coldBaseline(actions.length);
-    const roe = roeForEntry(s);
-    rows.push({ iter: s.iteration, y: s.y, e_reuse: m.e, e_cold: cold, delta_e: roe.delta_e, phi: r3(cold - m.e), I: roe.I, G: roe.G });
+  let entries;
+  try {
+    entries = await readExperienceStore();
+  } catch (error) {
+    console.error("Level 4 benchmark read failed:", error);
+    return NextResponse.json(
+      { version: "aethel-benchmark/1", run_id: RUN_ID, error: "Unable to read experience records" },
+      { status: 502 }
+    );
   }
-  const first = rows[0], last = rows[rows.length - 1];
-  const summary = last
-    ? { steps: rows.length, e_start: measureActions(actions.slice(0, 1)).e0, e_final: last.e_reuse, e_cold_final: last.e_cold,
-        delta_e_total: r3(measureActions(actions).e0 - last.e_reuse), phi_final: last.phi, I_t: rows.map((r) => r.I), first_iter: first.iter }
-    : null;
-  return NextResponse.json({ version: "aethel-benchmark/1", run_id: RUN_ID, read_only: true, method: "replay of stored action sequence on a fresh demo plant; cold = Self() baseline at same step count", rows, summary });
+  if (entries === null) {
+    return NextResponse.json(
+      { version: "aethel-benchmark/1", run_id: RUN_ID, error: "Experience store is not configured" },
+      { status: 503 }
+    );
+  }
+  const steps = entries
+    .filter((entry) => entry.run_id === RUN_ID)
+    .sort((a, b) => a.iteration - b.iteration);
+  if (
+    steps.length > 40 ||
+    steps.some(
+      (entry, index) =>
+        entry.iteration !== index + 1 ||
+        typeof entry.y !== "string" ||
+        !Y_ACTIONS.some((action) => action === entry.y)
+    )
+  ) {
+    console.error("Benchmark run contains an invalid action sequence");
+    return NextResponse.json(
+      { version: "aethel-benchmark/1", run_id: RUN_ID, error: "Benchmark run data is invalid" },
+      { status: 502 }
+    );
+  }
+  try {
+    const actions: YAction[] = [];
+    const rows = [];
+    for (const entry of steps) {
+      actions.push(entry.y as YAction);
+      const measured = measureActions(actions);
+      const cold = coldBaseline(actions.length);
+      const roe = roeForEntry(entry);
+      rows.push({
+        iter: entry.iteration,
+        y: entry.y,
+        e_reuse: measured.e,
+        e_cold: cold,
+        delta_e: roe.delta_e,
+        phi: r3(cold - measured.e),
+        I: roe.I,
+        G: roe.G,
+      });
+    }
+    const first = rows[0];
+    const last = rows[rows.length - 1];
+    const summary = last
+      ? {
+          steps: rows.length,
+          e_start: measureActions(actions.slice(0, 1)).e0,
+          e_final: last.e_reuse,
+          e_cold_final: last.e_cold,
+          delta_e_total: r3(measureActions(actions).e0 - last.e_reuse),
+          phi_final: last.phi,
+          I_t: rows.map((row) => row.I),
+          first_iter: first.iter,
+        }
+      : null;
+    return NextResponse.json({
+      version: "aethel-benchmark/1",
+      run_id: RUN_ID,
+      read_only: true,
+      method: "replay of stored action sequence on a fresh demo plant; cold = Self() baseline at same step count",
+      rows,
+      summary,
+    });
+  } catch (error) {
+    console.error("Level 4 benchmark calculation failed:", error);
+    return NextResponse.json(
+      { version: "aethel-benchmark/1", run_id: RUN_ID, error: "Unable to calculate benchmark" },
+      { status: 502 }
+    );
+  }
 }
