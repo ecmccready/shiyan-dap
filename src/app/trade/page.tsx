@@ -42,7 +42,9 @@ export default function TradePage() {
   };
 
   const close = async (id: string, move: "accept" | "reject" | "timeout") => {
-    const res = await fetch("/api/trade/" + id + "/" + move);
+    const res = await fetch("/api/trade/" + encodeURIComponent(id) + "/" + move, {
+      method: "POST",
+    });
     const data = await res.json();
     if (!data.ok) return;
     const before = yFromAsset("listed");

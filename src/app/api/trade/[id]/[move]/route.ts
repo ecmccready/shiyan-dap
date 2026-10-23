@@ -15,7 +15,14 @@ function closeOf(move: string): { state: TradeState; observed: 0 | 1 } | null {
   return null;
 }
 
-export async function GET(
+export async function GET() {
+  return NextResponse.json(
+    { ok: false, error: "Use POST to close a trade" },
+    { status: 405, headers: { Allow: "POST" } }
+  );
+}
+
+export async function POST(
   _req: Request,
   ctx: { params: Promise<{ id: string; move: string }> }
 ) {
@@ -25,20 +32,19 @@ export async function GET(
     return NextResponse.json({ ok: false, error: "accept | reject | timeout" }, { status: 400 });
   }
 
-  const existing = store().get(id);
-  const row: TradeRecord = existing || {
-    trade_id: id,
-    asset_id: "trade_ref",
-    offer: "OFFER",
-    state: "offered",
-    observed: 0,
-    ping_id: null,
-    source: "p2p-trade",
-    level3: false,
-    settlement_written: false,
-    created_at: new Date().toISOString(),
-    closed_at: null,
-  };
+  const row = store().get(id);
+  if (!row) {
+    return NextResponse.json(
+      { ok: false, error: "Trade not found" },
+      { status: 404 }
+    );
+  }
+  if (row.state !== "offered") {
+    return NextResponse.json(
+      { ok: false, error: "Trade is already closed" },
+      { status: 409 }
+    );
+  }
 
   row.state = closed.state;
   row.observed = closed.observed;
@@ -57,11 +63,4 @@ export async function GET(
     settlement_written: false,
     note: "Binary close. computeB names next B after Learn reads the row.",
   });
-}
-
-export async function POST() {
-  return NextResponse.json(
-    { ok: false, error: "close is GET. Do not post B, z, or outcome." },
-    { status: 405 }
-  );
 }

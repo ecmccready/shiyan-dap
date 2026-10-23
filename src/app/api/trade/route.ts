@@ -20,18 +20,49 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
-  if (body.b || body.z || body.settled === true) {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { ok: false, error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+
+  const payload = body as Record<string, unknown>;
+  if ("b" in payload || "z" in payload || "settled" in payload) {
     return NextResponse.json(
       { ok: false, error: "trade cannot specify B, z, or settlement" },
       { status: 409 }
     );
   }
+  const assetId = payload.asset_id ?? "trade_ref";
+  const offer = payload.offer ?? "OFFER";
+  if (
+    typeof assetId !== "string" ||
+    !assetId.trim() ||
+    assetId.length > 128 ||
+    typeof offer !== "string" ||
+    !offer.trim() ||
+    offer.length > 200
+  ) {
+    return NextResponse.json(
+      { ok: false, error: "asset_id and offer must be non-empty strings" },
+      { status: 400 }
+    );
+  }
 
   const row: TradeRecord = {
     trade_id: tradeId(),
-    asset_id: String(body.asset_id || "trade_ref"),
-    offer: String(body.offer || "OFFER"),
+    asset_id: assetId.trim(),
+    offer: offer.trim(),
     state: "offered",
     observed: 0,
     ping_id: null,

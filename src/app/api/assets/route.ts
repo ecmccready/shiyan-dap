@@ -40,19 +40,49 @@ export async function GET(request: Request) {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
-  const title = String(body.title || "").trim();
-  if (!title) {
-    return NextResponse.json({ ok: false, error: "title required" }, { status: 400 });
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { ok: false, error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+
+  const payload = body as Record<string, unknown>;
+  const title = typeof payload.title === "string" ? payload.title.trim() : "";
+  const owner = payload.owner ?? "this session";
+  const source = payload.source ?? "protocol register";
+  if (
+    !title ||
+    title.length > 200 ||
+    typeof owner !== "string" ||
+    !owner.trim() ||
+    owner.length > 200 ||
+    typeof source !== "string" ||
+    !source.trim() ||
+    source.length > 500
+  ) {
+    return NextResponse.json(
+      { ok: false, error: "Valid title, owner, and source are required" },
+      { status: 400 }
+    );
   }
 
   const asset: LedgerAsset = {
     id: "cl_" + Date.now(),
     title,
-    creator: String(body.owner || "this session"),
-    owner: String(body.owner || "this session"),
+    creator: owner.trim(),
+    owner: owner.trim(),
     buyer: "None yet",
-    source: String(body.source || "protocol register"),
+    source: source.trim(),
     state: "unlisted",
   };
 
