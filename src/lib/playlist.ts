@@ -52,15 +52,6 @@ function readDisk(): Playlist[] | null {
   }
 }
 
-function writeDisk(playlists: Playlist[]) {
-  try {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(playlists, null, 2));
-  } catch {
-    // Vercel is read-only; memory still holds for the warm instance.
-  }
-}
-
 async function loadPlaylists(): Promise<Playlist[]> {
   if (g.__shiyanPlaylists) return g.__shiyanPlaylists;
   if (!g.__shiyanPlaylistsLoad) {
@@ -78,9 +69,11 @@ async function loadPlaylists(): Promise<Playlist[]> {
 }
 
 async function save(playlists: Playlist[]) {
+  const result = await persistPut("playlist.json", playlists);
+  if (!result.ok) {
+    throw new Error("Playlist state could not be persisted");
+  }
   g.__shiyanPlaylists = playlists;
-  writeDisk(playlists);
-  await persistPut("playlist.json", playlists);
 }
 
 function rebuildAttribution(playlist: Playlist) {
@@ -91,12 +84,13 @@ function rebuildAttribution(playlist: Playlist) {
 
 export async function addClusterToPlaylist(clusterId: string): Promise<Playlist> {
   const playlists = await loadPlaylists();
-  const playlist = playlists[0];
+  const current = playlists[0] ?? fallback[0];
+  const playlist = { ...current, clusterIds: [...current.clusterIds] };
   if (!playlist.clusterIds.includes(clusterId)) {
     playlist.clusterIds.push(clusterId);
   }
   rebuildAttribution(playlist);
-  await save(playlists);
+  await save([playlist, ...playlists.slice(1)]);
   return playlist;
 }
 
@@ -106,13 +100,14 @@ export async function getPlaylists(): Promise<Playlist[]> {
 
 export async function licensePlaylist(id: string, use: BundleUse = "sync") {
   const playlists = await loadPlaylists();
-  const playlist = playlists.find((item) => item.id === id);
-  if (!playlist) return null;
+  const current = playlists.find((item) => item.id === id);
+  if (!current) return null;
+  const playlist = { ...current, clusterIds: [...current.clusterIds] };
   playlist.productType = use;
   playlist.license = use === "label" ? "commercial" : "sync";
   playlist.b2bReady = true;
   rebuildAttribution(playlist);
-  await save(playlists);
+  await save(playlists.map((item) => (item.id === id ? playlist : item)));
   return {
     success: true,
     playlist,

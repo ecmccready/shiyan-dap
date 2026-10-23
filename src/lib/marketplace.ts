@@ -37,15 +37,6 @@ function readDisk(): MarketplaceCluster[] | null {
   }
 }
 
-function writeDisk(inventory: MarketplaceCluster[]) {
-  try {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(inventory, null, 2));
-  } catch {
-    // Vercel is read-only; warm memory still holds.
-  }
-}
-
 async function loadInventory(): Promise<MarketplaceCluster[]> {
   if (g.__shiyanMarketplace) return g.__shiyanMarketplace;
   if (!g.__shiyanMarketplaceLoad) {
@@ -65,9 +56,11 @@ async function loadInventory(): Promise<MarketplaceCluster[]> {
 }
 
 async function save(inventory: MarketplaceCluster[]) {
+  const result = await persistPut("marketplace.json", inventory);
+  if (!result.ok) {
+    throw new Error("Marketplace state could not be persisted");
+  }
   g.__shiyanMarketplace = inventory;
-  writeDisk(inventory);
-  await persistPut("marketplace.json", inventory);
 }
 
 export async function getInventory(domain?: string) {
@@ -81,8 +74,7 @@ export async function addClusterToMarketplace(cluster: MarketplaceCluster) {
   const inventory = await loadInventory();
   const exists = inventory.some((item) => item.id === cluster.id);
   if (!exists) {
-    inventory.unshift(cluster);
-    await save(inventory);
+    await save([cluster, ...inventory]);
   }
   return cluster;
 }
@@ -92,8 +84,12 @@ export async function updateClusterStatus(
   status: MarketplaceCluster["status"]
 ) {
   const inventory = await loadInventory();
-  const cluster = inventory.find((item) => item.id === id);
-  if (!cluster) return null;
+  const current = inventory.find((item) => item.id === id);
+  if (!current) return null;
+  const cluster = { ...current };
+  const updatedInventory = inventory.map((item) =>
+    item.id === id ? cluster : item
+  );
 
   cluster.status = status;
   cluster.lastUpdated = new Date().toISOString();
@@ -112,7 +108,7 @@ export async function updateClusterStatus(
       cluster.adPayout?.userPayout ?? Number((cluster.similarity * 10).toFixed(2));
   }
 
-  await save(inventory);
+  await save(updatedInventory);
   return cluster;
 }
 

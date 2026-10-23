@@ -52,8 +52,12 @@ export async function persistGet<T>(key: string): Promise<T | null> {
 }
 
 export async function persistPut(key: string, value: unknown) {
-  persistLocalPut(key, value);
-  if (!awsEnabled()) return { ok: true, backend: "local" as const };
+  const localSaved = persistLocalPut(key, value);
+  if (!awsEnabled()) {
+    return localSaved
+      ? { ok: true, backend: "local" as const }
+      : { ok: false, backend: "none" as const };
+  }
 
   try {
     const { S3Client, PutObjectCommand } = await import("@aws-sdk/client-s3");
@@ -69,6 +73,8 @@ export async function persistPut(key: string, value: unknown) {
     return { ok: true, backend: "s3" as const };
   } catch (error) {
     console.warn("AWS persistPut fallback:", error);
-    return { ok: true, backend: "local" as const };
+    return localSaved
+      ? { ok: true, backend: "local" as const }
+      : { ok: false, backend: "none" as const };
   }
 }
