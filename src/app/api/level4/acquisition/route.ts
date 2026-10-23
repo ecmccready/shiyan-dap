@@ -7,6 +7,78 @@ export const dynamic = "force-dynamic";
 
 const STARTS_KEY = "level4:acquisition:starts";
 const RECENT_KEY = "level4:acquisition:recent";
+const STATE_KEY = "level4:acquisition:state";
+const RECORD_START_SCRIPT = `
+local function validStarts(value)
+  return type(value) == "number" and value >= 0 and value < 9007199254740991 and value % 1 == 0
+end
+
+local function validRecent(value)
+  if type(value) ~= "table" then
+    return false
+  end
+  local count = 0
+  for index, runId in pairs(value) do
+    if type(index) ~= "number" or index < 1 or index > 8 or index % 1 ~= 0
+      or type(runId) ~= "string" or #runId < 1 or #runId > 80
+      or not string.match(runId, "^[A-Za-z0-9][A-Za-z0-9_-]*$") then
+      return false
+    end
+    count = count + 1
+  end
+  return count == #value
+end
+
+local starts = 0
+local recent = {}
+local rawState = redis.call("GET", KEYS[1])
+if rawState then
+  local ok, state = pcall(cjson.decode, rawState)
+  if not ok or type(state) ~= "table" or not validStarts(state.starts)
+    or not validRecent(state.recent) then
+    return redis.error_reply("invalid acquisition state")
+  end
+  starts = state.starts
+  recent = state.recent
+else
+  local rawStarts = redis.call("GET", KEYS[2])
+  if rawStarts then
+    if not string.match(rawStarts, "^%d+$") then
+      return redis.error_reply("invalid acquisition start counter")
+    end
+    starts = tonumber(rawStarts)
+    if not validStarts(starts) then
+      return redis.error_reply("invalid acquisition start counter")
+    end
+  end
+  local rawRecent = redis.call("GET", KEYS[3])
+  if rawRecent then
+    local ok, decoded = pcall(cjson.decode, rawRecent)
+    if not ok or not validRecent(decoded) then
+      return redis.error_reply("invalid acquisition recent-run list")
+    end
+    recent = decoded
+  end
+end
+
+local id = ARGV[1]
+local next = { id }
+local alreadyRecorded = false
+for _, runId in ipairs(recent) do
+  if runId == id then
+    alreadyRecorded = true
+  elseif #next < 8 then
+    table.insert(next, runId)
+  end
+end
+if alreadyRecorded then
+  return starts
+end
+
+local nextStarts = starts + 1
+redis.call("SET", KEYS[1], cjson.encode({ starts = nextStarts, recent = next }))
+return nextStarts
+`;
 
 function client(): Redis | null {
   const url = process.env.UPSTASH_KV_REST_API_URL;
@@ -31,16 +103,48 @@ export async function GET() {
     );
   }
   try {
-    const [startsValue, recentValue] = await Promise.all([
-      redis.get<number | string>(STARTS_KEY),
-      redis.get<string[]>(RECENT_KEY),
-    ]);
-    const starts = Number(startsValue ?? 0);
+    const stateValue = await redis.get<unknown>(STATE_KEY);
+    let startsValue: unknown;
+    let recentValue: unknown;
+    if (stateValue === null) {
+      [startsValue, recentValue] = await Promise.all([
+        redis.get<number | string>(STARTS_KEY),
+        redis.get<unknown>(RECENT_KEY),
+      ]);
+    } else if (
+      typeof stateValue === "object" &&
+      stateValue !== null &&
+      !Array.isArray(stateValue)
+    ) {
+      const state = stateValue as Record<string, unknown>;
+      if (!Array.isArray(state.recent)) {
+        console.error("Acquisition store returned invalid state");
+        return NextResponse.json(
+          { error: "Acquisition store returned invalid data" },
+          { status: 502, ...noStore }
+        );
+      }
+      startsValue = state.starts;
+      recentValue = state.recent;
+    } else {
+      console.error("Acquisition store returned invalid state");
+      return NextResponse.json(
+        { error: "Acquisition store returned invalid data" },
+        { status: 502, ...noStore }
+      );
+    }
+    const rawStarts = startsValue === null ? 0 : startsValue;
+    const recent = recentValue === null ? [] : recentValue;
+    const starts =
+      (typeof rawStarts === "number" ||
+      (typeof rawStarts === "string" && /^\d+$/.test(rawStarts)))
+        ? Number(rawStarts)
+        : Number.NaN;
     if (
       !Number.isSafeInteger(starts) ||
       starts < 0 ||
-      (recentValue !== null &&
-        (!Array.isArray(recentValue) || !recentValue.every((id) => isRunId(id))))
+      !Array.isArray(recent) ||
+      !recent.every((id: unknown) => isRunId(id))
     ) {
       console.error("Acquisition store returned invalid data");
       return NextResponse.json(
@@ -48,10 +152,7 @@ export async function GET() {
         { status: 502, ...noStore }
       );
     }
-    return NextResponse.json(
-      { starts, recent: recentValue ?? [] },
-      noStore
-    );
+    return NextResponse.json({ starts, recent }, noStore);
   } catch (error) {
     console.error("Acquisition read failed:", error);
     return NextResponse.json(
@@ -101,22 +202,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const recentValue = await redis.get<unknown>(RECENT_KEY);
-    if (
-      recentValue !== null &&
-      (!Array.isArray(recentValue) || !recentValue.every((runId) => isRunId(runId)))
-    ) {
-      console.error("Acquisition recent-run list is invalid");
+    const starts = await redis
+      .createScript<number>(RECORD_START_SCRIPT)
+      .eval([STATE_KEY, STARTS_KEY, RECENT_KEY], [id]);
+    if (!Number.isSafeInteger(starts) || starts < 0) {
+      console.error("Acquisition write returned an invalid start count");
       return NextResponse.json(
         { error: "Acquisition store returned invalid data" },
         { status: 502, ...noStore }
       );
     }
-    const recent = (recentValue ?? []) as string[];
-    const next = [id, ...recent.filter((runId) => runId !== id)].slice(0, 8);
-    const starts = await redis.incr(STARTS_KEY);
-    await redis.set(RECENT_KEY, next);
-
     return NextResponse.json({ ok: true, starts }, noStore);
   } catch (error) {
     console.error("Acquisition write failed:", error);
