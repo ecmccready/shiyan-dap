@@ -34,11 +34,34 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
-  if (body.role === "developer") {
-    const name = String(body.name || "").slice(0, 80);
-    const reference = String(body.reference || "").slice(0, 180);
-    if (!name || !reference) {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Request body must be valid JSON" },
+      { status: 400 }
+    );
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json(
+      { error: "Request body must be a JSON object" },
+      { status: 400 }
+    );
+  }
+
+  const payload = body as Record<string, unknown>;
+  if (payload.role === "developer") {
+    const name = payload.name;
+    const reference = payload.reference;
+    if (
+      typeof name !== "string" ||
+      !name.trim() ||
+      name.length > 80 ||
+      typeof reference !== "string" ||
+      !reference.trim() ||
+      reference.length > 180
+    ) {
       return NextResponse.json({ error: "name and reference required" }, { status: 400 });
     }
     return NextResponse.json({
@@ -46,20 +69,29 @@ export async function POST(req: Request) {
       executed: false,
       workbench: {
         id: `wb_${Date.now().toString(36)}`,
-        name,
-        reference,
+        name: name.trim(),
+        reference: reference.trim(),
         status: "registered_not_run",
       },
       note: "Registration is a contract. A new B runs only after a reference pack and a measurement exist.",
     });
   }
-  const caseId = String(body.case_id || "case-incomplete-pack");
+  const caseId = payload.case_id ?? "case-incomplete-pack";
+  if (typeof caseId !== "string" || !caseId.trim()) {
+    return NextResponse.json({ error: "case_id must be a non-empty string" }, { status: 400 });
+  }
   const known = SAFETY_PACK.some((c) => c.id === caseId);
   if (!known) {
     return NextResponse.json({ error: "unknown Safety case" }, { status: 400 });
   }
   const wheel = safetyFlywheel("grok_bot");
-  const arm = wheel.reuse.find((a) => a.case_id === caseId) ?? wheel.reuse[0];
+  const arm = wheel.reuse.find((a) => a.case_id === caseId);
+  if (!arm) {
+    return NextResponse.json(
+      { error: "No experience available for this Safety case" },
+      { status: 404 }
+    );
+  }
   return NextResponse.json({
     job: arm.artifact,
     beats_cold: arm.delta_e > (wheel.cold.find((a) => a.case_id === caseId)?.delta_e ?? 0),
