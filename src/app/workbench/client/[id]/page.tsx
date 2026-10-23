@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { loadRun, exportRunJSON, type PersistedRun } from "@/lib/run-store";
 
-export default function ClientRunPage({ params }: { params: { id: string } }) {
+export default function ClientRunPage() {
+  const { id } = useParams<{ id: string }>();
   const [run, setRun] = useState<PersistedRun | null>(null);
 
   useEffect(() => {
-    loadRun(params.id).then(setRun);
-  }, [params.id]);
+    loadRun(id).then(setRun);
+  }, [id]);
 
   if (!run) return <main className="p-6">Loading Run…</main>;
 
