@@ -43,6 +43,12 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+  if (mode === "live") {
+    return NextResponse.json(
+      { success: false, error: "Live bot mode is not available on this endpoint" },
+      { status: 503 }
+    );
+  }
 
   const bot = await runGrokBot(
     {
@@ -50,7 +56,7 @@ export async function POST(request: Request) {
       domain,
       clusterId,
     },
-    mode
+    "simulated"
   );
 
   return NextResponse.json({
