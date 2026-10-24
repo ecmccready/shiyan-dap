@@ -40,8 +40,6 @@ export default function SpinePage() {
         <a href="/workbench/autonomous/proof" className="underline text-emerald-400">Recovery proof</a>
         {" · "}
         <a href="/workbench/status" className="underline text-emerald-400">Status</a>
-        {" · "}
-        <a href="/roadmap" className="underline text-emerald-400">Roadmap</a>
       </p>
     </main>
     </Level4Shell>
