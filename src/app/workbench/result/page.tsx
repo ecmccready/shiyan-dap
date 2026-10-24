@@ -1,15 +1,18 @@
 import { Redis } from "@upstash/redis";
+import type { Metadata } from "next";
 import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
-import CopyVerifySummary from "@/components/CopyVerifySummary";
 import ShareSection from "@/components/ShareSection";
 import AnchorRoot from "@/components/AnchorRoot";
-import CopyLedgerLine from "@/components/CopyLedgerLine";
-import CopyEvidencePack from "@/components/CopyEvidencePack";
 import HolographicDensity from "@/components/HolographicDensity";
 import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
+
+export const metadata: Metadata = {
+  title: "Verified result | Aethel Node",
+  description: "Inspect verified run metrics, independent checks, and exportable evidence from Aethel Node.",
+};
 
 // Server-rendered on every request so the latest verified result is in the HTML
 // (visible without JavaScript, to crawlers, and to buyers' link previews).
@@ -68,15 +71,13 @@ export default async function ResultPage({
           <>
             <LatestVerified entry={entry} total={scoped.length} scopedToRun={Boolean(requested)} />
             <VerifyVerdict runId={runId} />
-            <CopyVerifySummary runId={runId} />
             <AnchorRoot runId={runId} />
-            <CopyLedgerLine runId={entry?.run_id} iteration={entry?.iteration} />
-            <CopyEvidencePack entry={entry} />
             <HolographicDensity distance={entry?.tensor_distance ?? null} />
             <RunEndpoints variant="inline" runId={runId} />
             <ShareSection
               runId={entry?.run_id}
               label={requested ? "Public proof URL for this run:" : "Public proof URL for the latest eligible run:"}
+              entry={entry}
             />
           </>
         )}
