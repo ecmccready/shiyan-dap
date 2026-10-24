@@ -79,7 +79,6 @@ Level 4 durability plant (this slice):
 - Status (`/workbench/status`) reads the durable store directly: guided starts, recent runs, latest verified result, and recent verified steps.
 - One shared Level 4 navigation across start, outcome, autonomous run, result, recovery proof, status, spine, and roadmap.
 - Product spine view and status summary with cross-links.
-- Roadmap that surfaces the priorities and links.
 
 Supporting modules under `src/lib/level4/`: controller, goal, loop, safety-gate, checkpoint, idempotency, precheck, verified, measured, server-record, acquisition.
 
