@@ -46,7 +46,7 @@ export default function WorkbenchPage() {
             <Link className="underline" href="/workbench/pilot">Pilot</Link>
             <Link className="underline" href="/workbench/offer">Offer</Link>
             <Link className="underline" href="/offer">Offer (public)</Link>
-            <Link className="underline" href="/workbench/autonomous?roe_drive=1">ROE · Optimizing Engine</Link>
+            <Link className="underline" href="/workbench/autonomous?roe_drive=1">ROE · Reciprocal Optimization Engine</Link>
           </div>
         </nav>
 
