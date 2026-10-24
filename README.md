@@ -1,55 +1,6 @@
-# Aethel Node
-
-Sovereign Operating System for distributed AI compute.
-
-Live: [https://shiyan-dap.vercel.app](https://shiyan-dap.vercel.app)  
-Repo: [https://github.com/ecmccready/shiyan-dap](https://github.com/ecmccready/shiyan-dap)
-
-## What it is now
-
-A durable, bounded autonomous system that takes a goal, plans, acts, observes, verifies, and resumes after interruption without losing state or repeating unintended actions.
-
-Customers do not buy an AI or a state machine. They buy a system that repeatedly reduces error against a reference, under explicit safety and budget constraints, and records eligible experience for reuse.
-
-- Unit of operation: a **Run** on **Workbench**. Metric: **Δe**.
-- Home (Workspace) is the controller. Workbench is the execution environment.
-- Level 4 is the current plant: plan, act, observe, verify, learn, and recover.
-
-## Global value: ending the misdiagnosis of the next action
-
-In Aethel Node, **misdiagnosis** is an engine term rather than a clinical one. It means a systemic error that happens in every domain: picking a next action that changes the state of a system without moving it closer to its reference. That action can look like progress while variance stays the same or a structural defect stays hidden. Left unchecked, these errors compound across teams, tools, and models.
-
-**Global value.** The engine ends the misdiagnosis of the next action. It measures error (e) against a reference before and after each step, enforces safety and budget constraints before anything is applied, and records durable proof of what worked: Δe, and Φ against a cold `Self()` baseline.
-
-**Pain point solved.** An unverified proposal does not become accepted experience. Every action passes the pre-action safety and budget gate and an idempotency check before it is applied. Each step is then scored by measuring e on the core plant. Only a step that reaches the goal is marked eligible and kept as experience. Proposals that change state but fail to reduce error stay on the record as ineligible and are never kept as experience, and a lower error never overrides a failed safety constraint. What's live today: run records and verified experience stored in Upstash, the pre-action gate, idempotent experience writes, measured Δe, and a public experience API (`/api/level4/experience`).
-
-**Domain-agnostic by design.** The loop, the safety gate, and the experience store make no assumptions about the domain. Anything that can be expressed as observed variance against a reference can use them, whether that's software delivery, logistics, clinical workflows, or creative assets. Today the engine runs on the reference cases in the live plants, with music as the first vertical. Healthcare diagnostics stays a later, higher-risk vertical: this is not a diagnosis tool and handles no PHI.
-
-**Engineering direction (intentional abstraction, not yet shipped as a multi-domain simulation):** generalized plant and reference types, one uniform variance formula for e across domains, a safety gate that doesn't depend on the domain, and a tamper-evident public ledger for verified experience.
-
 ## Tensor Scope: Verifying Latent State
 
 **Definition.** The tensor scope brings tensors into verification alongside the text and state logs. A tensor T ∈ ℝ^(d₁×…×dₙ) can be an embedding, an activation state, a logit distribution, or a sensor vector. It is stored row-major with its shape.
-
-- **Commitment.** H(T) = sha256(serialize(T)), written `sha256:<64 hex>`. A ledger stores the hash and the distance, never the raw tensor. `serialize` is the ASCII header `AETHEL-T1;<dtype>;<d₁>x…x<dₙ>;` followed by the values as little-endian IEEE-754 (f64 by default, or f32). The bytes, and therefore the hash, are the same in Node and in the browser.
-- **Independent check.** At `request_independent_check`, T_out is compared with a sealed T_ref using the Frobenius norm ‖T_out − T_ref‖_F or the cosine distance 1 − cos(T_out, T_ref). If a sealed H(T_ref) is supplied, T_ref must hash to it.
-- **Seal.** If the distance is greater than ε, or T_ref does not match its sealed hash, the step is a **misdiagnosis violation** (`MISDIAGNOSIS_VIOLATION`). The `seal_pack` step then fails and nothing is marked eligible. Otherwise the step is `TENSOR_VERIFIED`, and H(T_out), H(T_ref), and the distance are bound into the seal.
-- **Additional gate.** The tensor check is an extra gate alongside Δe and Φ, not a replacement for them. A step is eligible only if the existing logic marks it eligible and, when a tensor was supplied, the tensor check also passes. Without a tensor, behavior is unchanged.
-
-**Implemented now:**
-
-- `src/lib/level4/tensor.ts`: the `Tensor` type, `validateTensor`, `serializeTensor`, `commitTensor` (a synchronous, dependency-free SHA-256), `frobeniusDistance`, `cosineSimilarity`, `cosineDistance`, `independentTensorCheck`, and `combineEligibility`.
-- `src/lib/level4/seal.ts`: `parseTensorPayload`, `requestIndependentTensorCheck`, `sealTensorBinding`, and `experienceTensorFields`.
-- `src/lib/mcp/handler.ts` (Workbench B MCP server, `/api/mcp`): `request_independent_check`, `seal_pack`, and `run_sealed_sequence` accept an optional `tensor` argument (`{ out, ref, epsilon, metric?, refCommitment? }`). On a violation, `seal_pack` is not applied and the result reports `sealed: false`. Calls without a tensor return exactly what they did before.
-- `/api/level4/tensor-check`: a stateless POST endpoint that runs the independent check and returns the seal fields. It stores nothing.
-- `/api/level4/experience`: optional `tensor_commitment` and `tensor_distance` fields on POST. The default GET is unchanged. In `?format=ledger`, entries that carry tensor fields gain `TENSOR=<sha256:…> T_DIST=<x>`.
-- `src/lib/level4/demo-tensor.ts` (`/workbench/autonomous`): a deterministic demo tensor, the plant's 4-component sensor vector, checked against measureE's sealed reference at `request_independent_check` and `seal_pack` (Frobenius, ε = 0.16). It is an observation only and does not change e or the proposer. In the demo, iteration 3 is a real `MISDIAGNOSIS_VIOLATION` (distance 0.594, not yet eligible anyway) and iteration 4 is `TENSOR_VERIFIED` (distance 0.151). Both entries carry `tensor_commitment` and `tensor_distance`. See [docs/level4-tensor-demo.md](docs/level4-tensor-demo.md), including an `/api/mcp` `run_sealed_sequence` example.
-- **Holographic bound (opt-in).** `calculateDynamicThreshold` and `verifyHolographicBound` in `tensor.ts` scale ε with tensor size: ε_dyn = ε_base · √(N / N_base), with ε_base = 0.16 at N_base = 4 elements (so a 4-element tensor keeps exactly 0.16; 16 elements gives 0.32). Available on `/api/level4/tensor-check` with `mode: "holographic"` (or `?mode=holographic`, optional `baseEpsilon`), which adds `holographic: { verified, distance, maxAllowable }`. It is not the default for the live demo, which keeps fixed ε = 0.16. Check: `npx tsx scripts/check-holographic.ts`.
-  - *Rationale (analogy, not a derivation).* The name borrows from the Bekenstein / holographic bound, where the maximum information in a region scales with its boundary surface area rather than its volume. The analogy here is narrower: the Frobenius distance of a tensor with N entries that are each off by the same amount grows as √N, so a fixed ε gets stricter per element as tensors grow. Scaling the allowed distance by √(N / N_base) keeps the per-element tolerance (information density) constant across sizes.
-  - *Why √(N/4).* The base is ε = 0.16 at N_base = 4 (a 2×2 tensor), so √(4/4) = 1 and the demo tensor keeps exactly 0.16.
-  - *Inspectable.* Holographic-mode responses (tensor-check and MCP) also carry `holographic_ledger: "H_MAX=<maxAllowable> H_DIST=<d> H_VERIFIED=<bool>"`. Stored experience entries and existing ledger lines are unchanged.
-  - *Status.* This is an engineering heuristic, not a physical derivation. It is opt-in on `/api/level4/tensor-check` and the MCP tools (`holographic: true`); the live demo default stays fixed ε = 0.16.
-  - *Default (update).* For new calls, the holographic bound is now the default verdict on `/api/level4/tensor-check` (mode omitted) and on MCP `request_independent_check` / `seal_pack` (with a Frobenius tensor). `check` gains `bound`, `max_allowable` and `fixed_epsilon`. For the old fixed-ε path, pass `mode: "fixed"` (body or `?mode=fixed`) or `holographic: false` on MCP. The live demo, verify replay and stored results stay pinned to fixed ε = 0.16 (they call `independentTensorCheck` directly). `GET /api/level4/verify` adds an informational `holographic` array per tensor iteration; verdict and checks are unchanged. A 4-element tensor gets the same verdict either way.
 
 **Proprietary scope — Workspace A → Workbench B → Z, governed by ROE.** The proprietary opportunity is the integrated, testable loop that turns a declared goal into a bounded run, checks the result against evidence, and retains only experience that qualifies for reuse. Its value is not a claim of machine consciousness: “conscious” is a product metaphor for persistent state, feedback, and continuity across runs. The commercial thesis is that this continuity can reduce repeated work and next-action error; retention, savings, and willingness to pay must be demonstrated with external users and measured outcomes.
 
