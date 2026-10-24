@@ -34,7 +34,11 @@ export function markApplied(actionKey: string) {
   saveSeen(seen);
 }
 
-export function clearSeen() {
+export function clearSeen(runId: string) {
   if (typeof window === "undefined") return;
-  window.localStorage.removeItem(SEEN_KEY);
+  const seen = loadSeen();
+  for (const actionKey of Object.keys(seen)) {
+    if (actionKey.startsWith(`${runId}:`)) delete seen[actionKey];
+  }
+  saveSeen(seen);
 }

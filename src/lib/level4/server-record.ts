@@ -18,5 +18,8 @@ export async function loadServerRecord(id: string): Promise<ControllerRecord | n
 }
 
 export async function clearServerRecord(id: string) {
-  await fetch(`${BASE}?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+  const res = await fetch(`${BASE}?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+  if (!res.ok) {
+    throw new Error(`Unable to delete run record (${res.status})`);
+  }
 }

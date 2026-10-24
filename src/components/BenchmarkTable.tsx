@@ -26,26 +26,29 @@ export default function BenchmarkTable() {
   if (!rows) return null;
   return (
     <section className="rounded-xl border border-zinc-800 p-4 text-sm" aria-label="Cross-run benchmark">
-      <p className="font-medium">Cross-run benchmark: cold start vs reuse{" "}<a href="/api/level4/benchmark" target="_blank" rel="noopener" className="ml-1 text-xs font-normal underline text-zinc-400">raw</a></p>
-      <table className="mt-2 w-full text-xs font-mono text-zinc-300">
-        <thead className="text-zinc-500">
-          <tr><th className="text-left">step</th><th className="text-left">action</th><th className="text-right">e reuse</th><th className="text-right">e cold</th><th className="text-right">Δe</th><th className="text-right">Φ</th><th className="text-right">I_t</th></tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.iter}><td>{r.iter}</td><td>{r.y}</td><td className="text-right">{r.e_reuse}</td><td className="text-right">{r.e_cold}</td><td className="text-right">{r.delta_e}</td><td className="text-right">{r.phi}</td><td className="text-right">{r.I}</td></tr>
-          ))}
-        </tbody>
-      </table>
+      <p className="font-medium">
+        Cross-run benchmark: cold start vs reuse{" "}
+        <a href="/api/level4/benchmark" target="_blank" rel="noopener" className="ml-1 text-xs font-normal underline text-zinc-400">
+          raw data
+        </a>
+      </p>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full text-xs font-mono text-zinc-300">
+          <thead className="text-zinc-500">
+            <tr><th className="text-left">step</th><th className="text-left">action</th><th className="text-right">e reuse</th><th className="text-right">e cold</th><th className="text-right">Δe</th><th className="text-right">Φ</th><th className="text-right">I_t</th></tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.iter}><td>{r.iter}</td><td>{r.y}</td><td className="text-right">{r.e_reuse}</td><td className="text-right">{r.e_cold}</td><td className="text-right">{r.delta_e}</td><td className="text-right">{r.phi}</td><td className="text-right">{r.I}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {summary && (
         <p className="mt-2 text-xs text-zinc-400">
           {summary.steps} steps · e {summary.e_start} → {summary.e_final} (cold {summary.e_cold_final}) · Δe total {summary.delta_e_total} · Φ {summary.phi_final}
         </p>
       )}
-      <p className="mt-1 text-xs">
-        <a href="/api/level4/benchmark" className="underline text-emerald-400">/api/level4/benchmark</a>
-        <span className="text-zinc-500"> · read-only</span>
-      </p>
     </section>
   );
 }

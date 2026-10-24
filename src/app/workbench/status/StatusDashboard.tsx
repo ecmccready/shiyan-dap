@@ -3,17 +3,11 @@
 import { useEffect, useState } from "react";
 import { loadAcquisitionServer } from "@/lib/level4/acquisition";
 import Level4Shell from "@/components/Level4Shell";
-import LatestVerified from "@/components/LatestVerified";
-import RunEndpoints from "@/components/RunEndpoints";
-import AnchorRoot from "@/components/AnchorRoot";
-import ShareSection from "@/components/ShareSection";
-import CopyLedgerLine from "@/components/CopyLedgerLine";
-import CopyEvidencePack from "@/components/CopyEvidencePack";
-import HolographicDensity from "@/components/HolographicDensity";
 import BenchmarkTable from "@/components/BenchmarkTable";
 import {
   loadExperienceServer,
   latestVerified,
+  fmtE,
   type ExperienceEntry,
 } from "@/lib/level4/experience-client";
 
@@ -31,8 +25,10 @@ export default function StatusPage() {
       setStarts(data.starts);
       setLoadingStarts(false);
       setRecent(data.recent);
-      if (typeof window !== "undefined") {
+      try {
         setActiveRun(window.sessionStorage.getItem("aethel-active-run-id"));
+      } catch {
+        setActiveRun(null);
       }
       setExperience(await loadExperienceServer());
       setLoadingExp(false);
@@ -50,17 +46,6 @@ export default function StatusPage() {
         <h1 className="text-2xl font-semibold">Durability status</h1>
         <p className="text-zinc-300">
           Run records, guided-start counters, and verified experience persist in Upstash and survive reloads and redeploys.
-        </p>
-        <p className="text-sm">
-          <a href="/workbench/outcome" className="underline text-emerald-400">
-            Declare an outcome
-          </a>
-          {" — external client path."}
-        </p>
-        <p className="text-sm">
-          <a href="/workbench/result" className="underline text-emerald-400">
-            Latest result
-          </a>
         </p>
       </header>
 
@@ -85,17 +70,41 @@ export default function StatusPage() {
         </div>
       </section>
 
-      <LatestVerified entry={latest} total={experience.length} loading={loadingExp} />
-      <ShareSection runId={latest?.run_id} />
-      <CopyLedgerLine runId={latest?.run_id} iteration={latest?.iteration} />
-      <CopyEvidencePack entry={latest} />
-      <HolographicDensity distance={latest?.tensor_distance ?? null} />
-
-      <section className="rounded-xl border border-zinc-800 p-4 text-sm">
-        <p className="font-medium">Measured outcome</p>
-        <p className="text-zinc-400">
-          Demo goal: reduce final e below 0.16 under safety constraints. Φ is recorded when verified results are eligible.
-        </p>
+      <section className="rounded-xl border border-zinc-800 p-4 text-sm" aria-label="Latest verified result">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="font-medium">Latest verified result</p>
+          <a href="/workbench/result" className="text-emerald-400 underline">Full proof &amp; exports</a>
+        </div>
+        {loadingExp ? (
+          <p className="mt-2 text-xs text-zinc-500">Loading verified experience…</p>
+        ) : latest ? (
+          <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+            <dt className="text-zinc-500">Run</dt>
+            <dd className="font-mono text-xs break-all">
+              <a href={`/workbench/autonomous?run=${encodeURIComponent(latest.run_id)}`} className="underline">
+                {latest.run_id}
+              </a>
+            </dd>
+            <dt className="text-zinc-500">Final e</dt>
+            <dd className="font-mono">{fmtE(latest.e)}</dd>
+            {typeof latest.delta_e === "number" && (
+              <>
+                <dt className="text-zinc-500">Δe</dt>
+                <dd className="font-mono">{fmtE(latest.delta_e)}</dd>
+              </>
+            )}
+            {typeof latest.phi === "number" && (
+              <>
+                <dt className="text-zinc-500">Φ vs cold</dt>
+                <dd className="font-mono">{fmtE(latest.phi)}</dd>
+              </>
+            )}
+            <dt className="text-zinc-500">Eligible</dt>
+            <dd>{latest.eligible ? "yes" : "no"}</dd>
+          </dl>
+        ) : (
+          <p className="mt-2 text-zinc-400">No verified results have been recorded yet.</p>
+        )}
       </section>
 
       <section className="rounded-xl border border-zinc-800 p-4 text-sm space-y-2">
@@ -125,11 +134,6 @@ export default function StatusPage() {
       </section>
 
       <BenchmarkTable />
-      <section className="rounded-xl border border-zinc-800 p-4">
-        <p className="mb-3 text-sm font-medium">Verify &amp; export</p>
-        <RunEndpoints variant="inline" />
-      </section>
-      <AnchorRoot />
 
       {experience.length > 1 && (
         <section className="rounded-xl border border-zinc-800 p-4 text-sm">

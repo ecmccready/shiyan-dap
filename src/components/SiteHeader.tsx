@@ -29,7 +29,6 @@ const TRIMMED_PATHS = new Set([
   "/workbench/autonomous",
   "/workbench/result",
   "/workbench/autonomous/proof",
-  "/workbench/spine",
   "/roadmap",
 ]);
 

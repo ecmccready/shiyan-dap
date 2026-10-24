@@ -37,8 +37,6 @@
 | /workbench/outcome | External client declares a measurable goal | https://shiyan-dap.vercel.app/workbench/outcome |
 | /workbench/result | Simple verified result view | https://shiyan-dap.vercel.app/workbench/result |
 | /workbench/status | Level 4 durability and acquisition status | https://shiyan-dap.vercel.app/workbench/status |
-| /workbench/spine | Product spine view | https://shiyan-dap.vercel.app/workbench/spine |
-| /roadmap | Durability and acquisition priorities | https://shiyan-dap.vercel.app/roadmap |
 | /workbench/history | Inspectable Runs | https://shiyan-dap.vercel.app/workbench/history |
 | /workbench/marketplace | Verified sequences | https://shiyan-dap.vercel.app/workbench/marketplace |
 | /workbench/proof | Safety proof | https://shiyan-dap.vercel.app/workbench/proof |

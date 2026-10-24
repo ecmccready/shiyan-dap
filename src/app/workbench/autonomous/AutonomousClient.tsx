@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Level4Shell from "@/components/Level4Shell";
 import type { GoalContract } from "@/lib/level4/goal";
 import type { ControllerRecord } from "@/lib/level4/controller";
@@ -11,7 +11,7 @@ import { autonomousStep } from "@/lib/level4/loop";
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from "@/lib/level4/checkpoint";
 import { alreadyApplied, markApplied, clearSeen } from "@/lib/level4/idempotency";
 import { precheckAction } from "@/lib/level4/precheck";
-import { recordVerified, clearVerified, recordExperienceServer } from "@/lib/level4/verified";
+import { recordVerified, recordExperienceServer } from "@/lib/level4/verified";
 import { saveServerRecord, loadServerRecord, clearServerRecord } from "@/lib/level4/server-record";
 import {
   REUSE_SEQUENCE,
@@ -31,6 +31,7 @@ import { loadExperienceServer, type ExperienceEntry } from "@/lib/level4/experie
 import { roeNextAction } from "@/lib/level4/roe-next-action";
 import { roeForEntry } from "@/lib/level4/roe";
 import { selectorRows, selectorLabel, type SelectorRow, type SelectorTagged } from "@/lib/level4/selector-label";
+import { newRunId } from "@/lib/level4/acquisition";
 
 const DEMO_GOAL: GoalContract = {
   id: "goal_demo",
@@ -62,8 +63,9 @@ function fmt(n: number | null | undefined) {
 
 function AutonomousInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   // Same lookup order as before: ?run= → session → demo-run.
-  const [runId] = useState<string>(
+  const [runId, setRunId] = useState<string>(
     () =>
       searchParams.get("run") ||
       (typeof window !== "undefined" ? window.sessionStorage.getItem("aethel-active-run-id") : null) ||
@@ -77,6 +79,8 @@ function AutonomousInner() {
   const [rec, setRec] = useState<ControllerRecord>(INITIAL);
   const [recovered, setRecovered] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
   const [tensor, setTensor] = useState<TensorCheck | null>(null);
   // Self() durable feed, on by default; ?durable=0 disables (?durable=1 still accepted).
   // A durable plan is used only after a client-side replay vets it (see durable-vet.ts).
@@ -94,42 +98,64 @@ function AutonomousInner() {
   const [runEntries, setRunEntries] = useState<ExperienceEntry[]>([]);
 
   useEffect(() => {
+    let active = true;
     loadExperienceServer().then((list) => {
+      if (!active) return;
       setSelRows(selectorRows(list as SelectorTagged[], runId));
       setRunEntries(list.filter((x) => x.run_id === runId));
     });
+    return () => {
+      active = false;
+    };
   }, [runId]);
 
   useEffect(() => {
     if (!roeDrive) return;
+    let active = true;
     // Same experience source and same current-run exclusion as loadDurablePlan.
-    loadExperienceServer().then((list) => setRoeEntries(list.filter((x) => x.run_id !== runId)));
+    loadExperienceServer().then((list) => {
+      if (active) setRoeEntries(list.filter((x) => x.run_id !== runId));
+    });
+    return () => {
+      active = false;
+    };
   }, [roeDrive, runId]);
 
   useEffect(() => {
     if (!durableOn) return;
+    let active = true;
     loadDurablePlan(goal.permitted_actions, runId).then((p) => {
+      if (!active) return;
       const v = vetDurablePlan(p, successThreshold(goal.success_condition));
       setVet(v);
       setPlan(v.ok ? p : null);
     });
+    return () => {
+      active = false;
+    };
   }, [durableOn, goal.permitted_actions, goal.success_condition, runId]);
 
   useEffect(() => {
+    let active = true;
     async function load() {
       const serverRec = await loadServerRecord(runId).catch(() => null);
+      if (!active) return;
       if (serverRec) {
         setRec({ actions: [], e0: E0, ...serverRec });
         setRecovered(true);
         return;
       }
-      const saved = loadCheckpoint();
+      const saved = loadCheckpoint(runId);
+      if (!active) return;
       if (saved?.rec && saved.rec.goal_id === DEMO_GOAL.id) {
         setRec({ actions: [], e0: E0, ...saved.rec });
         setRecovered(true);
       }
     }
     load();
+    return () => {
+      active = false;
+    };
   }, [runId]);
 
   const applied = (rec.actions ?? []) as YAction[];
@@ -168,7 +194,7 @@ function AutonomousInner() {
           blocked_reason: check.reason,
         };
         setRec(blocked);
-        saveCheckpoint(blocked);
+        saveCheckpoint(blocked, runId);
         await saveServerRecord(runId, blocked).catch(() => undefined);
         return;
       }
@@ -258,7 +284,7 @@ function AutonomousInner() {
 
       markApplied(actionKey);
       setRec(next);
-      saveCheckpoint(next);
+      saveCheckpoint(next, runId);
       await saveServerRecord(runId, next).catch(() => undefined);
     } finally {
       setBusy(false);
@@ -266,14 +292,38 @@ function AutonomousInner() {
   }
 
   async function reset() {
-    clearCheckpoint();
-    clearSeen();
-    clearVerified();
-    await clearServerRecord(runId).catch(() => undefined);
-    setRec(INITIAL);
-    setTensor(null);
-    setSelRows([]);
-    setRecovered(false);
+    if (busy || resetting) return;
+    if (!window.confirm("Start a fresh run? This deletes the current controller record and checkpoint. Verified experience remains linked to the old run.")) return;
+
+    setResetting(true);
+    setResetError(null);
+    try {
+      clearCheckpoint(runId);
+      clearSeen(runId);
+      await clearServerRecord(runId);
+      const nextRunId = newRunId();
+      try {
+        window.sessionStorage.setItem("aethel-active-run-id", nextRunId);
+      } catch {
+        setResetError("A fresh run started, but this browser could not remember it for future visits.");
+      }
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("run", nextRunId);
+      setRunId(nextRunId);
+      router.replace(`/workbench/autonomous?${params.toString()}`);
+      setRec(INITIAL);
+      setTensor(null);
+      setSelRows([]);
+      setRunEntries([]);
+      setRoeEntries(null);
+      setPlan(null);
+      setVet(null);
+      setRecovered(false);
+    } catch {
+      setResetError("Could not finish resetting this run. Its server record may still be recoverable; please try again.");
+    } finally {
+      setResetting(false);
+    }
   }
 
   return (
@@ -363,13 +413,17 @@ function AutonomousInner() {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={step}
-          disabled={busy || rec.state === "COMPLETE" || rec.state === "BLOCKED"}
+          disabled={busy || resetting || rec.state === "COMPLETE" || rec.state === "BLOCKED"}
           className="h-10 rounded-full bg-emerald-600 px-5 text-sm text-white disabled:opacity-40"
         >
           {busy ? "Working…" : "Advance loop"}
         </button>
-        <button onClick={reset} className="h-10 rounded-full border border-zinc-700 px-5 text-sm">
-          Reset
+        <button
+          onClick={reset}
+          disabled={busy || resetting}
+          className="h-10 rounded-full border border-zinc-700 px-5 text-sm disabled:opacity-40"
+        >
+          {resetting ? "Starting fresh run…" : "Start fresh run"}
         </button>
         {rec.state === "COMPLETE" && (
           <Link
@@ -380,6 +434,7 @@ function AutonomousInner() {
           </Link>
         )}
       </div>
+      {resetError && <p role="alert" className="text-sm text-red-400">{resetError}</p>}
 
       <section className="space-y-1 rounded-xl border border-zinc-800 p-4 text-xs font-mono text-zinc-300">
         {rec.history.length === 0 ? (
