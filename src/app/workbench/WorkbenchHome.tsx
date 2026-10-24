@@ -52,7 +52,7 @@ export default function WorkbenchHome() {
           <header className="mb-4 space-y-1">
             <h2 className="text-xl font-semibold">Start a durable run</h2>
             <p className="text-sm text-zinc-400">
-              One clear path from goal to verified result. The system plans, acts, checks safety, records evidence, and can resume after interruption.
+              Set a measurable goal. Actions are safety-checked and recorded, and run progress can be resumed after interruption.
             </p>
           </header>
           <div className="grid gap-3 text-sm sm:grid-cols-3">
@@ -84,9 +84,6 @@ export default function WorkbenchHome() {
             </Link>
           </div>
           {startError && <p role="alert" className="mt-3 text-sm text-red-400">{startError}</p>}
-          <p className="mt-3 text-xs text-zinc-500">
-            No algorithm knowledge required. Safety and recovery are enforced before any action is applied.
-          </p>
         </section>
 
         <nav aria-label="Workbench resources" className="mt-10 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
