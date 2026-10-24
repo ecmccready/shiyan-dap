@@ -41,7 +41,6 @@ export default function StatusPage() {
   }, []);
 
   const items = [
-    { surface: "/roadmap", status: "live", note: "durability + acquisition priorities" },
     { surface: "/workbench/start", status: "live", note: "guided first run" },
     { surface: "/workbench/outcome", status: "live", note: "external client declares a measurable goal" },
     { surface: "/workbench/result", status: "live", note: "simple external verified result" },
