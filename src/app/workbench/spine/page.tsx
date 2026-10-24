@@ -33,7 +33,7 @@ export default function SpinePage() {
       </ol>
 
       <p className="text-sm">
-        <a href="/workbench/start" className="underline text-emerald-400">Guided start</a>
+        <a href="/workbench#guided-run" className="underline text-emerald-400">Guided start</a>
         {" · "}
         <a href="/workbench/autonomous" className="underline text-emerald-400">Autonomous run</a>
         {" · "}

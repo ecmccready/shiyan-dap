@@ -41,7 +41,7 @@ export default function StatusPage() {
   }, []);
 
   const items = [
-    { surface: "/workbench/start", status: "live", note: "guided first run" },
+    { surface: "/workbench#guided-run", status: "live", note: "guided first run" },
     { surface: "/workbench/outcome", status: "live", note: "external client declares a measurable goal" },
     { surface: "/workbench/result", status: "live", note: "simple external verified result" },
     { surface: "/workbench/spine", status: "live", note: "product spine view" },
@@ -119,7 +119,7 @@ export default function StatusPage() {
       <section className="rounded-xl border border-zinc-800 p-4 text-sm space-y-2">
         <p className="font-medium">Acquisition readiness</p>
         <ul className="list-disc list-inside text-zinc-400">
-          <li>Clear starting point: /workbench/start</li>
+          <li>Clear starting point: /workbench#guided-run</li>
           <li>Guided first run that ends in a verified result</li>
           <li>Understandable outcome without algorithm knowledge</li>
           <li>Reason to return: progress survives reload via server record</li>

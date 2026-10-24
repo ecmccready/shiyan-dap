@@ -12,7 +12,7 @@ const VERTICALS = ALL_VERTICALS.filter((v) => v.id !== "safety" && v.id !== "com
 const NAV = [
   { href: "/workbench", label: "Home" },
   { href: "/", label: "Music" },
-  { href: "/workbench/start", label: "Start a run" },
+  { href: "/workbench#guided-run", label: "Start a run" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
@@ -20,11 +20,8 @@ const NAV = [
 
 // Hidden on the Home page (/workbench) only; other pages keep them.
 const HOME_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
-// Hidden on /workbench/start only.
-const START_HIDDEN = new Set(["/workbench", "/", "/workbench/start", "/marketplace", "/playlist", "/single"]);
-
 // Hidden on /workbench/status only (Home stays).
-const STATUS_HIDDEN = new Set(["/", "/workbench/start", "/marketplace", "/playlist", "/single"]);
+const STATUS_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
 // Level 4 pages that share the trimmed /workbench/status header (exact paths; query ignored).
 const TRIMMED_PATHS = new Set([
   "/workbench/status",
@@ -47,14 +44,12 @@ export default function SiteHeader({ section }: { section?: string }) {
       ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
       : pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
-      : pathname === "/workbench/start"
-        ? NAV.filter((n) => !START_HIDDEN.has(n.href))
-        : TRIMMED_PATHS.has(pathname)
-          ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
-          : NAV;
-  // Upload is hidden on Home (/workbench), Start (/workbench/start) and all TRIMMED_PATHS.
+      : TRIMMED_PATHS.has(pathname)
+        ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
+        : NAV;
+  // Upload is hidden on Home (/workbench) and all TRIMMED_PATHS.
   const showUpload =
-    pathname !== "/workbench" && pathname !== "/workbench/start" && !TRIMMED_PATHS.has(pathname);
+    pathname !== "/workbench" && !TRIMMED_PATHS.has(pathname);
 
   return (
     <header className="border-b border-zinc-800">
@@ -63,7 +58,7 @@ export default function SiteHeader({ section }: { section?: string }) {
           <Link href="/workbench" className="font-semibold">
             Aethel Node
           </Link>
-          {pathname === "/workbench/start" ? null : section ? (
+          {section ? (
             <span className="text-zinc-500 text-sm">
               {TRIMMED_PATHS.has(pathname) ? section.replace(/\s*·\s*Level 4$/, "") : section}
             </span>

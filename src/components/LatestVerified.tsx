@@ -39,7 +39,7 @@ export default function LatestVerified({
         <p className="font-medium">Verified experience</p>
         <p className="text-zinc-400">
           No verified results recorded.{" "}
-          <Link href="/workbench/start" className="underline text-emerald-400">
+          <Link href="/workbench#guided-run" className="underline text-emerald-400">
             Start a run
           </Link>
         </p>

@@ -33,7 +33,7 @@
 | /workbench/pilot | Paid pilot gate | https://shiyan-dap.vercel.app/workbench/pilot |
 | /workbench/autonomous | Level 4 autonomous run | https://shiyan-dap.vercel.app/workbench/autonomous |
 | /workbench/autonomous/proof | End-to-end recovery + gate proof | https://shiyan-dap.vercel.app/workbench/autonomous/proof |
-| /workbench/start | Guided first run | https://shiyan-dap.vercel.app/workbench/start |
+| /workbench#guided-run | Guided first run | https://shiyan-dap.vercel.app/workbench#guided-run |
 | /workbench/outcome | External client declares a measurable goal | https://shiyan-dap.vercel.app/workbench/outcome |
 | /workbench/result | Simple verified result view | https://shiyan-dap.vercel.app/workbench/result |
 | /workbench/status | Level 4 durability and acquisition status | https://shiyan-dap.vercel.app/workbench/status |
@@ -74,7 +74,7 @@ Level 4 durability plant (this slice):
 - End-to-end recovery proof that also exercises the pre-action gate.
 - Unique run id per guided start; recent runs tracked.
 - Acquisition counters that persist (`/api/level4/acquisition`), incremented atomically so concurrent starts are not lost.
-- Guided first-run entry (`/workbench/start`).
+- Guided first-run entry integrated into `/workbench` (`/workbench#guided-run`); `/workbench/start` redirects there for existing links.
 - External client path: declare a measurable goal (`/workbench/outcome`) → run → view verified result (`/workbench/result`). The result page is server-rendered from the durable store, so the latest eligible result is visible without JavaScript.
 - Status (`/workbench/status`) reads the durable store directly: guided starts, recent runs, latest verified result, and recent verified steps.
 - One shared Level 4 navigation across start, outcome, autonomous run, result, recovery proof, status, spine, and roadmap.

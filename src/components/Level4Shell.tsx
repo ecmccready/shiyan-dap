@@ -11,7 +11,7 @@ import ClearCopied from "./ClearCopied";
  * plus one sub-nav so every Level 4 page links to every other.
  */
 export const LEVEL4_NAV = [
-  { href: "/workbench/start", label: "Start" },
+  { href: "/workbench#guided-run", label: "Start" },
   { href: "/workbench/outcome", label: "Declare outcome" },
   { href: "/workbench/autonomous", label: "Autonomous run" },
   { href: "/workbench/result", label: "Result" },
