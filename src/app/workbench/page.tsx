@@ -6,14 +6,6 @@ import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import { loadAcquisitionServer, newRunId, recordStartServer } from "@/lib/level4/acquisition";
 
-const LOOP = [
-  ["Give A a task", "Objective and reference, not a prompt."],
-  ["Let B execute", "Workbench steps y. A only names y."],
-  ["Measure", "z is observed. e is distance to the reference."],
-  ["Improve", "Reuse only if final e falls. A tie is not a win."],
-  ["Preserve", "The Run is the evidence. Export it."],
-];
-
 export default function WorkbenchPage() {
   const router = useRouter();
   const [starts, setStarts] = useState<number | null>(null);
@@ -128,28 +120,6 @@ export default function WorkbenchPage() {
           </section>
         </nav>
 
-        <section className="mt-10 space-y-6">
-          {LOOP.map(([title, body], i) => (
-            <div key={title} className="border border-zinc-800 rounded-2xl p-5">
-              <p className="text-emerald-400 text-xs uppercase tracking-widest mb-1">
-                0{i + 1}
-              </p>
-              <h2 className="text-lg font-semibold mb-1">{title}</h2>
-              <p className="text-zinc-400 text-sm">{body}</p>
-            </div>
-          ))}
-        </section>
-
-        <section className="mt-10 border border-zinc-800 rounded-2xl p-5">
-          <p className="text-emerald-400 text-xs uppercase tracking-widest mb-2">
-            Killer metric · Δe
-          </p>
-          <h2 className="text-lg font-semibold mb-2">Intelligence is reduction of error</h2>
-          <p className="text-zinc-400 text-sm">
-            Φ is the change in final error between a cold run and a reuse run on the same reference.
-            A lower final e is the claim. A shorter path is a note. A tie is not a win.
-          </p>
-        </section>
       </main>
     </div>
   );
