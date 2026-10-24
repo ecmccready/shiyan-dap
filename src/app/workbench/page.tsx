@@ -46,6 +46,7 @@ export default function WorkbenchPage() {
             <Link className="underline" href="/workbench/pilot">Pilot</Link>
             <Link className="underline" href="/workbench/offer">Offer</Link>
             <Link className="underline" href="/offer">Offer (public)</Link>
+            <Link className="underline" href="/workbench/safety/loop">Shiyan — one loop</Link>
           </div>
         </nav>
 
