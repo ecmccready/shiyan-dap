@@ -12,14 +12,14 @@ const VERTICALS = ALL_VERTICALS.filter((v) => v.id !== "safety" && v.id !== "com
 const NAV = [
   { href: "/workbench", label: "Home" },
   { href: "/", label: "Music" },
-  { href: "/workbench#guided-run", label: "Start a run" },
+  { href: "/workbench#guided-run", label: "New run" },
   { href: "/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
 ];
 
 // Hidden on the Home page (/workbench) only; other pages keep them.
-const HOME_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
+const HOME_HIDDEN = new Set(["/workbench", "/", "/workbench#guided-run", "/marketplace", "/playlist", "/single"]);
 // Hidden on /workbench/status only (Home stays).
 const STATUS_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
 // Level 4 pages that share the trimmed /workbench/status header (exact paths; query ignored).
@@ -68,13 +68,15 @@ export default function SiteHeader({ section }: { section?: string }) {
             </Link>
           )}
         </div>
-        <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
-          {nav.map((n) => (
-            <Link key={n.href} href={n.href} className="hover:text-white">
-              {n.label}
-            </Link>
-          ))}
-        </nav>
+        {nav.length > 0 && (
+          <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
+            {nav.map((n) => (
+              <Link key={n.href} href={n.href} className="hover:text-white">
+                {n.label}
+              </Link>
+            ))}
+          </nav>
+        )}
         <label className="flex items-center gap-2 text-sm text-zinc-400">
           Domain
           <select

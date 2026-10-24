@@ -56,32 +56,7 @@ export default function WorkbenchPage() {
           improve future decisions, and retain its operational identity across runs.
         </p>
 
-        <nav className="flex flex-col gap-3 text-sm mb-8">
-          <div className="flex flex-wrap items-baseline gap-4">
-            <span className="text-xs uppercase tracking-wide text-zinc-500 w-32 shrink-0">1 · Run &amp; review</span>
-            <Link className="underline" href="/workbench/review">Review</Link>
-            <Link className="underline" href="/workbench/history">History</Link>
-            <Link className="underline" href="/workbench/self">Level 3 Self()</Link>
-          </div>
-          <div className="flex flex-wrap items-baseline gap-4">
-            <span className="text-xs uppercase tracking-wide text-zinc-500 w-32 shrink-0">2 · Proof</span>
-            <Link className="underline" href="/workbench/proof">Safety proof</Link>
-            <Link className="underline" href="/workbench/compare">Peer proof</Link>
-            <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
-            <Link className="underline" href="/workbench/network">Actor network</Link>
-          </div>
-          <div className="flex flex-wrap items-baseline gap-4">
-            <span className="text-xs uppercase tracking-wide text-zinc-500 w-32 shrink-0">3 · Commercial</span>
-            <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
-            <Link className="underline" href="/workbench/client">Client pipeline</Link>
-            <Link className="underline" href="/workbench/pilot">Pilot</Link>
-            <Link className="underline" href="/workbench/offer">Offer</Link>
-            <Link className="underline" href="/offer">Offer (public)</Link>
-            <Link className="underline" href="/workbench/autonomous?roe_drive=1">ROE · Reciprocal Optimization Engine</Link>
-          </div>
-        </nav>
-
-        <section id="guided-run" className="scroll-mt-6 mt-10 rounded-2xl border border-emerald-900/70 p-5">
+        <section id="guided-run" className="scroll-mt-6 mt-8 rounded-2xl border border-emerald-900/70 p-5">
           <header className="mb-4 space-y-1">
             <h2 className="text-xl font-semibold">Start a durable run</h2>
             <p className="text-sm text-zinc-400">
@@ -109,7 +84,7 @@ export default function WorkbenchPage() {
               disabled={starting}
               className="inline-flex h-11 items-center rounded-full bg-emerald-500 px-5 text-sm font-medium text-black disabled:cursor-wait disabled:opacity-60"
             >
-              {starting ? "Starting run…" : "Begin guided run"}
+              {starting ? "Starting run…" : "Create run"}
             </button>
             <p className="text-xs text-zinc-500">Guided starts so far: {starts ?? "…"}</p>
             <Link href="/workbench/status" className="text-sm text-emerald-400 underline">
@@ -121,6 +96,37 @@ export default function WorkbenchPage() {
             No algorithm knowledge required. Safety and recovery are enforced before any action is applied.
           </p>
         </section>
+
+        <nav aria-label="Workbench resources" className="mt-10 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+          <section className="rounded-2xl border border-zinc-800 p-5">
+            <h2 className="text-xs uppercase tracking-wide text-zinc-500">1 · Run &amp; review</h2>
+            <div className="mt-3 grid gap-2">
+              <Link className="underline" href="/workbench/review">Review</Link>
+              <Link className="underline" href="/workbench/history">History</Link>
+              <Link className="underline" href="/workbench/self">Level 3 Self()</Link>
+            </div>
+          </section>
+          <section className="rounded-2xl border border-zinc-800 p-5">
+            <h2 className="text-xs uppercase tracking-wide text-zinc-500">2 · Proof</h2>
+            <div className="mt-3 grid gap-2">
+              <Link className="underline" href="/workbench/proof">Safety proof</Link>
+              <Link className="underline" href="/workbench/compare">Peer proof</Link>
+              <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
+              <Link className="underline" href="/workbench/network">Actor network</Link>
+            </div>
+          </section>
+          <section className="rounded-2xl border border-zinc-800 p-5">
+            <h2 className="text-xs uppercase tracking-wide text-zinc-500">3 · Commercial</h2>
+            <div className="mt-3 grid gap-2">
+              <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
+              <Link className="underline" href="/workbench/client">Client pipeline</Link>
+              <Link className="underline" href="/workbench/pilot">Pilot</Link>
+              <Link className="underline" href="/workbench/offer">Offer</Link>
+              <Link className="underline" href="/offer">Offer (public)</Link>
+              <Link className="underline" href="/workbench/autonomous?roe_drive=1">ROE · Reciprocal Optimization Engine</Link>
+            </div>
+          </section>
+        </nav>
 
         <section className="mt-10 space-y-6">
           {LOOP.map(([title, body], i) => (
