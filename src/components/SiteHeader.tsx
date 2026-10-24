@@ -21,7 +21,7 @@ const NAV = [
 // Hidden on the Home page (/workbench) only; other pages keep them.
 const HOME_HIDDEN = new Set(["/workbench", "/", "/workbench#guided-run", "/marketplace", "/playlist", "/single"]);
 // Hidden on /workbench/status only (Home stays).
-const STATUS_HIDDEN = new Set(["/", "/marketplace", "/playlist", "/single"]);
+const STATUS_HIDDEN = new Set(["/workbench", "/", "/marketplace", "/playlist", "/single"]);
 // Level 4 pages that share the trimmed /workbench/status header (exact paths; query ignored).
 const TRIMMED_PATHS = new Set([
   "/workbench/status",
