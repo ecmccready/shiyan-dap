@@ -6,7 +6,7 @@ import { writeVertical } from "@/lib/verticles";
 
 const NAV = [
   { href: "/", label: "Workbench" },
-  { href: "/emergence", label: "Music" },
+  { href: "/workbench", label: "Music" },
   { href: "/#guided-run", label: "New run" },
   { href: "/workbench/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
@@ -43,7 +43,7 @@ export default function SiteHeader({ section }: { section?: string }) {
       : "music";
   const nav =
     isFocusedWorkbenchPage
-      ? NAV.filter((n) => !["/emergence", "/playlist", "/single"].includes(n.href))
+      ? NAV.filter((n) => !["Music", "Playlist", "Songs"].includes(n.label))
       : pathname === "/" || pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : TRIMMED_PATHS.has(pathname)
@@ -68,7 +68,7 @@ export default function SiteHeader({ section }: { section?: string }) {
               {TRIMMED_PATHS.has(pathname) ? section.replace(/\s*·\s*Level 4$/, "") : section}
             </span>
           ) : (
-            <Link href="/emergence" className="text-zinc-500 text-sm hover:text-white">
+            <Link href="/workbench" className="text-zinc-500 text-sm hover:text-white">
               Music
             </Link>
           )}
@@ -94,7 +94,7 @@ export default function SiteHeader({ section }: { section?: string }) {
                   return;
                 }
                 writeVertical("music");
-                router.push("/emergence");
+                router.push("/workbench");
               }}
               className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
             >
