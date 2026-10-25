@@ -40,6 +40,10 @@ export default function SiteHeader({ section }: { section?: string }) {
   const vertical = verticalOverride ?? (hydrated ? readVertical() : "music");
   const pathname = usePathname();
   const router = useRouter();
+  const pageSelection =
+    pathname === "/workbench/diagnostic/reference" || pathname === "/workbench/diagnostics"
+      ? "diagnostics"
+      : null;
   const nav =
     pathname === "/" || pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
@@ -80,16 +84,17 @@ export default function SiteHeader({ section }: { section?: string }) {
           Domains
           <select
             value={
-              pathname === "/emergence"
+              pageSelection ??
+              (pathname === "/emergence"
                 ? "music"
                 : pathname === "/" || pathname === "/workbench" || vertical === "music"
                   ? ""
-                  : vertical
+                  : vertical)
             }
             onChange={(e) => {
               const id = e.target.value;
               if (id === "diagnostics") {
-                router.push("/");
+                router.push("/workbench/diagnostic/reference");
                 return;
               }
               setVerticalOverride(id);
