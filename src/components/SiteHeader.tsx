@@ -40,7 +40,6 @@ export default function SiteHeader({ section }: { section?: string }) {
   const vertical = verticalOverride ?? (hydrated ? readVertical() : "music");
   const pathname = usePathname();
   const router = useRouter();
-  const pageSelection = pathname === "/workbench/diagnostics" ? "page:diagnostics" : null;
   const nav =
     pathname === "/" || pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
@@ -78,20 +77,19 @@ export default function SiteHeader({ section }: { section?: string }) {
           </nav>
         )}
         <label className="flex items-center gap-2 text-sm text-zinc-400">
-          Domains &amp; pages
+          Domains
           <select
             value={
-              pageSelection ??
-              (pathname === "/emergence"
+              pathname === "/emergence"
                 ? "music"
                 : pathname === "/" || pathname === "/workbench" || vertical === "music"
                   ? ""
-                  : vertical)
+                  : vertical
             }
             onChange={(e) => {
               const id = e.target.value;
-              if (id === "page:diagnostics") {
-                router.push("/workbench/diagnostics");
+              if (id === "diagnostics") {
+                router.push("/");
                 return;
               }
               setVerticalOverride(id);
@@ -103,20 +101,14 @@ export default function SiteHeader({ section }: { section?: string }) {
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
           >
-            {!pageSelection && (
-              <option value="" disabled hidden>
-                Select domain or page…
-              </option>
-            )}
+            <option value="" disabled hidden>Select domain…</option>
             <optgroup label="Domains">
               {VERTICALS.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.label}
                 </option>
               ))}
-            </optgroup>
-            <optgroup label="Pages">
-              <option value="page:diagnostics">Diagnostics</option>
+              <option value="diagnostics">Diagnostics</option>
             </optgroup>
           </select>
         </label>

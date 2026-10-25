@@ -26,7 +26,8 @@
 
 | Surface | Role | Live |
 | --- | --- | --- |
-| /workbench | Commercial center | https://shiyan-dap.vercel.app/workbench |
+| / | Commercial center | https://shiyan-dap.vercel.app/ |
+| /workbench/diagnostic/reference | Evidence-gate reference fixture | https://shiyan-dap.vercel.app/workbench/diagnostic/reference |
 | /workbench/review | Acquirer / funding one-pager | https://shiyan-dap.vercel.app/workbench/review |
 | /workbench/offer | Solicitation | https://shiyan-dap.vercel.app/workbench/offer |
 | /workbench/client | Target-client pipeline + exportable Run | https://shiyan-dap.vercel.app/workbench/client |

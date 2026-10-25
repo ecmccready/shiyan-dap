@@ -36,7 +36,7 @@ export default function ControlPage() {
         <p className="mt-6 text-sm text-zinc-500">R = (N, A, B, y, z, e, Δe, Φ). N is context. It is not e.</p>
         <nav className="mt-8 flex flex-wrap gap-4 text-sm text-zinc-400">
           <Link className="underline" href="/workbench/network">Network</Link>
-          <Link className="underline" href="/workbench/diagnostics">Diagnostics</Link>
+          <Link className="underline" href="/workbench/diagnostic/reference">Evidence-gate reference</Link>
           <Link className="underline" href="/workbench">Safety proof</Link>
         </nav>
       </main>

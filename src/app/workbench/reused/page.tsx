@@ -53,7 +53,7 @@ export default function ReusedPage() {
         </p>
         <nav className="mt-8 flex flex-wrap gap-4 text-sm text-zinc-400">
           <Link className="underline" href="/workbench/network">Network</Link>
-          <Link className="underline" href="/workbench/diagnostics">Diagnostics</Link>
+          <Link className="underline" href="/workbench/diagnostic/reference">Evidence-gate reference</Link>
           <Link className="underline" href="/workbench/proof">Safety proof</Link>
         </nav>
       </main>

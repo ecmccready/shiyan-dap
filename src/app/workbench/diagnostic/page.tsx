@@ -33,6 +33,7 @@ export default function DiagnosticReadingPage() {
         </p>
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/workbench/safety">Safety plant</Link>
+          <Link className="underline" href="/workbench/diagnostic/reference">Evidence-gate reference</Link>
           <Link className="underline" href="/workbench/proof">Proof</Link>
           <Link className="underline" href="/audit">Audit</Link>
           <Link className="underline" href="/workbench/watch">Watched Run</Link>

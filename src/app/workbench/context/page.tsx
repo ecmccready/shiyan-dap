@@ -14,7 +14,7 @@ const LINKS = [
   ["/workbench/seal", "Seal", "The drop. Sealed replay 0.151, Φ 0.065."],
   ["/workbench/record", "Record", "R stays on N-safety-evidence · 2026-10-09."],
   ["/workbench/chain", "Chain", "The claim boundary."],
-  ["/workbench/diagnostics", "Diagnostics", "Evidence gate. Not a diagnosis."],
+  ["/workbench/diagnostic/reference", "Evidence-gate reference", "Recorded fixture, steps, and measured values."],
   ["/workbench/proof", "Safety proof", "Buyer-facing rows. Unchanged."],
 ];
 

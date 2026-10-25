@@ -41,7 +41,7 @@ export default function NetworkPage() {
         <p className="mt-6 text-sm text-zinc-500">{NETWORK.not}</p>
         <nav className="mt-8 flex gap-4 text-sm text-zinc-400">
           <Link className="underline" href="/workbench/control">Control A</Link>
-          <Link className="underline" href="/workbench/diagnostics">Diagnostics</Link>
+          <Link className="underline" href="/workbench/diagnostic/reference">Evidence-gate reference</Link>
         </nav>
       </main>
     </div>

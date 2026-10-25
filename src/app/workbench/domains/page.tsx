@@ -34,6 +34,7 @@ export default function DomainsPage() {
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/workbench">Safety plant</Link>
           <Link className="underline" href="/workbench/diagnostic">Diagnostic reading</Link>
+          <Link className="underline" href="/workbench/diagnostic/reference">Evidence-gate reference</Link>
           <Link className="underline" href="/saas/engine">Engine layer</Link>
         </nav>
       </main>
