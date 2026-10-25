@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { VERTICALS as ALL_VERTICALS, readVertical, writeVertical } from "@/lib/verticles";
-import { useHydrated } from "@/lib/use-hydrated";
-
-// Header dropdown hides Diagnostic Safety / Regulatory Validation; their pages remain.
-const VERTICALS = ALL_VERTICALS.filter((v) => v.id !== "safety" && v.id !== "compliance");
+import { writeVertical } from "@/lib/verticles";
 
 const NAV = [
   { href: "/", label: "Workbench" },
@@ -35,15 +30,12 @@ const TRIMMED_PATHS = new Set([
 ]);
 
 export default function SiteHeader({ section }: { section?: string }) {
-  const hydrated = useHydrated();
-  const [verticalOverride, setVerticalOverride] = useState<string | null>(null);
-  const vertical = verticalOverride ?? (hydrated ? readVertical() : "music");
   const pathname = usePathname();
   const router = useRouter();
-  const pageSelection =
+  const selectedDomain =
     pathname === "/workbench/diagnostic/reference" || pathname === "/workbench/diagnostics"
       ? "diagnostics"
-      : null;
+      : "music";
   const nav =
     pathname === "/" || pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
@@ -83,38 +75,20 @@ export default function SiteHeader({ section }: { section?: string }) {
         <label className="flex items-center gap-2 text-sm text-zinc-400">
           Domains
           <select
-            value={
-              pageSelection ??
-              (pathname === "/emergence"
-                ? "music"
-                : pathname === "/" || pathname === "/workbench" || vertical === "music"
-                  ? ""
-                  : vertical)
-            }
+            value={selectedDomain}
             onChange={(e) => {
               const id = e.target.value;
               if (id === "diagnostics") {
                 router.push("/workbench/diagnostic/reference");
                 return;
               }
-              setVerticalOverride(id);
-              writeVertical(id);
-              if (id === "safety" || id === "compliance") {
-                router.push("/");
-              }
-              if (id === "music") router.push("/emergence");
+              writeVertical("music");
+              router.push("/emergence");
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
           >
-            <option value="" disabled hidden>Select domain…</option>
-            <optgroup label="Domains">
-              {VERTICALS.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.label}
-                </option>
-              ))}
-              <option value="diagnostics">Diagnostics</option>
-            </optgroup>
+            <option value="music">Music</option>
+            <option value="diagnostics">Diagnostics</option>
           </select>
         </label>
         {showUpload && (
