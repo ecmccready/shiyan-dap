@@ -33,6 +33,8 @@ export default function SiteHeader({ section }: { section?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const isWorkbenchMarketplace = pathname === "/workbench/marketplace";
+  const isWorkbenchDiagnostic = pathname === "/workbench/diagnostic";
+  const isFocusedWorkbenchPage = isWorkbenchMarketplace || isWorkbenchDiagnostic;
   const selectedDomain =
     pathname === "/workbench/diagnostic" ||
     pathname === "/workbench/diagnostic/reference" ||
@@ -40,19 +42,19 @@ export default function SiteHeader({ section }: { section?: string }) {
       ? "diagnostics"
       : "music";
   const nav =
-    isWorkbenchMarketplace
+    isFocusedWorkbenchPage
       ? NAV.filter((n) => !["/emergence", "/playlist", "/single"].includes(n.href))
       : pathname === "/" || pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : TRIMMED_PATHS.has(pathname)
         ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
         : NAV;
-  // Upload is hidden on the Workbench home, marketplace, and trimmed Level 4 pages.
+  // Upload is hidden on focused Workbench pages and trimmed Level 4 pages.
   const showUpload =
     pathname !== "/" &&
     pathname !== "/workbench" &&
     !TRIMMED_PATHS.has(pathname) &&
-    !isWorkbenchMarketplace;
+    !isFocusedWorkbenchPage;
 
   return (
     <header className="border-b border-zinc-800">
@@ -80,7 +82,7 @@ export default function SiteHeader({ section }: { section?: string }) {
             ))}
           </nav>
         )}
-        {!isWorkbenchMarketplace && (
+        {!isFocusedWorkbenchPage && (
           <label className="flex items-center gap-2 text-sm text-zinc-400">
             Domains
             <select
