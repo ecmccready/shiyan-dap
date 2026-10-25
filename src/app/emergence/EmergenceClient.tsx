@@ -55,12 +55,6 @@ export default function EmergenceClient() {
           >
             Playlist
           </Link>
-          <Link
-            href="/single"
-            className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
-          >
-            Songs
-          </Link>
         </div>
 
         <form onSubmit={send} className="flex flex-col sm:flex-row gap-3">

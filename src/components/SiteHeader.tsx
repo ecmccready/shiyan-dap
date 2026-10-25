@@ -6,7 +6,7 @@ import { writeVertical } from "@/lib/verticles";
 
 const NAV = [
   { href: "/", label: "Workbench" },
-  { href: "/playlist", label: "Music" },
+  { href: "/workbench/music", label: "Music" },
   { href: "/#guided-run", label: "New run" },
   { href: "/workbench/marketplace", label: "Marketplace" },
 ];
@@ -68,7 +68,7 @@ export default function SiteHeader({ section }: { section?: string }) {
               {TRIMMED_PATHS.has(pathname) ? section.replace(/\s*·\s*Level 4$/, "") : section}
             </span>
           ) : (
-            <Link href="/playlist" className="text-zinc-500 text-sm hover:text-white">
+            <Link href="/workbench/music" className="text-zinc-500 text-sm hover:text-white">
               Music
             </Link>
           )}
@@ -94,7 +94,7 @@ export default function SiteHeader({ section }: { section?: string }) {
                   return;
                 }
                 writeVertical("music");
-                router.push("/playlist");
+                router.push("/workbench/music");
               }}
               className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
             >
