@@ -33,7 +33,9 @@ export default function SiteHeader({ section }: { section?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const selectedDomain =
-    pathname === "/workbench/diagnostic/reference" || pathname === "/workbench/diagnostics"
+    pathname === "/workbench/diagnostic" ||
+    pathname === "/workbench/diagnostic/reference" ||
+    pathname === "/workbench/diagnostics"
       ? "diagnostics"
       : "music";
   const nav =
@@ -79,7 +81,7 @@ export default function SiteHeader({ section }: { section?: string }) {
             onChange={(e) => {
               const id = e.target.value;
               if (id === "diagnostics") {
-                router.push("/workbench/diagnostic/reference");
+                router.push("/workbench/diagnostic");
                 return;
               }
               writeVertical("music");
