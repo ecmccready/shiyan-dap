@@ -32,6 +32,8 @@ export default function SiteHeader({ section }: { section?: string }) {
   const router = useRouter();
   const isWorkbenchMarketplace = pathname === "/workbench/marketplace";
   const isWorkbenchDiagnostic = pathname === "/workbench/diagnostic";
+  const isWorkbenchMusic = pathname === "/workbench/music";
+  const isPlaylistPage = pathname === "/playlist";
   const isWorkbenchLanding = pathname === "/" || pathname === "/workbench";
   const isDomainPromptPage = isWorkbenchLanding || TRIMMED_PATHS.has(pathname);
   const isFocusedWorkbenchPage = isWorkbenchMarketplace || isWorkbenchDiagnostic;
@@ -44,7 +46,9 @@ export default function SiteHeader({ section }: { section?: string }) {
         ? ""
         : "music";
   const nav =
-    isFocusedWorkbenchPage
+    isWorkbenchMusic || isPlaylistPage
+      ? []
+      : isFocusedWorkbenchPage
       ? NAV.filter((n) => n.label !== "Music")
       : isWorkbenchLanding
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
