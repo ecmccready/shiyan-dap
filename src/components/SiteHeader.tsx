@@ -12,9 +12,9 @@ const NAV = [
 ];
 
 // Hidden on the Workbench home page only; other pages keep them.
-const HOME_HIDDEN = new Set(["/", "/workbench", "/emergence", "/#guided-run", "/workbench#guided-run", "/workbench/marketplace", "/playlist", "/single"]);
+const HOME_HIDDEN = new Set(["/", "/workbench", "/workbench/music", "/emergence", "/#guided-run", "/workbench#guided-run", "/workbench/marketplace", "/playlist", "/single"]);
 // Hidden on /workbench/status only.
-const STATUS_HIDDEN = new Set(["/", "/workbench", "/emergence", "/workbench/marketplace", "/playlist", "/single"]);
+const STATUS_HIDDEN = new Set(["/", "/workbench", "/workbench/music", "/emergence", "/workbench/marketplace", "/playlist", "/single"]);
 // Level 4 pages that share the trimmed /workbench/status header (exact paths; query ignored).
 const TRIMMED_PATHS = new Set([
   "/",
@@ -32,19 +32,21 @@ export default function SiteHeader({ section }: { section?: string }) {
   const router = useRouter();
   const isWorkbenchMarketplace = pathname === "/workbench/marketplace";
   const isWorkbenchDiagnostic = pathname === "/workbench/diagnostic";
+  const isWorkbenchLanding = pathname === "/" || pathname === "/workbench";
+  const isDomainPromptPage = isWorkbenchLanding || TRIMMED_PATHS.has(pathname);
   const isFocusedWorkbenchPage = isWorkbenchMarketplace || isWorkbenchDiagnostic;
   const selectedDomain =
     pathname === "/workbench/diagnostic" ||
     pathname === "/workbench/diagnostic/reference" ||
     pathname === "/workbench/diagnostics"
       ? "diagnostics"
-      : pathname === "/" || pathname === "/workbench"
+      : isDomainPromptPage
         ? ""
         : "music";
   const nav =
     isFocusedWorkbenchPage
       ? NAV.filter((n) => n.label !== "Music")
-      : pathname === "/" || pathname === "/workbench"
+      : isWorkbenchLanding
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : TRIMMED_PATHS.has(pathname)
         ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
@@ -98,7 +100,7 @@ export default function SiteHeader({ section }: { section?: string }) {
               }}
               className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
             >
-              <option value="" disabled>Select domain</option>
+              {isDomainPromptPage && <option value="" disabled>Select domain</option>}
               <option value="music">Music</option>
               <option value="diagnostics">Diagnostics</option>
             </select>
