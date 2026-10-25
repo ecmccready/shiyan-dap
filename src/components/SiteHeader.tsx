@@ -82,7 +82,7 @@ export default function SiteHeader({ section }: { section?: string }) {
             ))}
           </nav>
         )}
-        {!isFocusedWorkbenchPage && (
+        {!isWorkbenchMarketplace && (
           <label className="flex items-center gap-2 text-sm text-zinc-400">
             Domains
             <select
