@@ -65,15 +65,15 @@ export default function SiteHeader({ section }: { section?: string }) {
           <Link href="/" className="font-semibold">
             Aethel Node
           </Link>
-          {section ? (
+          {section && !isWorkbenchLanding ? (
             <span className="text-zinc-500 text-sm">
               {TRIMMED_PATHS.has(pathname) ? section.replace(/\s*·\s*Level 4$/, "") : section}
             </span>
-          ) : (
+          ) : !section ? (
             <Link href="/workbench/music" className="text-zinc-500 text-sm hover:text-white">
               Music
             </Link>
-          )}
+          ) : null}
         </div>
         {nav.length > 0 && (
           <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
