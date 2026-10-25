@@ -8,15 +8,15 @@ const NAV = [
   { href: "/", label: "Workbench" },
   { href: "/emergence", label: "Music" },
   { href: "/#guided-run", label: "New run" },
-  { href: "/marketplace", label: "Marketplace" },
+  { href: "/workbench/marketplace", label: "Marketplace" },
   { href: "/playlist", label: "Playlist" },
   { href: "/single", label: "Songs" },
 ];
 
 // Hidden on the Workbench home page only; other pages keep them.
-const HOME_HIDDEN = new Set(["/", "/workbench", "/emergence", "/#guided-run", "/workbench#guided-run", "/marketplace", "/playlist", "/single"]);
+const HOME_HIDDEN = new Set(["/", "/workbench", "/emergence", "/#guided-run", "/workbench#guided-run", "/workbench/marketplace", "/playlist", "/single"]);
 // Hidden on /workbench/status only.
-const STATUS_HIDDEN = new Set(["/", "/workbench", "/emergence", "/marketplace", "/playlist", "/single"]);
+const STATUS_HIDDEN = new Set(["/", "/workbench", "/emergence", "/workbench/marketplace", "/playlist", "/single"]);
 // Level 4 pages that share the trimmed /workbench/status header (exact paths; query ignored).
 const TRIMMED_PATHS = new Set([
   "/",
@@ -41,9 +41,7 @@ export default function SiteHeader({ section }: { section?: string }) {
       : "music";
   const nav =
     isWorkbenchMarketplace
-      ? NAV.filter((n) => !["/emergence", "/playlist", "/single"].includes(n.href)).map((n) =>
-          n.href === "/marketplace" ? { ...n, href: "/workbench/marketplace" } : n,
-        )
+      ? NAV.filter((n) => !["/emergence", "/playlist", "/single"].includes(n.href))
       : pathname === "/" || pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : TRIMMED_PATHS.has(pathname)
