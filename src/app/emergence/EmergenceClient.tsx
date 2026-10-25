@@ -38,13 +38,13 @@ export default function EmergenceClient() {
 
         <div className="flex flex-wrap gap-3 mb-8">
           <Link
-            href="/"
+            href="/workbench"
             className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
             Workbench
           </Link>
           <Link
-            href="/marketplace"
+            href="/workbench/marketplace"
             className="h-12 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
             Marketplace

@@ -1,11 +1,5 @@
-import type { Metadata } from "next";
-import EmergenceClient from "./EmergenceClient";
-
-export const metadata: Metadata = {
-  title: "Emergence | Aethel Node",
-  description: "Music and creative workbench for Aethel Node.",
-};
+import { redirect } from "next/navigation";
 
 export default function EmergencePage() {
-  return <EmergenceClient />;
+  redirect("/workbench/music");
 }

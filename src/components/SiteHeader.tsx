@@ -36,11 +36,13 @@ export default function SiteHeader({ section }: { section?: string }) {
   const isWorkbenchDiagnostic = pathname === "/workbench/diagnostic";
   const isFocusedWorkbenchPage = isWorkbenchMarketplace || isWorkbenchDiagnostic;
   const selectedDomain =
-    pathname === "/workbench/diagnostic" ||
-    pathname === "/workbench/diagnostic/reference" ||
-    pathname === "/workbench/diagnostics"
-      ? "diagnostics"
-      : "music";
+    pathname === "/workbench/music"
+      ? "emergence"
+      : pathname === "/workbench/diagnostic" ||
+          pathname === "/workbench/diagnostic/reference" ||
+          pathname === "/workbench/diagnostics"
+        ? "diagnostics"
+        : "music";
   const nav =
     isFocusedWorkbenchPage
       ? NAV.filter((n) => !["Music", "Playlist", "Songs"].includes(n.label))
@@ -89,6 +91,10 @@ export default function SiteHeader({ section }: { section?: string }) {
               value={selectedDomain}
               onChange={(e) => {
                 const id = e.target.value;
+                if (id === "emergence") {
+                  router.push("/workbench/music");
+                  return;
+                }
                 if (id === "diagnostics") {
                   router.push("/workbench/diagnostic");
                   return;
@@ -99,6 +105,7 @@ export default function SiteHeader({ section }: { section?: string }) {
               className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
             >
               <option value="music">Music</option>
+              <option value="emergence">Emergence</option>
               <option value="diagnostics">Diagnostics</option>
             </select>
           </label>
