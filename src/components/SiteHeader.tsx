@@ -32,6 +32,7 @@ const TRIMMED_PATHS = new Set([
 export default function SiteHeader({ section }: { section?: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isWorkbenchMarketplace = pathname === "/workbench/marketplace";
   const selectedDomain =
     pathname === "/workbench/diagnostic" ||
     pathname === "/workbench/diagnostic/reference" ||
@@ -39,14 +40,21 @@ export default function SiteHeader({ section }: { section?: string }) {
       ? "diagnostics"
       : "music";
   const nav =
-    pathname === "/" || pathname === "/workbench"
+    isWorkbenchMarketplace
+      ? NAV.filter((n) => !["/emergence", "/playlist", "/single"].includes(n.href)).map((n) =>
+          n.href === "/marketplace" ? { ...n, href: "/workbench/marketplace" } : n,
+        )
+      : pathname === "/" || pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : TRIMMED_PATHS.has(pathname)
         ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
         : NAV;
-  // Upload is hidden on the Workbench home and all trimmed Level 4 pages.
+  // Upload is hidden on the Workbench home, marketplace, and trimmed Level 4 pages.
   const showUpload =
-    pathname !== "/" && pathname !== "/workbench" && !TRIMMED_PATHS.has(pathname);
+    pathname !== "/" &&
+    pathname !== "/workbench" &&
+    !TRIMMED_PATHS.has(pathname) &&
+    !isWorkbenchMarketplace;
 
   return (
     <header className="border-b border-zinc-800">
@@ -74,25 +82,27 @@ export default function SiteHeader({ section }: { section?: string }) {
             ))}
           </nav>
         )}
-        <label className="flex items-center gap-2 text-sm text-zinc-400">
-          Domains
-          <select
-            value={selectedDomain}
-            onChange={(e) => {
-              const id = e.target.value;
-              if (id === "diagnostics") {
-                router.push("/workbench/diagnostic");
-                return;
-              }
-              writeVertical("music");
-              router.push("/emergence");
-            }}
-            className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
-          >
-            <option value="music">Music</option>
-            <option value="diagnostics">Diagnostics</option>
-          </select>
-        </label>
+        {!isWorkbenchMarketplace && (
+          <label className="flex items-center gap-2 text-sm text-zinc-400">
+            Domains
+            <select
+              value={selectedDomain}
+              onChange={(e) => {
+                const id = e.target.value;
+                if (id === "diagnostics") {
+                  router.push("/workbench/diagnostic");
+                  return;
+                }
+                writeVertical("music");
+                router.push("/emergence");
+              }}
+              className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
+            >
+              <option value="music">Music</option>
+              <option value="diagnostics">Diagnostics</option>
+            </select>
+          </label>
+        )}
         {showUpload && (
           <Link
             href="/upload"
