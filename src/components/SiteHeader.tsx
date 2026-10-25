@@ -40,12 +40,7 @@ export default function SiteHeader({ section }: { section?: string }) {
   const vertical = verticalOverride ?? (hydrated ? readVertical() : "music");
   const pathname = usePathname();
   const router = useRouter();
-  const pageSelection =
-    pathname === "/emergence"
-      ? "page:emergence"
-      : pathname === "/workbench/diagnostics"
-        ? "page:diagnostics"
-        : null;
+  const pageSelection = pathname === "/workbench/diagnostics" ? "page:diagnostics" : null;
   const nav =
     pathname === "/" || pathname === "/workbench"
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
@@ -85,13 +80,16 @@ export default function SiteHeader({ section }: { section?: string }) {
         <label className="flex items-center gap-2 text-sm text-zinc-400">
           Domains &amp; pages
           <select
-            value={pageSelection ?? (pathname === "/" || pathname === "/workbench" || vertical === "music" ? "" : vertical)}
+            value={
+              pageSelection ??
+              (pathname === "/emergence"
+                ? "music"
+                : pathname === "/" || pathname === "/workbench" || vertical === "music"
+                  ? ""
+                  : vertical)
+            }
             onChange={(e) => {
               const id = e.target.value;
-              if (id === "page:emergence") {
-                router.push("/emergence");
-                return;
-              }
               if (id === "page:diagnostics") {
                 router.push("/workbench/diagnostics");
                 return;
@@ -118,7 +116,6 @@ export default function SiteHeader({ section }: { section?: string }) {
               ))}
             </optgroup>
             <optgroup label="Pages">
-              <option value="page:emergence">Emergence</option>
               <option value="page:diagnostics">Diagnostics</option>
             </optgroup>
           </select>
