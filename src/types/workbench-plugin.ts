@@ -1,35 +1,30 @@
-import type { AssetDomain, LedgerEventPayload } from "./ledger";
+import type React from 'react';
 
-/** A tool a workbench plugin exposes to agents. */
 export interface AgentTool {
   name: string;
   description: string;
-  /** JSON Schema describing the input. */
-  inputSchema: Record<string, unknown>;
-  execute: (input: unknown, ctx: ExecutionContext) => Promise<unknown>;
+  parameters: Record<string, unknown>;
+  execute: (args: Record<string, unknown>, context: ExecutionContext) => Promise<unknown>;
 }
 
-/** Emitted by plugins to record state changes in the invisible micro-ledger. */
 export interface LedgerHookEvent {
-  pluginId: string;
-  domain: AssetDomain;
-  event: LedgerEventPayload;
+  action: string;
+  assetId: string;
+  payload: Record<string, unknown>;
+  timestamp: number;
 }
 
-/** Passed to every tool execution. */
 export interface ExecutionContext {
-  runId?: string;
-  actorId?: string;
-  /** Records a ledger event; failures must not break the calling tool. */
-  emitLedgerEvent: (event: LedgerHookEvent) => Promise<void>;
+  workspaceId: string;
+  agentId: string;
+  emitLedgerEvent: (event: LedgerHookEvent) => Promise<string>; // Returns transaction/hash ID
 }
 
 export interface WorkbenchPlugin {
-  id: string;
+  id: string; // e.g., 'music-studio', 'diagnostics-safety'
   name: string;
-  domain: AssetDomain;
   version: string;
-  tools: AgentTool[];
-  /** Optional hook called for every ledger event the plugin emits. */
-  onLedgerEvent?: (event: LedgerHookEvent) => void | Promise<void>;
+  registerTools: () => AgentTool[];
+  onLedgerEvent?: (event: LedgerHookEvent) => Promise<void>;
+  renderPanel: React.ComponentType<{ workspaceId: string }>;
 }

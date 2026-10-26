@@ -1,25 +1,28 @@
-import type { LedgerEventPayload, LedgerRecordResponse } from "@/types/ledger";
+import type { LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 
-/** POSTs a state record to the micro-ledger commit endpoint. Never throws. */
+export type LedgerStateInput = Omit<LedgerEventPayload, 'eventId' | 'timestamp' | 'signature'> & {
+  signature?: string;
+};
+
+/** Adds eventId + timestamp, then POSTs the state record to /api/v1/ledger/commit. Never throws. */
 export async function recordLedgerState(
-  payload: LedgerEventPayload,
-  baseUrl = "",
+  input: LedgerStateInput,
+  baseUrl = '',
 ): Promise<LedgerRecordResponse> {
+  const payload: LedgerEventPayload = {
+    ...input,
+    eventId: crypto.randomUUID(),
+    signature: input.signature ?? 'unsigned',
+    timestamp: Date.now(),
+  };
   try {
     const res = await fetch(`${baseUrl}/api/v1/ledger/commit`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    const data = (await res.json()) as LedgerRecordResponse;
-    return data;
-  } catch (err) {
-    return {
-      ok: false,
-      txHash: "",
-      recordedAt: new Date().toISOString(),
-      mock: true,
-      error: err instanceof Error ? err.message : "ledger commit failed",
-    };
+    return (await res.json()) as LedgerRecordResponse;
+  } catch {
+    return { txHash: '', status: 'FAILED', settlementRail: 'INTERNAL_MICRO' };
   }
 }

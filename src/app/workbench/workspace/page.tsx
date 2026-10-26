@@ -4,6 +4,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { readRuns, type OutcomeRun } from "@/product/run";
 import { useHydrated } from "@/lib/use-hydrated";
+import WorkbenchPluginPanels from "@/components/WorkbenchPluginPanels";
 
 export default function WorkspacePage() {
   const hydrated = useHydrated();
@@ -30,6 +31,7 @@ export default function WorkspacePage() {
         <section className="mt-8 rounded-3xl border border-dashed border-zinc-700 p-6 text-sm text-zinc-400">
           Billing is not instrumented. A closed Run is not a charge. Authentication is not built.
         </section>
+        <WorkbenchPluginPanels workspaceId={workspace} />
         <nav className="mt-8 flex flex-wrap gap-4 text-sm text-zinc-400">
           <Link className="underline" href="/workbench/history">History</Link>
           <Link className="underline" href="/workbench">Workbench</Link>

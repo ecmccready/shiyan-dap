@@ -1,39 +1,32 @@
-/** Micro-ledger API contract (server-side commit). Distinct from the localStorage ledger in src/lib/ledger.ts. */
+/** Micro-ledger API contract. Distinct from the localStorage ledger in src/lib/ledger.ts. */
 
-export type AssetDomain =
-  | "music"
-  | "diagnostics"
-  | "legal"
-  | "art"
-  | "software"
-  | "other";
+export type AssetDomain = 'MUSIC_TRACK' | 'STEM' | 'DIAGNOSTIC_AUDIT' | 'AGENT_COMPUTE';
 
 export interface SplitRecipient {
-  /** Wallet address, handle or account id of the recipient. */
-  recipientId: string;
-  /** Share in basis points (10000 = 100%). */
-  shareBps: number;
-  role?: string;
+  account: string; // Internal wallet or Stripe account ID
+  percentage: number; // e.g., 85.0 for 85%
 }
 
 export interface LedgerEventPayload {
-  assetId: string;
+  eventId: string;
   domain: AssetDomain;
-  /** Short event name, e.g. "diagnostic.scan.completed". */
-  eventType: string;
-  /** Hash of the evidence or state being recorded, e.g. "sha256:...". */
-  stateHash: string;
-  /** ISO-8601 timestamp. */
-  timestamp: string;
-  splits?: SplitRecipient[];
-  metadata?: Record<string, unknown>;
+  assetId: string;
+  version: string;
+  previousHash: string | null;
+  stateData: {
+    title?: string;
+    duration?: number;
+    splitRule?: SplitRecipient[];
+    auditStatus?: 'PENDING' | 'PASSED' | 'FAILED';
+    metadataHash: string;
+  };
+  signature: string; // Cryptographic proof of origin
+  timestamp: number;
 }
 
 export interface LedgerRecordResponse {
-  ok: boolean;
   txHash: string;
-  recordedAt: string;
-  /** True while the commit endpoint is a stub and nothing is anchored on-chain. */
-  mock: boolean;
-  error?: string;
+  status: 'PENDING' | 'CONFIRMED' | 'FAILED';
+  settlementRail: 'INTERNAL_MICRO' | 'STRIPE' | 'X_MONEY';
+  blockHeight?: number;
 }
