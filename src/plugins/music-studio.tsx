@@ -1,16 +1,7 @@
 import type { WorkbenchPlugin, LedgerHookEvent } from '@/types/workbench-plugin';
+import MusicStudioPanel from './MusicStudioPanel';
 
 let lastEvent: LedgerHookEvent | null = null;
-
-function MusicStudioPanel({ workspaceId }: { workspaceId: string }) {
-  return (
-    <div className="text-sm text-zinc-300">
-      <p className="font-medium text-white">Music Studio</p>
-      <p className="mt-1">Workspace: <span className="font-mono">{workspaceId}</span></p>
-      <p className="mt-1 text-zinc-500">Stub plugin. One tool: describe_track.</p>
-    </div>
-  );
-}
 
 export const musicStudioPlugin: WorkbenchPlugin = {
   id: 'music-studio',
