@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import { LEDGER_AUDIT_STATUSES, type AssetDomain, type LedgerEventPayload, type LedgerRecordResponse } from '@/types/ledger';
 import { canonicalLedgerString, signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
-import { applySiwePolicy, cryptoGaps, withCrypto, withNonceResult, withNonceSource, parseSiweMessage, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
+import { applySiwePolicy, cryptoGaps, withCrypto, withOverall, withNonceResult, withNonceSource, parseSiweMessage, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
 import { verifyWalletSignature } from '@/lib/ledger-wallet';
 import { eip1271RpcUrl, verifyEip1271, type Eip1271Result } from '@/lib/ledger-eip1271';
 import { plannedTransfersOf, resolveSettlement, TRANSFERS_FUTURE_WORK, type PlannedTransfer, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
@@ -248,6 +248,8 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     signature = 'unsigned';
     signatureStatus = 'unverified';
   }
+  // One summary of every SIWE check, computed last so it sees the crypto, policy and nonce results. Informational only.
+  if (siwe) siwe = withOverall(siwe);
   const usageEstimate = sanitizeUsageEstimate(opts.usageEstimate);
   const splits = p.stateData!.splitRule;
   const r = ledgerRedis();

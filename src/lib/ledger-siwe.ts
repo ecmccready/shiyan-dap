@@ -47,6 +47,15 @@ export interface SiweParse {
    */
   cryptoVerified?: boolean;
   crypto?: SiweCrypto;
+  /**
+   * One summary: true only when cryptoVerified AND structureValid AND every policy check passed (domain allowed, issuedAt fresh,
+   * nonce first-use and server-issued, chain in the allowed list whether or not it is enforced). Set at the end of the commit
+   * pipeline. Informational: it never rejects a commit and does not change signatureStatus (wallet_siwe_verified is looser,
+   * e.g. it ignores a chain outside the allowed list unless SIWE_ENFORCE_CHAIN=1). Not full SIWE verification.
+   */
+  overallValid?: boolean;
+  /** Why overallValid is false (empty when true). */
+  overallFailures?: string[];
   /** Result of the host, freshness and nonce policy checks (set by applySiwePolicy and the nonce claim). */
   policy?: SiwePolicy;
 }
@@ -261,4 +270,25 @@ export function cryptoGaps(parse: SiweParse): string[] {
   if (c && !c.messageAddressMatches) why.push('message_address_is_not_the_signer');
   if (c && !c.signedExactText) why.push('signature_not_checked_over_exact_siweMessage');
   return [`siwe_crypto_not_verified (${why.length ? why.join(', ') : 'unknown'})`];
+}
+
+/** Computes overallValid and its failure list from the finished parse. Call after crypto, policy and nonce results are in. */
+export function withOverall(parse: SiweParse): SiweParse {
+  const f: string[] = [];
+  if (!parse.parsed) f.push('siwe_message_not_parsed');
+  if (parse.cryptoVerified !== true) f.push('crypto_not_verified');
+  if (parse.parsed && !parse.structureValid) f.push('structure_invalid');
+  const p = parse.policy;
+  if (parse.parsed) {
+    if (!p) f.push('policy_not_evaluated');
+    else {
+      if (!p.domainMatches) f.push('domain_not_allowed');
+      if (!p.issuedAtFresh) f.push('issued_at_not_fresh');
+      if (p.nonce !== 'fresh') f.push(p.nonce === 'replayed' ? 'nonce_replayed' : 'nonce_unchecked');
+      if (p.nonceSource !== 'server_issued') f.push('nonce_not_server_issued');
+      if (p.chainAllowed !== true) f.push(p.chainAllowed === false ? 'chain_not_allowed' : 'chain_unknown');
+    }
+  }
+  const failures = [...new Set(f)];
+  return { ...parse, overallValid: failures.length === 0, overallFailures: failures };
 }
