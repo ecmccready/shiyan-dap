@@ -2,9 +2,11 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import type { AssetDomain, LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 import { signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
+import { applySiwePolicy, withNonceResult, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
+import { verifyWalletSignature } from '@/lib/ledger-wallet';
 import { plannedTransfersOf, resolveSettlement, TRANSFERS_FUTURE_WORK, type PlannedTransfer, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
 
-export type SignatureStatus = 'verified' | 'unverified' | 'wallet_unverified';
+export type SignatureStatus = 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified';
 export type SignatureType = 'hmac' | 'wallet';
 
 /**
@@ -40,8 +42,45 @@ export interface CommitOptions {
   /** Total to settle, in cents (needed for a real Stripe call). */
   settlementAmountCents?: number;
   settlementCurrency?: string;
-  /** 'hmac' (default) or 'wallet' (stored, not verified yet). */
+  /** 'hmac' (default) or 'wallet' (EIP-191 personal_sign, basic check). */
   signatureType?: string;
+  /** Wallet only: the address that claims to have signed. */
+  walletAddress?: string;
+  /** Wallet only: optional signed text; must contain the canonical string. */
+  walletMessage?: string;
+  /** Wallet only: optional SIWE-style (EIP-4361) text; it is the signed message and is parsed into `siwe`. */
+  siweMessage?: string;
+  /** Wallet only: domains a SIWE message's domain must match (the route passes configured domains or the request host). */
+  siweExpectedDomains?: string[];
+  /** AGENT_COMPUTE: self-reported FLOP or cost estimate. Always stored as estimated, never metered. */
+  usageEstimate?: unknown;
+}
+
+export interface UsageEstimate {
+  estimated: true;
+  metered: false;
+  flops?: number;
+  costUsd?: number;
+  basis?: string;
+  note: string;
+}
+
+/** Accepts only finite non-negative numbers and a short basis string; forces estimated:true and metered:false. */
+export function sanitizeUsageEstimate(x: unknown): UsageEstimate | undefined {
+  if (!x || typeof x !== 'object' || Array.isArray(x)) return undefined;
+  const o = x as Record<string, unknown>;
+  const num = (v: unknown, max: number) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= max ? v : undefined);
+  const flops = num(o.flops, 1e30);
+  const costUsd = num(o.costUsd, 1e9);
+  if (flops === undefined && costUsd === undefined) return undefined;
+  return {
+    estimated: true,
+    metered: false,
+    ...(flops !== undefined ? { flops } : {}),
+    ...(costUsd !== undefined ? { costUsd } : {}),
+    ...(typeof o.basis === 'string' ? { basis: o.basis.slice(0, 80) } : {}),
+    note: 'self-reported estimate, not metered',
+  };
 }
 const DOMAINS: AssetDomain[] = ['MUSIC_TRACK', 'STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE'];
 const g = globalThis as unknown as {
@@ -59,7 +98,7 @@ export function ledgerRedis(): Redis | null {
 export type CommitResult =
   | {
       ok: true;
-      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; settlementRef: string | null; plannedTransfers: PlannedTransfer[] | null; settlementNote: string | null; settlement: SettlementIntent | null };
+      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; signatureReason: string | null; walletAddress: string | null; siwe: SiweParse | null; usageEstimate: UsageEstimate | null; settlementRef: string | null; plannedTransfers: PlannedTransfer[] | null; settlementNote: string | null; settlement: SettlementIntent | null };
       store: 'upstash' | 'memory';
     }
   | { ok: false; status: number; error: string };
@@ -104,15 +143,36 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
   const signatureType: SignatureType = opts.signatureType === 'wallet' ? 'wallet' : 'hmac';
   let signature: string;
   let signatureStatus: SignatureStatus;
+  let signatureReason: string | undefined;
+  let walletAddress: string | undefined;
+  let siwe: SiweParse | undefined;
   if (opts.serverSign) {
     signature = signLedger(sigParts);
     signatureStatus = 'verified';
   } else if (signatureType === 'wallet') {
-    // TODO: verify wallet signatures (EIP-191 personal_sign / SIWE: recover the address from the signature
-    // over the canonical string and match it to the asset owner). Today the value is only stored.
     if (!p.signature || p.signature === 'unsigned') return { ok: false, status: 400, error: 'signatureType wallet requires a signature' };
     signature = p.signature;
-    signatureStatus = 'wallet_unverified';
+    // Basic EIP-191 personal_sign check (not full SIWE, no EIP-1271 contract wallets). Never rejects: a
+    // failed or unsupported check is stored as wallet_unverified with the reason.
+    const w = verifyWalletSignature({ ...sigParts, timestamp: p.timestamp }, p.signature, { walletAddress: opts.walletAddress, walletMessage: opts.walletMessage, siweMessage: opts.siweMessage });
+    siwe = w.siwe;
+    if (siwe) {
+      siwe = applySiwePolicy(siwe, { expectedDomains: opts.siweExpectedDomains ?? [] });
+      // Replay guard: only a message whose signature verified claims its nonce, so a bad signature cannot burn
+      // someone else's nonce. Fails open (nonce 'unchecked') if the store is unavailable.
+      const f = siwe.fields;
+      if (w.ok && siwe.parsed && f?.nonce && /^[A-Za-z0-9]{8,}$/.test(f.nonce)) {
+        siwe = withNonceResult(siwe, await claimSiweNonce(f.address, f.nonce));
+      }
+    }
+    if (w.ok) {
+      signatureStatus = 'wallet_verified';
+      walletAddress = w.address;
+    } else {
+      signatureStatus = 'wallet_unverified';
+      signatureReason = w.reason;
+      walletAddress = w.address;
+    }
   } else if (p.signature && p.signature !== 'unsigned') {
     if (p.timestamp === undefined) return { ok: false, status: 400, error: 'a signed event must include timestamp' };
     if (!verifyLedgerSignature(sigParts, p.signature)) return { ok: false, status: 400, error: 'invalid signature' };
@@ -122,6 +182,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     signature = 'unsigned';
     signatureStatus = 'unverified';
   }
+  const usageEstimate = sanitizeUsageEstimate(opts.usageEstimate);
   const splits = p.stateData!.splitRule;
   const r = ledgerRedis();
   const assetId = p.assetId as string;
@@ -159,7 +220,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
         })
       : null;
     const planned_transfers = plannedTransfersOf(settlement);
-    const record = { ...event, txHash, signatureStatus, signatureType, ...(settlement ? { settlement } : {}), ...(planned_transfers ? { planned_transfers } : {}) };
+    const record = { ...event, txHash, signatureStatus, signatureType, ...(signatureReason ? { signatureReason } : {}), ...(walletAddress ? { walletAddress } : {}), ...(siwe ? { siwe } : {}), ...(usageEstimate ? { usageEstimate } : {}), ...(settlement ? { settlement } : {}), ...(planned_transfers ? { planned_transfers } : {}) };
     let blockHeight: number;
     if (r) {
       blockHeight = await r.rpush(LEDGER_KEY, JSON.stringify(record));
@@ -178,13 +239,32 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     return {
       ok: true,
       store: r ? 'upstash' : 'memory',
-      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, plannedTransfers: planned_transfers ?? null, settlementNote: planned_transfers ? TRANSFERS_FUTURE_WORK : null, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
+      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, signatureReason: signatureReason ?? null, walletAddress: walletAddress ?? null, siwe: siwe ?? null, usageEstimate: usageEstimate ?? null, plannedTransfers: planned_transfers ?? null, settlementNote: planned_transfers ? TRANSFERS_FUTURE_WORK : null, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
     };
   } catch {
     return { ok: false, status: 502, error: 'ledger storage unavailable' };
   } finally {
     if (r && locked) await r.del(lockKey).catch(() => undefined);
   }
+}
+
+/** Claims `address:nonce` for the replay window. 'fresh' on first use, 'replayed' if already claimed. Redis SET NX, else memory. */
+export async function claimSiweNonce(address: string, nonce: string): Promise<'fresh' | 'replayed' | 'unchecked'> {
+  const id = `${address.toLowerCase()}:${nonce}`;
+  const r = ledgerRedis();
+  try {
+    if (r) {
+      return (await r.set(`ledger:siwe-nonce:${id}`, '1', { nx: true, ex: SIWE_NONCE_TTL_SECONDS })) === 'OK' ? 'fresh' : 'replayed';
+    }
+  } catch {
+    return 'unchecked';
+  }
+  const m = ((globalThis as unknown as { __siweNonces?: Map<string, number> }).__siweNonces ??= new Map());
+  const now = Date.now();
+  for (const [k, exp] of m) if (exp < now) m.delete(k);
+  if (m.has(id)) return 'replayed';
+  m.set(id, now + SIWE_NONCE_TTL_SECONDS * 1000);
+  return 'fresh';
 }
 
 export async function hiddenAssets(): Promise<Set<string>> {
@@ -277,4 +357,16 @@ export async function purgeAsset(assetId: string): Promise<{ removedEvents: numb
   g.__ledgerHeads?.delete(assetId);
   g.__ledgerHidden?.delete(assetId);
   return { removedEvents: before - g.__ledgerMem.length, removedQueue: 0 };
+}
+
+/** Cheap summary for the status endpoint: total stored events (hidden included) and the latest txHash. */
+export async function ledgerSummary(): Promise<{ store: 'upstash' | 'memory'; count: number; latestTxHash: string | null }> {
+  const r = ledgerRedis();
+  if (r) {
+    const count = await r.llen(LEDGER_KEY);
+    const last = count > 0 ? ((await r.lindex(LEDGER_KEY, -1)) as { txHash?: string } | null) : null;
+    return { store: 'upstash', count, latestTxHash: last?.txHash ?? null };
+  }
+  const mem = g.__ledgerMem ?? [];
+  return { store: 'memory', count: mem.length, latestTxHash: mem.length ? mem[mem.length - 1].txHash : null };
 }

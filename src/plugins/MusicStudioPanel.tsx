@@ -23,6 +23,8 @@ type Created = {
   auditTxHash: string;
   audit: DiagnosticAuditResult;
   reasons: string[];
+  fingerprint?: string;
+  fingerprintVersion?: string;
   records: Rec[];
 };
 
@@ -128,6 +130,9 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
               <span className="text-zinc-500">diagnostics: </span>{created.audit.overallStatus}, copyright score {created.audit.checks.copyrightMatchScore.toFixed(4)}, risk {created.audit.checks.trainingDataRisk}
               {created.reasons.length ? <span className="text-zinc-500"> ({created.reasons.join('; ')})</span> : null}
             </p>
+            {created.fingerprint ? (
+              <p data-music-fingerprint><span className="text-zinc-500">fingerprint (simulation{created.fingerprintVersion ? ` · ${created.fingerprintVersion}` : ''}, metadata only; not an audio fingerprint): </span>{created.fingerprint}</p>
+            ) : null}
             {created.records[0]?.settlement ? (
               <p data-music-settlement-summary className="text-emerald-300">
                 {(() => {

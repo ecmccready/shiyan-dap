@@ -4,6 +4,18 @@ import type { LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 import { commitLedgerEvent, hiddenAssets, purgeAsset, readLedger, setAssetHidden } from '@/lib/ledger-commit';
 import { safeEqual, signingSecretMode } from '@/lib/ledger-signing';
 
+/**
+ * Domains a SIWE message may name. SIWE_ALLOWED_DOMAINS (comma separated, host[:port]) wins when set; otherwise the
+ * request host plus the Vercel production domain. The default is a convenience, not a security boundary: a client
+ * calling the API directly controls its own Host header.
+ */
+function siweExpectedDomains(req: Request): string[] {
+  const configured = (process.env.SIWE_ALLOWED_DOMAINS ?? '').split(',').map((d) => d.trim()).filter(Boolean);
+  if (configured.length) return configured;
+  const hosts = [req.headers.get('x-forwarded-host')?.split(',')[0], req.headers.get('host'), process.env.VERCEL_PROJECT_PRODUCTION_URL];
+  return [...new Set(hosts.filter((h): h is string => Boolean(h)).map((h) => h.trim()))];
+}
+
 export const dynamic = 'force-dynamic';
 
 /**
@@ -34,14 +46,26 @@ export async function POST(req: Request) {
     settlementAmountCents?: number;
     settlementCurrency?: string;
     signatureType?: string;
+    walletAddress?: string;
+    walletMessage?: string;
+    siweMessage?: string;
+    usageEstimate?: unknown;
   };
   try {
     p = (await req.json()) as typeof p;
   } catch {
     return fail('invalid JSON body');
   }
-  const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, ...event } = p ?? {};
-  const res = await commitLedgerEvent(event, { settlementRail, settlementAmountCents, settlementCurrency, signatureType });
+  const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, walletAddress, walletMessage, siweMessage, ...event } = p ?? {};
+  // usageEstimate is only accepted from server-side plugin tools, never from a client body.
+  // Likewise the server-derived record fields can't be forged through the body.
+  for (const k of ['usageEstimate', 'siwe', 'signatureReason', 'signatureStatus', 'signatureType', 'settlement', 'planned_transfers', 'txHash']) delete (event as Record<string, unknown>)[k];
+  const res = await commitLedgerEvent(event, { settlementRail, settlementAmountCents, settlementCurrency, signatureType,
+    walletAddress: typeof walletAddress === 'string' ? walletAddress.slice(0, 100) : undefined,
+    walletMessage: typeof walletMessage === 'string' ? walletMessage.slice(0, 2000) : undefined,
+    siweMessage: typeof siweMessage === 'string' ? siweMessage.slice(0, 2000) : undefined,
+    siweExpectedDomains: siweExpectedDomains(req),
+  });
   if (!res.ok) return fail(res.error, res.status);
   return NextResponse.json(res.response, {
     headers: { 'x-ledger-store': res.store, 'x-ledger-anchor': 'off-chain' },

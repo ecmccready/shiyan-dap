@@ -64,6 +64,7 @@ export async function executePluginTool(
           settlementRail: typeof event.payload.settlementRail === 'string' ? event.payload.settlementRail : undefined,
           settlementAmountCents: typeof event.payload.settlementAmountCents === 'number' ? event.payload.settlementAmountCents : undefined,
           settlementCurrency: typeof event.payload.settlementCurrency === 'string' ? event.payload.settlementCurrency : undefined,
+          usageEstimate: event.payload.usageEstimate,
         },
       );
       if (!res.ok) throw new Error(res.error);

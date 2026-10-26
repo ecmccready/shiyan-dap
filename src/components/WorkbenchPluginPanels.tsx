@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { workbenchRegistry } from '@/plugins';
 import LedgerProvenancePanel from './LedgerProvenancePanel';
+import WorkbenchStatus from './WorkbenchStatus';
 
 export default function WorkbenchPluginPanels({ workspaceId }: { workspaceId: string }) {
   const plugins = workbenchRegistry.listPlugins();
@@ -32,6 +33,7 @@ export default function WorkbenchPluginPanels({ workspaceId }: { workspaceId: st
           <div className="mt-4">{Panel ? <Panel workspaceId={workspaceId} /> : null}</div>
         </>
       )}
+      <WorkbenchStatus />
       <LedgerProvenancePanel />
     </section>
   );
