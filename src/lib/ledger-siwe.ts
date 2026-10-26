@@ -38,6 +38,68 @@ export interface SiweParse {
   issues: string[];
   /** Always false: full SIWE verification is not implemented. */
   fullVerification: false;
+  /** Result of the host, freshness and nonce policy checks (set by applySiwePolicy and the nonce claim). */
+  policy?: SiwePolicy;
+}
+export interface SiwePolicy {
+  expectedDomains: string[];
+  domainMatches: boolean;
+  /** Seconds between issuedAt and now (negative when issuedAt is in the future); null if unparseable. */
+  issuedAtAgeSeconds: number | null;
+  issuedAtFresh: boolean;
+  /** 'fresh' = first use in the replay window, 'replayed' = seen before, 'unchecked' = not claimed (signature not verified, bad nonce, or store unavailable). */
+  nonce: 'fresh' | 'replayed' | 'unchecked';
+  maxAgeSeconds: number;
+}
+
+/** issuedAt must be at most this old. */
+export const SIWE_MAX_AGE_SECONDS = 600;
+/** Allowed clock skew for an issuedAt slightly ahead of the server clock. */
+export const SIWE_FUTURE_SKEW_SECONDS = 60;
+/** How long a verified nonce is remembered: the max age plus skew, rounded up, so a message cannot be replayed while still fresh. */
+export const SIWE_NONCE_TTL_SECONDS = 900;
+
+/**
+ * Host, freshness and nonce-format policy on top of the structural parse. Adds issues (`domain_not_allowed`,
+ * `issued_at_in_future`, `issued_at_too_old`, `not_before_in_future`) and a `policy` block. Nonce replay is
+ * decided separately (it needs storage) via `withNonceResult`. Informational like the rest of the parse.
+ */
+export function applySiwePolicy(parse: SiweParse, opts: { expectedDomains: string[]; now?: number }): SiweParse {
+  const now = opts.now ?? Date.now();
+  const expected = opts.expectedDomains.map((d) => d.trim().toLowerCase()).filter(Boolean);
+  const policy: SiwePolicy = {
+    expectedDomains: expected,
+    domainMatches: false,
+    issuedAtAgeSeconds: null,
+    issuedAtFresh: false,
+    nonce: 'unchecked',
+    maxAgeSeconds: SIWE_MAX_AGE_SECONDS,
+  };
+  if (!parse.parsed || !parse.fields) return { ...parse, policy };
+  const issues = [...parse.issues];
+  const f = parse.fields;
+  policy.domainMatches = expected.includes(f.domain.toLowerCase());
+  if (!policy.domainMatches) issues.push(expected.length ? `domain_not_allowed (${f.domain} is not one of: ${expected.join(', ')})` : 'domain_not_allowed (no expected domain is known for this request)');
+  const t = f.issuedAt ? Date.parse(f.issuedAt) : NaN;
+  if (!Number.isNaN(t)) {
+    const age = Math.round((now - t) / 1000);
+    policy.issuedAtAgeSeconds = age;
+    if (age < -SIWE_FUTURE_SKEW_SECONDS) issues.push(`issued_at_in_future (${-age}s ahead)`);
+    else if (age > SIWE_MAX_AGE_SECONDS) issues.push(`issued_at_too_old (${age}s old, max ${SIWE_MAX_AGE_SECONDS}s)`);
+    else policy.issuedAtFresh = true;
+  }
+  if (f.notBefore) {
+    const nb = Date.parse(f.notBefore);
+    if (!Number.isNaN(nb) && nb > now + SIWE_FUTURE_SKEW_SECONDS * 1000) issues.push('not_before_in_future');
+  }
+  return { ...parse, issues, structureValid: issues.length === 0, policy };
+}
+
+/** Records the nonce replay result. A replay adds the `nonce_replayed` issue. */
+export function withNonceResult(parse: SiweParse, nonce: SiwePolicy['nonce']): SiweParse {
+  if (!parse.policy) return parse;
+  const issues = nonce === 'replayed' ? [...parse.issues, 'nonce_replayed (this address and nonce were already used in a verified commit within the replay window)'] : parse.issues;
+  return { ...parse, issues, structureValid: issues.length === 0, policy: { ...parse.policy, nonce } };
 }
 
 const HEADER = /^(.+) wants you to sign in with your Ethereum account:$/;

@@ -12,6 +12,7 @@ export interface ScanMetadata {
 export type ScanInput = DiagnosticScanRequest & { metadata?: ScanMetadata };
 
 export const SCORING_VERSION = 'mock-heuristic-v2';
+export const FINGERPRINT_VERSION = 'sim-fp-v1';
 
 // Words that, in a real pipeline, would make a fingerprint match more likely.
 const DERIVATIVE_KEYWORDS = [
@@ -84,6 +85,19 @@ export function scoreDiagnostics(req: ScanInput): { score: number; reasons: stri
   return { score: Math.min(1, Number(score.toFixed(4))), reasons };
 }
 
+/**
+ * SIMULATED fingerprint: `fp_` plus 16 hex characters of a SHA-256 over the normalized title (lowercase, letters and
+ * digits only), the duration rounded to whole seconds, and the assetType. It is distinct from the certificateHash
+ * (which also covers assetId, contentHash, text, score and verdict) and is stable across punctuation, case and
+ * sub-second duration differences. It is a hash of metadata, NOT an audio fingerprint: it knows nothing about the audio.
+ */
+export function simulatedFingerprint(req: ScanInput): string {
+  const title = (req.metadata?.title ?? '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const d = req.metadata?.durationSeconds;
+  const dur = typeof d === 'number' && d > 0 ? String(Math.round(d)) : 'na';
+  return `fp_${bytesToHex(sha256(utf8ToBytes(JSON.stringify([FINGERPRINT_VERSION, title, dur, req.assetType])))).slice(0, 16)}`;
+}
+
 /** Deterministic certificate id: a SHA-256 over the inputs and verdict, so identical inputs give the same certificate. */
 export function certificateFor(req: ScanInput, score: number, overallStatus: string): string {
   const canon = JSON.stringify([
@@ -105,13 +119,17 @@ export function runDiagnosticChecks(request: ScanInput): DiagnosticAuditResult {
   return runDiagnosticChecksDetailed(request).result;
 }
 
-export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string } {
+export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string; fingerprint: string; fingerprintVersion: string } {
   const { score, reasons } = scoreDiagnostics(request);
   const overallStatus: DiagnosticAuditResult['overallStatus'] = score < 0.15 ? 'PASSED' : score < 0.3 ? 'FLAGGED' : 'REJECTED';
   reasons.push(`total score ${score.toFixed(4)} gives ${overallStatus} (PASSED under 0.15, FLAGGED under 0.30, otherwise REJECTED)`);
+  const fingerprint = simulatedFingerprint(request);
+  reasons.push(`simulated fingerprint ${fingerprint} (${FINGERPRINT_VERSION}: hash of normalized title, rounded duration and assetType; not an audio fingerprint)`);
   return {
     reasons,
     scoringVersion: SCORING_VERSION,
+    fingerprint,
+    fingerprintVersion: FINGERPRINT_VERSION,
     result: {
       assetId: request.assetId,
       timestamp: Date.now(),

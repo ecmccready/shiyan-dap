@@ -104,7 +104,7 @@ export const musicStudioPlugin: WorkbenchPlugin = {
         // contentHash is derived from the track content (title, duration), not the random assetId, so the same
         // title and duration always score the same.
         const contentHash = await sha256Hex(JSON.stringify({ title: title.toLowerCase(), duration: duration ?? null }));
-        const { result, reasons, scoringVersion } = runDiagnosticChecksDetailed({
+        const { result, reasons, scoringVersion, fingerprint, fingerprintVersion } = runDiagnosticChecksDetailed({
           assetId,
           assetType: 'AUDIO',
           contentHash,
@@ -120,7 +120,7 @@ export const musicStudioPlugin: WorkbenchPlugin = {
           },
           timestamp: result.timestamp,
         });
-        return { assetId, title, duration, splitRule: splitRule ?? null, trackTxHash, auditTxHash, audit: result, reasons, scoringVersion };
+        return { assetId, title, duration, splitRule: splitRule ?? null, trackTxHash, auditTxHash, audit: result, reasons, scoringVersion, fingerprint, fingerprintVersion };
       },
     },
   ],

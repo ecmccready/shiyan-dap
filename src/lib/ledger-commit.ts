@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import type { AssetDomain, LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 import { signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
-import type { SiweParse } from '@/lib/ledger-siwe';
+import { applySiwePolicy, withNonceResult, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
 import { verifyWalletSignature } from '@/lib/ledger-wallet';
 import { plannedTransfersOf, resolveSettlement, TRANSFERS_FUTURE_WORK, type PlannedTransfer, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
 
@@ -50,6 +50,8 @@ export interface CommitOptions {
   walletMessage?: string;
   /** Wallet only: optional SIWE-style (EIP-4361) text; it is the signed message and is parsed into `siwe`. */
   siweMessage?: string;
+  /** Wallet only: domains a SIWE message's domain must match (the route passes configured domains or the request host). */
+  siweExpectedDomains?: string[];
   /** AGENT_COMPUTE: self-reported FLOP or cost estimate. Always stored as estimated, never metered. */
   usageEstimate?: unknown;
 }
@@ -154,6 +156,15 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     // failed or unsupported check is stored as wallet_unverified with the reason.
     const w = verifyWalletSignature({ ...sigParts, timestamp: p.timestamp }, p.signature, { walletAddress: opts.walletAddress, walletMessage: opts.walletMessage, siweMessage: opts.siweMessage });
     siwe = w.siwe;
+    if (siwe) {
+      siwe = applySiwePolicy(siwe, { expectedDomains: opts.siweExpectedDomains ?? [] });
+      // Replay guard: only a message whose signature verified claims its nonce, so a bad signature cannot burn
+      // someone else's nonce. Fails open (nonce 'unchecked') if the store is unavailable.
+      const f = siwe.fields;
+      if (w.ok && siwe.parsed && f?.nonce && /^[A-Za-z0-9]{8,}$/.test(f.nonce)) {
+        siwe = withNonceResult(siwe, await claimSiweNonce(f.address, f.nonce));
+      }
+    }
     if (w.ok) {
       signatureStatus = 'wallet_verified';
       walletAddress = w.address;
@@ -235,6 +246,25 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
   } finally {
     if (r && locked) await r.del(lockKey).catch(() => undefined);
   }
+}
+
+/** Claims `address:nonce` for the replay window. 'fresh' on first use, 'replayed' if already claimed. Redis SET NX, else memory. */
+export async function claimSiweNonce(address: string, nonce: string): Promise<'fresh' | 'replayed' | 'unchecked'> {
+  const id = `${address.toLowerCase()}:${nonce}`;
+  const r = ledgerRedis();
+  try {
+    if (r) {
+      return (await r.set(`ledger:siwe-nonce:${id}`, '1', { nx: true, ex: SIWE_NONCE_TTL_SECONDS })) === 'OK' ? 'fresh' : 'replayed';
+    }
+  } catch {
+    return 'unchecked';
+  }
+  const m = ((globalThis as unknown as { __siweNonces?: Map<string, number> }).__siweNonces ??= new Map());
+  const now = Date.now();
+  for (const [k, exp] of m) if (exp < now) m.delete(k);
+  if (m.has(id)) return 'replayed';
+  m.set(id, now + SIWE_NONCE_TTL_SECONDS * 1000);
+  return 'fresh';
 }
 
 export async function hiddenAssets(): Promise<Set<string>> {

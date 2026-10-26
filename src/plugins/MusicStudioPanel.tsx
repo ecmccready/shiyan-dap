@@ -25,6 +25,7 @@ type Created = {
   auditTxHash: string;
   audit: DiagnosticAuditResult;
   reasons: string[];
+  fingerprint?: string;
   records: Rec[];
 };
 
@@ -32,7 +33,7 @@ type Flow = {
   assetId: string;
   title: string;
   track: LedgerRecordResponse;
-  audit: DiagnosticAuditResult & { ledger: (LedgerRecordResponse & { previousHash?: string | null }) | null };
+  audit: DiagnosticAuditResult & { fingerprint?: string; ledger: (LedgerRecordResponse & { previousHash?: string | null }) | null };
 };
 
 async function sha256Hex(text: string): Promise<string> {
@@ -105,7 +106,7 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
       const res = await fetch('/api/v1/diagnostics/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assetId, assetType: 'AUDIO', contentHash }),
+        body: JSON.stringify({ assetId, assetType: 'AUDIO', contentHash, title, durationSeconds: 180 }),
       });
       const audit = await res.json();
       if (!res.ok) throw new Error(audit.error ?? `scan failed (${res.status})`);
@@ -191,6 +192,9 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
               <span className="text-zinc-500">audit: </span>{created.audit.overallStatus}, copyright score {created.audit.checks.copyrightMatchScore.toFixed(4)}, risk {created.audit.checks.trainingDataRisk}
               {created.reasons.length ? <span className="text-zinc-500"> ({created.reasons.join('; ')})</span> : null}
             </p>
+            {created.fingerprint ? (
+              <p data-music-fingerprint><span className="text-zinc-500">fingerprint (simulation, not an audio fingerprint): </span>{created.fingerprint}</p>
+            ) : null}
             {created.records[0]?.settlement ? (
               <p data-music-settlement-summary className="text-emerald-300">
                 {(() => {
@@ -235,6 +239,7 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
           <div><dt className="inline text-zinc-500">status: </dt><dd className="inline">{flow.audit.overallStatus}</dd></div>
           <div><dt className="inline text-zinc-500">copyright score: </dt><dd className="inline">{flow.audit.checks.copyrightMatchScore.toFixed(4)}</dd></div>
           <div><dt className="inline text-zinc-500">certificate: </dt><dd className="inline">{flow.audit.certificateHash}</dd></div>
+          {flow.audit.fingerprint ? <div data-music-fingerprint><dt className="inline text-zinc-500">fingerprint (simulation): </dt><dd className="inline">{flow.audit.fingerprint}</dd></div> : null}
           <div><dt className="inline text-zinc-500">track tx: </dt><dd className="inline">{flow.track.txHash} ({flow.track.status})</dd></div>
           <div><dt className="inline text-zinc-500">audit tx: </dt><dd className="inline">{flow.audit.ledger?.txHash ?? 'none'} ({flow.audit.ledger?.status ?? 'n/a'})</dd></div>
           <div><dt className="inline text-zinc-500">audit previousHash: </dt><dd className="inline">{flow.audit.ledger?.previousHash ?? 'null'}</dd></div>

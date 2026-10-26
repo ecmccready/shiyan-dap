@@ -4,6 +4,18 @@ import type { LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 import { commitLedgerEvent, hiddenAssets, purgeAsset, readLedger, setAssetHidden } from '@/lib/ledger-commit';
 import { safeEqual, signingSecretMode } from '@/lib/ledger-signing';
 
+/**
+ * Domains a SIWE message may name. SIWE_ALLOWED_DOMAINS (comma separated, host[:port]) wins when set; otherwise the
+ * request host plus the Vercel production domain. The default is a convenience, not a security boundary: a client
+ * calling the API directly controls its own Host header.
+ */
+function siweExpectedDomains(req: Request): string[] {
+  const configured = (process.env.SIWE_ALLOWED_DOMAINS ?? '').split(',').map((d) => d.trim()).filter(Boolean);
+  if (configured.length) return configured;
+  const hosts = [req.headers.get('x-forwarded-host')?.split(',')[0], req.headers.get('host'), process.env.VERCEL_PROJECT_PRODUCTION_URL];
+  return [...new Set(hosts.filter((h): h is string => Boolean(h)).map((h) => h.trim()))];
+}
+
 export const dynamic = 'force-dynamic';
 
 /**
@@ -52,6 +64,7 @@ export async function POST(req: Request) {
     walletAddress: typeof walletAddress === 'string' ? walletAddress.slice(0, 100) : undefined,
     walletMessage: typeof walletMessage === 'string' ? walletMessage.slice(0, 2000) : undefined,
     siweMessage: typeof siweMessage === 'string' ? siweMessage.slice(0, 2000) : undefined,
+    siweExpectedDomains: siweExpectedDomains(req),
   });
   if (!res.ok) return fail(res.error, res.status);
   return NextResponse.json(res.response, {
