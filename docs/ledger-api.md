@@ -1,6 +1,6 @@
 # Micro-ledger API
 
-Endpoint: `/api/v1/ledger/commit`. Storage is Upstash Redis (list `ledger:events`) when `UPSTASH_KV_REST_API_URL` and `UPSTASH_KV_REST_API_TOKEN` are set, else per-instance memory. Settlement is internal and off-chain.
+Endpoint: `/api/v1/ledger/commit`. Storage is Upstash Redis (list `ledger:events`) when `UPSTASH_KV_REST_API_URL` and `UPSTASH_KV_REST_API_TOKEN` are set, else per-instance memory. Events are signed and hash-chained per asset in this off-chain micro-ledger; they are not published to or anchored on a blockchain. Settlement is internal and off-chain.
 
 ## Commit (`POST`)
 
@@ -83,7 +83,7 @@ Tool `agent-compute.record_compute_usage` (args: `model`, `tokens`, optional `co
 
 ## Music Studio one-action asset flow
 
-Tool `music-studio.create_music_asset`: registers a MUSIC_TRACK (title, optional `durationSeconds`, optional `splitRule`), runs the mock diagnostics scan on it, and commits a DIAGNOSTIC_AUDIT event carrying the same `splitRule`. Both are server-signed and chained (`audit.previousHash` = track `txHash`). Settlement (`settlementRail`, `settlementAmountCents`, `settlementCurrency`) applies to the track event only; the audit event settles internally so an external rail runs once. Writes count against the 20 per hour per IP limit (two per call).
+Tool `music-studio.create_music_asset`: registers a MUSIC_TRACK (title, optional `durationSeconds`, optional `splitRule`), runs the mock diagnostics scan on it, and commits a DIAGNOSTIC_AUDIT event carrying the same `splitRule`. Both are server-signed and chained (`audit.previousHash` = track `txHash`) in the off-chain micro-ledger; this is not a public blockchain. The audit event preserves the exact diagnostics outcome (`PASSED`, `FLAGGED` or `REJECTED`). Settlement (`settlementRail`, `settlementAmountCents`, `settlementCurrency`) applies to the track event only; the audit event settles internally so an external rail runs once. Writes count against the 20 per hour per IP limit (two per call).
 
 ```bash
 curl -X POST $HOST/api/v1/plugins/tools/execute -H 'content-type: application/json' -d '{
@@ -92,7 +92,7 @@ curl -X POST $HOST/api/v1/plugins/tools/execute -H 'content-type: application/js
            "splitRule": [{"account": "acct_a", "percentage": 70}, {"account": "acct_b", "percentage": 30}]}}'
 ```
 
-The response has `result` (assetId, trackTxHash, auditTxHash, audit, reasons), `ledgerTxHashes` and `ledgerRecords` (full records with `previousHash`, `signatureStatus`, `settlementRef`, `settlement`). In the UI, the Music Studio panel has a "Create asset with splits" form (needs `?demo=1`).
+The response has `result` (assetId, trackTxHash, auditTxHash, audit, reasons), `ledgerTxHashes` and `ledgerRecords` (full records with `previousHash`, `signatureStatus`, `settlementRef`, `settlement`). In the UI, the Music Studio panel has a "Create track and run diagnostics" form (writes need `?demo=1`).
 
 ## Agents and MCP
 
@@ -110,7 +110,7 @@ The result is a standard MCP tool result; `structuredContent` has `result`, `led
 
 ## Mock diagnostics scoring
 
-`POST /api/v1/diagnostics/scan` and the scan tool accept optional `metadata` (`title`, `text`, `durationSeconds`) and return extra `reasons`. The `DiagnosticAuditResult` shape is unchanged. The score is deterministic: 0 to 0.04 from the contentHash, plus 0.07 per derivative keyword (remix, cover, sample, bootleg, mashup, karaoke, feat., official, ...), 0.04 for audio under 15 seconds, 0.03 for text over 5000 chars, and 0.10 per risky keyword for MODEL_PROMPT. Under 0.15 is PASSED, under 0.30 FLAGGED, else REJECTED. Risk is LOW under 0.10, MEDIUM under 0.25, else HIGH. Ledger audit status is PASSED or FAILED. Still a mock, not a real fingerprint.
+`POST /api/v1/diagnostics/scan` and the scan tool accept optional `metadata` (`title`, `text`, `durationSeconds`) and return extra `reasons`. The `DiagnosticAuditResult` shape is unchanged. All entry points use the same deterministic mock scoring: 0 to 0.04 from the contentHash, plus 0.07 per derivative keyword (remix, cover, sample, bootleg, mashup, karaoke, feat., official, ...), 0.04 for audio under 15 seconds, 0.03 for text over 5000 chars, and 0.10 per risky keyword for MODEL_PROMPT. Under 0.15 is PASSED, under 0.30 FLAGGED, else REJECTED. Risk is LOW under 0.10, MEDIUM under 0.25, else HIGH. The ledger preserves the exact status. The scan is a mock, not a real fingerprint or blockchain proof.
 
 ## Cleaning up test data
 

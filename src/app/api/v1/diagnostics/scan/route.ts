@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     assetId: result.assetId,
     stateData: {
       ...(body.splitRule ? { splitRule: body.splitRule } : {}),
-      auditStatus: result.overallStatus === 'PASSED' ? 'PASSED' : 'FAILED',
+      auditStatus: result.overallStatus,
       metadataHash: result.certificateHash,
     },
   }, { serverSign: true });

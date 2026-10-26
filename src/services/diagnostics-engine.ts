@@ -20,35 +20,16 @@ export interface DiagnosticAuditResult {
 export async function executeDiagnosticScan(
   request: DiagnosticScanRequest
 ): Promise<DiagnosticAuditResult> {
-  // 1. Execute simulated automated check pipelines
-  const copyrightScore = Math.random() * 0.05; // Mocking < 5% similarity
-  const isCompliant = copyrightScore < 0.15;
-
-  const result: DiagnosticAuditResult = {
-    assetId: request.assetId,
-    timestamp: Date.now(),
-    overallStatus: isCompliant ? 'PASSED' : 'FLAGGED',
-    checks: {
-      copyrightMatchScore: copyrightScore,
-      trainingDataRisk: copyrightScore > 0.1 ? 'MEDIUM' : 'LOW',
-      regulatoryCompliance: isCompliant,
-    },
-    certificateHash: `cert_${crypto.randomUUID()}`,
-  };
-
-  // 2. Automatically log audit result to the Micro-Ledger
-  await fetch('/api/v1/ledger/commit', {
+  const response = await fetch('/api/v1/diagnostics/scan', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      domain: 'DIAGNOSTIC_AUDIT',
-      assetId: request.assetId,
-      stateData: {
-        auditStatus: result.overallStatus,
-        metadataHash: result.certificateHash,
-      },
-    }),
+    body: JSON.stringify(request),
   });
 
-  return result;
+  const body = await response.json();
+  if (!response.ok) {
+    const message = typeof body?.error === 'string' ? body.error : `diagnostics scan failed (${response.status})`;
+    throw new Error(message);
+  }
+  return body as DiagnosticAuditResult;
 }

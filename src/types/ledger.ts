@@ -17,10 +17,10 @@ export interface LedgerEventPayload {
     title?: string;
     duration?: number;
     splitRule?: SplitRecipient[];
-    auditStatus?: 'PENDING' | 'PASSED' | 'FAILED';
+    auditStatus?: 'PENDING' | 'PASSED' | 'FLAGGED' | 'REJECTED' | 'FAILED';
     metadataHash: string;
   };
-  signature: string; // Cryptographic proof of origin
+  signature: string; // HMAC signature; wallet signatures may be unverified
   timestamp: number;
 }
 

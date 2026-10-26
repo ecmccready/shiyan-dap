@@ -49,7 +49,7 @@ export function scoreDiagnostics(req: ScanInput): { score: number; reasons: stri
   return { score: Math.min(1, Number(score.toFixed(4))), reasons };
 }
 
-/** Mock pipeline with the same DiagnosticAuditResult shape as executeDiagnosticScan, without the browser-only ledger fetch. */
+/** Shared mock pipeline used by the diagnostics route and server-side plugin tools. */
 export function runDiagnosticChecks(request: ScanInput): DiagnosticAuditResult {
   return runDiagnosticChecksDetailed(request).result;
 }

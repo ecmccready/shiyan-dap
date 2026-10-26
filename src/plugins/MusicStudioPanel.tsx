@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { useHydrated } from '@/lib/use-hydrated';
-import { recordLedgerState } from '@/lib/micro-ledger-client';
 import type { DiagnosticAuditResult } from '@/services/diagnostics-engine';
-import type { LedgerRecordResponse } from '@/types/ledger';
 
 type Rec = {
   txHash: string;
@@ -28,24 +26,11 @@ type Created = {
   records: Rec[];
 };
 
-type Flow = {
-  assetId: string;
-  title: string;
-  track: LedgerRecordResponse;
-  audit: DiagnosticAuditResult & { ledger: (LedgerRecordResponse & { previousHash?: string | null }) | null };
-};
-
-async function sha256Hex(text: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
 export default function MusicStudioPanel({ workspaceId }: { workspaceId: string }) {
   const hydrated = useHydrated();
   // Guard: the demo writes to the production ledger, so it is off unless the page URL has ?demo=1.
   const demoEnabled = hydrated && new URLSearchParams(window.location.search).get('demo') === '1';
   const [busy, setBusy] = useState(false);
-  const [flow, setFlow] = useState<Flow | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // One-action form: create_music_asset through the server execute route.
@@ -83,65 +68,17 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
     }
   }
 
-  async function run() {
-    setBusy(true);
-    setError(null);
-    setFlow(null);
-    try {
-      const assetId = `trk_${crypto.randomUUID().slice(0, 8)}`;
-      const title = `Demo track ${assetId}`;
-      const metadata = { title, duration: 180, workspaceId };
-      const contentHash = await sha256Hex(JSON.stringify(metadata));
-      // 1. Register the dummy asset on the ledger.
-      const track = await recordLedgerState({
-        domain: 'MUSIC_TRACK',
-        assetId,
-        version: '1',
-        previousHash: null,
-        stateData: { title, duration: 180, metadataHash: contentHash },
-        signature: 'unsigned',
-      });
-      // 2. Run the server-side diagnostics scan; it commits its own audit event.
-      const res = await fetch('/api/v1/diagnostics/scan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assetId, assetType: 'AUDIO', contentHash }),
-      });
-      const audit = await res.json();
-      if (!res.ok) throw new Error(audit.error ?? `scan failed (${res.status})`);
-      setFlow({ assetId, title, track, audit });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'flow failed');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <div className="text-sm text-zinc-300">
       <p className="font-medium text-white">Music Studio</p>
       <p className="mt-1">Workspace: <span className="font-mono">{workspaceId}</span></p>
       <p className="mt-1 text-zinc-500">
-        Demo: creates a dummy track, scans it (mock checks), and commits both to the micro-ledger. Each click writes two real ledger events.
+        Creates a track, runs mock diagnostics, and records both events in the off-chain, hash-chained micro-ledger. This is not a public blockchain.
       </p>
-      <button
-        type="button"
-        onClick={run}
-        disabled={busy || !demoEnabled}
-        data-music-flow-run
-        className="mt-3 rounded-full border border-emerald-400 px-3 py-1 text-xs text-emerald-300 disabled:opacity-50"
-      >
-        {busy ? 'Running…' : 'Create demo track and run diagnostics'}
-      </button>
-      {!demoEnabled ? (
-        <p data-music-flow-locked className="mt-2 text-xs text-zinc-500">
-          Demo writes are off. Add <span className="font-mono">?demo=1</span> to this page&apos;s URL to enable them.
-        </p>
-      ) : null}
       <div data-music-create className="mt-5 border-t border-zinc-800 pt-4">
-        <p className="font-medium text-white">Create asset with splits</p>
+        <p className="font-medium text-white">Create track and run diagnostics</p>
         <p className="mt-1 text-xs text-zinc-500">
-          One action: registers the track, scans it (mock), and commits the track and audit events with your splits. Writes two real ledger events.
+          One action registers the track and its audit result as two server-signed events. Optional splits apply to settlement; they do not represent blockchain transactions.
         </p>
         <div className="mt-3 space-y-2 text-xs">
           <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" maxLength={200} data-music-title className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1" />
@@ -181,14 +118,14 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
           data-music-create-run
           className="mt-3 rounded-full border border-emerald-400 px-3 py-1 text-xs text-emerald-300 disabled:opacity-50"
         >
-          {busy ? 'Running…' : 'Create asset and run diagnostics'}
+          {busy ? 'Running…' : 'Create track and run diagnostics'}
         </button>
         {!demoEnabled ? <p className="mt-2 text-xs text-zinc-500">Writes are off. Add <span className="font-mono">?demo=1</span> to the URL to enable them.</p> : null}
         {created ? (
           <div data-music-create-result className="mt-4 space-y-3 break-all font-mono text-xs">
             <p><span className="text-zinc-500">asset: </span>{created.assetId} ({created.title})</p>
             <p>
-              <span className="text-zinc-500">audit: </span>{created.audit.overallStatus}, copyright score {created.audit.checks.copyrightMatchScore.toFixed(4)}, risk {created.audit.checks.trainingDataRisk}
+              <span className="text-zinc-500">diagnostics: </span>{created.audit.overallStatus}, copyright score {created.audit.checks.copyrightMatchScore.toFixed(4)}, risk {created.audit.checks.trainingDataRisk}
               {created.reasons.length ? <span className="text-zinc-500"> ({created.reasons.join('; ')})</span> : null}
             </p>
             {created.records[0]?.settlement ? (
@@ -229,17 +166,6 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
         ) : null}
       </div>
       {error ? <p className="mt-3 text-red-400">{error}</p> : null}
-      {flow ? (
-        <dl data-music-flow-result className="mt-4 space-y-1 break-all font-mono text-xs">
-          <div><dt className="inline text-zinc-500">asset: </dt><dd className="inline">{flow.assetId}</dd></div>
-          <div><dt className="inline text-zinc-500">status: </dt><dd className="inline">{flow.audit.overallStatus}</dd></div>
-          <div><dt className="inline text-zinc-500">copyright score: </dt><dd className="inline">{flow.audit.checks.copyrightMatchScore.toFixed(4)}</dd></div>
-          <div><dt className="inline text-zinc-500">certificate: </dt><dd className="inline">{flow.audit.certificateHash}</dd></div>
-          <div><dt className="inline text-zinc-500">track tx: </dt><dd className="inline">{flow.track.txHash} ({flow.track.status})</dd></div>
-          <div><dt className="inline text-zinc-500">audit tx: </dt><dd className="inline">{flow.audit.ledger?.txHash ?? 'none'} ({flow.audit.ledger?.status ?? 'n/a'})</dd></div>
-          <div><dt className="inline text-zinc-500">audit previousHash: </dt><dd className="inline">{flow.audit.ledger?.previousHash ?? 'null'}</dd></div>
-        </dl>
-      ) : null}
     </div>
   );
 }

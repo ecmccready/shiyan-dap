@@ -76,7 +76,7 @@ export function validateLedgerPayload(p: Partial<LedgerEventPayload> | null): st
   if (p.timestamp !== undefined && (typeof p.timestamp !== 'number' || !Number.isFinite(p.timestamp))) return 'timestamp must be a number';
   const s = p.stateData;
   if (!s || typeof s.metadataHash !== 'string' || !s.metadataHash) return 'stateData.metadataHash is required';
-  if (s.auditStatus && !['PENDING', 'PASSED', 'FAILED'].includes(s.auditStatus)) return 'invalid stateData.auditStatus';
+  if (s.auditStatus && !['PENDING', 'PASSED', 'FLAGGED', 'REJECTED', 'FAILED'].includes(s.auditStatus)) return 'invalid stateData.auditStatus';
   if (s.splitRule) {
     if (!Array.isArray(s.splitRule) || s.splitRule.some((r) => !r?.account || typeof r.percentage !== 'number')) {
       return 'splitRule entries need account and numeric percentage';

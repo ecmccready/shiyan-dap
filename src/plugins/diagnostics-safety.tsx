@@ -8,7 +8,7 @@ function DiagnosticsSafetyPanel({ workspaceId }: { workspaceId: string }) {
     <div className="text-sm text-zinc-300">
       <p className="font-medium text-white">Diagnostics &amp; Safety</p>
       <p className="mt-1">Workspace: <span className="font-mono">{workspaceId}</span></p>
-      <p className="mt-1 text-zinc-500">One tool: run_diagnostic_scan (mock score, commits to the micro-ledger via the execute route).</p>
+      <p className="mt-1 text-zinc-500">One tool: run_diagnostic_scan (mock score, records a server-signed event in the off-chain micro-ledger; not a blockchain).</p>
     </div>
   );
 }
@@ -20,7 +20,7 @@ export const diagnosticsSafetyPlugin: WorkbenchPlugin = {
   registerTools: () => [
     {
       name: 'run_diagnostic_scan',
-      description: 'Runs a mock copyright scan on an asset and commits a DIAGNOSTIC_AUDIT event to the ledger.',
+      description: 'Runs mock diagnostics on an asset and records the exact audit outcome (PASSED, FLAGGED or REJECTED) as a server-signed, off-chain micro-ledger event. This is not a blockchain.',
       parameters: {
         type: 'object',
         properties: {
@@ -53,7 +53,7 @@ export const diagnosticsSafetyPlugin: WorkbenchPlugin = {
           assetId: result.assetId,
           payload: {
             ...(Array.isArray(args.splitRule) ? { splitRule: args.splitRule } : {}),
-            auditStatus: result.overallStatus === 'PASSED' ? 'PASSED' : 'FAILED',
+            auditStatus: result.overallStatus,
             metadataHash: result.certificateHash,
           },
           timestamp: result.timestamp,

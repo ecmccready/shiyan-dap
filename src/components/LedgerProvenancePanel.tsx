@@ -9,6 +9,9 @@ type Ev = {
   previousHash: string | null;
   txHash: string;
   timestamp: number;
+  stateData?: {
+    auditStatus?: 'PENDING' | 'PASSED' | 'FLAGGED' | 'REJECTED' | 'FAILED';
+  };
   signatureStatus?: 'verified' | 'unverified' | 'wallet_unverified';
   signatureType?: 'hmac' | 'wallet';
   settlement?: {
@@ -82,6 +85,11 @@ export default function LedgerProvenancePanel() {
                   <span>{e.assetId}</span>
                   <span className="text-emerald-400">{e.domain}</span>
                   <span className="text-zinc-500">CONFIRMED</span>
+                  {e.domain === 'DIAGNOSTIC_AUDIT' && e.stateData?.auditStatus ? (
+                    <span className={e.stateData.auditStatus === 'PASSED' ? 'text-emerald-400' : 'text-amber-400'}>
+                      audit {e.stateData.auditStatus}
+                    </span>
+                  ) : null}
                   <span className={e.signatureStatus === 'verified' ? 'text-emerald-400' : 'text-amber-400'}>
                     {e.signatureStatus === 'verified' ? 'signature verified' : e.signatureStatus === 'wallet_unverified' ? 'wallet signature (unverified)' : 'unverified'}
                     {e.signatureType ? ` · ${e.signatureType}` : ''}

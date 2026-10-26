@@ -40,7 +40,7 @@ export const musicStudioPlugin: WorkbenchPlugin = {
     },
     {
       name: 'register_track',
-      description: 'Registers a track on the micro-ledger (MUSIC_TRACK event) and returns its assetId and txHash.',
+      description: 'Records a MUSIC_TRACK event in the off-chain micro-ledger (not a blockchain) and returns its assetId and transaction hash.',
       parameters: {
         type: 'object',
         properties: { title: { type: 'string' }, durationSeconds: { type: 'number' }, assetId: { type: 'string' } },
@@ -64,7 +64,7 @@ export const musicStudioPlugin: WorkbenchPlugin = {
     {
       name: 'create_music_asset',
       description:
-        'One action: registers a track (MUSIC_TRACK) with an optional splitRule, runs the mock diagnostics scan on it, and commits the DIAGNOSTIC_AUDIT event with the same splitRule. Returns both txHashes. Settlement (settlementRail, settlementAmountCents) is attached to the track event only.',
+        'One action: registers a track (MUSIC_TRACK) with an optional splitRule, runs the mock diagnostics scan on it, and records the DIAGNOSTIC_AUDIT event with the same splitRule in the off-chain micro-ledger (not a blockchain). Returns both transaction hashes. Settlement (settlementRail, settlementAmountCents) is attached to the track event only.',
       parameters: {
         type: 'object',
         properties: {
@@ -112,7 +112,7 @@ export const musicStudioPlugin: WorkbenchPlugin = {
           assetId,
           payload: {
             ...(splitRule ? { splitRule } : {}),
-            auditStatus: result.overallStatus === 'PASSED' ? 'PASSED' : 'FAILED',
+            auditStatus: result.overallStatus,
             metadataHash: result.certificateHash,
           },
           timestamp: result.timestamp,
