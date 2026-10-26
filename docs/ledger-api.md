@@ -39,7 +39,9 @@ If `stateData.splitRule` is present (must sum to 100) a settlement intent is sto
 | `STRIPE` | `CREATED` with `providerId` (a PaymentIntent `pi_...`) only if ALL hold: `STRIPE_SECRET_KEY` set, valid amount, the commit's signature is `verified`, and for `sk_live_` keys `LEDGER_SIGNING_SECRET` is set. Otherwise `QUEUED` with `reason`: `stripe_key_missing`, `amount_missing_or_invalid`, `signature_unverified`, `live_key_requires_signing_secret` or `stripe_error` |
 | `X_MONEY` | `QUEUED`, reason `x_money_not_integrated` (no integration exists in this repo) |
 
-The Stripe call creates one unconfirmed PaymentIntent for the total (idempotency key `ledger_<txHash>`, `transfer_group` = txHash, metadata with the splits). No charge happens and no money reaches recipients: per-recipient amounts are only recorded in `plannedTransfers`. Queued intents are also appended to `ledger:settlement-queue`.
+The Stripe call creates one unconfirmed PaymentIntent for the total (idempotency key `ledger_<txHash>`, `transfer_group` = txHash, metadata with the splits). No charge happens and no money reaches recipients.
+
+Recipient-level records: every intent has `settlement.recipients` (`{account, percentage, amountCents?, status}`; amounts appear when `settlementAmountCents` is given). Status is `settled_internal` for INTERNAL_MICRO, `planned` when a Stripe PaymentIntent was created, and `queued` otherwise. When a PaymentIntent exists the stored event also has `planned_transfers: [{account, amountCents, status: "planned"}]`, and the commit response returns `plannedTransfers` and a `settlementNote`. **Actual Stripe Transfer/Connect calls to recipients are still future work.** Queued intents are also appended to `ledger:settlement-queue`.
 
 ## Read (`GET ?limit=N`)
 
@@ -53,7 +55,7 @@ Requires the env var `LEDGER_ADMIN_SECRET` (admin is disabled with 503 when it i
 |---|---|
 | `DELETE ?assetId=ID` | Soft delete (default): hides the asset's events from reads; they stay in storage and can be restored |
 | `DELETE ?assetId=ID&restore=1` | Unhides |
-| `DELETE ?assetId=ID&purge=1` | Hard purge: permanently removes the asset's events, queued settlements, chain head and hidden flag. Irreversible. Does not undo anything already created at Stripe |
+| `DELETE ?assetId=ID1,ID2,...&purge=1` | Hard purge (one id or up to 20 comma-separated): permanently removes the asset's events, queued settlements, chain head and hidden flag. Irreversible. Does not undo anything already created at Stripe |
 | `GET ?includeHidden=1&limit=50` | Lists events including hidden assets (flagged `hidden:true`) |
 
 ```bash
@@ -91,3 +93,14 @@ The result is a standard MCP tool result; `structuredContent` has `result`, `led
 ## Mock diagnostics scoring
 
 `POST /api/v1/diagnostics/scan` and the scan tool accept optional `metadata` (`title`, `text`, `durationSeconds`) and return extra `reasons`. The `DiagnosticAuditResult` shape is unchanged. The score is deterministic: 0 to 0.04 from the contentHash, plus 0.07 per derivative keyword (remix, cover, sample, bootleg, mashup, karaoke, feat., official, ...), 0.04 for audio under 15 seconds, 0.03 for text over 5000 chars, and 0.10 per risky keyword for MODEL_PROMPT. Under 0.15 is PASSED, under 0.30 FLAGGED, else REJECTED. Risk is LOW under 0.10, MEDIUM under 0.25, else HIGH. Ledger audit status is PASSED or FAILED. Still a mock, not a real fingerprint.
+
+## Cleaning up test data
+
+Test assets known on the production ledger: `live-test-20261025`, `trk_7bbda6ed`, `trk_654015ed`, `live-test-exec-20261025`, `live-test-music-20261025`. After `LEDGER_ADMIN_SECRET` is set in Vercel (and redeployed):
+
+```bash
+HOST=https://shiyan-dap.vercel.app LEDGER_ADMIN_SECRET=... scripts/purge-test-ledger.sh        # dry run, lists what is there
+HOST=https://shiyan-dap.vercel.app LEDGER_ADMIN_SECRET=... scripts/purge-test-ledger.sh --yes  # permanent purge
+```
+
+The equivalent single call is `DELETE /api/v1/ledger/commit?assetId=live-test-20261025,trk_7bbda6ed,trk_654015ed,live-test-exec-20261025,live-test-music-20261025&purge=1` with the `x-admin-secret` header. Use soft hide (no `purge=1`) first if you want to be able to restore.

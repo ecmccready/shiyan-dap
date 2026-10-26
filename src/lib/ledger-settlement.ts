@@ -17,7 +17,34 @@ export interface SettlementIntent {
   amountCents?: number;
   currency?: string;
   /** Per-recipient amounts in cents (sums to amountCents; rounding remainder goes to the last recipient). */
-  plannedTransfers?: Array<{ account: string; amountCents: number }>;
+  /** Per-recipient view: planned (Stripe intent created), settled_internal (micro-ledger) or queued (nothing external). */
+  recipients: SettlementRecipient[];
+}
+
+export interface SettlementRecipient {
+  account: string;
+  percentage: number;
+  amountCents?: number;
+  status: 'planned' | 'settled_internal' | 'queued';
+}
+
+/** Event-level record of what a Stripe settlement plans to pay out. Transfers are NOT executed. */
+export interface PlannedTransfer {
+  account: string;
+  amountCents: number;
+  status: 'planned';
+}
+
+export const TRANSFERS_FUTURE_WORK = 'actual Stripe Transfer/Connect calls to recipients are future work; only the PaymentIntent and planned_transfers are recorded';
+
+function recipientsOf(splits: SplitRule, status: SettlementRecipient['status'], amountCents?: number): SettlementRecipient[] {
+  const amounts = amountCents && Number.isInteger(amountCents) && amountCents > 0 ? planTransfers(splits, amountCents) : null;
+  return splits.map((x, i) => ({
+    account: x.account,
+    percentage: x.percentage,
+    ...(amounts ? { amountCents: amounts[i].amountCents } : {}),
+    status,
+  }));
 }
 
 export interface SettlementInput {
@@ -53,12 +80,12 @@ export function planTransfers(splits: SplitRule, amountCents: number) {
 export async function resolveSettlement(i: SettlementInput): Promise<SettlementIntent> {
   const base = { rail: i.rail, splits: i.splits, createdAt: Date.now() };
   if (i.rail === 'INTERNAL_MICRO') {
-    return { ...base, status: 'SETTLED_INTERNAL', note: 'settled internally on the micro-ledger; no external payment' };
+    return { ...base, status: 'SETTLED_INTERNAL', recipients: recipientsOf(i.splits, 'settled_internal', i.amountCents), amountCents: i.amountCents, note: 'settled internally on the micro-ledger; no external payment' };
   }
   if (i.rail === 'X_MONEY') {
-    return { ...base, status: 'QUEUED', reason: 'x_money_not_integrated', note: 'queued: no X Money integration exists in this repo yet' };
+    return { ...base, status: 'QUEUED', recipients: recipientsOf(i.splits, 'queued', i.amountCents), reason: 'x_money_not_integrated', note: 'queued: no X Money integration exists in this repo yet' };
   }
-  const queued = (reason: string, note: string): SettlementIntent => ({ ...base, status: 'QUEUED', reason, note, amountCents: i.amountCents, currency: i.currency });
+  const queued = (reason: string, note: string): SettlementIntent => ({ ...base, status: 'QUEUED', reason, note, amountCents: i.amountCents, currency: i.currency, recipients: recipientsOf(i.splits, 'queued', i.amountCents) });
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return queued('stripe_key_missing', 'queued: STRIPE_SECRET_KEY is not set (stripe_key_missing)');
   if (!i.amountCents || !Number.isInteger(i.amountCents) || i.amountCents < 50 || i.amountCents > MAX_CENTS) {
@@ -69,7 +96,6 @@ export async function resolveSettlement(i: SettlementInput): Promise<SettlementI
     return queued('live_key_requires_signing_secret', 'queued: a live Stripe key needs LEDGER_SIGNING_SECRET set so signatures prove origin');
   }
   const currency = (i.currency ?? 'usd').toLowerCase();
-  const plannedTransfers = planTransfers(i.splits, i.amountCents);
   try {
     const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(key);
@@ -90,11 +116,17 @@ export async function resolveSettlement(i: SettlementInput): Promise<SettlementI
       providerId: pi.id,
       amountCents: i.amountCents,
       currency,
-      plannedTransfers,
-      note: `Stripe PaymentIntent ${pi.id} created (${key.startsWith('sk_live_') ? 'live' : 'test'} mode, unconfirmed); transfers to recipients are planned, not executed`,
+      recipients: recipientsOf(i.splits, 'planned', i.amountCents),
+      note: `Stripe PaymentIntent ${pi.id} created (${key.startsWith('sk_live_') ? 'live' : 'test'} mode, unconfirmed); ${TRANSFERS_FUTURE_WORK}`,
     };
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'unknown error';
-    return { ...queued('stripe_error', `queued: Stripe call failed (${msg.slice(0, 160)})`), plannedTransfers };
+    return queued('stripe_error', `queued: Stripe call failed (${msg.slice(0, 160)})`);
   }
+}
+
+/** The event-level planned_transfers array: only when a Stripe PaymentIntent exists. */
+export function plannedTransfersOf(s: SettlementIntent | null): PlannedTransfer[] | undefined {
+  if (!s || s.status !== 'CREATED') return undefined;
+  return s.recipients.filter((r) => r.amountCents !== undefined).map((r) => ({ account: r.account, amountCents: r.amountCents as number, status: 'planned' as const }));
 }

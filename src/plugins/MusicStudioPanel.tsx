@@ -13,7 +13,9 @@ type Rec = {
   previousHash?: string | null;
   signatureStatus?: string;
   settlementRef?: string | null;
-  settlement?: { status: string; note: string; reason?: string; providerId?: string; splits: { account: string; percentage: number }[] } | null;
+  plannedTransfers?: { account: string; amountCents: number; status: string }[] | null;
+  settlementNote?: string | null;
+  settlement?: { status: string; note: string; recipients?: { account: string; percentage: number; amountCents?: number; status: string }[]; reason?: string; providerId?: string; splits: { account: string; percentage: number }[] } | null;
 };
 type Created = {
   assetId: string;
@@ -189,6 +191,17 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
               <span className="text-zinc-500">audit: </span>{created.audit.overallStatus}, copyright score {created.audit.checks.copyrightMatchScore.toFixed(4)}, risk {created.audit.checks.trainingDataRisk}
               {created.reasons.length ? <span className="text-zinc-500"> ({created.reasons.join('; ')})</span> : null}
             </p>
+            {created.records[0]?.settlement ? (
+              <p data-music-settlement-summary className="text-emerald-300">
+                {(() => {
+                  const st = created.records[0].settlement!;
+                  const rail = created.records[0].settlementRail;
+                  if (st.status === 'SETTLED_INTERNAL') return `Settlement: ${rail} settled`;
+                  if (st.status === 'CREATED') return `Settlement: ${rail} PaymentIntent ${st.providerId} created (recipient transfers planned, not executed)`;
+                  return `Settlement: ${rail} queued: ${st.reason ?? 'pending'}`;
+                })()}
+              </p>
+            ) : null}
             {created.records.map((r, i) => (
               <div key={r.txHash} className="rounded border border-zinc-800 p-2">
                 <p className="text-white">{i === 0 ? '1. MUSIC_TRACK' : '2. DIAGNOSTIC_AUDIT'}</p>
@@ -201,6 +214,12 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
                     {' · '}{r.settlement.splits.map((x) => `${x.account} ${x.percentage}%`).join(', ')}
                   </p>
                 ) : null}
+                {r.settlement?.recipients?.length ? (
+                  <p className="text-zinc-400">
+                    {r.settlement.recipients.map((x) => `${x.account}${x.amountCents !== undefined ? ` $${(x.amountCents / 100).toFixed(2)}` : ''}: ${x.status}`).join(' · ')}
+                  </p>
+                ) : null}
+                {r.settlementNote ? <p className="text-zinc-500">{r.settlementNote}</p> : null}
               </div>
             ))}
             {created.records.length > 1 && created.records[1].settlement && created.records[1].settlement.status === 'SETTLED_INTERNAL' ? (

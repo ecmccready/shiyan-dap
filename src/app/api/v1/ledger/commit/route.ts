@@ -77,18 +77,29 @@ export async function DELETE(req: Request) {
   const denied = await adminGate(req);
   if (denied) return denied;
   const url = new URL(req.url);
-  const assetId = url.searchParams.get('assetId');
-  if (!assetId) return NextResponse.json({ error: 'assetId query param is required' }, { status: 400 });
+  const raw = url.searchParams.get('assetId');
+  // One asset, or up to 20 comma-separated assets, so test data can be cleaned in one call.
+  const assetIds = [...new Set((raw ?? '').split(',').map((x) => x.trim()).filter(Boolean))];
+  if (assetIds.length === 0) return NextResponse.json({ error: 'assetId query param is required' }, { status: 400 });
+  if (assetIds.length > 20) return NextResponse.json({ error: 'at most 20 assetIds per call' }, { status: 400 });
   const restore = url.searchParams.get('restore') === '1';
   const purge = url.searchParams.get('purge') === '1';
   if (purge && restore) return NextResponse.json({ error: 'purge and restore cannot be combined' }, { status: 400 });
   try {
     if (purge) {
-      const out = await purgeAsset(assetId);
-      return NextResponse.json({ ok: true, assetId, purged: true, ...out });
+      const results = [];
+      for (const id of assetIds) results.push({ assetId: id, ...(await purgeAsset(id)) });
+      const first = results[0];
+      return NextResponse.json({
+        ok: true,
+        purged: true,
+        ...(assetIds.length === 1 ? { assetId: first.assetId, removedEvents: first.removedEvents, removedQueue: first.removedQueue } : {}),
+        results,
+        totalRemovedEvents: results.reduce((a, r) => a + r.removedEvents, 0),
+      });
     }
-    await setAssetHidden(assetId, restore ? false : true);
-    return NextResponse.json({ ok: true, assetId, hidden: !restore, hiddenAssets: [...(await hiddenAssets())] });
+    for (const id of assetIds) await setAssetHidden(id, restore ? false : true);
+    return NextResponse.json({ ok: true, assetIds, ...(assetIds.length === 1 ? { assetId: assetIds[0] } : {}), hidden: !restore, hiddenAssets: [...(await hiddenAssets())] });
   } catch {
     return fail('ledger storage unavailable', 502);
   }
