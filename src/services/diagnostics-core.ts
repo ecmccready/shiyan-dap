@@ -2,14 +2,8 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { DiagnosticAuditResult, DiagnosticScanRequest } from '@/services/diagnostics-engine';
 
-/** Optional hints the mock scan can use. All fields are optional. */
-export interface ScanMetadata {
-  title?: string;
-  /** Free text to scan (lyrics, a prompt, a description). */
-  text?: string;
-  durationSeconds?: number;
-}
-export type ScanInput = DiagnosticScanRequest & { metadata?: ScanMetadata };
+export type { ScanMetadata } from '@/services/diagnostics-engine';
+export type ScanInput = DiagnosticScanRequest;
 
 export const SCORING_VERSION = 'mock-heuristic-v2';
 export const FINGERPRINT_VERSION = 'sim-fp-v1';

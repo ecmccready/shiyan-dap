@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { allowLedgerWrite } from '@/lib/ledger-guard';
-import { runDiagnosticChecksDetailed, type ScanMetadata } from '@/services/diagnostics-core';
+import { runDiagnosticChecksDetailed } from '@/services/diagnostics-core';
 import type { DiagnosticScanRequest } from '@/services/diagnostics-engine';
 import { commitLedgerEvent } from '@/lib/ledger-commit';
-import type { SplitRule } from '@/lib/ledger-settlement';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +16,7 @@ export async function POST(req: Request) {
   if (!(await allowLedgerWrite(req))) {
     return NextResponse.json({ error: 'rate limit: too many ledger writes from this address, try later' }, { status: 429 });
   }
-  let body: Partial<DiagnosticScanRequest> & { metadata?: ScanMetadata; splitRule?: SplitRule; title?: string; durationSeconds?: number };
+  let body: Partial<DiagnosticScanRequest>;
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -40,7 +39,7 @@ export async function POST(req: Request) {
   const title = typeof m?.title === 'string' ? m.title : typeof body.title === 'string' ? body.title : undefined;
   const durationSeconds = typeof m?.durationSeconds === 'number' ? m.durationSeconds : typeof body.durationSeconds === 'number' ? body.durationSeconds : undefined;
   const text = typeof m?.text === 'string' ? m.text.slice(0, 20000) : undefined;
-  const metadata: ScanMetadata | undefined =
+  const metadata =
     title !== undefined || durationSeconds !== undefined || text !== undefined
       ? { title: title?.slice(0, 200), text, durationSeconds }
       : undefined;
