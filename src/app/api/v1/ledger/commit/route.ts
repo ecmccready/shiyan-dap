@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { allowLedgerWrite } from '@/lib/ledger-guard';
 import type { LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 import { commitLedgerEvent, readLedger } from '@/lib/ledger-commit';
 
@@ -11,6 +12,9 @@ function fail(message: string, status = 400) {
 }
 
 export async function POST(req: Request) {
+  if (!(await allowLedgerWrite(req))) {
+    return NextResponse.json({ error: 'rate limit: too many ledger writes from this address, try later' }, { status: 429 });
+  }
   let p: Partial<LedgerEventPayload>;
   try {
     p = (await req.json()) as Partial<LedgerEventPayload>;

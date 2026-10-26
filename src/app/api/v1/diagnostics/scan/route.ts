@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { allowLedgerWrite } from '@/lib/ledger-guard';
 import { runDiagnosticChecks } from '@/services/diagnostics-core';
 import type { DiagnosticScanRequest } from '@/services/diagnostics-engine';
 import { commitLedgerEvent } from '@/lib/ledger-commit';
@@ -12,6 +13,9 @@ const ASSET_TYPES = ['AUDIO', 'TEXT', 'MODEL_PROMPT'];
  * the micro-ledger, with no HTTP hop. Returns the DiagnosticAuditResult plus the ledger record.
  */
 export async function POST(req: Request) {
+  if (!(await allowLedgerWrite(req))) {
+    return NextResponse.json({ error: 'rate limit: too many ledger writes from this address, try later' }, { status: 429 });
+  }
   let body: Partial<DiagnosticScanRequest>;
   try {
     body = (await req.json()) as Partial<DiagnosticScanRequest>;

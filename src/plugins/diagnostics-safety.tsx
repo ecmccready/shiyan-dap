@@ -1,5 +1,5 @@
 import type { WorkbenchPlugin, LedgerHookEvent } from '@/types/workbench-plugin';
-import { executeDiagnosticScan } from '@/services/diagnostics-engine';
+import { runDiagnosticChecks } from '@/services/diagnostics-core';
 
 let lastEvent: LedgerHookEvent | null = null;
 
@@ -8,7 +8,7 @@ function DiagnosticsSafetyPanel({ workspaceId }: { workspaceId: string }) {
     <div className="text-sm text-zinc-300">
       <p className="font-medium text-white">Diagnostics &amp; Safety</p>
       <p className="mt-1">Workspace: <span className="font-mono">{workspaceId}</span></p>
-      <p className="mt-1 text-zinc-500">Stub plugin. One tool: run_diagnostic_scan (mock score, commits to the micro-ledger).</p>
+      <p className="mt-1 text-zinc-500">One tool: run_diagnostic_scan (mock score, commits to the micro-ledger via the execute route).</p>
     </div>
   );
 }
@@ -31,14 +31,25 @@ export const diagnosticsSafetyPlugin: WorkbenchPlugin = {
         },
         required: ['assetId', 'assetType', 'contentHash'],
       },
-      // Browser-only for now: the scan commits via a relative fetch to /api/v1/ledger/commit.
-      execute: async (args) =>
-        executeDiagnosticScan({
+      // Server-safe: scans with the shared mock checks and commits through context.emitLedgerEvent.
+      execute: async (args, context) => {
+        const result = runDiagnosticChecks({
           assetId: String(args.assetId),
           assetType: args.assetType as 'AUDIO' | 'TEXT' | 'MODEL_PROMPT',
           contentHash: String(args.contentHash),
           rawPayloadUrl: typeof args.rawPayloadUrl === 'string' ? args.rawPayloadUrl : undefined,
-        }),
+        });
+        const txHash = await context.emitLedgerEvent({
+          action: 'DIAGNOSTIC_AUDIT',
+          assetId: result.assetId,
+          payload: {
+            auditStatus: result.overallStatus === 'PASSED' ? 'PASSED' : 'FAILED',
+            metadataHash: result.certificateHash,
+          },
+          timestamp: result.timestamp,
+        });
+        return { ...result, txHash };
+      },
     },
   ],
   onLedgerEvent: async (event) => {

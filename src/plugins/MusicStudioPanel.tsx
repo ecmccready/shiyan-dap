@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useHydrated } from '@/lib/use-hydrated';
 import { recordLedgerState } from '@/lib/micro-ledger-client';
 import type { DiagnosticAuditResult } from '@/services/diagnostics-engine';
 import type { LedgerRecordResponse } from '@/types/ledger';
@@ -18,6 +19,9 @@ async function sha256Hex(text: string): Promise<string> {
 }
 
 export default function MusicStudioPanel({ workspaceId }: { workspaceId: string }) {
+  const hydrated = useHydrated();
+  // Guard: the demo writes to the production ledger, so it is off unless the page URL has ?demo=1.
+  const demoEnabled = hydrated && new URLSearchParams(window.location.search).get('demo') === '1';
   const [busy, setBusy] = useState(false);
   const [flow, setFlow] = useState<Flow | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -66,12 +70,17 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
       <button
         type="button"
         onClick={run}
-        disabled={busy}
+        disabled={busy || !demoEnabled}
         data-music-flow-run
         className="mt-3 rounded-full border border-emerald-400 px-3 py-1 text-xs text-emerald-300 disabled:opacity-50"
       >
         {busy ? 'Running…' : 'Create demo track and run diagnostics'}
       </button>
+      {!demoEnabled ? (
+        <p data-music-flow-locked className="mt-2 text-xs text-zinc-500">
+          Demo writes are off. Add <span className="font-mono">?demo=1</span> to this page&apos;s URL to enable them.
+        </p>
+      ) : null}
       {error ? <p className="mt-3 text-red-400">{error}</p> : null}
       {flow ? (
         <dl data-music-flow-result className="mt-4 space-y-1 break-all font-mono text-xs">

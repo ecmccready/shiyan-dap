@@ -12,7 +12,8 @@ import type { AssetDomain, LedgerEventPayload, LedgerRecordResponse } from '@/ty
  * fails with 503 rather than forking the chain. Memory mode has no await between read and write.
  * Missing eventId, version, signature and timestamp are filled in so partial callers still work.
  * Settlement is internal and off-chain: nothing is anchored on a blockchain.
- * TODO: verify `signature` (proof of origin). It is stored but not checked yet.
+ * TODO: cryptographically verify `signature` (proof of origin). Today only its format is checked
+ * (non-empty string, max 1024 chars); anything passes, including the default 'unsigned'.
  */
 export const LEDGER_KEY = 'ledger:events';
 export const LEDGER_HEADS = 'ledger:heads';
@@ -38,6 +39,8 @@ export function validateLedgerPayload(p: Partial<LedgerEventPayload> | null): st
   for (const k of ['eventId', 'version', 'signature'] as const) {
     if (p[k] !== undefined && (typeof p[k] !== 'string' || !p[k])) return `invalid field: ${k}`;
   }
+  // Format check only: non-empty string, at most 1024 chars. The signature is NOT cryptographically verified.
+  if (typeof p.signature === 'string' && p.signature.length > 1024) return 'signature too long (max 1024 chars)';
   if (!p.domain || !DOMAINS.includes(p.domain)) return 'missing or invalid field: domain';
   if (p.timestamp !== undefined && (typeof p.timestamp !== 'number' || !Number.isFinite(p.timestamp))) return 'timestamp must be a number';
   const s = p.stateData;
