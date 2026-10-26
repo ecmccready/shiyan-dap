@@ -250,3 +250,15 @@ export function withCrypto(parse: SiweParse, c: Omit<SiweCrypto, 'addressChecksu
   const crypto: SiweCrypto = { method: c.method, signatureValid: c.signatureValid, recoveredAddress: c.recoveredAddress, messageAddressMatches: matches, signedExactText: c.signedExactText, addressChecksum: eip55State(msgAddr) };
   return { ...parse, crypto, cryptoVerified: parse.parsed && c.signatureValid && matches && c.signedExactText };
 }
+
+/** Reasons cryptoVerified is not true, empty when it is true or no crypto result exists. Used by the combined status. */
+export function cryptoGaps(parse: SiweParse): string[] {
+  if (parse.cryptoVerified !== false) return [];
+  const c = parse.crypto;
+  const why: string[] = [];
+  if (!parse.parsed) why.push('siwe_message_not_parsed');
+  if (c && !c.signatureValid) why.push('signature_not_valid');
+  if (c && !c.messageAddressMatches) why.push('message_address_is_not_the_signer');
+  if (c && !c.signedExactText) why.push('signature_not_checked_over_exact_siweMessage');
+  return [`siwe_crypto_not_verified (${why.length ? why.join(', ') : 'unknown'})`];
+}

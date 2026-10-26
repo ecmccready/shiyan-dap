@@ -58,7 +58,7 @@ export async function GET() {
       ],
       signatureTypes: [
         { type: 'hmac', note: 'default; verified with LEDGER_SIGNING_SECRET (public dev fallback when unset)' },
-        { type: 'wallet', note: 'EIP-191 personal_sign, basic check; wallet_verified or wallet_unverified with a reason; optional siweMessage adds domain, freshness, nonce checks, a siwe.cryptoVerified boolean (nonces from GET /api/v1/siwe/nonce preferred) and a combined wallet_siwe_verified or wallet_siwe_partial status; contractWallet:true gives eip1271_verified, eip1271_failed or eip1271_unsupported (an eth_call isValidSignature check when ETH_RPC_URL is set; no full SIWE crypto, no ERC-6492); SIWE domain defaults to SIWE_ALLOWED_DOMAINS or the fixed production domain, not the request Host' },
+        { type: 'wallet', note: 'EIP-191 personal_sign, basic check; wallet_verified or wallet_unverified with a reason; optional siweMessage adds domain, freshness, nonce checks, a siwe.cryptoVerified boolean (false makes the combined status wallet_siwe_partial) (nonces from GET /api/v1/siwe/nonce preferred) and a combined wallet_siwe_verified or wallet_siwe_partial status; contractWallet:true gives eip1271_verified, eip1271_failed or eip1271_unsupported (an eth_call isValidSignature check when ETH_RPC_URL is set; no full SIWE crypto, no ERC-6492); SIWE domain defaults to SIWE_ALLOWED_DOMAINS or the fixed production domain, not the request Host' },
       ],
       limits: { ledgerWritesPerIpPerHour: LEDGER_WRITES_PER_HOUR },
     },

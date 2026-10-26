@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import { LEDGER_AUDIT_STATUSES, type AssetDomain, type LedgerEventPayload, type LedgerRecordResponse } from '@/types/ledger';
 import { canonicalLedgerString, signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
-import { applySiwePolicy, withCrypto, withNonceResult, withNonceSource, parseSiweMessage, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
+import { applySiwePolicy, cryptoGaps, withCrypto, withNonceResult, withNonceSource, parseSiweMessage, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
 import { verifyWalletSignature } from '@/lib/ledger-wallet';
 import { eip1271RpcUrl, verifyEip1271, type Eip1271Result } from '@/lib/ledger-eip1271';
 import { plannedTransfersOf, resolveSettlement, TRANSFERS_FUTURE_WORK, type PlannedTransfer, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
@@ -186,7 +186,16 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
         siwe = withNonceSource(siwe, await consumeIssuedNonce(sf.nonce), process.env.SIWE_REQUIRE_ISSUED_NONCE === '1');
       }
       if (siwe) siwe = withCrypto(siwe, { method: 'eip1271', signatureValid: r1271.status === 'eip1271_verified', recoveredAddress: null, signerAddress: walletAddress ?? null, signedExactText: opts.siweMessage !== undefined && text === opts.siweMessage });
-      if (r1271.status === 'eip1271_verified' && siwe && siwe.issues.length > 0) signatureReason = `${r1271.reason}; siwe issues (check siwe.structureValid): ${siwe.issues.join('; ')}`;
+      if (r1271.status === 'eip1271_verified' && siwe) {
+        // The contract accepted the signature, but if the SIWE message does not name that contract (or could not be parsed) the
+        // combined result is partial, with the reason. eip1271_failed and eip1271_unsupported stay as they are.
+        const cg = cryptoGaps(siwe);
+        if (cg.length) {
+          signatureStatus = 'wallet_siwe_partial';
+          signatureReason = `${cg.join('; ')}; the contract accepted the signature (EIP-1271 eth_call) but the SIWE message does not tie it to that address`;
+        }
+      }
+      if (signatureStatus === 'eip1271_verified' && siwe && siwe.issues.length > 0) signatureReason = `${r1271.reason}; siwe issues (check siwe.structureValid): ${siwe.issues.join('; ')}`;
     } else {
     // Basic EIP-191 personal_sign check (no EIP-1271 contract wallets, no full SIWE crypto). Never rejects: a
     // failed or unsupported check is stored as wallet_unverified with the reason.
@@ -219,7 +228,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     // result, and a nonce this server issued. Anything short of that is wallet_siwe_partial with the reasons listed.
     // A failed EIP-191 check stays wallet_unverified. Without a siweMessage nothing changes.
     if (siwe && w.ok) {
-      const gaps = [...siwe.issues];
+      const gaps = [...siwe.issues, ...cryptoGaps(siwe)];
       if (siwe.policy && siwe.policy.nonceSource !== 'server_issued') gaps.push(`nonce_${siwe.policy.nonceSource === 'not_issued' ? 'not_server_issued' : 'unchecked'}`);
       if (!siwe.parsed) gaps.push('siwe_not_parsed');
       if (gaps.length === 0) {

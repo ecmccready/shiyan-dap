@@ -33,6 +33,7 @@ type Ev = {
   planned_transfers?: { account: string; amountCents: number; status: string; transferId?: string; transferSkipped?: string; transferError?: string }[];
 };
 type DryRun = { attemptId: string; status: string; anchored: boolean; root: string | null; eventCount: number; simulatedTxHash: string; simulatedBlockNumber: number; network: string; note: string };
+type Attempt = { attemptId: string; network: string; simulatedTxHash: string; attemptedAt: number; anchored: boolean; receipt?: { gasUsed: number; feeNative: string; nativeSymbol: string; effectiveGasPriceGwei: number; chainId: number } };
 type Siwe = { parsed: boolean; structureValid: boolean; cryptoVerified?: boolean; crypto?: { method: string; recoveredAddress: string | null; messageAddressMatches: boolean; signedExactText: boolean; addressChecksum: string }; issues: string[]; policy?: { domainMatches: boolean; issuedAtAgeSeconds: number | null; issuedAtFresh: boolean; nonce: string; nonceSource?: string }; fields?: { domain: string; address: string; statement?: string; uri?: string; version?: string; chainId?: number; nonce?: string; issuedAt?: string } };
 type Anchor = { root: string | null; eventCount: number; anchored: boolean; algorithm: string };
 type Snapshot = { store: string; anchor: string; count: number; events: Ev[] };
@@ -47,10 +48,20 @@ export default function LedgerProvenancePanel() {
   // The dry run writes an attempt record, so like the other writers it needs ?demo=1.
   const demoEnabled = hydrated && new URLSearchParams(window.location.search).get('demo') === '1';
   const [dry, setDry] = useState<DryRun | null>(null);
+  const [attempts, setAttempts] = useState<Attempt[]>([]);
+  const [net, setNet] = useState('ethereum');
   const [dryBusy, setDryBusy] = useState(false);
   const [dryError, setDryError] = useState<string | null>(null);
   // Secondary by default: the ledger works in the background; expand to inspect it.
   const [open, setOpen] = useState(false);
+
+  // Latest three recorded dry-run attempts (read-only GET). Secondary: failure just hides the list.
+  function loadAttempts() {
+    fetch('/api/v1/ledger/anchor?attempts=3', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((a: { attempts?: Attempt[] } | null) => setAttempts(a?.attempts ?? []))
+      .catch(() => setAttempts([]));
+  }
 
   const load = useCallback(async () => {
     try {
@@ -63,6 +74,7 @@ export default function LedgerProvenancePanel() {
         .then((r) => (r.ok ? r.json() : null))
         .then((a: Anchor | null) => setAnchor(a))
         .catch(() => setAnchor(null));
+      loadAttempts();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'failed to load');
     }
@@ -72,10 +84,11 @@ export default function LedgerProvenancePanel() {
     setDryBusy(true);
     setDryError(null);
     try {
-      const res = await fetch('/api/v1/ledger/anchor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dryRun: true, limit: 100 }) });
+      const res = await fetch('/api/v1/ledger/anchor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dryRun: true, limit: 100, network: net }) });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error ?? `HTTP ${res.status}`);
       setDry(d as DryRun);
+      loadAttempts();
     } catch (e) {
       setDryError(e instanceof Error ? e.message : 'failed');
     } finally {
@@ -120,6 +133,9 @@ export default function LedgerProvenancePanel() {
             </p>
           ) : null}
           <div className="mt-2 text-xs">
+            <select value={net} onChange={(e) => setNet(e.target.value)} data-anchor-network aria-label="Simulated target network" className="mr-2 rounded-full border border-zinc-700 bg-transparent px-2 py-1 text-zinc-400">
+              {['ethereum', 'sepolia', 'polygon', 'base', 'optimism', 'arbitrum'].map((n) => <option key={n} value={n} className="bg-zinc-900">{n}</option>)}
+            </select>
             <button type="button" onClick={() => void runDry()} disabled={dryBusy || !demoEnabled} data-anchor-dryrun className="rounded-full border border-zinc-700 px-3 py-1 text-zinc-400 disabled:opacity-50">
               {dryBusy ? 'Running…' : 'Dry-run anchor submission'}
             </button>
@@ -129,6 +145,18 @@ export default function LedgerProvenancePanel() {
               <p data-anchor-dryrun-result className="mt-2 break-all font-mono text-zinc-400">
                 {dry.status} {dry.attemptId} · simulated tx {dry.simulatedTxHash} · simulated block {dry.simulatedBlockNumber} · root {dry.root ?? 'none'} over {dry.eventCount} events · anchored: {String(dry.anchored)}. {dry.note}
               </p>
+            ) : null}
+            {attempts.length > 0 ? (
+              <div data-anchor-attempts className="mt-2 font-mono text-zinc-500">
+                <p>Last {attempts.length} dry-run attempt{attempts.length === 1 ? '' : 's'} (simulated, nothing on-chain):</p>
+                <ul className="mt-1 space-y-0.5">
+                  {attempts.map((a) => (
+                    <li key={a.attemptId} className="break-all">
+                      {a.attemptId} · {a.network} · simulated tx {a.simulatedTxHash.slice(0, 14)}… · {a.receipt ? `gas ${a.receipt.gasUsed.toLocaleString('en-US')} · ~${a.receipt.feeNative} ${a.receipt.nativeSymbol} at an illustrative ${a.receipt.effectiveGasPriceGwei} gwei` : 'no receipt (no network chosen)'} · anchored: {String(a.anchored)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : null}
           </div>
           {events.length === 0 ? <p className="mt-3 text-zinc-500">No events yet.</p> : null}
