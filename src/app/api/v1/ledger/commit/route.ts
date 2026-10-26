@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import type { AssetDomain, LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 
@@ -8,12 +8,20 @@ export const dynamic = 'force-dynamic';
 /**
  * Append-only micro-ledger. Events are stored in Upstash Redis (list `ledger:events`) when
  * UPSTASH_KV_REST_API_URL/TOKEN are set, otherwise in a per-instance in-memory list.
- * Settlement is internal and off-chain: nothing is anchored on a blockchain, and the signature
- * field is stored but not cryptographically verified yet.
+ * Each event is chained: previousHash is set server-side to the txHash of the latest event for the
+ * same assetId (null for the first), overriding any client value. The per-asset head is kept in the
+ * hash `ledger:heads`; concurrent commits for one asset can race (not atomic).
+ * Missing eventId, version, signature and timestamp are filled in so partial callers still work.
+ * Settlement is internal and off-chain: nothing is anchored on a blockchain.
+ * TODO: verify `signature` (proof of origin). It is stored but not checked yet.
  */
 const KEY = 'ledger:events';
 const DOMAINS: AssetDomain[] = ['MUSIC_TRACK', 'STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE'];
-const g = globalThis as unknown as { __ledgerMem?: Array<LedgerEventPayload & { txHash: string }> };
+const HEADS = 'ledger:heads';
+const g = globalThis as unknown as {
+  __ledgerMem?: Array<LedgerEventPayload & { txHash: string }>;
+  __ledgerHeads?: Map<string, string>;
+};
 
 function redis(): Redis | null {
   const url = process.env.UPSTASH_KV_REST_API_URL;
@@ -28,12 +36,12 @@ function fail(message: string, status = 400) {
 
 function validate(p: Partial<LedgerEventPayload> | null): string | null {
   if (!p || typeof p !== 'object') return 'body must be an object';
-  for (const k of ['eventId', 'assetId', 'version', 'signature'] as const) {
-    if (typeof p[k] !== 'string' || !p[k]) return `missing or invalid field: ${k}`;
+  if (typeof p.assetId !== 'string' || !p.assetId) return 'missing or invalid field: assetId';
+  for (const k of ['eventId', 'version', 'signature'] as const) {
+    if (p[k] !== undefined && (typeof p[k] !== 'string' || !p[k])) return `invalid field: ${k}`;
   }
   if (!p.domain || !DOMAINS.includes(p.domain)) return 'missing or invalid field: domain';
-  if (p.previousHash !== null && typeof p.previousHash !== 'string') return 'previousHash must be a string or null';
-  if (typeof p.timestamp !== 'number' || !Number.isFinite(p.timestamp)) return 'timestamp must be a number';
+  if (p.timestamp !== undefined && (typeof p.timestamp !== 'number' || !Number.isFinite(p.timestamp))) return 'timestamp must be a number';
   const s = p.stateData;
   if (!s || typeof s.metadataHash !== 'string' || !s.metadataHash) return 'stateData.metadataHash is required';
   if (s.auditStatus && !['PENDING', 'PASSED', 'FAILED'].includes(s.auditStatus)) return 'invalid stateData.auditStatus';
@@ -56,25 +64,38 @@ export async function POST(req: Request) {
   }
   const err = validate(p);
   if (err) return fail(err);
-  const event = p as LedgerEventPayload;
-  const txHash = '0x' + createHash('sha256').update(JSON.stringify(event)).digest('hex');
-  const record = { ...event, txHash };
-
-  let blockHeight: number;
   const r = redis();
+  let blockHeight: number;
+  let previousHash: string | null;
+  let txHash: string;
   try {
+    previousHash = r
+      ? ((await r.hget<string>(HEADS, p!.assetId!)) ?? null)
+      : ((g.__ledgerHeads ??= new Map()).get(p!.assetId!) ?? null);
+    const event: LedgerEventPayload = {
+      ...(p as LedgerEventPayload),
+      eventId: p!.eventId ?? `evt_${randomUUID()}`,
+      version: p!.version ?? '1',
+      signature: p!.signature ?? 'unsigned',
+      timestamp: p!.timestamp ?? Date.now(),
+      previousHash,
+    };
+    txHash = '0x' + createHash('sha256').update(JSON.stringify(event)).digest('hex');
+    const record = { ...event, txHash };
     if (r) {
       blockHeight = await r.rpush(KEY, JSON.stringify(record));
+      await r.hset(HEADS, { [event.assetId]: txHash });
     } else {
       const mem = (g.__ledgerMem ??= []);
       mem.push(record);
       blockHeight = mem.length;
+      (g.__ledgerHeads ??= new Map()).set(event.assetId, txHash);
     }
   } catch {
     return fail('ledger storage unavailable', 502);
   }
   const body: LedgerRecordResponse = { txHash, status: 'CONFIRMED', settlementRail: 'INTERNAL_MICRO', blockHeight };
-  return NextResponse.json(body, { headers: { 'x-ledger-store': r ? 'upstash' : 'memory', 'x-ledger-anchor': 'off-chain' } });
+  return NextResponse.json({ ...body, previousHash }, { headers: { 'x-ledger-store': r ? 'upstash' : 'memory', 'x-ledger-anchor': 'off-chain' } });
 }
 
 /** Read-only: total committed events and the latest few (default 5, max 50). */

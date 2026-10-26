@@ -23,14 +23,21 @@ export const diagnosticsSafetyPlugin: WorkbenchPlugin = {
       description: 'Runs a mock copyright scan on an asset and commits a DIAGNOSTIC_AUDIT event to the ledger.',
       parameters: {
         type: 'object',
-        properties: { assetId: { type: 'string' }, title: { type: 'string' } },
-        required: ['assetId'],
+        properties: {
+          assetId: { type: 'string' },
+          assetType: { type: 'string', enum: ['AUDIO', 'TEXT', 'MODEL_PROMPT'] },
+          contentHash: { type: 'string' },
+          rawPayloadUrl: { type: 'string' },
+        },
+        required: ['assetId', 'assetType', 'contentHash'],
       },
-      execute: async (args, context) =>
+      // Browser-only for now: the scan commits via a relative fetch to /api/v1/ledger/commit.
+      execute: async (args) =>
         executeDiagnosticScan({
           assetId: String(args.assetId),
-          workspaceId: context.workspaceId,
-          title: typeof args.title === 'string' ? args.title : undefined,
+          assetType: args.assetType as 'AUDIO' | 'TEXT' | 'MODEL_PROMPT',
+          contentHash: String(args.contentHash),
+          rawPayloadUrl: typeof args.rawPayloadUrl === 'string' ? args.rawPayloadUrl : undefined,
         }),
     },
   ],

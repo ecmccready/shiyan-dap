@@ -1,52 +1,54 @@
-import { recordLedgerState } from '@/lib/micro-ledger-client';
-import type { LedgerRecordResponse } from '@/types/ledger';
-
 export interface DiagnosticScanRequest {
   assetId: string;
-  workspaceId: string;
-  version?: string;
-  title?: string;
-  baseUrl?: string;
+  assetType: 'AUDIO' | 'TEXT' | 'MODEL_PROMPT';
+  contentHash: string;
+  rawPayloadUrl?: string;
 }
 
 export interface DiagnosticAuditResult {
   assetId: string;
-  workspaceId: string;
-  scannedAt: number;
-  /** 0-100, higher is safer. Mock: random until a real checker is connected. */
-  copyrightScore: number;
-  auditStatus: 'PASSED' | 'FAILED';
-  ledger: LedgerRecordResponse;
+  timestamp: number;
+  overallStatus: 'PASSED' | 'FLAGGED' | 'REJECTED';
+  checks: {
+    copyrightMatchScore: number; // 0.0 to 1.0 (0 = clean)
+    trainingDataRisk: 'LOW' | 'MEDIUM' | 'HIGH';
+    regulatoryCompliance: boolean;
+  };
+  certificateHash: string;
 }
 
-const PASS_THRESHOLD = 70;
-
-async function sha256Hex(text: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-/** Mock copyright scan; auto-commits a DIAGNOSTIC_AUDIT event to the micro-ledger. */
 export async function executeDiagnosticScan(
-  req: DiagnosticScanRequest,
+  request: DiagnosticScanRequest
 ): Promise<DiagnosticAuditResult> {
-  const scannedAt = Date.now();
-  const copyrightScore = Math.round(Math.random() * 1000) / 10;
-  const auditStatus = copyrightScore >= PASS_THRESHOLD ? 'PASSED' : 'FAILED';
-  const metadataHash = await sha256Hex(
-    JSON.stringify({ assetId: req.assetId, copyrightScore, auditStatus, scannedAt }),
-  );
-  const ledger = await recordLedgerState(
-    {
-      domain: 'DIAGNOSTIC_AUDIT',
-      assetId: req.assetId,
-      version: req.version ?? '1',
-      previousHash: null,
-      stateData: { title: req.title, auditStatus, metadataHash },
+  // 1. Execute simulated automated check pipelines
+  const copyrightScore = Math.random() * 0.05; // Mocking < 5% similarity
+  const isCompliant = copyrightScore < 0.15;
+
+  const result: DiagnosticAuditResult = {
+    assetId: request.assetId,
+    timestamp: Date.now(),
+    overallStatus: isCompliant ? 'PASSED' : 'FLAGGED',
+    checks: {
+      copyrightMatchScore: copyrightScore,
+      trainingDataRisk: copyrightScore > 0.1 ? 'MEDIUM' : 'LOW',
+      regulatoryCompliance: isCompliant,
     },
-    req.baseUrl,
-  );
-  return { assetId: req.assetId, workspaceId: req.workspaceId, scannedAt, copyrightScore, auditStatus, ledger };
+    certificateHash: `cert_${crypto.randomUUID()}`,
+  };
+
+  // 2. Automatically log audit result to the Micro-Ledger
+  await fetch('/api/v1/ledger/commit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain: 'DIAGNOSTIC_AUDIT',
+      assetId: request.assetId,
+      stateData: {
+        auditStatus: result.overallStatus,
+        metadataHash: result.certificateHash,
+      },
+    }),
+  });
+
+  return result;
 }
