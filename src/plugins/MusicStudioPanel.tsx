@@ -47,8 +47,45 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
   const [rail, setRail] = useState('INTERNAL_MICRO');
   const [amount, setAmount] = useState('');
   const [created, setCreated] = useState<Created | null>(null);
+  // Optional wallet signature for the MUSIC_TRACK event. Empty (default) = server-signed HMAC.
+  const [walletAddress, setWalletAddress] = useState('');
+  const [siweMessage, setSiweMessage] = useState('');
+  const [signature, setSignature] = useState('');
+  const [prepared, setPrepared] = useState<{ assetId: string; timestamp: number; key: string; canonical: string } | null>(null);
+  const [prepError, setPrepError] = useState<string | null>(null);
+  const walletUsed = Boolean(signature.trim() || siweMessage.trim() || walletAddress.trim());
   const splitSum = splits.reduce((a, b) => a + (Number(b.percentage) || 0), 0);
   const splitsUsed = splits.some((x) => x.account.trim());
+
+  function formKey() {
+    const splitRule = splitsUsed ? splits.filter((x) => x.account.trim()).map((x) => ({ account: x.account.trim(), percentage: Number(x.percentage) })) : undefined;
+    return { splitRule, duration: Number(duration) > 0 ? Number(duration) : undefined };
+  }
+
+  // Builds the text to sign: fixes assetId and timestamp, computes the same metadataHash the server will, fetches a server nonce,
+  // and fills in a SIWE message whose statement is the canonical string. The user signs it in their own wallet and pastes the signature.
+  async function prepareMessage() {
+    setPrepError(null);
+    try {
+      if (!title.trim()) throw new Error('enter a title first');
+      if (!/^0x[0-9a-fA-F]{40}$/.test(walletAddress.trim())) throw new Error('enter the wallet address (0x plus 40 hex characters) first');
+      const { splitRule, duration: dur } = formKey();
+      const assetId = `trk_${crypto.randomUUID().slice(0, 8)}`;
+      const timestamp = Date.now();
+      const data = new TextEncoder().encode(JSON.stringify({ assetId, title: title.trim(), duration: dur, splitRule }));
+      const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', data))).map((b) => b.toString(16).padStart(2, '0')).join('');
+      const canonical = `${assetId}|MUSIC_TRACK|${timestamp}|${hash}`;
+      const n = await fetch('/api/v1/siwe/nonce');
+      const nj = await n.json();
+      if (!n.ok || !nj.nonce) throw new Error(nj.error ?? 'could not get a server nonce');
+      const host = window.location.host;
+      setSiweMessage(`${host} wants you to sign in with your Ethereum account:\n${walletAddress.trim()}\n\n${canonical}\n\nURI: ${window.location.origin}\nVersion: 1\nChain ID: 1\nNonce: ${nj.nonce}\nIssued At: ${new Date().toISOString()}`);
+      setPrepared({ assetId, timestamp, canonical, key: JSON.stringify({ t: title.trim(), ...formKey() }) });
+      setSignature('');
+    } catch (e) {
+      setPrepError(e instanceof Error ? e.message : 'prepare failed');
+    }
+  }
 
   async function createAsset() {
     setBusy(true);
@@ -60,6 +97,12 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
       if (Number(duration) > 0) args.durationSeconds = Number(duration);
       if (splitRule && rail !== 'INTERNAL_MICRO') args.settlementRail = rail;
       if (splitRule && rail === 'STRIPE' && Number(amount) > 0) args.settlementAmountCents = Math.round(Number(amount) * 100);
+      if (walletUsed) {
+        // The wallet path signs this exact track: refuse if the form changed since the message was prepared.
+        if (!prepared || prepared.key !== JSON.stringify({ t: title.trim(), ...formKey() })) throw new Error('title, duration or splits changed since the message was prepared: prepare and sign again');
+        if (!signature.trim()) throw new Error('paste the signature, or clear the wallet fields to stay server-signed');
+        Object.assign(args, { walletAddress: walletAddress.trim(), signature: signature.trim(), assetId: prepared.assetId, timestamp: prepared.timestamp, ...(siweMessage.trim() ? { siweMessage } : {}) });
+      }
       const res = await fetch('/api/v1/plugins/tools/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,6 +161,18 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
             </div>
           ) : null}
         </div>
+        <details data-music-wallet className="mt-3 rounded border border-zinc-800 p-2 text-xs">
+          <summary className="cursor-pointer text-zinc-400">Optional: sign the track with a wallet instead of the server{walletUsed ? ' (on)' : ''}</summary>
+          <div className="mt-2 space-y-2">
+            <p className="text-zinc-500">Default is a server-signed record. Here you can submit a wallet signature for the MUSIC_TRACK event only (the audit event stays server-signed). Enter your address, press Prepare, sign the text in your own wallet with personal_sign, paste the signature. The result shows the combined status and the SIWE overall line. A wallet record never reaches the server-signed &quot;verified&quot; status, so it never unlocks Stripe transfers.</p>
+            <input value={walletAddress} onChange={(e) => setWalletAddress(e.target.value)} placeholder="Wallet address 0x…" className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1 font-mono" />
+            <button type="button" onClick={prepareMessage} data-music-wallet-prepare className="rounded-full border border-zinc-600 px-3 py-1 text-zinc-300">Prepare message to sign</button>
+            {prepError ? <p className="text-red-400">{prepError}</p> : null}
+            <textarea value={siweMessage} onChange={(e) => setSiweMessage(e.target.value)} placeholder="SIWE message to sign (filled by Prepare)" rows={7} className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1 font-mono" />
+            <input value={signature} onChange={(e) => setSignature(e.target.value)} placeholder="Signature 0x… (65 bytes)" className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1 font-mono" />
+            {walletUsed ? <button type="button" onClick={() => { setWalletAddress(''); setSiweMessage(''); setSignature(''); setPrepared(null); }} className="text-zinc-500">clear wallet fields (back to server-signed)</button> : null}
+          </div>
+        </details>
         <button
           type="button"
           onClick={createAsset}

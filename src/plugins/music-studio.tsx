@@ -64,7 +64,7 @@ export const musicStudioPlugin: WorkbenchPlugin = {
     {
       name: 'create_music_asset',
       description:
-        'One action: registers a track (MUSIC_TRACK) with an optional splitRule, runs the mock diagnostics scan on it, and records the DIAGNOSTIC_AUDIT event with the same splitRule in the off-chain micro-ledger (not a blockchain). Returns both transaction hashes. Settlement (settlementRail, settlementAmountCents) is attached to the track event only.',
+        'One action: registers a track (MUSIC_TRACK) with an optional splitRule (server-signed by default; an optional wallet signature, walletAddress plus signature plus siweMessage or walletMessage plus assetId and timestamp, replaces the HMAC for the MUSIC_TRACK event only), runs the mock diagnostics scan on it, and records the DIAGNOSTIC_AUDIT event with the same splitRule in the off-chain micro-ledger (not a blockchain). Returns both transaction hashes. Settlement (settlementRail, settlementAmountCents) is attached to the track event only.',
       parameters: {
         type: 'object',
         properties: {
@@ -80,6 +80,11 @@ export const musicStudioPlugin: WorkbenchPlugin = {
           settlementAmountCents: { type: 'number' },
           settlementCurrency: { type: 'string' },
           audioHash: { type: 'string', description: 'Optional 64-hex SHA-256 of the audio; returned as audioFingerprint (content hash only, unverified)' },
+          walletAddress: { type: 'string', description: 'Optional wallet path: 0x address that signed the MUSIC_TRACK event. Needs signature, assetId and timestamp too' },
+          signature: { type: 'string', description: 'Optional wallet path: EIP-191 personal_sign signature (65-byte hex) over siweMessage (or walletMessage, or the canonical string assetId|MUSIC_TRACK|timestamp|metadataHash). Covers the MUSIC_TRACK event only' },
+          siweMessage: { type: 'string', description: 'Optional wallet path: the SIWE (EIP-4361) text that was signed; it must contain the canonical string, e.g. as its statement' },
+          walletMessage: { type: 'string', description: 'Optional wallet path: non-SIWE signed text that contains the canonical string' },
+          timestamp: { type: 'number', description: 'Optional wallet path (required with it): the ms timestamp that was signed in the canonical string; used as the MUSIC_TRACK event timestamp' },
           audioBase64: { type: 'string', description: 'Optional audio bytes, base64, max 2 MB; the server returns the SHA-256 as audioFingerprint (content hash only, not perceptual); bytes are never stored' },
         },
         required: ['title'],
@@ -96,11 +101,31 @@ export const musicStudioPlugin: WorkbenchPlugin = {
           ...(typeof args.settlementAmountCents === 'number' ? { settlementAmountCents: args.settlementAmountCents } : {}),
           ...(typeof args.settlementCurrency === 'string' ? { settlementCurrency: args.settlementCurrency } : {}),
         };
+        // Optional wallet path. Default (no signature) stays server-signed HMAC. With a signature, the client must have signed the
+        // canonical string for this exact event, so it must also fix assetId and timestamp up front; metadataHash is the deterministic
+        // sha256 of JSON {assetId, title, duration, splitRule} (see the Music Studio panel for a worked example).
+        const walletSig = typeof args.signature === 'string' && args.signature.trim() && args.signature !== 'unsigned' ? args.signature.trim() : undefined;
+        const walletExtras = [args.walletAddress, args.siweMessage, args.walletMessage].some((v) => typeof v === 'string' && v);
+        let wallet: Record<string, unknown> | undefined;
+        let trackTimestamp = Date.now();
+        if (walletSig || walletExtras) {
+          if (!walletSig) throw new Error('wallet path needs a signature (walletAddress, siweMessage or walletMessage were given without one)');
+          if (typeof args.assetId !== 'string' || !args.assetId) throw new Error('wallet path needs the assetId that was signed');
+          if (typeof args.timestamp !== 'number' || !Number.isFinite(args.timestamp) || args.timestamp <= 0) throw new Error('wallet path needs the numeric timestamp that was signed');
+          if (typeof args.walletAddress !== 'string' || !/^0x[0-9a-fA-F]{40}$/.test(args.walletAddress)) throw new Error('wallet path needs walletAddress (0x plus 40 hex characters)');
+          trackTimestamp = args.timestamp;
+          wallet = {
+            signature: walletSig,
+            address: args.walletAddress,
+            ...(typeof args.siweMessage === 'string' && args.siweMessage ? { siweMessage: args.siweMessage } : {}),
+            ...(typeof args.walletMessage === 'string' && args.walletMessage ? { walletMessage: args.walletMessage } : {}),
+          };
+        }
         const trackTxHash = await context.emitLedgerEvent({
           action: 'MUSIC_TRACK',
           assetId,
-          payload: { title, duration, splitRule, metadataHash, ...settlement },
-          timestamp: Date.now(),
+          payload: { title, duration, splitRule, metadataHash, ...settlement, ...(wallet ? { wallet } : {}) },
+          timestamp: trackTimestamp,
         });
         // In-process scan: same checks as POST /api/v1/diagnostics/scan (this tool runs server-side).
         // contentHash is derived from the track content (title, duration), not the random assetId, so the same
