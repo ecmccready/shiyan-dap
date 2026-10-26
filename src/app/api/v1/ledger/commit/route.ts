@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { allowLedgerWrite } from '@/lib/ledger-guard';
 import type { LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
-import { commitLedgerEvent, hiddenAssets, readLedger, setAssetHidden } from '@/lib/ledger-commit';
+import { commitLedgerEvent, hiddenAssets, purgeAsset, readLedger, setAssetHidden } from '@/lib/ledger-commit';
 import { safeEqual, signingSecretMode } from '@/lib/ledger-signing';
 
 export const dynamic = 'force-dynamic';
@@ -29,14 +29,19 @@ export async function POST(req: Request) {
   if (!(await allowLedgerWrite(req))) {
     return NextResponse.json({ error: 'rate limit: too many ledger writes from this address, try later' }, { status: 429 });
   }
-  let p: Partial<LedgerEventPayload> & { settlementRail?: string };
+  let p: Partial<LedgerEventPayload> & {
+    settlementRail?: string;
+    settlementAmountCents?: number;
+    settlementCurrency?: string;
+    signatureType?: string;
+  };
   try {
     p = (await req.json()) as typeof p;
   } catch {
     return fail('invalid JSON body');
   }
-  const { settlementRail, ...event } = p ?? {};
-  const res = await commitLedgerEvent(event, { settlementRail });
+  const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, ...event } = p ?? {};
+  const res = await commitLedgerEvent(event, { settlementRail, settlementAmountCents, settlementCurrency, signatureType });
   if (!res.ok) return fail(res.error, res.status);
   return NextResponse.json(res.response, {
     headers: { 'x-ledger-store': res.store, 'x-ledger-anchor': 'off-chain' },
@@ -64,8 +69,9 @@ export async function GET(req: Request) {
 }
 
 /**
- * Admin soft delete: `DELETE ?assetId=<id>` hides every event of the asset from reads (they stay in
- * storage); add `&restore=1` to unhide. Requires header `x-admin-secret: $LEDGER_ADMIN_SECRET`.
+ * Admin delete: `DELETE ?assetId=<id>` soft-hides every event of the asset (they stay in storage);
+ * `&restore=1` unhides; `&purge=1` permanently removes the events (irreversible). Requires header
+ * `x-admin-secret: $LEDGER_ADMIN_SECRET`.
  */
 export async function DELETE(req: Request) {
   const denied = await adminGate(req);
@@ -74,7 +80,13 @@ export async function DELETE(req: Request) {
   const assetId = url.searchParams.get('assetId');
   if (!assetId) return NextResponse.json({ error: 'assetId query param is required' }, { status: 400 });
   const restore = url.searchParams.get('restore') === '1';
+  const purge = url.searchParams.get('purge') === '1';
+  if (purge && restore) return NextResponse.json({ error: 'purge and restore cannot be combined' }, { status: 400 });
   try {
+    if (purge) {
+      const out = await purgeAsset(assetId);
+      return NextResponse.json({ ok: true, assetId, purged: true, ...out });
+    }
     await setAssetHidden(assetId, restore ? false : true);
     return NextResponse.json({ ok: true, assetId, hidden: !restore, hiddenAssets: [...(await hiddenAssets())] });
   } catch {

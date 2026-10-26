@@ -2,6 +2,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import type { AssetDomain, LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 import { signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
+import { resolveSettlement, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
+
+export type SignatureStatus = 'verified' | 'unverified' | 'wallet_unverified';
+export type SignatureType = 'hmac' | 'wallet';
 
 /**
  * Append-only micro-ledger (server only). Events go to Upstash Redis (list `ledger:events`) when
@@ -19,7 +23,8 @@ import { signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
  * Server-originated commits (scan and tool-execute routes) are signed by the server: 'verified'.
  * Settlement: an optional settlementRail (default INTERNAL_MICRO) and a splitRule summing to 100 create a
  * settlement intent stored on the event. INTERNAL_MICRO is marked SETTLED_INTERNAL; STRIPE and X_MONEY are
- * QUEUED (logged and pushed to `ledger:settlement-queue`); no payment provider is called.
+ * QUEUED with a reason (logged and pushed to `ledger:settlement-queue`). STRIPE creates a real, unconfirmed
+ * PaymentIntent when the key and guards allow it (see ledger-settlement.ts).
  * Soft delete: asset ids in the Redis set `ledger:hidden-assets` are hidden from reads; the event list
  * itself stays append-only.
  */
@@ -27,19 +32,16 @@ export const LEDGER_KEY = 'ledger:events';
 export const LEDGER_HEADS = 'ledger:heads';
 export const LEDGER_HIDDEN = 'ledger:hidden-assets';
 export const LEDGER_SETTLEMENT_QUEUE = 'ledger:settlement-queue';
-export type SettlementRail = LedgerRecordResponse['settlementRail'];
 const RAILS: SettlementRail[] = ['INTERNAL_MICRO', 'STRIPE', 'X_MONEY'];
-export interface SettlementIntent {
-  rail: SettlementRail;
-  status: 'SETTLED_INTERNAL' | 'QUEUED';
-  splits: NonNullable<LedgerEventPayload['stateData']['splitRule']>;
-  createdAt: number;
-  note: string;
-}
 export interface CommitOptions {
   /** Sign the event on the server (for server-originated commits). */
   serverSign?: boolean;
   settlementRail?: string;
+  /** Total to settle, in cents (needed for a real Stripe call). */
+  settlementAmountCents?: number;
+  settlementCurrency?: string;
+  /** 'hmac' (default) or 'wallet' (stored, not verified yet). */
+  signatureType?: string;
 }
 const DOMAINS: AssetDomain[] = ['MUSIC_TRACK', 'STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE'];
 const g = globalThis as unknown as {
@@ -57,7 +59,7 @@ export function ledgerRedis(): Redis | null {
 export type CommitResult =
   | {
       ok: true;
-      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: 'verified' | 'unverified'; settlement: SettlementIntent | null };
+      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; settlementRef: string | null; settlement: SettlementIntent | null };
       store: 'upstash' | 'memory';
     }
   | { ok: false; status: number; error: string };
@@ -96,11 +98,21 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
   const rail = (opts.settlementRail as SettlementRail | undefined) ?? 'INTERNAL_MICRO';
   const timestamp = p.timestamp ?? Date.now();
   const sigParts = { assetId: p.assetId as string, domain: p.domain as string, timestamp, metadataHash: p.stateData!.metadataHash };
+  if (opts.signatureType !== undefined && opts.signatureType !== 'hmac' && opts.signatureType !== 'wallet') {
+    return { ok: false, status: 400, error: "signatureType must be 'hmac' or 'wallet'" };
+  }
+  const signatureType: SignatureType = opts.signatureType === 'wallet' ? 'wallet' : 'hmac';
   let signature: string;
-  let signatureStatus: 'verified' | 'unverified';
+  let signatureStatus: SignatureStatus;
   if (opts.serverSign) {
     signature = signLedger(sigParts);
     signatureStatus = 'verified';
+  } else if (signatureType === 'wallet') {
+    // TODO: verify wallet signatures (EIP-191 personal_sign / SIWE: recover the address from the signature
+    // over the canonical string and match it to the asset owner). Today the value is only stored.
+    if (!p.signature || p.signature === 'unsigned') return { ok: false, status: 400, error: 'signatureType wallet requires a signature' };
+    signature = p.signature;
+    signatureStatus = 'wallet_unverified';
   } else if (p.signature && p.signature !== 'unsigned') {
     if (p.timestamp === undefined) return { ok: false, status: 400, error: 'a signed event must include timestamp' };
     if (!verifyLedgerSignature(sigParts, p.signature)) return { ok: false, status: 400, error: 'invalid signature' };
@@ -111,18 +123,6 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     signatureStatus = 'unverified';
   }
   const splits = p.stateData!.splitRule;
-  const settlement: SettlementIntent | null = splits?.length
-    ? {
-        rail,
-        status: rail === 'INTERNAL_MICRO' ? 'SETTLED_INTERNAL' : 'QUEUED',
-        splits,
-        createdAt: Date.now(),
-        note:
-          rail === 'INTERNAL_MICRO'
-            ? 'settled internally on the micro-ledger; no external payment'
-            : `settlement queued for ${rail}; no payment provider is called yet`,
-      }
-    : null;
   const r = ledgerRedis();
   const assetId = p.assetId as string;
   const lockKey = `ledger:lock:${assetId}`;
@@ -147,13 +147,24 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
       previousHash,
     };
     const txHash = '0x' + createHash('sha256').update(JSON.stringify(event)).digest('hex');
-    const record = { ...event, txHash, signatureStatus, ...(settlement ? { settlement } : {}) };
+    const settlement: SettlementIntent | null = splits?.length
+      ? await resolveSettlement({
+          rail,
+          splits,
+          txHash,
+          assetId,
+          signatureVerified: signatureStatus === 'verified',
+          amountCents: opts.settlementAmountCents,
+          currency: opts.settlementCurrency,
+        })
+      : null;
+    const record = { ...event, txHash, signatureStatus, signatureType, ...(settlement ? { settlement } : {}) };
     let blockHeight: number;
     if (r) {
       blockHeight = await r.rpush(LEDGER_KEY, JSON.stringify(record));
       await r.hset(LEDGER_HEADS, { [assetId]: txHash });
       if (settlement && settlement.status === 'QUEUED') {
-        await r.rpush(LEDGER_SETTLEMENT_QUEUE, JSON.stringify({ txHash, assetId, rail, splits, queuedAt: settlement.createdAt }));
+        await r.rpush(LEDGER_SETTLEMENT_QUEUE, JSON.stringify({ txHash, assetId, rail, splits, reason: settlement.reason, amountCents: settlement.amountCents, queuedAt: settlement.createdAt }));
       }
     } else {
       const mem = (g.__ledgerMem ??= []);
@@ -161,11 +172,12 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
       blockHeight = mem.length;
       (g.__ledgerHeads ??= new Map()).set(assetId, txHash);
     }
-    if (settlement?.status === 'QUEUED') console.log(`[ledger] settlement queued: ${rail} tx ${txHash} asset ${assetId}`);
+    if (settlement?.status === 'QUEUED') console.log(`[ledger] settlement queued: ${rail} reason=${settlement.reason} tx ${txHash} asset ${assetId}`);
+    if (settlement?.status === 'CREATED') console.log(`[ledger] settlement created: ${rail} ${settlement.providerId} tx ${txHash} asset ${assetId}`);
     return {
       ok: true,
       store: r ? 'upstash' : 'memory',
-      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, settlement },
+      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
     };
   } catch {
     return { ok: false, status: 502, error: 'ledger storage unavailable' };
@@ -227,4 +239,41 @@ export async function readLedger(limit: number, includeHidden = false) {
   }
   const visible = mem.filter((e) => !hidden.has(e.assetId));
   return { store: 'memory' as const, anchor: 'off-chain' as const, count: visible.length, events: visible.slice(-limit), hiddenAssetCount };
+}
+
+/**
+ * Hard purge: permanently removes every stored event and queued settlement of an asset, and its chain head
+ * and hidden flag. Irreversible. Uses a client with automatic JSON parsing off so list members are removed by
+ * their exact stored string. Does not touch anything already created at an external provider (e.g. Stripe).
+ */
+export async function purgeAsset(assetId: string): Promise<{ removedEvents: number; removedQueue: number }> {
+  const url = process.env.UPSTASH_KV_REST_API_URL;
+  const token = process.env.UPSTASH_KV_REST_API_TOKEN;
+  if (url && token) {
+    const raw = new Redis({ url, token, automaticDeserialization: false });
+    const sweep = async (key: string) => {
+      const all = (await raw.lrange(key, 0, -1)) as string[];
+      let removed = 0;
+      for (const item of all) {
+        let a: unknown;
+        try {
+          a = (JSON.parse(item) as { assetId?: string }).assetId;
+        } catch {
+          continue;
+        }
+        if (a === assetId) removed += (await raw.lrem(key, 1, item)) as number;
+      }
+      return removed;
+    };
+    const removedEvents = await sweep(LEDGER_KEY);
+    const removedQueue = await sweep(LEDGER_SETTLEMENT_QUEUE);
+    await raw.hdel(LEDGER_HEADS, assetId);
+    await raw.srem(LEDGER_HIDDEN, assetId);
+    return { removedEvents, removedQueue };
+  }
+  const before = (g.__ledgerMem ?? []).length;
+  g.__ledgerMem = (g.__ledgerMem ?? []).filter((e) => e.assetId !== assetId);
+  g.__ledgerHeads?.delete(assetId);
+  g.__ledgerHidden?.delete(assetId);
+  return { removedEvents: before - g.__ledgerMem.length, removedQueue: 0 };
 }

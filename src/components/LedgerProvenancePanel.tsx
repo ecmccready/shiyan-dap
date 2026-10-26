@@ -9,8 +9,16 @@ type Ev = {
   previousHash: string | null;
   txHash: string;
   timestamp: number;
-  signatureStatus?: 'verified' | 'unverified';
-  settlement?: { rail: string; status: string; splits: { account: string; percentage: number }[]; note: string };
+  signatureStatus?: 'verified' | 'unverified' | 'wallet_unverified';
+  signatureType?: 'hmac' | 'wallet';
+  settlement?: {
+    rail: string;
+    status: string;
+    splits: { account: string; percentage: number }[];
+    note: string;
+    reason?: string;
+    providerId?: string;
+  };
 };
 type Snapshot = { store: string; anchor: string; count: number; events: Ev[] };
 
@@ -61,7 +69,8 @@ export default function LedgerProvenancePanel() {
                   <span className="text-emerald-400">{e.domain}</span>
                   <span className="text-zinc-500">CONFIRMED</span>
                   <span className={e.signatureStatus === 'verified' ? 'text-emerald-400' : 'text-amber-400'}>
-                    {e.signatureStatus === 'verified' ? 'signature verified' : 'unverified'}
+                    {e.signatureStatus === 'verified' ? 'signature verified' : e.signatureStatus === 'wallet_unverified' ? 'wallet signature (unverified)' : 'unverified'}
+                    {e.signatureType ? ` · ${e.signatureType}` : ''}
                   </span>
                   <span className="text-zinc-500">{new Date(e.timestamp).toLocaleString()}</span>
                 </div>
@@ -69,6 +78,8 @@ export default function LedgerProvenancePanel() {
                 {e.settlement ? (
                   <div className="mt-1 text-zinc-400">
                     settlement {e.settlement.rail} · {e.settlement.status} · {e.settlement.splits.map((x) => `${x.account} ${x.percentage}%`).join(', ')}
+                    {e.settlement.providerId ? ` · ${e.settlement.providerId}` : ''}
+                    {e.settlement.reason ? ` · ${e.settlement.reason}` : ''}
                   </div>
                 ) : null}
                 <div className="mt-1 text-zinc-400">
