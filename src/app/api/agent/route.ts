@@ -12,6 +12,7 @@ import { computeEmergence } from "@/lib/emergence";
 import { splitAdValue, containHomePage } from "@/lib/economy";
 import { allocateCapital } from "@/lib/capital";
 import { emitTrainingRecord } from "@/lib/huggingface";
+import { normalizeNarrativeText } from "@/lib/model-adapter";
 
 const MAX_NARRATIVE_LENGTH = 4000;
 
@@ -25,20 +26,21 @@ async function runAgent(
   path: RoutePath = "fast"
 ) {
   const domain = domains[domainId] || domains.music;
+  const normalizedUserText = normalizeNarrativeText(userText);
 
   const seed = {
-    title: userText
+    title: normalizedUserText
       ? `${domain.label} User Narrative`
       : `${domain.label} Seed Narrative`,
     artist: domain.defaultArtist,
-    description: userText || domain.description,
+    description: normalizedUserText || domain.description,
     themes: domain.themes,
-    rawInput: userText || null,
+    rawInput: normalizedUserText || null,
   };
 
   const routed = await routeModels(
-    userText
-      ? `Structure this ${domain.label} narrative for clustering, policy extension, and ad-based monetization: ${userText}`
+    normalizedUserText
+      ? `Structure this ${domain.label} narrative for clustering, policy extension, and ad-based monetization: ${normalizedUserText}`
       : `Analyze and structure this ${domain.label} narrative for clustering and policy extension: ${seed.description}. Themes: ${domain.themes.join(", ")}`,
     path
   );

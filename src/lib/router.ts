@@ -1,4 +1,4 @@
-import { runModelAdapter, ModelResponse } from "./model-adapter";
+import { runModelAdapter, ModelResponse, normalizeNarrativeText } from "./model-adapter";
 
 export type RoutePath = "fast" | "deep";
 
@@ -12,7 +12,10 @@ export interface RoutedResult {
 
 function scoreDisagreement(a: ModelResponse, b: ModelResponse): number {
   const confGap = Math.abs((a.confidence || 0) - (b.confidence || 0));
-  const textGap = a.cleanedText === b.cleanedText ? 0 : 0.25;
+  const textGap =
+    normalizeNarrativeText(a.cleanedText) === normalizeNarrativeText(b.cleanedText)
+      ? 0
+      : 0.25;
   return Number(Math.min(1, confGap + textGap).toFixed(3));
 }
 

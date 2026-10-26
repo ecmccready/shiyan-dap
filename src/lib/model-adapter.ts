@@ -20,6 +20,35 @@ export interface ModelResponse {
   provider: ModelProvider;
 }
 
+const NARRATIVE_CLEANING_PROMPT =
+  "You are a precise cleaning and structuring assistant for the Shiyan Yishu Generative Transform Protocol. Clean and lightly normalize the user's narrative. Keep the original meaning. Return only the cleaned text.";
+
+export function normalizeNarrativeText(raw?: string | null): string {
+  if (typeof raw !== "string") return "";
+
+  return raw
+    .replace(/\u00A0/g, " ")
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/[ \t]*\n[ \t]*/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/^\[hy4-stub\]\s*/i, "")
+    .trim();
+}
+
+function finalizeResponse(
+  provider: ModelProvider,
+  input: string,
+  cleaned: string,
+  confidence: number
+): ModelResponse {
+  return {
+    cleanedText: normalizeNarrativeText(cleaned || input),
+    confidence,
+    provider,
+  };
+}
+
 /**
  * Model Adapter
  * Supports: mock | grok | openai | hy4
@@ -29,24 +58,18 @@ export async function runModelAdapter(
   input: string,
   config: ModelAdapterConfig = { provider: "mock" }
 ): Promise<ModelResponse> {
+  const safeInput = normalizeNarrativeText(input);
+
   // ----- MOCK -----
   if (config.provider === "mock") {
-    return {
-      cleanedText: input.trim(),
-      confidence: 0.92,
-      provider: "mock",
-    };
+    return finalizeResponse("mock", safeInput, safeInput, 0.92);
   }
 
   // ----- GROK (xAI) -----
   if (config.provider === "grok") {
     if (!process.env.XAI_API_KEY) {
       console.warn("XAI_API_KEY missing → falling back to mock");
-      return {
-        cleanedText: input.trim(),
-        confidence: 0.5,
-        provider: "mock",
-      };
+      return finalizeResponse("mock", safeInput, safeInput, 0.5);
     }
 
     try {
@@ -60,44 +83,29 @@ export async function runModelAdapter(
         messages: [
           {
             role: "system",
-            content:
-              "You are a precise cleaning and structuring assistant for the Shiyan Yishu Generative Transform Protocol. Clean and lightly normalize the user's narrative. Keep the original meaning. Return only the cleaned text.",
+            content: NARRATIVE_CLEANING_PROMPT,
           },
           {
             role: "user",
-            content: input,
+            content: safeInput,
           },
         ],
         temperature: 0.3,
         max_tokens: 500,
       });
 
-      const cleaned =
-        completion.choices[0]?.message?.content?.trim() || input;
-
-      return {
-        cleanedText: cleaned,
-        confidence: 0.96,
-        provider: "grok",
-      };
+      const cleaned = completion.choices[0]?.message?.content ?? safeInput;
+      return finalizeResponse("grok", safeInput, cleaned, 0.96);
     } catch (error) {
       console.error("Grok call failed, falling back to mock:", error);
-      return {
-        cleanedText: input.trim(),
-        confidence: 0.5,
-        provider: "mock",
-      };
+      return finalizeResponse("mock", safeInput, safeInput, 0.5);
     }
   }
 
   // ----- OPENAI -----
   if (config.provider === "openai") {
     if (!process.env.OPENAI_API_KEY) {
-      return {
-        cleanedText: input.trim(),
-        confidence: 0.5,
-        provider: "mock",
-      };
+      return finalizeResponse("mock", safeInput, safeInput, 0.5);
     }
 
     try {
@@ -110,44 +118,29 @@ export async function runModelAdapter(
         messages: [
           {
             role: "system",
-            content:
-              "You are a precise cleaning and structuring assistant for the Shiyan Yishu Generative Transform Protocol. Clean and lightly normalize the user's narrative. Keep the original meaning. Return only the cleaned text.",
+            content: NARRATIVE_CLEANING_PROMPT,
           },
           {
             role: "user",
-            content: input,
+            content: safeInput,
           },
         ],
         temperature: 0.3,
         max_tokens: 500,
       });
 
-      const cleaned =
-        completion.choices[0]?.message?.content?.trim() || input;
-
-      return {
-        cleanedText: cleaned,
-        confidence: 0.95,
-        provider: "openai",
-      };
+      const cleaned = completion.choices[0]?.message?.content ?? safeInput;
+      return finalizeResponse("openai", safeInput, cleaned, 0.95);
     } catch (error) {
       console.error("OpenAI call failed, falling back to mock:", error);
-      return {
-        cleanedText: input.trim(),
-        confidence: 0.5,
-        provider: "mock",
-      };
+      return finalizeResponse("mock", safeInput, safeInput, 0.5);
     }
   }
 
   // ----- HY4 (stubbed / portable local-open-source path) -----
   if (config.provider === "hy4") {
     if (!process.env.HY4_API_URL) {
-      return {
-        cleanedText: `[hy4-stub] ${input.trim()}`,
-        confidence: 0.84,
-        provider: "hy4",
-      };
+      return finalizeResponse("hy4", safeInput, `[hy4-stub] ${safeInput}`, 0.84);
     }
 
     try {
@@ -156,29 +149,22 @@ export async function runModelAdapter(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: config.modelName || "hy4",
-          input,
+          input: safeInput,
         }),
       });
       const data = await res.json();
-      return {
-        cleanedText: data.text || data.cleanedText || input.trim(),
-        confidence: data.confidence || 0.9,
-        provider: "hy4",
-      };
+      return finalizeResponse(
+        "hy4",
+        safeInput,
+        data.text || data.cleanedText || safeInput,
+        data.confidence || 0.9
+      );
     } catch (error) {
       console.error("Hy4 call failed, using stub:", error);
-      return {
-        cleanedText: `[hy4-stub] ${input.trim()}`,
-        confidence: 0.7,
-        provider: "hy4",
-      };
+      return finalizeResponse("hy4", safeInput, `[hy4-stub] ${safeInput}`, 0.7);
     }
   }
 
   // Fallback
-  return {
-    cleanedText: input.trim(),
-    confidence: 0.5,
-    provider: "mock",
-  };
+  return finalizeResponse("mock", safeInput, safeInput, 0.5);
 }
