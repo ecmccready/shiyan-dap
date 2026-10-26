@@ -7,6 +7,12 @@ export type ScanInput = DiagnosticScanRequest;
 
 export const SCORING_VERSION = 'mock-heuristic-v2';
 export const FINGERPRINT_VERSION = 'sim-fp-v1';
+/**
+ * `fingerprint` is a metadata simulation. Real audio fingerprinting (Chromaprint, ACRCloud, Audible Magic or similar)
+ * needs the audio bytes and an external service; the placeholder is always null so nothing can mistake the
+ * simulation for it.
+ */
+export const AUDIO_FINGERPRINT_PLACEHOLDER = { fingerprintKind: 'metadata_simulation', audioFingerprint: null, audioFingerprintStatus: 'not_implemented' } as const;
 
 // Words that, in a real pipeline, would make a fingerprint match more likely.
 const DERIVATIVE_KEYWORDS = [
@@ -113,17 +119,18 @@ export function runDiagnosticChecks(request: ScanInput): DiagnosticAuditResult {
   return runDiagnosticChecksDetailed(request).result;
 }
 
-export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string; fingerprint: string; fingerprintVersion: string } {
+export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string; fingerprint: string; fingerprintVersion: string; fingerprintKind: 'metadata_simulation'; audioFingerprint: null; audioFingerprintStatus: 'not_implemented' } {
   const { score, reasons } = scoreDiagnostics(request);
   const overallStatus: DiagnosticAuditResult['overallStatus'] = score < 0.15 ? 'PASSED' : score < 0.3 ? 'FLAGGED' : 'REJECTED';
   reasons.push(`total score ${score.toFixed(4)} gives ${overallStatus} (PASSED under 0.15, FLAGGED under 0.30, otherwise REJECTED)`);
   const fingerprint = simulatedFingerprint(request);
-  reasons.push(`simulated fingerprint ${fingerprint} (${FINGERPRINT_VERSION}: hash of normalized title, rounded duration and assetType; not an audio fingerprint)`);
+  reasons.push(`SIMULATION ONLY: fingerprint ${fingerprint} (${FINGERPRINT_VERSION}) is a hash of normalized title, rounded duration and assetType. No audio was analysed; audioFingerprint is not_implemented`);
   return {
     reasons,
     scoringVersion: SCORING_VERSION,
     fingerprint,
     fingerprintVersion: FINGERPRINT_VERSION,
+    ...AUDIO_FINGERPRINT_PLACEHOLDER,
     result: {
       assetId: request.assetId,
       timestamp: Date.now(),

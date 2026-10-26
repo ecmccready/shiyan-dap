@@ -1,12 +1,17 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import { LEDGER_AUDIT_STATUSES, type AssetDomain, type LedgerEventPayload, type LedgerRecordResponse } from '@/types/ledger';
 import { signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
-import { applySiwePolicy, withNonceResult, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
+import { applySiwePolicy, withNonceResult, withNonceSource, parseSiweMessage, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
 import { verifyWalletSignature } from '@/lib/ledger-wallet';
 import { plannedTransfersOf, resolveSettlement, TRANSFERS_FUTURE_WORK, type PlannedTransfer, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
 
-export type SignatureStatus = 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified';
+/**
+ * wallet_siwe_verified / wallet_siwe_partial are the combined statuses for a wallet commit that includes a siweMessage:
+ * the EIP-191 check AND the SIWE structure/policy checks AND a server-issued nonce must all pass for _verified.
+ * eip1271_unsupported marks a contract wallet (contractWallet: true): nothing is verified.
+ */
+export type SignatureStatus = 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified' | 'wallet_siwe_verified' | 'wallet_siwe_partial' | 'eip1271_unsupported';
 export type SignatureType = 'hmac' | 'wallet';
 
 /**
@@ -52,6 +57,8 @@ export interface CommitOptions {
   siweMessage?: string;
   /** Wallet only: domains a SIWE message's domain must match (the route passes configured domains or the request host). */
   siweExpectedDomains?: string[];
+  /** Wallet only: the signer is a contract wallet (EIP-1271). Not supported: stored as eip1271_unsupported, nothing is verified. */
+  contractWallet?: boolean;
   /** AGENT_COMPUTE: self-reported FLOP or cost estimate. Always stored as estimated, never metered. */
   usageEstimate?: unknown;
 }
@@ -98,7 +105,7 @@ export function ledgerRedis(): Redis | null {
 export type CommitResult =
   | {
       ok: true;
-      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; signatureReason: string | null; walletAddress: string | null; siwe: SiweParse | null; usageEstimate: UsageEstimate | null; settlementRef: string | null; plannedTransfers: PlannedTransfer[] | null; settlementNote: string | null; settlement: SettlementIntent | null };
+      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; signatureReason: string | null; eip191Status: 'wallet_verified' | 'wallet_unverified' | null; contractWallet: boolean; walletAddress: string | null; siwe: SiweParse | null; usageEstimate: UsageEstimate | null; settlementRef: string | null; plannedTransfers: PlannedTransfer[] | null; settlementNote: string | null; settlement: SettlementIntent | null };
       store: 'upstash' | 'memory';
     }
   | { ok: false; status: number; error: string };
@@ -145,6 +152,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
   let signatureStatus: SignatureStatus;
   let signatureReason: string | undefined;
   let walletAddress: string | undefined;
+  let eip191Status: 'wallet_verified' | 'wallet_unverified' | undefined;
   let siwe: SiweParse | undefined;
   if (opts.serverSign) {
     signature = signLedger(sigParts);
@@ -152,19 +160,32 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
   } else if (signatureType === 'wallet') {
     if (!p.signature || p.signature === 'unsigned') return { ok: false, status: 400, error: 'signatureType wallet requires a signature' };
     signature = p.signature;
-    // Basic EIP-191 personal_sign check (not full SIWE, no EIP-1271 contract wallets). Never rejects: a
+    if (opts.contractWallet === true) {
+      // TODO(EIP-1271): a contract wallet's signature is valid if isValidSignature(hash, sig) on the wallet contract returns
+      // 0x1626ba7e, which needs an RPC provider (eth_call on the claimed address and chain). Not implemented, so nothing is
+      // claimed: no EOA recovery, no nonce consumed, status eip1271_unsupported. The SIWE text, if any, is only parsed.
+      signatureStatus = 'eip1271_unsupported';
+      signatureReason = 'eip1271_unsupported (contract wallet signatures are not verified; TODO: eth_call isValidSignature on the wallet contract)';
+      walletAddress = typeof opts.walletAddress === 'string' && /^0x[0-9a-fA-F]{40}$/.test(opts.walletAddress) ? opts.walletAddress : undefined;
+      if (opts.siweMessage !== undefined) {
+        siwe = applySiwePolicy(parseSiweMessage(opts.siweMessage, { claimedAddress: opts.walletAddress }), { expectedDomains: opts.siweExpectedDomains ?? [] });
+      }
+    } else {
+    // Basic EIP-191 personal_sign check (no EIP-1271 contract wallets, no full SIWE crypto). Never rejects: a
     // failed or unsupported check is stored as wallet_unverified with the reason.
     const w = verifyWalletSignature({ ...sigParts, timestamp: p.timestamp }, p.signature, { walletAddress: opts.walletAddress, walletMessage: opts.walletMessage, siweMessage: opts.siweMessage });
     siwe = w.siwe;
     if (siwe) {
       siwe = applySiwePolicy(siwe, { expectedDomains: opts.siweExpectedDomains ?? [] });
-      // Replay guard: only a message whose signature verified claims its nonce, so a bad signature cannot burn
-      // someone else's nonce. Fails open (nonce 'unchecked') if the store is unavailable.
+      // Replay guard and server-issued nonce: only a message whose signature verified touches nonce state, so a bad
+      // signature cannot burn someone else's nonce. Both fail open ('unchecked') if the store is unavailable.
       const f = siwe.fields;
       if (w.ok && siwe.parsed && f?.nonce && /^[A-Za-z0-9]{8,}$/.test(f.nonce)) {
         siwe = withNonceResult(siwe, await claimSiweNonce(f.address, f.nonce));
+        siwe = withNonceSource(siwe, await consumeIssuedNonce(f.nonce), process.env.SIWE_REQUIRE_ISSUED_NONCE === '1');
       }
     }
+    eip191Status = w.ok ? 'wallet_verified' : 'wallet_unverified';
     if (w.ok) {
       signatureStatus = 'wallet_verified';
       walletAddress = w.address;
@@ -172,6 +193,21 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
       signatureStatus = 'wallet_unverified';
       signatureReason = w.reason;
       walletAddress = w.address;
+    }
+    // Combined status: with a siweMessage, wallet_siwe_verified needs the EIP-191 check, a valid structure and policy
+    // result, and a nonce this server issued. Anything short of that is wallet_siwe_partial with the reasons listed.
+    // A failed EIP-191 check stays wallet_unverified. Without a siweMessage nothing changes.
+    if (siwe && w.ok) {
+      const gaps = [...siwe.issues];
+      if (siwe.policy && siwe.policy.nonceSource !== 'server_issued') gaps.push(`nonce_${siwe.policy.nonceSource === 'not_issued' ? 'not_server_issued' : 'unchecked'}`);
+      if (!siwe.parsed) gaps.push('siwe_not_parsed');
+      if (gaps.length === 0) {
+        signatureStatus = 'wallet_siwe_verified';
+      } else {
+        signatureStatus = 'wallet_siwe_partial';
+        signatureReason = [...new Set(gaps)].join('; ');
+      }
+    }
     }
   } else if (p.signature && p.signature !== 'unsigned') {
     if (p.timestamp === undefined) return { ok: false, status: 400, error: 'a signed event must include timestamp' };
@@ -220,7 +256,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
         })
       : null;
     const planned_transfers = plannedTransfersOf(settlement);
-    const record = { ...event, txHash, signatureStatus, signatureType, ...(signatureReason ? { signatureReason } : {}), ...(walletAddress ? { walletAddress } : {}), ...(siwe ? { siwe } : {}), ...(usageEstimate ? { usageEstimate } : {}), ...(settlement ? { settlement } : {}), ...(planned_transfers ? { planned_transfers } : {}) };
+    const record = { ...event, txHash, signatureStatus, signatureType, ...(signatureReason ? { signatureReason } : {}), ...(eip191Status && siwe ? { eip191Status } : {}), ...(opts.contractWallet === true && signatureType === 'wallet' ? { contractWallet: true } : {}), ...(walletAddress ? { walletAddress } : {}), ...(siwe ? { siwe } : {}), ...(usageEstimate ? { usageEstimate } : {}), ...(settlement ? { settlement } : {}), ...(planned_transfers ? { planned_transfers } : {}) };
     let blockHeight: number;
     if (r) {
       blockHeight = await r.rpush(LEDGER_KEY, JSON.stringify(record));
@@ -239,13 +275,47 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     return {
       ok: true,
       store: r ? 'upstash' : 'memory',
-      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, signatureReason: signatureReason ?? null, walletAddress: walletAddress ?? null, siwe: siwe ?? null, usageEstimate: usageEstimate ?? null, plannedTransfers: planned_transfers ?? null, settlementNote: planned_transfers ? TRANSFERS_FUTURE_WORK : null, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
+      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, signatureReason: signatureReason ?? null, eip191Status: eip191Status && siwe ? eip191Status : null, contractWallet: opts.contractWallet === true && signatureType === 'wallet', walletAddress: walletAddress ?? null, siwe: siwe ?? null, usageEstimate: usageEstimate ?? null, plannedTransfers: planned_transfers ?? null, settlementNote: planned_transfers ? TRANSFERS_FUTURE_WORK : null, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
     };
   } catch {
     return { ok: false, status: 502, error: 'ledger storage unavailable' };
   } finally {
     if (r && locked) await r.del(lockKey).catch(() => undefined);
   }
+}
+
+const ISSUED_PREFIX = 'ledger:siwe-issued:';
+/** How long a server-issued nonce can be used. Matches the SIWE issuedAt max age. */
+export const SIWE_ISSUED_NONCE_TTL_SECONDS = 600;
+
+/** Issues a server nonce (24 hex chars) and stores it with a short TTL: Redis when configured, else per-instance memory. */
+export async function issueSiweNonce(): Promise<{ nonce: string; ttlSeconds: number; store: 'upstash' | 'memory' }> {
+  const nonce = randomBytes(12).toString('hex');
+  const r = ledgerRedis();
+  if (r) {
+    await r.set(`${ISSUED_PREFIX}${nonce}`, '1', { ex: SIWE_ISSUED_NONCE_TTL_SECONDS });
+    return { nonce, ttlSeconds: SIWE_ISSUED_NONCE_TTL_SECONDS, store: 'upstash' };
+  }
+  const m = ((globalThis as unknown as { __siweIssued?: Map<string, number> }).__siweIssued ??= new Map());
+  const now = Date.now();
+  for (const [k, exp] of m) if (exp < now) m.delete(k);
+  m.set(nonce, now + SIWE_ISSUED_NONCE_TTL_SECONDS * 1000);
+  return { nonce, ttlSeconds: SIWE_ISSUED_NONCE_TTL_SECONDS, store: 'memory' };
+}
+
+/** Consumes a server-issued nonce (single use). 'server_issued' if it existed, 'not_issued' if unknown, expired or used, 'unchecked' on a store error. */
+export async function consumeIssuedNonce(nonce: string): Promise<'server_issued' | 'not_issued' | 'unchecked'> {
+  const r = ledgerRedis();
+  try {
+    if (r) return (await r.del(`${ISSUED_PREFIX}${nonce}`)) === 1 ? 'server_issued' : 'not_issued';
+  } catch {
+    return 'unchecked';
+  }
+  const m = (globalThis as unknown as { __siweIssued?: Map<string, number> }).__siweIssued;
+  const exp = m?.get(nonce);
+  if (!m || exp === undefined) return 'not_issued';
+  m.delete(nonce);
+  return exp >= Date.now() ? 'server_issued' : 'not_issued';
 }
 
 /** Claims `address:nonce` for the replay window. 'fresh' on first use, 'replayed' if already claimed. Redis SET NX, else memory. */

@@ -58,7 +58,7 @@ export async function GET() {
       ],
       signatureTypes: [
         { type: 'hmac', note: 'default; verified with LEDGER_SIGNING_SECRET (public dev fallback when unset)' },
-        { type: 'wallet', note: 'EIP-191 personal_sign, basic check; wallet_verified or wallet_unverified with a reason; optional siweMessage is parsed (structure only, no full SIWE or EIP-1271)' },
+        { type: 'wallet', note: 'EIP-191 personal_sign, basic check; wallet_verified or wallet_unverified with a reason; optional siweMessage adds domain, freshness, nonce checks (nonces from GET /api/v1/siwe/nonce preferred) and a combined wallet_siwe_verified or wallet_siwe_partial status; contractWallet:true gives eip1271_unsupported (no full SIWE crypto, no EIP-1271)' },
       ],
       limits: { ledgerWritesPerIpPerHour: LEDGER_WRITES_PER_HOUR },
     },
