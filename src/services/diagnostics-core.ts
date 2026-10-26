@@ -12,7 +12,21 @@ export const FINGERPRINT_VERSION = 'sim-fp-v1';
  * needs the audio bytes and an external service; the placeholder is always null so nothing can mistake the
  * simulation for it.
  */
-export const AUDIO_FINGERPRINT_PLACEHOLDER = { fingerprintKind: 'metadata_simulation', audioFingerprint: null, audioFingerprintStatus: 'not_implemented' } as const;
+export const AUDIO_FINGERPRINT_NOTE = 'not_implemented: no audio bytes analyzed';
+export const AUDIO_FINGERPRINT_PLACEHOLDER = { fingerprintKind: 'metadata_simulation', audioFingerprint: null, audioFingerprintStatus: 'not_implemented', audioFingerprintNote: AUDIO_FINGERPRINT_NOTE } as const;
+
+/**
+ * HOOK POINT for a real audio fingerprint. Nothing in this repo receives audio bytes today (scan requests carry a
+ * contentHash and metadata only), so this always returns the not_implemented placeholder. To implement it: accept the
+ * audio (an upload, or a fetch of a signed URL) in the scan route, decode it, compute a Chromaprint-style fingerprint
+ * or call a matching service (ACRCloud, Audible Magic, or similar), and return `audioFingerprint` (string),
+ * `audioFingerprintStatus: 'computed'` and match results here. Keep it separate from the metadata `fingerprint` and
+ * the `certificateHash`, and record only the hash and verdict on the ledger, never the audio.
+ */
+export function computeAudioFingerprint(_audio?: { bytes: Uint8Array; mimeType?: string }): typeof AUDIO_FINGERPRINT_PLACEHOLDER {
+  void _audio;
+  return AUDIO_FINGERPRINT_PLACEHOLDER;
+}
 
 // Words that, in a real pipeline, would make a fingerprint match more likely.
 const DERIVATIVE_KEYWORDS = [
@@ -119,18 +133,18 @@ export function runDiagnosticChecks(request: ScanInput): DiagnosticAuditResult {
   return runDiagnosticChecksDetailed(request).result;
 }
 
-export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string; fingerprint: string; fingerprintVersion: string; fingerprintKind: 'metadata_simulation'; audioFingerprint: null; audioFingerprintStatus: 'not_implemented' } {
+export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string; fingerprint: string; fingerprintVersion: string; fingerprintKind: 'metadata_simulation'; audioFingerprint: null; audioFingerprintStatus: 'not_implemented'; audioFingerprintNote: string } {
   const { score, reasons } = scoreDiagnostics(request);
   const overallStatus: DiagnosticAuditResult['overallStatus'] = score < 0.15 ? 'PASSED' : score < 0.3 ? 'FLAGGED' : 'REJECTED';
   reasons.push(`total score ${score.toFixed(4)} gives ${overallStatus} (PASSED under 0.15, FLAGGED under 0.30, otherwise REJECTED)`);
   const fingerprint = simulatedFingerprint(request);
-  reasons.push(`SIMULATION ONLY: fingerprint ${fingerprint} (${FINGERPRINT_VERSION}) is a hash of normalized title, rounded duration and assetType. No audio was analysed; audioFingerprint is not_implemented`);
+  reasons.push(`SIMULATION ONLY: fingerprint ${fingerprint} (${FINGERPRINT_VERSION}) is a hash of normalized title, rounded duration and assetType. No audio was analysed; audioFingerprint is ${AUDIO_FINGERPRINT_NOTE}`);
   return {
     reasons,
     scoringVersion: SCORING_VERSION,
     fingerprint,
     fingerprintVersion: FINGERPRINT_VERSION,
-    ...AUDIO_FINGERPRINT_PLACEHOLDER,
+    ...computeAudioFingerprint(),
     result: {
       assetId: request.assetId,
       timestamp: Date.now(),

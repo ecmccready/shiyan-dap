@@ -52,6 +52,19 @@ export interface SiwePolicy {
   /** 'server_issued' = the nonce came from GET /api/v1/siwe/nonce and was consumed by this commit; 'not_issued' = unknown, expired or already used (legacy client nonce); 'unchecked' = not looked up. */
   nonceSource: 'server_issued' | 'not_issued' | 'unchecked';
   maxAgeSeconds: number;
+  /** Chain policy: the message's Chain ID against the allowed list. null when the message has no usable chainId. */
+  chainAllowed: boolean | null;
+  allowedChainIds: number[];
+  /** true only with SIWE_ENFORCE_CHAIN=1: a disallowed chain then adds the `chain_not_allowed` issue; otherwise the result is informational. */
+  chainEnforced: boolean;
+}
+
+export const DEFAULT_SIWE_CHAIN_IDS = [1, 137];
+export interface SiweChainPolicy { allowed: number[]; enforce: boolean }
+/** SIWE_ALLOWED_CHAIN_IDS (comma separated integers, default "1,137") and SIWE_ENFORCE_CHAIN=1. */
+export function siweChainPolicyFromEnv(): SiweChainPolicy {
+  const ids = (process.env.SIWE_ALLOWED_CHAIN_IDS ?? '').split(',').map((x) => x.trim()).filter((x) => /^\d{1,12}$/.test(x)).map(Number);
+  return { allowed: ids.length ? [...new Set(ids)] : DEFAULT_SIWE_CHAIN_IDS, enforce: process.env.SIWE_ENFORCE_CHAIN === '1' };
 }
 
 /** issuedAt must be at most this old. */
@@ -66,8 +79,9 @@ export const SIWE_NONCE_TTL_SECONDS = 900;
  * `issued_at_in_future`, `issued_at_too_old`, `not_before_in_future`) and a `policy` block. Nonce replay is
  * decided separately (it needs storage) via `withNonceResult`. Informational like the rest of the parse.
  */
-export function applySiwePolicy(parse: SiweParse, opts: { expectedDomains: string[]; now?: number }): SiweParse {
+export function applySiwePolicy(parse: SiweParse, opts: { expectedDomains: string[]; now?: number; chainPolicy?: SiweChainPolicy }): SiweParse {
   const now = opts.now ?? Date.now();
+  const chain = opts.chainPolicy ?? siweChainPolicyFromEnv();
   const expected = opts.expectedDomains.map((d) => d.trim().toLowerCase()).filter(Boolean);
   const policy: SiwePolicy = {
     expectedDomains: expected,
@@ -77,12 +91,19 @@ export function applySiwePolicy(parse: SiweParse, opts: { expectedDomains: strin
     nonce: 'unchecked',
     nonceSource: 'unchecked',
     maxAgeSeconds: SIWE_MAX_AGE_SECONDS,
+    chainAllowed: null,
+    allowedChainIds: chain.allowed,
+    chainEnforced: chain.enforce,
   };
   if (!parse.parsed || !parse.fields) return { ...parse, policy };
   const issues = [...parse.issues];
   const f = parse.fields;
   policy.domainMatches = expected.includes(f.domain.toLowerCase());
   if (!policy.domainMatches) issues.push(expected.length ? `domain_not_allowed (${f.domain} is not one of: ${expected.join(', ')})` : 'domain_not_allowed (no expected domain is known for this request)');
+  if (typeof f.chainId === 'number' && Number.isFinite(f.chainId)) {
+    policy.chainAllowed = chain.allowed.includes(f.chainId);
+    if (!policy.chainAllowed && chain.enforce) issues.push(`chain_not_allowed (chain ${f.chainId} is not one of: ${chain.allowed.join(', ')})`);
+  }
   const t = f.issuedAt ? Date.parse(f.issuedAt) : NaN;
   if (!Number.isNaN(t)) {
     const age = Math.round((now - t) / 1000);
