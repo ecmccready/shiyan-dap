@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { workbenchRegistry } from '@/plugins';
 import { ledgerSummary } from '@/lib/ledger-commit';
-import { computeLedgerAnchor } from '@/lib/ledger-anchor';
+import { computeLedgerAnchor, recentAnchorAttempts, type AnchorAttempt } from '@/lib/ledger-anchor';
 import { LEDGER_WRITES_PER_HOUR } from '@/lib/ledger-guard';
 
 export const dynamic = 'force-dynamic';
@@ -23,10 +23,18 @@ export async function GET() {
   } catch {
     ledger = { error: 'ledger storage unavailable' };
   }
-  let anchor: { root: string | null; eventCount: number; anchored: false; algorithm: string; note: string } | { error: string };
+  let anchor: { root: string | null; eventCount: number; anchored: false; algorithm: string; note: string; lastDryRun: Pick<AnchorAttempt, 'attemptId' | 'status' | 'root' | 'simulatedTxHash' | 'simulatedBlockNumber' | 'attemptedAt'> | null } | { error: string };
   try {
     const a = await computeLedgerAnchor(100);
-    anchor = { root: a.root, eventCount: a.eventCount, anchored: a.anchored, algorithm: a.algorithm, note: 'Merkle root over the latest 100 events; on-chain submission is not live' };
+    const last = (await recentAnchorAttempts(1))[0];
+    anchor = {
+      root: a.root,
+      eventCount: a.eventCount,
+      anchored: a.anchored,
+      algorithm: a.algorithm,
+      note: 'Merkle root over the latest 100 events; on-chain submission is not live (dry-run only)',
+      lastDryRun: last ? { attemptId: last.attemptId, status: last.status, root: last.root, simulatedTxHash: last.simulatedTxHash, simulatedBlockNumber: last.simulatedBlockNumber, attemptedAt: last.attemptedAt } : null,
+    };
   } catch {
     anchor = { error: 'ledger storage unavailable' };
   }
@@ -50,7 +58,7 @@ export async function GET() {
       ],
       signatureTypes: [
         { type: 'hmac', note: 'default; verified with LEDGER_SIGNING_SECRET (public dev fallback when unset)' },
-        { type: 'wallet', note: 'EIP-191 personal_sign, basic check; wallet_verified or wallet_unverified with a reason' },
+        { type: 'wallet', note: 'EIP-191 personal_sign, basic check; wallet_verified or wallet_unverified with a reason; optional siweMessage is parsed (structure only, no full SIWE or EIP-1271)' },
       ],
       limits: { ledgerWritesPerIpPerHour: LEDGER_WRITES_PER_HOUR },
     },

@@ -42,6 +42,21 @@ The server recovers the signer address and compares it to `walletAddress`. Resul
 | `wallet_verified` | the signer matches `walletAddress` (also returned as `walletAddress`) |
 | `wallet_unverified` | with `signatureReason`: `signature_not_hex`, `signature_wrong_length`, `timestamp_required_to_bind_signature_to_event`, `walletMessage_must_contain_the_canonical_string`, `walletAddress_missing`, `walletAddress_invalid`, `address_mismatch`, `signature_recovery_failed` |
 
+Optional `siweMessage` (max 2000 chars) is a SIWE-style (EIP-4361) text:
+```
+example.com wants you to sign in with your Ethereum account:
+0xYourAddress
+
+Authorize ledger commit <canonical string>
+
+URI: https://example.com/login
+Version: 1
+Chain ID: 1
+Nonce: k3j5h6g7f8
+Issued At: 2026-10-26T12:00:00Z
+```
+When present it is the signed message (it takes precedence over `walletMessage`) and must still contain the canonical string, for example in the statement, so the signature stays bound to the event. It is parsed into `siwe` on the response and the stored event: `{parsed, structureValid, fields: {domain, address, statement, uri, version, chainId, nonce, issuedAt, expirationTime?, notBefore?, requestId?, resources?}, issues, fullVerification: false}`. Issues flagged: `domain_invalid`, `address_invalid`, `address_differs_from_walletAddress`, `uri_missing`, `version_missing` or `version_not_1`, `chain_id_missing` or `chain_id_not_integer`, `nonce_missing` or `nonce_invalid` (8+ alphanumeric), `issued_at_missing` or `issued_at_not_iso_8601`, `expired`, or `not_siwe_format` when the text does not have the SIWE shape. The parse is informational: `signatureStatus` is still decided only by the EIP-191 recovery check over the exact text, so a `wallet_verified` event can carry `structureValid: false`. Not done: checking the domain against this host, nonce freshness or replay protection, expiry enforcement, chainId policy, and EIP-1271 contract wallets. Full SIWE and EIP-1271 remain directional.
+
 A missing signature with `signatureType: "wallet"` is still a 400. `wallet_verified` only proves the signer controls that address; it does not prove the address is allowed to write, so it does NOT unlock Stripe settlement (that needs HMAC `verified`). Existing HMAC callers are unchanged.
 
 ### Settlement
@@ -129,7 +144,11 @@ The result is a standard MCP tool result; `structuredContent` has `result`, `led
 
 ## Anchor root (preparation only)
 
-`GET /api/v1/ledger/anchor?limit=100` (1 to 500) returns a Merkle root over the txHashes of the latest events: `{root, eventCount, anchored: false, algorithm: "sha256-merkle-v1", fromTxHash, toTxHash, store, generatedAt, note}`. Leaf = `sha256("leaf:" + txHash)`, node = `sha256("node:" + left + right)` on hex strings, an odd node is paired with itself, events in ledger order oldest first. `&txHash=0x...` adds `proof.steps` (sibling hash and side per level) for an event in the window. Soft-hidden events are included, so an admin hide does not change the root; a hard purge does. Nothing is submitted on-chain: `anchored` is always false and on-chain submission remains directional. The root also appears in `GET /api/v1/status` (`anchor`, latest 100 events) and in the provenance panel.
+`GET /api/v1/ledger/anchor?limit=100` (1 to 500) returns a Merkle root over the txHashes of the latest events: `{root, eventCount, anchored: false, algorithm: "sha256-merkle-v1", fromTxHash, toTxHash, store, generatedAt, note}`. Leaf = `sha256("leaf:" + txHash)`, node = `sha256("node:" + left + right)` on hex strings, an odd node is paired with itself, events in ledger order oldest first. `&txHash=0x...` adds `proof.steps` (sibling hash and side per level) for an event in the window. Soft-hidden events are included, so an admin hide does not change the root; a hard purge does. Nothing is submitted on-chain: `anchored` is always false and on-chain submission remains directional.
+
+### Dry-run submission
+
+`POST /api/v1/ledger/anchor` with `{"dryRun": true, "limit": 100}` (`limit` optional) records a DRY-RUN submission of the current root and returns `{attemptId, status: "dry-run", anchored: false, network: "none (dry-run)", root, eventCount, algorithm, fromTxHash, toTxHash, simulatedTxHash, simulatedBlockNumber, attemptedAt, note}`. The tx hash is a SHA-256 of the root, a sequence number and the time; the block number is just the attempt sequence. Neither exists on any chain. Any body without `dryRun: true` is a 400, because there is no chain connection. Each attempt is logged (`[ledger] anchor dry-run ...`), stored in a capped list (latest 50, `ledger:anchor-attempts`) and rate-limited per IP (20 per hour, separate scope). `GET /api/v1/ledger/anchor?attempts=N` lists recent attempts, `GET /api/v1/status` shows the last one as `anchor.lastDryRun`, and the provenance panel has a "Dry-run anchor submission" button (needs `?demo=1`). Real on-chain submission is still directional. The root also appears in `GET /api/v1/status` (`anchor`, latest 100 events) and in the provenance panel.
 
 ## Cleaning up test data
 

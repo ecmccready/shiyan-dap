@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import type { AssetDomain, LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
 import { signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
+import type { SiweParse } from '@/lib/ledger-siwe';
 import { verifyWalletSignature } from '@/lib/ledger-wallet';
 import { plannedTransfersOf, resolveSettlement, TRANSFERS_FUTURE_WORK, type PlannedTransfer, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
 
@@ -47,6 +48,8 @@ export interface CommitOptions {
   walletAddress?: string;
   /** Wallet only: optional signed text; must contain the canonical string. */
   walletMessage?: string;
+  /** Wallet only: optional SIWE-style (EIP-4361) text; it is the signed message and is parsed into `siwe`. */
+  siweMessage?: string;
   /** AGENT_COMPUTE: self-reported FLOP or cost estimate. Always stored as estimated, never metered. */
   usageEstimate?: unknown;
 }
@@ -93,7 +96,7 @@ export function ledgerRedis(): Redis | null {
 export type CommitResult =
   | {
       ok: true;
-      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; signatureReason: string | null; walletAddress: string | null; usageEstimate: UsageEstimate | null; settlementRef: string | null; plannedTransfers: PlannedTransfer[] | null; settlementNote: string | null; settlement: SettlementIntent | null };
+      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; signatureReason: string | null; walletAddress: string | null; siwe: SiweParse | null; usageEstimate: UsageEstimate | null; settlementRef: string | null; plannedTransfers: PlannedTransfer[] | null; settlementNote: string | null; settlement: SettlementIntent | null };
       store: 'upstash' | 'memory';
     }
   | { ok: false; status: number; error: string };
@@ -140,6 +143,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
   let signatureStatus: SignatureStatus;
   let signatureReason: string | undefined;
   let walletAddress: string | undefined;
+  let siwe: SiweParse | undefined;
   if (opts.serverSign) {
     signature = signLedger(sigParts);
     signatureStatus = 'verified';
@@ -148,7 +152,8 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     signature = p.signature;
     // Basic EIP-191 personal_sign check (not full SIWE, no EIP-1271 contract wallets). Never rejects: a
     // failed or unsupported check is stored as wallet_unverified with the reason.
-    const w = verifyWalletSignature({ ...sigParts, timestamp: p.timestamp }, p.signature, { walletAddress: opts.walletAddress, walletMessage: opts.walletMessage });
+    const w = verifyWalletSignature({ ...sigParts, timestamp: p.timestamp }, p.signature, { walletAddress: opts.walletAddress, walletMessage: opts.walletMessage, siweMessage: opts.siweMessage });
+    siwe = w.siwe;
     if (w.ok) {
       signatureStatus = 'wallet_verified';
       walletAddress = w.address;
@@ -204,7 +209,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
         })
       : null;
     const planned_transfers = plannedTransfersOf(settlement);
-    const record = { ...event, txHash, signatureStatus, signatureType, ...(signatureReason ? { signatureReason } : {}), ...(walletAddress ? { walletAddress } : {}), ...(usageEstimate ? { usageEstimate } : {}), ...(settlement ? { settlement } : {}), ...(planned_transfers ? { planned_transfers } : {}) };
+    const record = { ...event, txHash, signatureStatus, signatureType, ...(signatureReason ? { signatureReason } : {}), ...(walletAddress ? { walletAddress } : {}), ...(siwe ? { siwe } : {}), ...(usageEstimate ? { usageEstimate } : {}), ...(settlement ? { settlement } : {}), ...(planned_transfers ? { planned_transfers } : {}) };
     let blockHeight: number;
     if (r) {
       blockHeight = await r.rpush(LEDGER_KEY, JSON.stringify(record));
@@ -223,7 +228,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     return {
       ok: true,
       store: r ? 'upstash' : 'memory',
-      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, signatureReason: signatureReason ?? null, walletAddress: walletAddress ?? null, usageEstimate: usageEstimate ?? null, plannedTransfers: planned_transfers ?? null, settlementNote: planned_transfers ? TRANSFERS_FUTURE_WORK : null, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
+      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, signatureReason: signatureReason ?? null, walletAddress: walletAddress ?? null, siwe: siwe ?? null, usageEstimate: usageEstimate ?? null, plannedTransfers: planned_transfers ?? null, settlementNote: planned_transfers ? TRANSFERS_FUTURE_WORK : null, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
     };
   } catch {
     return { ok: false, status: 502, error: 'ledger storage unavailable' };

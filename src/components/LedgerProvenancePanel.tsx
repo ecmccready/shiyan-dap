@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useHydrated } from '@/lib/use-hydrated';
 
 type Ev = {
   eventId: string;
@@ -22,9 +23,12 @@ type Ev = {
     providerId?: string;
     recipients?: { account: string; percentage: number; amountCents?: number; status: string; transferId?: string; transferSkipped?: string; transferError?: string }[];
   };
+  siwe?: Siwe;
   usageEstimate?: { flops?: number; costUsd?: number; basis?: string };
   planned_transfers?: { account: string; amountCents: number; status: string; transferId?: string; transferSkipped?: string; transferError?: string }[];
 };
+type DryRun = { attemptId: string; status: string; anchored: boolean; root: string | null; eventCount: number; simulatedTxHash: string; simulatedBlockNumber: number; network: string; note: string };
+type Siwe = { parsed: boolean; structureValid: boolean; issues: string[]; fields?: { domain: string; address: string; statement?: string; uri?: string; version?: string; chainId?: number; nonce?: string; issuedAt?: string } };
 type Anchor = { root: string | null; eventCount: number; anchored: boolean; algorithm: string };
 type Snapshot = { store: string; anchor: string; count: number; events: Ev[] };
 
@@ -34,6 +38,12 @@ export default function LedgerProvenancePanel() {
   const [data, setData] = useState<Snapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
+  const hydrated = useHydrated();
+  // The dry run writes an attempt record, so like the other writers it needs ?demo=1.
+  const demoEnabled = hydrated && new URLSearchParams(window.location.search).get('demo') === '1';
+  const [dry, setDry] = useState<DryRun | null>(null);
+  const [dryBusy, setDryBusy] = useState(false);
+  const [dryError, setDryError] = useState<string | null>(null);
   // Secondary by default: the ledger works in the background; expand to inspect it.
   const [open, setOpen] = useState(false);
 
@@ -52,6 +62,21 @@ export default function LedgerProvenancePanel() {
       setError(e instanceof Error ? e.message : 'failed to load');
     }
   }, []);
+
+  async function runDry() {
+    setDryBusy(true);
+    setDryError(null);
+    try {
+      const res = await fetch('/api/v1/ledger/anchor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dryRun: true, limit: 100 }) });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error ?? `HTTP ${res.status}`);
+      setDry(d as DryRun);
+    } catch (e) {
+      setDryError(e instanceof Error ? e.message : 'failed');
+    } finally {
+      setDryBusy(false);
+    }
+  }
 
   const events = data ? [...data.events].reverse() : [];
   const known = new Set(events.map((e) => e.txHash));
@@ -89,6 +114,18 @@ export default function LedgerProvenancePanel() {
               anchor root {anchor.root ?? 'none yet'} over the latest {anchor.eventCount} events ({anchor.algorithm}) · anchored: {String(anchor.anchored)}, on-chain submission is not live
             </p>
           ) : null}
+          <div className="mt-2 text-xs">
+            <button type="button" onClick={() => void runDry()} disabled={dryBusy || !demoEnabled} data-anchor-dryrun className="rounded-full border border-zinc-700 px-3 py-1 text-zinc-400 disabled:opacity-50">
+              {dryBusy ? 'Running…' : 'Dry-run anchor submission'}
+            </button>
+            {!demoEnabled ? <span className="ml-2 text-zinc-600">needs ?demo=1</span> : null}
+            {dryError ? <span className="ml-2 text-red-400">{dryError}</span> : null}
+            {dry ? (
+              <p data-anchor-dryrun-result className="mt-2 break-all font-mono text-zinc-400">
+                {dry.status} {dry.attemptId} · simulated tx {dry.simulatedTxHash} · simulated block {dry.simulatedBlockNumber} · root {dry.root ?? 'none'} over {dry.eventCount} events · anchored: {String(dry.anchored)}. {dry.note}
+              </p>
+            ) : null}
+          </div>
           {events.length === 0 ? <p className="mt-3 text-zinc-500">No events yet.</p> : null}
           <ul className="mt-3 space-y-2">
             {events.map((e) => (
@@ -114,6 +151,12 @@ export default function LedgerProvenancePanel() {
                         {e.settlement.recipients.map((r) => `${r.account}${r.amountCents !== undefined ? ` ${(r.amountCents / 100).toFixed(2)}` : ''} ${r.status}${r.transferId ? ` ${r.transferId}` : ''}${r.transferSkipped ? ` (transfer_skipped: ${r.transferSkipped})` : ''}${r.transferError ? ` (transfer_failed: ${r.transferError})` : ''}`).join(' · ')}
                       </div>
                     ) : null}
+                  </div>
+                ) : null}
+                {e.siwe ? (
+                  <div className="mt-1 text-zinc-400">
+                    SIWE-style message: {e.siwe.parsed && e.siwe.fields ? `${e.siwe.fields.domain} · chain ${e.siwe.fields.chainId ?? '?'} · nonce ${e.siwe.fields.nonce ?? '?'} · issued ${e.siwe.fields.issuedAt ?? '?'}` : 'not parsed'}
+                    {' '}· structure {e.siwe.structureValid ? 'ok' : `issues: ${e.siwe.issues.join(', ')}`} (parsed only, not full SIWE verification)
                   </div>
                 ) : null}
                 {e.usageEstimate ? (
