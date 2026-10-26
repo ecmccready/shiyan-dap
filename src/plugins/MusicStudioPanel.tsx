@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { useHydrated } from '@/lib/use-hydrated';
 import type { DiagnosticAuditResult } from '@/services/diagnostics-engine';
 
+type SiweSummary = { overallValid?: boolean; overallFailures?: string[]; cryptoVerified?: boolean; structureValid?: boolean };
 type Rec = {
   txHash: string;
+  siwe?: SiweSummary | null;
   status: string;
   settlementRail: string;
   previousHash?: string | null;
@@ -154,6 +156,15 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
               <div key={r.txHash} className="rounded border border-zinc-800 p-2">
                 <p className="text-white">{i === 0 ? '1. MUSIC_TRACK' : '2. DIAGNOSTIC_AUDIT'}</p>
                 <p><span className="text-zinc-500">tx: </span>{r.txHash} ({r.status}, {r.signatureStatus ?? 'n/a'})</p>
+                {r.siwe ? (
+                  <p data-music-siwe-overall className={r.siwe.overallValid ? 'text-emerald-400' : 'text-amber-300'}>
+                    <span className="text-zinc-500">SIWE overall: </span>
+                    {r.siwe.overallValid === undefined ? 'not computed' : r.siwe.overallValid ? 'valid (crypto, structure, domain, nonce, freshness, chain all pass)' : `not valid${r.siwe.overallFailures?.length ? `: ${r.siwe.overallFailures.join(', ')}` : ''}`}
+                    <span className="text-zinc-500"> · informational, not full SIWE verification, never blocks the record</span>
+                  </p>
+                ) : (
+                  <p data-music-siwe-overall className="text-zinc-500">SIWE: none on this record (server-signed event, no wallet message was submitted)</p>
+                )}
                 <p><span className="text-zinc-500">previousHash: </span>{r.previousHash ?? 'null (first event)'}{r.previousHash && r.previousHash === created.records[i - 1]?.txHash ? ' = the track tx above' : ''}</p>
                 {r.settlement ? (
                   <p>
