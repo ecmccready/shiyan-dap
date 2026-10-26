@@ -1,6 +1,6 @@
 import type { WorkbenchPlugin, LedgerHookEvent } from '@/types/workbench-plugin';
 import MusicStudioPanel from './MusicStudioPanel';
-import { runDiagnosticChecksDetailed } from '@/services/diagnostics-core';
+import { audioBytesFromBase64, runDiagnosticChecksDetailed } from '@/services/diagnostics-core';
 
 async function sha256Hex(text: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
@@ -79,6 +79,8 @@ export const musicStudioPlugin: WorkbenchPlugin = {
           settlementRail: { type: 'string', enum: ['INTERNAL_MICRO', 'STRIPE', 'X_MONEY'] },
           settlementAmountCents: { type: 'number' },
           settlementCurrency: { type: 'string' },
+          audioHash: { type: 'string', description: 'Optional 64-hex SHA-256 of the audio; returned as audioFingerprint (content hash only, unverified)' },
+          audioBase64: { type: 'string', description: 'Optional audio bytes, base64, max 2 MB; the server returns the SHA-256 as audioFingerprint (content hash only, not perceptual); bytes are never stored' },
         },
         required: ['title'],
       },
@@ -109,6 +111,9 @@ export const musicStudioPlugin: WorkbenchPlugin = {
           assetType: 'AUDIO',
           contentHash,
           metadata: { title, durationSeconds: duration },
+        }, {
+          bytes: audioBytesFromBase64(args.audioBase64),
+          hash: typeof args.audioHash === 'string' ? args.audioHash : undefined,
         });
         const auditTxHash = await context.emitLedgerEvent({
           action: 'DIAGNOSTIC_AUDIT',

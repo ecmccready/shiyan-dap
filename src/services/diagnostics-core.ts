@@ -13,19 +13,54 @@ export const FINGERPRINT_VERSION = 'sim-fp-v1';
  * simulation for it.
  */
 export const AUDIO_FINGERPRINT_NOTE = 'not_implemented: no audio bytes analyzed';
-export const AUDIO_FINGERPRINT_PLACEHOLDER = { fingerprintKind: 'metadata_simulation', audioFingerprint: null, audioFingerprintStatus: 'not_implemented', audioFingerprintNote: AUDIO_FINGERPRINT_NOTE } as const;
+export type AudioFingerprintStatus = 'not_implemented' | 'content_hash_only' | 'content_hash_provided';
+export interface AudioFingerprintInfo {
+  fingerprintKind: 'metadata_simulation';
+  /** `sha256:<64 hex>` of the exact audio bytes (or of the supplied hash), else null. NOT a perceptual audio fingerprint. */
+  audioFingerprint: string | null;
+  audioFingerprintStatus: AudioFingerprintStatus;
+  audioFingerprintNote: string;
+}
+export const AUDIO_FINGERPRINT_PLACEHOLDER: AudioFingerprintInfo = { fingerprintKind: 'metadata_simulation', audioFingerprint: null, audioFingerprintStatus: 'not_implemented', audioFingerprintNote: AUDIO_FINGERPRINT_NOTE };
+
+/** Largest audio payload the scan route and the Music Studio tool accept inline (decoded bytes). */
+export const MAX_AUDIO_BYTES = 2 * 1024 * 1024;
 
 /**
- * HOOK POINT for a real audio fingerprint. Nothing in this repo receives audio bytes today (scan requests carry a
- * contentHash and metadata only), so this always returns the not_implemented placeholder. To implement it: accept the
- * audio (an upload, or a fetch of a signed URL) in the scan route, decode it, compute a Chromaprint-style fingerprint
- * or call a matching service (ACRCloud, Audible Magic, or similar), and return `audioFingerprint` (string),
- * `audioFingerprintStatus: 'computed'` and match results here. Keep it separate from the metadata `fingerprint` and
- * the `certificateHash`, and record only the hash and verdict on the ledger, never the audio.
+ * HOOK POINT for audio fingerprinting. Optional input, in order of preference:
+ * - `bytes`: SHA-256 of the exact bytes, status `content_hash_only`. It matches byte-identical files only: re-encoding,
+ *   trimming or tagging changes it, so it is NOT a perceptual or acoustic fingerprint and cannot detect copies.
+ * - `hash`: a client-supplied 64-hex SHA-256, passed through as `sha256:<hex>` with status `content_hash_provided`. The server
+ *   never saw the audio, so it is unverified.
+ * - neither: null with `not_implemented: no audio bytes analyzed`.
+ * To go further (Chromaprint, ACRCloud, Audible Magic or similar): decode the bytes here, compute the acoustic fingerprint or
+ * call the matching service, and return it with a new status. Keep it separate from the metadata `fingerprint` and the
+ * `certificateHash`, and record only the fingerprint and verdict on the ledger, never the audio. The `fingerprint` field is
+ * still the metadata simulation either way, and `fingerprintKind` stays `metadata_simulation`.
  */
-export function computeAudioFingerprint(_audio?: { bytes: Uint8Array; mimeType?: string }): typeof AUDIO_FINGERPRINT_PLACEHOLDER {
-  void _audio;
+export function computeAudioFingerprint(audio?: { bytes?: Uint8Array; hash?: string }): AudioFingerprintInfo {
+  if (audio?.bytes && audio.bytes.length > 0) {
+    return { ...AUDIO_FINGERPRINT_PLACEHOLDER, audioFingerprint: `sha256:${bytesToHex(sha256(audio.bytes))}`, audioFingerprintStatus: 'content_hash_only', audioFingerprintNote: `content_hash_only: SHA-256 of ${audio.bytes.length} audio bytes; matches byte-identical files only, not a perceptual audio fingerprint` };
+  }
+  const h = audio?.hash?.trim().replace(/^sha256:/i, '').toLowerCase();
+  if (h && /^[0-9a-f]{64}$/.test(h)) {
+    return { ...AUDIO_FINGERPRINT_PLACEHOLDER, audioFingerprint: `sha256:${h}`, audioFingerprintStatus: 'content_hash_provided', audioFingerprintNote: 'content_hash_provided: client-supplied SHA-256, the server did not see the audio and cannot verify it; not a perceptual audio fingerprint' };
+  }
   return AUDIO_FINGERPRINT_PLACEHOLDER;
+}
+
+/** Decodes an optional `audioBase64` string (max MAX_AUDIO_BYTES decoded) into bytes. Returns undefined for absent or invalid input. */
+export function audioBytesFromBase64(b64: unknown): Uint8Array | undefined {
+  if (typeof b64 !== 'string' || !b64 || b64.length > Math.ceil((MAX_AUDIO_BYTES * 4) / 3) + 8 || !/^[A-Za-z0-9+/_-]+={0,2}$/.test(b64)) return undefined;
+  try {
+    const bin = atob(b64.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(b64.length / 4) * 4, '='));
+    if (bin.length === 0 || bin.length > MAX_AUDIO_BYTES) return undefined;
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  } catch {
+    return undefined;
+  }
 }
 
 // Words that, in a real pipeline, would make a fingerprint match more likely.
@@ -133,18 +168,19 @@ export function runDiagnosticChecks(request: ScanInput): DiagnosticAuditResult {
   return runDiagnosticChecksDetailed(request).result;
 }
 
-export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string; fingerprint: string; fingerprintVersion: string; fingerprintKind: 'metadata_simulation'; audioFingerprint: null; audioFingerprintStatus: 'not_implemented'; audioFingerprintNote: string } {
+export function runDiagnosticChecksDetailed(request: ScanInput, audio?: { bytes?: Uint8Array; hash?: string }): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string; fingerprint: string; fingerprintVersion: string } & AudioFingerprintInfo {
   const { score, reasons } = scoreDiagnostics(request);
   const overallStatus: DiagnosticAuditResult['overallStatus'] = score < 0.15 ? 'PASSED' : score < 0.3 ? 'FLAGGED' : 'REJECTED';
   reasons.push(`total score ${score.toFixed(4)} gives ${overallStatus} (PASSED under 0.15, FLAGGED under 0.30, otherwise REJECTED)`);
+  const audioInfo = computeAudioFingerprint(audio);
   const fingerprint = simulatedFingerprint(request);
-  reasons.push(`SIMULATION ONLY: fingerprint ${fingerprint} (${FINGERPRINT_VERSION}) is a hash of normalized title, rounded duration and assetType. No audio was analysed; audioFingerprint is ${AUDIO_FINGERPRINT_NOTE}`);
+  reasons.push(`SIMULATION ONLY: fingerprint ${fingerprint} (${FINGERPRINT_VERSION}) is a hash of normalized title, rounded duration and assetType. The metadata fingerprint analysed no audio; audioFingerprint is ${audioInfo.audioFingerprintNote}`);
   return {
     reasons,
     scoringVersion: SCORING_VERSION,
     fingerprint,
     fingerprintVersion: FINGERPRINT_VERSION,
-    ...computeAudioFingerprint(),
+    ...audioInfo,
     result: {
       assetId: request.assetId,
       timestamp: Date.now(),

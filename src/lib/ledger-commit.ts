@@ -1,17 +1,20 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import { LEDGER_AUDIT_STATUSES, type AssetDomain, type LedgerEventPayload, type LedgerRecordResponse } from '@/types/ledger';
-import { signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
+import { canonicalLedgerString, signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
 import { applySiwePolicy, withNonceResult, withNonceSource, parseSiweMessage, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
 import { verifyWalletSignature } from '@/lib/ledger-wallet';
+import { eip1271RpcUrl, verifyEip1271, type Eip1271Result } from '@/lib/ledger-eip1271';
 import { plannedTransfersOf, resolveSettlement, TRANSFERS_FUTURE_WORK, type PlannedTransfer, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
 
 /**
  * wallet_siwe_verified / wallet_siwe_partial are the combined statuses for a wallet commit that includes a siweMessage:
  * the EIP-191 check AND the SIWE structure/policy checks AND a server-issued nonce must all pass for _verified.
- * eip1271_unsupported marks a contract wallet (contractWallet: true): nothing is verified.
+ * Contract wallets (contractWallet: true): eip1271_verified (isValidSignature returned the magic value via ETH_RPC_URL),
+ * eip1271_failed (RPC error, bad signature, wrong chain, no contract code), eip1271_unsupported (no RPC configured).
+ * None of them rejects a commit or unlocks Stripe.
  */
-export type SignatureStatus = 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified' | 'wallet_siwe_verified' | 'wallet_siwe_partial' | 'eip1271_unsupported';
+export type SignatureStatus = 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified' | 'wallet_siwe_verified' | 'wallet_siwe_partial' | 'eip1271_verified' | 'eip1271_failed' | 'eip1271_unsupported';
 export type SignatureType = 'hmac' | 'wallet';
 
 /**
@@ -161,15 +164,28 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     if (!p.signature || p.signature === 'unsigned') return { ok: false, status: 400, error: 'signatureType wallet requires a signature' };
     signature = p.signature;
     if (opts.contractWallet === true) {
-      // TODO(EIP-1271): a contract wallet's signature is valid if isValidSignature(hash, sig) on the wallet contract returns
-      // 0x1626ba7e, which needs an RPC provider (eth_call on the claimed address and chain). Not implemented, so nothing is
-      // claimed: no EOA recovery, no nonce consumed, status eip1271_unsupported. The SIWE text, if any, is only parsed.
-      signatureStatus = 'eip1271_unsupported';
-      signatureReason = 'eip1271_unsupported (contract wallet signatures are not verified; TODO: eth_call isValidSignature on the wallet contract)';
+      // EIP-1271: the contract wallet is asked via eth_call isValidSignature (see ledger-eip1271.ts). Needs ETH_RPC_URL; without it
+      // nothing is claimed (eip1271_unsupported). Never rejects. The signed text must still contain the canonical string.
       walletAddress = typeof opts.walletAddress === 'string' && /^0x[0-9a-fA-F]{40}$/.test(opts.walletAddress) ? opts.walletAddress : undefined;
       if (opts.siweMessage !== undefined) {
         siwe = applySiwePolicy(parseSiweMessage(opts.siweMessage, { claimedAddress: opts.walletAddress }), { expectedDomains: opts.siweExpectedDomains ?? [] });
       }
+      const canonical = p.timestamp === undefined ? undefined : canonicalLedgerString({ ...sigParts, timestamp: p.timestamp });
+      const text = opts.siweMessage ?? opts.walletMessage ?? canonical;
+      let r1271: Eip1271Result;
+      if (!eip1271RpcUrl()) r1271 = await verifyEip1271({ message: '', signature: '' });
+      else if (!canonical || !text) r1271 = { status: 'eip1271_failed', reason: 'timestamp_required_to_bind_signature_to_event' };
+      else if (!text.includes(canonical)) r1271 = { status: 'eip1271_failed', reason: `${opts.siweMessage !== undefined ? 'siweMessage' : 'walletMessage'}_must_contain_the_canonical_string` };
+      else r1271 = await verifyEip1271({ address: walletAddress, message: text, signature: signature, chainId: siwe?.fields?.chainId });
+      signatureStatus = r1271.status;
+      signatureReason = r1271.reason;
+      const sf = siwe?.fields;
+      if (r1271.status === 'eip1271_verified' && siwe?.parsed && sf?.nonce && /^[A-Za-z0-9]{8,}$/.test(sf.nonce)) {
+        // The contract vouched for the text, so the nonce is spent exactly as for an EOA signature.
+        siwe = withNonceResult(siwe, await claimSiweNonce(sf.address, sf.nonce));
+        siwe = withNonceSource(siwe, await consumeIssuedNonce(sf.nonce), process.env.SIWE_REQUIRE_ISSUED_NONCE === '1');
+      }
+      if (r1271.status === 'eip1271_verified' && siwe && siwe.issues.length > 0) signatureReason = `${r1271.reason}; siwe issues (check siwe.structureValid): ${siwe.issues.join('; ')}`;
     } else {
     // Basic EIP-191 personal_sign check (no EIP-1271 contract wallets, no full SIWE crypto). Never rejects: a
     // failed or unsupported check is stored as wallet_unverified with the reason.

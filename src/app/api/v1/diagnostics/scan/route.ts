@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { allowLedgerWrite } from '@/lib/ledger-guard';
-import { runDiagnosticChecksDetailed } from '@/services/diagnostics-core';
+import { audioBytesFromBase64, runDiagnosticChecksDetailed } from '@/services/diagnostics-core';
 import type { DiagnosticScanRequest } from '@/services/diagnostics-engine';
 import { commitLedgerEvent } from '@/lib/ledger-commit';
 
@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 const ASSET_TYPES = ['AUDIO', 'TEXT', 'MODEL_PROMPT'];
 
 /**
+ * Optional `audioBase64` (max 2 MB decoded) or `audioHash` (64-hex SHA-256) feed `audioFingerprint` (a content hash only, never stored).
  * Server-side diagnostics: runs the (mock) scan and commits a DIAGNOSTIC_AUDIT event directly to
  * the micro-ledger, with no HTTP hop. Returns the DiagnosticAuditResult plus the ledger record.
  */
@@ -44,7 +45,10 @@ export async function POST(req: Request) {
       ? { title: title?.slice(0, 200), text, durationSeconds }
       : undefined;
   const request = body as DiagnosticScanRequest;
-  const { result, reasons, scoringVersion, fingerprint, fingerprintVersion, fingerprintKind, audioFingerprint, audioFingerprintStatus, audioFingerprintNote } = runDiagnosticChecksDetailed({ ...request, metadata });
+  const { result, reasons, scoringVersion, fingerprint, fingerprintVersion, fingerprintKind, audioFingerprint, audioFingerprintStatus, audioFingerprintNote } = runDiagnosticChecksDetailed({ ...request, metadata }, {
+    bytes: audioBytesFromBase64((body as { audioBase64?: unknown }).audioBase64),
+    hash: typeof (body as { audioHash?: unknown }).audioHash === 'string' ? (body as { audioHash: string }).audioHash : undefined,
+  });
   const commit = await commitLedgerEvent({
     domain: 'DIAGNOSTIC_AUDIT',
     assetId: result.assetId,

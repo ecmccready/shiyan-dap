@@ -14,7 +14,7 @@ type Ev = {
   stateData?: {
     auditStatus?: LedgerAuditStatus;
   };
-  signatureStatus?: 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified' | 'wallet_siwe_verified' | 'wallet_siwe_partial' | 'eip1271_unsupported';
+  signatureStatus?: 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified' | 'wallet_siwe_verified' | 'wallet_siwe_partial' | 'eip1271_verified' | 'eip1271_failed' | 'eip1271_unsupported';
   eip191Status?: string;
   signatureReason?: string;
   walletAddress?: string;
@@ -144,8 +144,8 @@ export default function LedgerProvenancePanel() {
                       audit {e.stateData.auditStatus}
                     </span>
                   ) : null}
-                  <span className={e.signatureStatus === 'verified' || e.signatureStatus === 'wallet_verified' || e.signatureStatus === 'wallet_siwe_verified' ? 'text-emerald-400' : 'text-amber-400'}>
-                    {e.signatureStatus === 'verified' ? 'signature verified' : e.signatureStatus === 'wallet_verified' ? `wallet signature verified${e.walletAddress ? ` (${e.walletAddress.slice(0, 8)}…)` : ''}` : e.signatureStatus === 'wallet_siwe_verified' ? `wallet + SIWE verified${e.walletAddress ? ` (${e.walletAddress.slice(0, 8)}…)` : ''}` : e.signatureStatus === 'wallet_siwe_partial' ? `wallet signature ok, SIWE incomplete${e.signatureReason ? `: ${e.signatureReason}` : ''}` : e.signatureStatus === 'eip1271_unsupported' ? 'contract wallet (EIP-1271) not supported, nothing verified' : e.signatureStatus === 'wallet_unverified' ? `wallet signature unverified${e.signatureReason ? `: ${e.signatureReason}` : ''}` : 'unverified'}
+                  <span className={e.signatureStatus === 'verified' || e.signatureStatus === 'wallet_verified' || e.signatureStatus === 'wallet_siwe_verified' || e.signatureStatus === 'eip1271_verified' ? 'text-emerald-400' : 'text-amber-400'}>
+                    {e.signatureStatus === 'verified' ? 'signature verified' : e.signatureStatus === 'wallet_verified' ? `wallet signature verified${e.walletAddress ? ` (${e.walletAddress.slice(0, 8)}…)` : ''}` : e.signatureStatus === 'wallet_siwe_verified' ? `wallet + SIWE verified${e.walletAddress ? ` (${e.walletAddress.slice(0, 8)}…)` : ''}` : e.signatureStatus === 'wallet_siwe_partial' ? `wallet signature ok, SIWE incomplete${e.signatureReason ? `: ${e.signatureReason}` : ''}` : e.signatureStatus === 'eip1271_verified' ? `contract wallet verified (EIP-1271)${e.signatureReason?.includes('siwe issues') ? ' - SIWE issues, see details' : ''}` : e.signatureStatus === 'eip1271_failed' ? `contract wallet check failed (EIP-1271)${e.signatureReason ? `: ${e.signatureReason}` : ''}` : e.signatureStatus === 'eip1271_unsupported' ? 'contract wallet (EIP-1271) not verified: no RPC configured' : e.signatureStatus === 'wallet_unverified' ? `wallet signature unverified${e.signatureReason ? `: ${e.signatureReason}` : ''}` : 'unverified'}
                     {e.signatureType ? ` · ${e.signatureType}` : ''}
                   </span>
                   <span className="text-zinc-500">{new Date(e.timestamp).toLocaleString()}</span>

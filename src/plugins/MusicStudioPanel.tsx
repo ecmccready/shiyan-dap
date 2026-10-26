@@ -25,6 +25,7 @@ type Created = {
   reasons: string[];
   fingerprint?: string;
   fingerprintVersion?: string;
+  audioFingerprint?: string | null;
   audioFingerprintStatus?: string;
   audioFingerprintNote?: string;
   records: Rec[];
@@ -136,7 +137,7 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
               <p data-music-fingerprint><span className="text-zinc-500">fingerprint (simulation{created.fingerprintVersion ? ` · ${created.fingerprintVersion}` : ''}, metadata-only SIMULATION, no audio analysed; audio fingerprint: not implemented): </span>{created.fingerprint}</p>
             ) : null}
             {created.fingerprint ? (
-              <p data-music-audio-fingerprint className="text-amber-300">audio fingerprint: {created.audioFingerprintNote ?? 'not_implemented: no audio bytes analyzed'}</p>
+              <p data-music-audio-fingerprint className="text-amber-300">audio fingerprint: {created.audioFingerprint ? `${created.audioFingerprint} (` : ''}{created.audioFingerprintNote ?? 'not_implemented: no audio bytes analyzed'}{created.audioFingerprint ? ')' : ''}</p>
             ) : null}
             {created.records[0]?.settlement ? (
               <p data-music-settlement-summary className="text-emerald-300">
