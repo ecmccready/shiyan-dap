@@ -15,7 +15,7 @@ type Rec = {
   settlementRef?: string | null;
   plannedTransfers?: { account: string; amountCents: number; status: string }[] | null;
   settlementNote?: string | null;
-  settlement?: { status: string; note: string; recipients?: { account: string; percentage: number; amountCents?: number; status: string }[]; reason?: string; providerId?: string; splits: { account: string; percentage: number }[] } | null;
+  settlement?: { status: string; note: string; recipients?: { account: string; percentage: number; amountCents?: number; status: string; transferId?: string; transferSkipped?: string; transferError?: string }[]; reason?: string; providerId?: string; splits: { account: string; percentage: number }[] } | null;
 };
 type Created = {
   assetId: string;
@@ -197,7 +197,7 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
                   const st = created.records[0].settlement!;
                   const rail = created.records[0].settlementRail;
                   if (st.status === 'SETTLED_INTERNAL') return `Settlement: ${rail} settled`;
-                  if (st.status === 'CREATED') return `Settlement: ${rail} PaymentIntent ${st.providerId} created (recipient transfers planned, not executed)`;
+                  if (st.status === 'CREATED') return `Settlement: ${rail} PaymentIntent ${st.providerId} created (${st.recipients?.filter((r) => r.status === 'transferred').length ?? 0} of ${st.recipients?.length ?? 0} recipient transfers made)`;
                   return `Settlement: ${rail} queued: ${st.reason ?? 'pending'}`;
                 })()}
               </p>
@@ -216,7 +216,7 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
                 ) : null}
                 {r.settlement?.recipients?.length ? (
                   <p className="text-zinc-400">
-                    {r.settlement.recipients.map((x) => `${x.account}${x.amountCents !== undefined ? ` $${(x.amountCents / 100).toFixed(2)}` : ''}: ${x.status}`).join(' · ')}
+                    {r.settlement.recipients.map((x) => `${x.account}${x.amountCents !== undefined ? ` $${(x.amountCents / 100).toFixed(2)}` : ''}: ${x.status}${x.transferId ? ` ${x.transferId}` : ''}${x.transferSkipped ? ` (transfer_skipped: ${x.transferSkipped})` : ''}${x.transferError ? ` (transfer_failed: ${x.transferError})` : ''}`).join(' · ')}
                   </p>
                 ) : null}
                 {r.settlementNote ? <p className="text-zinc-500">{r.settlementNote}</p> : null}

@@ -18,9 +18,9 @@ type Ev = {
     note: string;
     reason?: string;
     providerId?: string;
-    recipients?: { account: string; percentage: number; amountCents?: number; status: string }[];
+    recipients?: { account: string; percentage: number; amountCents?: number; status: string; transferId?: string; transferSkipped?: string; transferError?: string }[];
   };
-  planned_transfers?: { account: string; amountCents: number; status: string }[];
+  planned_transfers?: { account: string; amountCents: number; status: string; transferId?: string; transferSkipped?: string; transferError?: string }[];
 };
 type Snapshot = { store: string; anchor: string; count: number; events: Ev[] };
 
@@ -96,7 +96,7 @@ export default function LedgerProvenancePanel() {
                     {e.settlement.reason ? ` · ${e.settlement.reason}` : ''}
                     {e.settlement.recipients?.length ? (
                       <div className="text-zinc-500">
-                        {e.settlement.recipients.map((r) => `${r.account}${r.amountCents !== undefined ? ` ${(r.amountCents / 100).toFixed(2)}` : ''} ${r.status}`).join(' · ')}
+                        {e.settlement.recipients.map((r) => `${r.account}${r.amountCents !== undefined ? ` ${(r.amountCents / 100).toFixed(2)}` : ''} ${r.status}${r.transferId ? ` ${r.transferId}` : ''}${r.transferSkipped ? ` (transfer_skipped: ${r.transferSkipped})` : ''}${r.transferError ? ` (transfer_failed: ${r.transferError})` : ''}`).join(' · ')}
                       </div>
                     ) : null}
                   </div>

@@ -41,7 +41,21 @@ If `stateData.splitRule` is present (must sum to 100) a settlement intent is sto
 
 The Stripe call creates one unconfirmed PaymentIntent for the total (idempotency key `ledger_<txHash>`, `transfer_group` = txHash, metadata with the splits). No charge happens and no money reaches recipients.
 
-Recipient-level records: every intent has `settlement.recipients` (`{account, percentage, amountCents?, status}`; amounts appear when `settlementAmountCents` is given). Status is `settled_internal` for INTERNAL_MICRO, `planned` when a Stripe PaymentIntent was created, and `queued` otherwise. When a PaymentIntent exists the stored event also has `planned_transfers: [{account, amountCents, status: "planned"}]`, and the commit response returns `plannedTransfers` and a `settlementNote`. **Actual Stripe Transfer/Connect calls to recipients are still future work.** Queued intents are also appended to `ledger:settlement-queue`.
+Recipient-level records: every intent has `settlement.recipients` (`{account, percentage, amountCents?, status, transferId?, transferSkipped?, transferError?}`; amounts appear when `settlementAmountCents` is given). Status is `settled_internal` for INTERNAL_MICRO, `queued` when nothing external happened, and for a created Stripe PaymentIntent `planned`, `transferred` or `transfer_failed`. When a PaymentIntent exists the stored event also has `planned_transfers: [{account, amountCents, status, transferId?, transferSkipped?, transferError?}]`, and the commit response returns `plannedTransfers` and a `settlementNote`.
+
+### Stripe Transfers to recipients
+
+After the PaymentIntent is created, each recipient is handled in order:
+
+| Recipient | Result |
+|---|---|
+| Account id like `acct_1AbC...` (Connect), test-mode key, amount at least 1 cent | A Stripe Transfer is created (`transfer_group` = txHash, idempotency key `ledger_<txHash>_t<index>`); status `transferred`, `transferId` = `tr_...` |
+| Anything else (not an `acct_` id) | Not attempted: status `planned`, `transferSkipped: "not_connect_account"` |
+| Zero amount | `transferSkipped: "zero_amount"` |
+| Live-mode key | `transferSkipped: "live_transfers_disabled"` unless `LEDGER_ENABLE_LIVE_TRANSFERS=1` is set |
+| Stripe rejects the Transfer (no balance, no permission, account not found) | status `transfer_failed`, `transferError` has the message; the commit still succeeds |
+
+Caveats: the PaymentIntent is unconfirmed, so no customer payment backs the Transfers. In test mode they draw on the test platform balance. In live mode they would move real platform funds, which is why they are off by default. Transfers need a Connect-enabled Stripe account and a key that can create them. With no Connect accounts in the splits the behavior is unchanged from before (everything stays `planned`). For tests only, `STRIPE_API_BASE_URL` points a `sk_test_` key at a local Stripe mock; it is ignored for other keys.
 
 ## Read (`GET ?limit=N`)
 
@@ -63,6 +77,10 @@ curl -X DELETE "$HOST/api/v1/ledger/commit?assetId=live-test-20261025" -H "x-adm
 curl -X DELETE "$HOST/api/v1/ledger/commit?assetId=live-test-20261025&purge=1" -H "x-admin-secret: $LEDGER_ADMIN_SECRET"
 ```
 
+## Agent Compute plugin
+
+Tool `agent-compute.record_compute_usage` (args: `model`, `tokens`, optional `computeSeconds`, optional `assetId` to chain records) commits an `AGENT_COMPUTE` event (server-signed; the title holds the usage summary, `duration` holds the compute seconds). Usage is self-reported, not metered. Available over `POST /api/v1/plugins/tools/execute`, as `agent-compute__record_compute_usage` on `POST /api/mcp` (listed with `?plugins=1`), and in the Plugins panel (writes need `?demo=1`).
+
 ## Music Studio one-action asset flow
 
 Tool `music-studio.create_music_asset`: registers a MUSIC_TRACK (title, optional `durationSeconds`, optional `splitRule`), runs the mock diagnostics scan on it, and commits a DIAGNOSTIC_AUDIT event carrying the same `splitRule`. Both are server-signed and chained (`audit.previousHash` = track `txHash`). Settlement (`settlementRail`, `settlementAmountCents`, `settlementCurrency`) applies to the track event only; the audit event settles internally so an external rail runs once. Writes count against the 20 per hour per IP limit (two per call).
@@ -80,7 +98,7 @@ The response has `result` (assetId, trackTxHash, auditTxHash, audit, reasons), `
 
 Plugin tools are available on the existing MCP endpoint `POST /api/mcp` without touching the Level 4 handler. Tool names are `<pluginId>__<toolName>`.
 
-- Discover (opt-in so the default list is unchanged): `POST /api/mcp?plugins=1` with `{"jsonrpc":"2.0","id":1,"method":"tools/list"}`. The Level 4 tools come first, then `music-studio__describe_track`, `music-studio__register_track`, `music-studio__create_music_asset`, `diagnostics-safety__run_diagnostic_scan`.
+- Discover (opt-in so the default list is unchanged): `POST /api/mcp?plugins=1` with `{"jsonrpc":"2.0","id":1,"method":"tools/list"}`. The Level 4 tools come first, then `music-studio__describe_track`, `music-studio__register_track`, `music-studio__create_music_asset`, `diagnostics-safety__run_diagnostic_scan`, `agent-compute__record_compute_usage`.
 - Call (works on `/api/mcp` with or without `?plugins=1`):
 
 ```json
