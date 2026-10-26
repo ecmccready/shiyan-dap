@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server';
-import { workbenchRegistry } from '@/plugins';
-import { commitLedgerEvent } from '@/lib/ledger-commit';
-import { allowLedgerWrite } from '@/lib/ledger-guard';
-import type { AssetDomain, LedgerEventPayload } from '@/types/ledger';
-import type { ExecutionContext, LedgerHookEvent } from '@/types/workbench-plugin';
+import { executePluginTool } from '@/lib/plugin-exec';
 
 export const dynamic = 'force-dynamic';
 
-const DOMAINS: AssetDomain[] = ['MUSIC_TRACK', 'STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE'];
 const MAX_BODY = 10_000;
 
 /**
@@ -32,54 +27,22 @@ export async function POST(req: Request) {
   if (typeof args !== 'object' || args === null || Array.isArray(args)) {
     return NextResponse.json({ ok: false, error: 'args must be an object' }, { status: 400 });
   }
-  const plugin = workbenchRegistry.getPlugin(body.pluginId);
-  if (!plugin) return NextResponse.json({ ok: false, error: `unknown plugin: ${body.pluginId}` }, { status: 404 });
-  const tool = plugin.registerTools().find((t) => t.name === body.toolName);
-  if (!tool) return NextResponse.json({ ok: false, error: `unknown tool: ${body.toolName}` }, { status: 404 });
-
-  const txHashes: string[] = [];
-  let limited = false;
-  const context: ExecutionContext = {
-    workspaceId: typeof body.workspaceId === 'string' && body.workspaceId ? body.workspaceId : 'default',
-    agentId: typeof body.agentId === 'string' && body.agentId ? body.agentId : 'http',
-    emitLedgerEvent: async (event: LedgerHookEvent) => {
-      if (!DOMAINS.includes(event.action as AssetDomain)) throw new Error(`ledger action must be one of ${DOMAINS.join(', ')}`);
-      if (!(await allowLedgerWrite(req))) {
-        limited = true;
-        throw new Error('rate limit: too many ledger writes from this address, try later');
-      }
-      const p = event.payload as Partial<LedgerEventPayload['stateData']>;
-      const res = await commitLedgerEvent({
-        domain: event.action as AssetDomain,
-        assetId: event.assetId,
-        timestamp: event.timestamp,
-        stateData: {
-          title: p.title,
-          duration: p.duration,
-          splitRule: p.splitRule,
-          auditStatus: p.auditStatus,
-          metadataHash: p.metadataHash as string,
-        },
-      }, {
-        serverSign: true,
-        settlementRail: typeof event.payload.settlementRail === 'string' ? event.payload.settlementRail : undefined,
-        settlementAmountCents: typeof event.payload.settlementAmountCents === 'number' ? event.payload.settlementAmountCents : undefined,
-        settlementCurrency: typeof event.payload.settlementCurrency === 'string' ? event.payload.settlementCurrency : undefined,
-      });
-      if (!res.ok) throw new Error(res.error);
-      txHashes.push(res.response.txHash);
-      await workbenchRegistry.dispatchLedgerEvent(event);
-      return res.response.txHash;
-    },
-  };
-
-  try {
-    const result = await tool.execute(args as Record<string, unknown>, context);
-    return NextResponse.json({ ok: true, pluginId: plugin.id, toolName: tool.name, result, ledgerTxHashes: txHashes });
-  } catch (e) {
-    return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : 'tool failed', ledgerTxHashes: txHashes },
-      { status: limited ? 429 : 500 },
-    );
+  const out = await executePluginTool(req, {
+    pluginId: body.pluginId,
+    toolName: body.toolName,
+    args: args as Record<string, unknown>,
+    workspaceId: typeof body.workspaceId === 'string' ? body.workspaceId : undefined,
+    agentId: typeof body.agentId === 'string' ? body.agentId : undefined,
+  });
+  if (!out.ok) {
+    return NextResponse.json({ ok: false, error: out.error, ledgerTxHashes: out.ledgerTxHashes, ledgerRecords: out.ledgerRecords }, { status: out.status });
   }
+  return NextResponse.json({
+    ok: true,
+    pluginId: out.pluginId,
+    toolName: out.toolName,
+    result: out.result,
+    ledgerTxHashes: out.ledgerTxHashes,
+    ledgerRecords: out.ledgerRecords,
+  });
 }

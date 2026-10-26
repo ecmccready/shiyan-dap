@@ -1,6 +1,7 @@
 import { handleMcp } from "@/lib/mcp/handler";
 import { adaptiveEpsBase } from "@/lib/level4/roe-adaptive";
 import { parseJsonRpcRequest, parseToolCall } from "@/lib/mcp/route-request";
+import { callPluginViaMcp, pluginMcpTools, resolvePluginTool } from "@/lib/mcp/plugin-bridge";
 
 export const runtime = "nodejs";
 
@@ -22,9 +23,22 @@ export async function POST(req: Request) {
     method: request.method,
     params: request.params,
   };
+  // Optional workbench plugin tools (additive): list them with ?plugins=1; call them by their
+  // `<pluginId>__<toolName>` name. Level 4 tool names never match, so the handler below is untouched.
+  if (request.method === "tools/list" && new URL(req.url).searchParams.get("plugins") === "1") {
+    const base = handleMcp(normalizedRequest) as { result?: { tools?: unknown[] } };
+    return Response.json({
+      ...base,
+      result: { ...base.result, tools: [...(base.result?.tools ?? []), ...pluginMcpTools()] },
+    });
+  }
   if (request.method === "tools/call") {
     const call = parseToolCall(request.params);
     if (!call) return rpcError(request.id, -32602, "Invalid tool arguments");
+    const pluginTarget = resolvePluginTool(call.name);
+    if (pluginTarget) {
+      return Response.json(await callPluginViaMcp(req, request.id, pluginTarget, call.arguments));
+    }
     const args = call.arguments;
     if (
       (args.holographic !== undefined && typeof args.holographic !== "boolean") ||

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { allowLedgerWrite } from '@/lib/ledger-guard';
-import { runDiagnosticChecks } from '@/services/diagnostics-core';
+import { runDiagnosticChecksDetailed, type ScanMetadata } from '@/services/diagnostics-core';
 import type { DiagnosticScanRequest } from '@/services/diagnostics-engine';
 import { commitLedgerEvent } from '@/lib/ledger-commit';
+import type { SplitRule } from '@/lib/ledger-settlement';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,9 +17,9 @@ export async function POST(req: Request) {
   if (!(await allowLedgerWrite(req))) {
     return NextResponse.json({ error: 'rate limit: too many ledger writes from this address, try later' }, { status: 429 });
   }
-  let body: Partial<DiagnosticScanRequest>;
+  let body: Partial<DiagnosticScanRequest> & { metadata?: ScanMetadata; splitRule?: SplitRule; title?: string };
   try {
-    body = (await req.json()) as Partial<DiagnosticScanRequest>;
+    body = (await req.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: 'invalid JSON body' }, { status: 400 });
   }
@@ -31,18 +32,28 @@ export async function POST(req: Request) {
   if (typeof body.contentHash !== 'string' || !body.contentHash) {
     return NextResponse.json({ error: 'contentHash is required' }, { status: 400 });
   }
+  const m = body.metadata;
+  if (m !== undefined && (typeof m !== 'object' || m === null || Array.isArray(m))) {
+    return NextResponse.json({ error: 'metadata must be an object' }, { status: 400 });
+  }
+  const metadata: ScanMetadata | undefined = m && {
+    title: typeof m.title === 'string' ? m.title.slice(0, 200) : undefined,
+    text: typeof m.text === 'string' ? m.text.slice(0, 20000) : undefined,
+    durationSeconds: typeof m.durationSeconds === 'number' ? m.durationSeconds : undefined,
+  };
   const request = body as DiagnosticScanRequest;
-  const result = runDiagnosticChecks(request);
+  const { result, reasons } = runDiagnosticChecksDetailed({ ...request, metadata });
   const commit = await commitLedgerEvent({
     domain: 'DIAGNOSTIC_AUDIT',
     assetId: result.assetId,
     stateData: {
+      ...(body.splitRule ? { splitRule: body.splitRule } : {}),
       auditStatus: result.overallStatus === 'PASSED' ? 'PASSED' : 'FAILED',
       metadataHash: result.certificateHash,
     },
   }, { serverSign: true });
   if (!commit.ok) {
-    return NextResponse.json({ ...result, ledger: null, error: commit.error }, { status: commit.status });
+    return NextResponse.json({ ...result, reasons, ledger: null, error: commit.error }, { status: commit.status });
   }
-  return NextResponse.json({ ...result, ledger: commit.response });
+  return NextResponse.json({ ...result, reasons, ledger: commit.response });
 }
