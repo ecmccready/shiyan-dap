@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useHydrated } from '@/lib/use-hydrated';
+import type { LedgerAuditStatus } from '@/types/ledger';
 
 type Ev = {
   eventId: string;
@@ -11,7 +12,7 @@ type Ev = {
   txHash: string;
   timestamp: number;
   stateData?: {
-    auditStatus?: 'PENDING' | 'PASSED' | 'FLAGGED' | 'REJECTED' | 'FAILED';
+    auditStatus?: LedgerAuditStatus;
   };
   signatureStatus?: 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified';
   signatureReason?: string;

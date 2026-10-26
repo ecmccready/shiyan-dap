@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
-import type { AssetDomain, LedgerEventPayload, LedgerRecordResponse } from '@/types/ledger';
+import { LEDGER_AUDIT_STATUSES, type AssetDomain, type LedgerEventPayload, type LedgerRecordResponse } from '@/types/ledger';
 import { signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
 import { applySiwePolicy, withNonceResult, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
 import { verifyWalletSignature } from '@/lib/ledger-wallet';
@@ -115,7 +115,7 @@ export function validateLedgerPayload(p: Partial<LedgerEventPayload> | null): st
   if (p.timestamp !== undefined && (typeof p.timestamp !== 'number' || !Number.isFinite(p.timestamp))) return 'timestamp must be a number';
   const s = p.stateData;
   if (!s || typeof s.metadataHash !== 'string' || !s.metadataHash) return 'stateData.metadataHash is required';
-  if (s.auditStatus && !['PENDING', 'PASSED', 'FLAGGED', 'REJECTED', 'FAILED'].includes(s.auditStatus)) return 'invalid stateData.auditStatus';
+  if (s.auditStatus !== undefined && !LEDGER_AUDIT_STATUSES.includes(s.auditStatus)) return 'invalid stateData.auditStatus';
   if (s.splitRule) {
     if (!Array.isArray(s.splitRule) || s.splitRule.some((r) => !r?.account || typeof r.percentage !== 'number')) {
       return 'splitRule entries need account and numeric percentage';
