@@ -49,6 +49,8 @@ export interface SiwePolicy {
   issuedAtFresh: boolean;
   /** 'fresh' = first use in the replay window, 'replayed' = seen before, 'unchecked' = not claimed (signature not verified, bad nonce, or store unavailable). */
   nonce: 'fresh' | 'replayed' | 'unchecked';
+  /** 'server_issued' = the nonce came from GET /api/v1/siwe/nonce and was consumed by this commit; 'not_issued' = unknown, expired or already used (legacy client nonce); 'unchecked' = not looked up. */
+  nonceSource: 'server_issued' | 'not_issued' | 'unchecked';
   maxAgeSeconds: number;
 }
 
@@ -73,6 +75,7 @@ export function applySiwePolicy(parse: SiweParse, opts: { expectedDomains: strin
     issuedAtAgeSeconds: null,
     issuedAtFresh: false,
     nonce: 'unchecked',
+    nonceSource: 'unchecked',
     maxAgeSeconds: SIWE_MAX_AGE_SECONDS,
   };
   if (!parse.parsed || !parse.fields) return { ...parse, policy };
@@ -170,4 +173,14 @@ export function parseSiweMessage(text: string, opts: { claimedAddress?: string; 
     else if (t < (opts.now ?? Date.now())) issues.push('expired');
   }
   return { parsed: true, structureValid: issues.length === 0, fields, issues, fullVerification: false };
+}
+
+/**
+ * Records whether the nonce was issued by this server (GET /api/v1/siwe/nonce) and consumed. A not-issued nonce is
+ * accepted for backward compatibility; with `requireIssued` it adds the `nonce_not_server_issued` issue.
+ */
+export function withNonceSource(parse: SiweParse, source: SiwePolicy['nonceSource'], requireIssued = false): SiweParse {
+  if (!parse.policy) return parse;
+  const issues = source === 'not_issued' && requireIssued ? [...parse.issues, 'nonce_not_server_issued (fetch a nonce from GET /api/v1/siwe/nonce)'] : parse.issues;
+  return { ...parse, issues, structureValid: issues.length === 0, policy: { ...parse.policy, nonceSource: source } };
 }

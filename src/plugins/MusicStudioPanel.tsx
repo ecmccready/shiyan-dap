@@ -131,7 +131,7 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
               {created.reasons.length ? <span className="text-zinc-500"> ({created.reasons.join('; ')})</span> : null}
             </p>
             {created.fingerprint ? (
-              <p data-music-fingerprint><span className="text-zinc-500">fingerprint (simulation{created.fingerprintVersion ? ` · ${created.fingerprintVersion}` : ''}, metadata only; not an audio fingerprint): </span>{created.fingerprint}</p>
+              <p data-music-fingerprint><span className="text-zinc-500">fingerprint (simulation{created.fingerprintVersion ? ` · ${created.fingerprintVersion}` : ''}, metadata-only SIMULATION, no audio analysed; audio fingerprint: not implemented): </span>{created.fingerprint}</p>
             ) : null}
             {created.records[0]?.settlement ? (
               <p data-music-settlement-summary className="text-emerald-300">

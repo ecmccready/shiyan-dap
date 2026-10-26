@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       ? { title: title?.slice(0, 200), text, durationSeconds }
       : undefined;
   const request = body as DiagnosticScanRequest;
-  const { result, reasons, scoringVersion, fingerprint, fingerprintVersion } = runDiagnosticChecksDetailed({ ...request, metadata });
+  const { result, reasons, scoringVersion, fingerprint, fingerprintVersion, fingerprintKind, audioFingerprint, audioFingerprintStatus } = runDiagnosticChecksDetailed({ ...request, metadata });
   const commit = await commitLedgerEvent({
     domain: 'DIAGNOSTIC_AUDIT',
     assetId: result.assetId,
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     },
   }, { serverSign: true });
   if (!commit.ok) {
-    return NextResponse.json({ ...result, reasons, scoringVersion, fingerprint, fingerprintVersion, ledger: null, error: commit.error }, { status: commit.status });
+    return NextResponse.json({ ...result, reasons, scoringVersion, fingerprint, fingerprintVersion, fingerprintKind, audioFingerprint, audioFingerprintStatus, ledger: null, error: commit.error }, { status: commit.status });
   }
-  return NextResponse.json({ ...result, reasons, scoringVersion, fingerprint, fingerprintVersion, ledger: commit.response });
+  return NextResponse.json({ ...result, reasons, scoringVersion, fingerprint, fingerprintVersion, fingerprintKind, audioFingerprint, audioFingerprintStatus, ledger: commit.response });
 }

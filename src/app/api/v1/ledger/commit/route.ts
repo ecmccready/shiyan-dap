@@ -49,6 +49,7 @@ export async function POST(req: Request) {
     walletAddress?: string;
     walletMessage?: string;
     siweMessage?: string;
+    contractWallet?: unknown;
     usageEstimate?: unknown;
   };
   try {
@@ -56,14 +57,15 @@ export async function POST(req: Request) {
   } catch {
     return fail('invalid JSON body');
   }
-  const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, walletAddress, walletMessage, siweMessage, ...event } = p ?? {};
+  const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, walletAddress, walletMessage, siweMessage, contractWallet, ...event } = p ?? {};
   // usageEstimate is only accepted from server-side plugin tools, never from a client body.
   // Likewise the server-derived record fields can't be forged through the body.
-  for (const k of ['usageEstimate', 'siwe', 'signatureReason', 'signatureStatus', 'signatureType', 'settlement', 'planned_transfers', 'txHash']) delete (event as Record<string, unknown>)[k];
+  for (const k of ['usageEstimate', 'siwe', 'eip191Status', 'signatureReason', 'signatureStatus', 'signatureType', 'settlement', 'planned_transfers', 'txHash']) delete (event as Record<string, unknown>)[k];
   const res = await commitLedgerEvent(event, { settlementRail, settlementAmountCents, settlementCurrency, signatureType,
     walletAddress: typeof walletAddress === 'string' ? walletAddress.slice(0, 100) : undefined,
     walletMessage: typeof walletMessage === 'string' ? walletMessage.slice(0, 2000) : undefined,
     siweMessage: typeof siweMessage === 'string' ? siweMessage.slice(0, 2000) : undefined,
+    contractWallet: contractWallet === true,
     siweExpectedDomains: siweExpectedDomains(req),
   });
   if (!res.ok) return fail(res.error, res.status);
