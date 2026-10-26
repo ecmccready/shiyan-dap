@@ -10,9 +10,9 @@ export function clientIp(req: Request): string {
 }
 
 /** Returns true if this write is allowed. Uses Redis when configured, else per-instance memory. */
-export async function allowLedgerWrite(req: Request): Promise<boolean> {
+export async function allowLedgerWrite(req: Request, scope = 'rl'): Promise<boolean> {
   const bucket = Math.floor(Date.now() / 3_600_000);
-  const key = `ledger:rl:${clientIp(req)}:${bucket}`;
+  const key = `ledger:${scope}:${clientIp(req)}:${bucket}`;
   try {
     const r = ledgerRedis();
     if (r) {

@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       auditStatus: result.overallStatus === 'PASSED' ? 'PASSED' : 'FAILED',
       metadataHash: result.certificateHash,
     },
-  });
+  }, { serverSign: true });
   if (!commit.ok) {
     return NextResponse.json({ ...result, ledger: null, error: commit.error }, { status: commit.status });
   }

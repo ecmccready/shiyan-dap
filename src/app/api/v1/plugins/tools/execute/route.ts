@@ -60,7 +60,7 @@ export async function POST(req: Request) {
           auditStatus: p.auditStatus,
           metadataHash: p.metadataHash as string,
         },
-      });
+      }, { serverSign: true, settlementRail: typeof event.payload.settlementRail === 'string' ? event.payload.settlementRail : undefined });
       if (!res.ok) throw new Error(res.error);
       txHashes.push(res.response.txHash);
       await workbenchRegistry.dispatchLedgerEvent(event);
