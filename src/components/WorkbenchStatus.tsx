@@ -8,6 +8,7 @@ type Status = {
   ledger: { store?: string; count?: number; latestTxHash?: string | null; error?: string };
   config: { signingSecretConfigured: boolean; adminSecretConfigured: boolean; stripeKeyConfigured: boolean; ledgerStore: string };
   settlementRails: { rail: string }[];
+  anchor?: { root?: string | null; eventCount?: number; anchored?: boolean; error?: string };
 };
 
 const flag = (on: boolean) => (on ? 'set' : 'not set');
@@ -42,6 +43,7 @@ export default function WorkbenchStatus() {
             <p key={p.id}>{p.id} v{p.version} · {p.toolCount} tool{p.toolCount === 1 ? '' : 's'}</p>
           ))}
           <p>ledger store: {s.ledger.store ?? s.config.ledgerStore}{s.ledger.latestTxHash ? ` · latest tx ${s.ledger.latestTxHash}` : ''}{s.ledger.error ? ` · ${s.ledger.error}` : ''}</p>
+          {s.anchor ? <p>anchor root: {s.anchor.error ?? (s.anchor.root ? `${s.anchor.root} over ${s.anchor.eventCount} events` : 'none yet')} · anchored: {String(s.anchor.anchored ?? false)} (not on-chain)</p> : null}
           <p>settlement rails: {s.settlementRails.map((r) => r.rail).join(', ')}</p>
           <p className="text-zinc-600">Config flags show only whether a value is set, never the value.</p>
         </div>

@@ -101,10 +101,13 @@ export const musicStudioPlugin: WorkbenchPlugin = {
           timestamp: Date.now(),
         });
         // In-process scan: same checks as POST /api/v1/diagnostics/scan (this tool runs server-side).
-        const { result, reasons } = runDiagnosticChecksDetailed({
+        // contentHash is derived from the track content (title, duration), not the random assetId, so the same
+        // title and duration always score the same.
+        const contentHash = await sha256Hex(JSON.stringify({ title: title.toLowerCase(), duration: duration ?? null }));
+        const { result, reasons, scoringVersion } = runDiagnosticChecksDetailed({
           assetId,
           assetType: 'AUDIO',
-          contentHash: metadataHash,
+          contentHash,
           metadata: { title, durationSeconds: duration },
         });
         const auditTxHash = await context.emitLedgerEvent({
@@ -117,7 +120,7 @@ export const musicStudioPlugin: WorkbenchPlugin = {
           },
           timestamp: result.timestamp,
         });
-        return { assetId, title, duration, splitRule: splitRule ?? null, trackTxHash, auditTxHash, audit: result, reasons };
+        return { assetId, title, duration, splitRule: splitRule ?? null, trackTxHash, auditTxHash, audit: result, reasons, scoringVersion };
       },
     },
   ],

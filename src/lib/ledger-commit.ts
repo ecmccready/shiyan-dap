@@ -47,6 +47,35 @@ export interface CommitOptions {
   walletAddress?: string;
   /** Wallet only: optional signed text; must contain the canonical string. */
   walletMessage?: string;
+  /** AGENT_COMPUTE: self-reported FLOP or cost estimate. Always stored as estimated, never metered. */
+  usageEstimate?: unknown;
+}
+
+export interface UsageEstimate {
+  estimated: true;
+  metered: false;
+  flops?: number;
+  costUsd?: number;
+  basis?: string;
+  note: string;
+}
+
+/** Accepts only finite non-negative numbers and a short basis string; forces estimated:true and metered:false. */
+export function sanitizeUsageEstimate(x: unknown): UsageEstimate | undefined {
+  if (!x || typeof x !== 'object' || Array.isArray(x)) return undefined;
+  const o = x as Record<string, unknown>;
+  const num = (v: unknown, max: number) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= max ? v : undefined);
+  const flops = num(o.flops, 1e30);
+  const costUsd = num(o.costUsd, 1e9);
+  if (flops === undefined && costUsd === undefined) return undefined;
+  return {
+    estimated: true,
+    metered: false,
+    ...(flops !== undefined ? { flops } : {}),
+    ...(costUsd !== undefined ? { costUsd } : {}),
+    ...(typeof o.basis === 'string' ? { basis: o.basis.slice(0, 80) } : {}),
+    note: 'self-reported estimate, not metered',
+  };
 }
 const DOMAINS: AssetDomain[] = ['MUSIC_TRACK', 'STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE'];
 const g = globalThis as unknown as {
@@ -64,7 +93,7 @@ export function ledgerRedis(): Redis | null {
 export type CommitResult =
   | {
       ok: true;
-      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; signatureReason: string | null; walletAddress: string | null; settlementRef: string | null; plannedTransfers: PlannedTransfer[] | null; settlementNote: string | null; settlement: SettlementIntent | null };
+      response: LedgerRecordResponse & { previousHash: string | null; signatureStatus: SignatureStatus; signatureType: SignatureType; signatureReason: string | null; walletAddress: string | null; usageEstimate: UsageEstimate | null; settlementRef: string | null; plannedTransfers: PlannedTransfer[] | null; settlementNote: string | null; settlement: SettlementIntent | null };
       store: 'upstash' | 'memory';
     }
   | { ok: false; status: number; error: string };
@@ -137,6 +166,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     signature = 'unsigned';
     signatureStatus = 'unverified';
   }
+  const usageEstimate = sanitizeUsageEstimate(opts.usageEstimate);
   const splits = p.stateData!.splitRule;
   const r = ledgerRedis();
   const assetId = p.assetId as string;
@@ -174,7 +204,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
         })
       : null;
     const planned_transfers = plannedTransfersOf(settlement);
-    const record = { ...event, txHash, signatureStatus, signatureType, ...(signatureReason ? { signatureReason } : {}), ...(walletAddress ? { walletAddress } : {}), ...(settlement ? { settlement } : {}), ...(planned_transfers ? { planned_transfers } : {}) };
+    const record = { ...event, txHash, signatureStatus, signatureType, ...(signatureReason ? { signatureReason } : {}), ...(walletAddress ? { walletAddress } : {}), ...(usageEstimate ? { usageEstimate } : {}), ...(settlement ? { settlement } : {}), ...(planned_transfers ? { planned_transfers } : {}) };
     let blockHeight: number;
     if (r) {
       blockHeight = await r.rpush(LEDGER_KEY, JSON.stringify(record));
@@ -193,7 +223,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     return {
       ok: true,
       store: r ? 'upstash' : 'memory',
-      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, signatureReason: signatureReason ?? null, walletAddress: walletAddress ?? null, plannedTransfers: planned_transfers ?? null, settlementNote: planned_transfers ? TRANSFERS_FUTURE_WORK : null, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
+      response: { txHash, status: 'CONFIRMED', settlementRail: rail, blockHeight, previousHash, signatureStatus, signatureType, signatureReason: signatureReason ?? null, walletAddress: walletAddress ?? null, usageEstimate: usageEstimate ?? null, plannedTransfers: planned_transfers ?? null, settlementNote: planned_transfers ? TRANSFERS_FUTURE_WORK : null, settlementRef: settlement ? (settlement.providerId ?? settlement.reason ?? settlement.status) : null, settlement },
     };
   } catch {
     return { ok: false, status: 502, error: 'ledger storage unavailable' };

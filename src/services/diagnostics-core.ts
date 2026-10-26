@@ -1,3 +1,5 @@
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { DiagnosticAuditResult, DiagnosticScanRequest } from '@/services/diagnostics-engine';
 
 /** Optional hints the mock scan can use. All fields are optional. */
@@ -9,27 +11,41 @@ export interface ScanMetadata {
 }
 export type ScanInput = DiagnosticScanRequest & { metadata?: ScanMetadata };
 
+export const SCORING_VERSION = 'mock-heuristic-v2';
+
 // Words that, in a real pipeline, would make a fingerprint match more likely.
-const DERIVATIVE_KEYWORDS = ['remix', 'cover', 'sample', 'bootleg', 'mashup', 'karaoke', 'instrumental of', 'in the style of', 'feat.', 'official'];
+const DERIVATIVE_KEYWORDS = [
+  'remix', 'cover', 'sample', 'bootleg', 'mashup', 'karaoke', 'instrumental of', 'in the style of', 'feat.', 'official',
+  'radio edit', 'extended mix', 'live at', 'slowed', 'sped up', 'nightcore', 'bass boosted', 're-edit', 'acoustic version',
+];
 const RISKY_PROMPT_KEYWORDS = ['ignore previous', 'jailbreak', 'copyrighted', 'scrape', 'lyrics of'];
+const norm = (s: string | undefined) => (s ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
 
 /**
- * Deterministic mock similarity score (0..1, 0 = clean) from simple heuristics, and the reasons for it.
- * Base: 0 to 0.04 derived from the contentHash, so the same input gives the same score. Then bumps:
- * derivative keywords in title/text (+0.07 each, max 3), very short audio (+0.04 under 15 seconds),
- * very long text (+0.03 over 5000 chars), risky prompt keywords for MODEL_PROMPT (+0.10 each), and an
- * empty or too-short contentHash (+0.02). This is still a mock, not a real fingerprint.
+ * Deterministic mock similarity score (0..1, 0 = clean) from simple heuristics, plus a reason for every term.
+ * The result depends only on contentHash, assetType, title, text and duration (title and text are lowercased and
+ * whitespace-normalized), never on time or randomness. Terms: 0 to 0.04 from the contentHash (+0.02 when it is
+ * too short); derivative keywords in title/text (+0.07 each, max 3); an "Artist - Title" pattern on AUDIO
+ * (+0.02); a missing or very short title (+0.02); AUDIO under 15 s (+0.04), over 20 min (+0.02) or with no
+ * duration (+0.01); text over 5000 chars (+0.03); risky keywords for MODEL_PROMPT (+0.10 each, max 2).
+ * This is still a mock, not a real fingerprint or compliance check.
  */
 export function scoreDiagnostics(req: ScanInput): { score: number; reasons: string[] } {
   const reasons: string[] = [];
   const hex = (req.contentHash || '').replace(/[^0-9a-f]/gi, '').slice(0, 8);
   let score = hex.length === 8 ? (parseInt(hex, 16) / 0xffffffff) * 0.04 : 0.02;
-  if (hex.length < 8) reasons.push('contentHash too short to derive a stable base score (+0.02)');
-  const haystack = `${req.metadata?.title ?? ''} ${req.metadata?.text ?? ''}`.toLowerCase();
+  reasons.push(
+    hex.length === 8
+      ? `base ${score.toFixed(4)} derived from contentHash ${hex} (0 to 0.04)`
+      : 'contentHash too short to derive a stable base score (+0.02)',
+  );
+  const title = norm(req.metadata?.title);
+  const text = norm(req.metadata?.text);
+  const haystack = `${title} ${text}`;
   const hits = DERIVATIVE_KEYWORDS.filter((k) => haystack.includes(k)).slice(0, 3);
   for (const k of hits) {
     score += 0.07;
-    reasons.push(`derivative keyword "${k}" (+0.07)`);
+    reasons.push(`derivative keyword "${k}" in title or text (+0.07)`);
   }
   if (req.assetType === 'MODEL_PROMPT') {
     for (const k of RISKY_PROMPT_KEYWORDS.filter((k) => haystack.includes(k)).slice(0, 2)) {
@@ -37,16 +53,51 @@ export function scoreDiagnostics(req: ScanInput): { score: number; reasons: stri
       reasons.push(`risky prompt keyword "${k}" (+0.10)`);
     }
   }
-  const d = req.metadata?.durationSeconds;
-  if (req.assetType === 'AUDIO' && typeof d === 'number' && d > 0 && d < 15) {
-    score += 0.04;
-    reasons.push('very short audio, likely a sample (+0.04)');
+  if (req.assetType === 'AUDIO' && / [-\u2013\u2014] /.test(title)) {
+    score += 0.02;
+    reasons.push('title looks like "Artist - Title", possibly an existing release (+0.02)');
+  }
+  if (req.metadata?.title !== undefined || req.assetType === 'AUDIO') {
+    if (title.length < 3) {
+      score += 0.02;
+      reasons.push('missing or very short title (+0.02)');
+    }
+  }
+  if (req.assetType === 'AUDIO') {
+    const d = req.metadata?.durationSeconds;
+    if (typeof d !== 'number' || !(d > 0)) {
+      score += 0.01;
+      reasons.push('no duration given for audio (+0.01)');
+    } else if (d < 15) {
+      score += 0.04;
+      reasons.push(`very short audio (${d}s), likely a sample (+0.04)`);
+    } else if (d > 1200) {
+      score += 0.02;
+      reasons.push(`unusually long audio (${d}s) (+0.02)`);
+    }
   }
   if ((req.metadata?.text?.length ?? 0) > 5000) {
     score += 0.03;
     reasons.push('very long text (+0.03)');
   }
+  if (reasons.length === 1) reasons.push('no other risk terms matched');
   return { score: Math.min(1, Number(score.toFixed(4))), reasons };
+}
+
+/** Deterministic certificate id: a SHA-256 over the inputs and verdict, so identical inputs give the same certificate. */
+export function certificateFor(req: ScanInput, score: number, overallStatus: string): string {
+  const canon = JSON.stringify([
+    SCORING_VERSION,
+    req.assetId,
+    req.assetType,
+    req.contentHash,
+    norm(req.metadata?.title),
+    norm(req.metadata?.text),
+    req.metadata?.durationSeconds ?? null,
+    score,
+    overallStatus,
+  ]);
+  return `cert_${bytesToHex(sha256(utf8ToBytes(canon))).slice(0, 40)}`;
 }
 
 /** Mock pipeline with the same DiagnosticAuditResult shape as executeDiagnosticScan, without the browser-only ledger fetch. */
@@ -54,11 +105,13 @@ export function runDiagnosticChecks(request: ScanInput): DiagnosticAuditResult {
   return runDiagnosticChecksDetailed(request).result;
 }
 
-export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[] } {
+export function runDiagnosticChecksDetailed(request: ScanInput): { result: DiagnosticAuditResult; reasons: string[]; scoringVersion: string } {
   const { score, reasons } = scoreDiagnostics(request);
   const overallStatus: DiagnosticAuditResult['overallStatus'] = score < 0.15 ? 'PASSED' : score < 0.3 ? 'FLAGGED' : 'REJECTED';
+  reasons.push(`total score ${score.toFixed(4)} gives ${overallStatus} (PASSED under 0.15, FLAGGED under 0.30, otherwise REJECTED)`);
   return {
     reasons,
+    scoringVersion: SCORING_VERSION,
     result: {
       assetId: request.assetId,
       timestamp: Date.now(),
@@ -68,7 +121,7 @@ export function runDiagnosticChecksDetailed(request: ScanInput): { result: Diagn
         trainingDataRisk: score < 0.1 ? 'LOW' : score < 0.25 ? 'MEDIUM' : 'HIGH',
         regulatoryCompliance: score < 0.15,
       },
-      certificateHash: `cert_${crypto.randomUUID()}`,
+      certificateHash: certificateFor(request, score, overallStatus),
     },
   };
 }

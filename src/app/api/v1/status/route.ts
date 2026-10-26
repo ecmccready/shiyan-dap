@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { workbenchRegistry } from '@/plugins';
 import { ledgerSummary } from '@/lib/ledger-commit';
+import { computeLedgerAnchor } from '@/lib/ledger-anchor';
 import { LEDGER_WRITES_PER_HOUR } from '@/lib/ledger-guard';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Read-only system status: plugins, ledger summary, and which secrets are configured (booleans only,
- * never values). Two cheap Redis reads at most.
+ * never values). A few cheap Redis reads.
  */
 export async function GET() {
   const plugins = workbenchRegistry.listPlugins().map((p) => ({
@@ -22,12 +23,20 @@ export async function GET() {
   } catch {
     ledger = { error: 'ledger storage unavailable' };
   }
+  let anchor: { root: string | null; eventCount: number; anchored: false; algorithm: string; note: string } | { error: string };
+  try {
+    const a = await computeLedgerAnchor(100);
+    anchor = { root: a.root, eventCount: a.eventCount, anchored: a.anchored, algorithm: a.algorithm, note: 'Merkle root over the latest 100 events; on-chain submission is not live' };
+  } catch {
+    anchor = { error: 'ledger storage unavailable' };
+  }
   return NextResponse.json(
     {
       ok: true,
       plugins,
       pluginCount: plugins.length,
       ledger,
+      anchor,
       config: {
         signingSecretConfigured: Boolean(process.env.LEDGER_SIGNING_SECRET),
         adminSecretConfigured: Boolean(process.env.LEDGER_ADMIN_SECRET),

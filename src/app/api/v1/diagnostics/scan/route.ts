@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   if (!(await allowLedgerWrite(req))) {
     return NextResponse.json({ error: 'rate limit: too many ledger writes from this address, try later' }, { status: 429 });
   }
-  let body: Partial<DiagnosticScanRequest> & { metadata?: ScanMetadata; splitRule?: SplitRule; title?: string };
+  let body: Partial<DiagnosticScanRequest> & { metadata?: ScanMetadata; splitRule?: SplitRule; title?: string; durationSeconds?: number };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -36,13 +36,16 @@ export async function POST(req: Request) {
   if (m !== undefined && (typeof m !== 'object' || m === null || Array.isArray(m))) {
     return NextResponse.json({ error: 'metadata must be an object' }, { status: 400 });
   }
-  const metadata: ScanMetadata | undefined = m && {
-    title: typeof m.title === 'string' ? m.title.slice(0, 200) : undefined,
-    text: typeof m.text === 'string' ? m.text.slice(0, 20000) : undefined,
-    durationSeconds: typeof m.durationSeconds === 'number' ? m.durationSeconds : undefined,
-  };
+  // metadata.* wins; top-level title and durationSeconds are accepted as a convenience.
+  const title = typeof m?.title === 'string' ? m.title : typeof body.title === 'string' ? body.title : undefined;
+  const durationSeconds = typeof m?.durationSeconds === 'number' ? m.durationSeconds : typeof body.durationSeconds === 'number' ? body.durationSeconds : undefined;
+  const text = typeof m?.text === 'string' ? m.text.slice(0, 20000) : undefined;
+  const metadata: ScanMetadata | undefined =
+    title !== undefined || durationSeconds !== undefined || text !== undefined
+      ? { title: title?.slice(0, 200), text, durationSeconds }
+      : undefined;
   const request = body as DiagnosticScanRequest;
-  const { result, reasons } = runDiagnosticChecksDetailed({ ...request, metadata });
+  const { result, reasons, scoringVersion } = runDiagnosticChecksDetailed({ ...request, metadata });
   const commit = await commitLedgerEvent({
     domain: 'DIAGNOSTIC_AUDIT',
     assetId: result.assetId,
@@ -53,7 +56,7 @@ export async function POST(req: Request) {
     },
   }, { serverSign: true });
   if (!commit.ok) {
-    return NextResponse.json({ ...result, reasons, ledger: null, error: commit.error }, { status: commit.status });
+    return NextResponse.json({ ...result, reasons, scoringVersion, ledger: null, error: commit.error }, { status: commit.status });
   }
-  return NextResponse.json({ ...result, reasons, ledger: commit.response });
+  return NextResponse.json({ ...result, reasons, scoringVersion, ledger: commit.response });
 }

@@ -36,6 +36,7 @@ export async function POST(req: Request) {
     signatureType?: string;
     walletAddress?: string;
     walletMessage?: string;
+    usageEstimate?: unknown;
   };
   try {
     p = (await req.json()) as typeof p;
@@ -43,6 +44,8 @@ export async function POST(req: Request) {
     return fail('invalid JSON body');
   }
   const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, walletAddress, walletMessage, ...event } = p ?? {};
+  // usageEstimate is only accepted from server-side plugin tools, never from a client body.
+  delete (event as { usageEstimate?: unknown }).usageEstimate;
   const res = await commitLedgerEvent(event, { settlementRail, settlementAmountCents, settlementCurrency, signatureType,
     walletAddress: typeof walletAddress === 'string' ? walletAddress.slice(0, 100) : undefined,
     walletMessage: typeof walletMessage === 'string' ? walletMessage.slice(0, 2000) : undefined,

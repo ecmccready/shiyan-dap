@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useHydrated } from '@/lib/use-hydrated';
 
 type Rec = { txHash: string; status: string; previousHash?: string | null; signatureStatus?: string };
-type Out = { assetId: string; summary: string; txHash: string; record: Rec | null };
+type Est = { flops?: number; costUsd?: number; basis?: string; note?: string };
+type Out = { assetId: string; summary: string; txHash: string; record: Rec | null; usageEstimate?: Est | null };
 
 export default function AgentComputePanel({ workspaceId }: { workspaceId: string }) {
   const hydrated = useHydrated();
@@ -13,6 +14,8 @@ export default function AgentComputePanel({ workspaceId }: { workspaceId: string
   const [model, setModel] = useState('');
   const [tokens, setTokens] = useState('');
   const [seconds, setSeconds] = useState('');
+  const [paramsB, setParamsB] = useState('');
+  const [rate, setRate] = useState('');
   const [busy, setBusy] = useState(false);
   const [out, setOut] = useState<Out | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +27,8 @@ export default function AgentComputePanel({ workspaceId }: { workspaceId: string
     try {
       const args: Record<string, unknown> = { model: model.trim(), tokens: Number(tokens) };
       if (Number(seconds) > 0) args.computeSeconds = Number(seconds);
+      if (Number(paramsB) > 0) args.modelParamsBillions = Number(paramsB);
+      if (Number(rate) > 0) args.costPer1kTokensUsd = Number(rate);
       const res = await fetch('/api/v1/plugins/tools/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,6 +55,8 @@ export default function AgentComputePanel({ workspaceId }: { workspaceId: string
         <input value={model} onChange={(e) => setModel(e.target.value)} placeholder="Model or job name" maxLength={80} className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1" />
         <input value={tokens} onChange={(e) => setTokens(e.target.value)} placeholder="Tokens used" inputMode="numeric" className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1" />
         <input value={seconds} onChange={(e) => setSeconds(e.target.value)} placeholder="Compute seconds (optional)" inputMode="decimal" className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1" />
+        <input value={paramsB} onChange={(e) => setParamsB(e.target.value)} placeholder="Model size, billions of params (optional, for a FLOP estimate)" inputMode="decimal" className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1" />
+        <input value={rate} onChange={(e) => setRate(e.target.value)} placeholder="USD per 1k tokens (optional, for a cost estimate)" inputMode="decimal" className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1" />
       </div>
       <button
         type="button"
@@ -66,6 +73,9 @@ export default function AgentComputePanel({ workspaceId }: { workspaceId: string
         <dl data-compute-result className="mt-4 space-y-1 break-all font-mono text-xs">
           <div><dt className="inline text-zinc-500">asset: </dt><dd className="inline">{out.assetId}</dd></div>
           <div><dt className="inline text-zinc-500">usage: </dt><dd className="inline">{out.summary}</dd></div>
+          {out.usageEstimate ? (
+            <div><dt className="inline text-zinc-500">estimate: </dt><dd className="inline">{out.usageEstimate.flops !== undefined ? `~${out.usageEstimate.flops.toExponential(2)} FLOPs ` : ''}{out.usageEstimate.costUsd !== undefined ? `~$${out.usageEstimate.costUsd.toFixed(4)} ` : ''}(estimated, not metered; {out.usageEstimate.basis})</dd></div>
+          ) : null}
           <div><dt className="inline text-zinc-500">tx: </dt><dd className="inline">{out.txHash} ({out.record?.status ?? 'n/a'}, {out.record?.signatureStatus ?? 'n/a'})</dd></div>
           <div><dt className="inline text-zinc-500">previousHash: </dt><dd className="inline">{out.record?.previousHash ?? 'null (first event)'}</dd></div>
         </dl>
