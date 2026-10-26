@@ -1,3 +1,5 @@
+import { keccak_256 } from '@noble/hashes/sha3.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 /**
  * Minimal EIP-4361 (SIWE) message parser. Structure only: it parses and sanity-checks the fields, it does NOT
  * verify the domain against this host, nonce freshness or replay, expiry enforcement, or chainId policy, and it
@@ -36,11 +38,32 @@ export interface SiweParse {
   structureValid: boolean;
   fields?: SiweFields;
   issues: string[];
-  /** Always false: full SIWE verification is not implemented. */
+  /** Always false: full SIWE verification is not implemented (see cryptoVerified for what is checked). */
   fullVerification: false;
+  /**
+   * True only when a signature was cryptographically checked server-side AND the address in the message is the address that
+   * signed it AND the signed bytes are exactly the siweMessage text. Does not cover domain, nonce, expiry or chain policy
+   * (see structureValid and policy), so it is not full SIWE verification. Set by the commit pipeline; never client input.
+   */
+  cryptoVerified?: boolean;
+  crypto?: SiweCrypto;
   /** Result of the host, freshness and nonce policy checks (set by applySiwePolicy and the nonce claim). */
   policy?: SiwePolicy;
 }
+export interface SiweCrypto {
+  /** 'eip191' (recovery of an EOA signature) or 'eip1271' (a contract wallet accepted the signature via eth_call). */
+  method: 'eip191' | 'eip1271';
+  signatureValid: boolean;
+  /** EIP-191 only: the address recovered from the signature (null for eip1271, where nothing is recoverable). */
+  recoveredAddress: string | null;
+  /** The address line inside the message equals the recovered address (eip191) or the claimed contract address (eip1271). */
+  messageAddressMatches: boolean;
+  /** The signature was checked over exactly the siweMessage bytes the server stored (the siweMessage takes precedence over walletMessage). */
+  signedExactText: boolean;
+  /** EIP-55 mixed-case checksum of the message address: valid, invalid, or not_checksummed (all lower or upper case). Informational. */
+  addressChecksum: 'valid' | 'invalid' | 'not_checksummed';
+}
+
 export interface SiwePolicy {
   expectedDomains: string[];
   domainMatches: boolean;
@@ -204,4 +227,26 @@ export function withNonceSource(parse: SiweParse, source: SiwePolicy['nonceSourc
   if (!parse.policy) return parse;
   const issues = source === 'not_issued' && requireIssued ? [...parse.issues, 'nonce_not_server_issued (fetch a nonce from GET /api/v1/siwe/nonce)'] : parse.issues;
   return { ...parse, issues, structureValid: issues.length === 0, policy: { ...parse.policy, nonceSource: source } };
+}
+
+
+/** EIP-55 checksum state of a 0x address. All-lowercase and all-uppercase are 'not_checksummed' (allowed by EIP-55 but not by strict SIWE). */
+export function eip55State(address: string): SiweCrypto['addressChecksum'] {
+  if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return 'invalid';
+  const body = address.slice(2);
+  if (body === body.toLowerCase() || body === body.toUpperCase()) return 'not_checksummed';
+  const hash = bytesToHex(keccak_256(utf8ToBytes(body.toLowerCase())));
+  for (let i = 0; i < 40; i++) {
+    const c = body[i];
+    if (/[a-f]/i.test(c) && (parseInt(hash[i], 16) >= 8) !== (c === c.toUpperCase())) return 'invalid';
+  }
+  return 'valid';
+}
+
+/** Adds the cryptographic result to a parse. cryptoVerified requires a valid signature, address agreement and exact text. */
+export function withCrypto(parse: SiweParse, c: Omit<SiweCrypto, 'addressChecksum' | 'messageAddressMatches'> & { signerAddress: string | null }): SiweParse {
+  const msgAddr = parse.fields?.address ?? '';
+  const matches = parse.parsed && !!c.signerAddress && msgAddr.toLowerCase() === c.signerAddress.toLowerCase();
+  const crypto: SiweCrypto = { method: c.method, signatureValid: c.signatureValid, recoveredAddress: c.recoveredAddress, messageAddressMatches: matches, signedExactText: c.signedExactText, addressChecksum: eip55State(msgAddr) };
+  return { ...parse, crypto, cryptoVerified: parse.parsed && c.signatureValid && matches && c.signedExactText };
 }

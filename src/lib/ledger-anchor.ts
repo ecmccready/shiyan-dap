@@ -97,7 +97,8 @@ export interface AnchorAttempt {
   attemptId: string;
   status: 'dry-run';
   anchored: false;
-  network: 'none (dry-run)';
+  /** Target network name for the simulated receipt, or 'none (dry-run)' when none was requested. */
+  network: string;
   root: string | null;
   eventCount: number;
   algorithm: typeof ANCHOR_ALGORITHM;
@@ -107,12 +108,87 @@ export interface AnchorAttempt {
   simulatedBlockNumber: number;
   attemptedAt: number;
   note: string;
+  /** Simulated transaction receipt for the requested network. Absent when no network was given (and on older attempts). */
+  receipt?: SimulatedReceipt;
+}
+
+/** Networks a dry run can target. Gas prices are fixed illustrative numbers, NOT live market data. */
+export const ANCHOR_NETWORKS: Record<string, { chainId: number; label: string; nativeSymbol: string; blockTimeSeconds: number; illustrativeGasPriceGwei: number; l2: boolean }> = {
+  ethereum: { chainId: 1, label: 'Ethereum mainnet', nativeSymbol: 'ETH', blockTimeSeconds: 12, illustrativeGasPriceGwei: 15, l2: false },
+  sepolia: { chainId: 11155111, label: 'Sepolia testnet', nativeSymbol: 'SepoliaETH', blockTimeSeconds: 12, illustrativeGasPriceGwei: 2, l2: false },
+  polygon: { chainId: 137, label: 'Polygon PoS', nativeSymbol: 'POL', blockTimeSeconds: 2, illustrativeGasPriceGwei: 40, l2: false },
+  base: { chainId: 8453, label: 'Base', nativeSymbol: 'ETH', blockTimeSeconds: 2, illustrativeGasPriceGwei: 0.05, l2: true },
+  optimism: { chainId: 10, label: 'OP Mainnet', nativeSymbol: 'ETH', blockTimeSeconds: 2, illustrativeGasPriceGwei: 0.05, l2: true },
+  arbitrum: { chainId: 42161, label: 'Arbitrum One', nativeSymbol: 'ETH', blockTimeSeconds: 0.25, illustrativeGasPriceGwei: 0.1, l2: true },
+};
+export const ANCHOR_NETWORK_NAMES = Object.keys(ANCHOR_NETWORKS);
+
+export interface SimulatedReceipt {
+  simulated: true;
+  onChain: false;
+  network: string;
+  chainId: number;
+  transactionHash: string;
+  blockNumber: number;
+  blockHash: string;
+  status: 'simulated_success';
+  from: null;
+  to: null;
+  gasUsed: number;
+  gasUsedBreakdown: { base: number; calldata: number; storageWrite: number; overhead: number };
+  effectiveGasPriceGwei: number;
+  feeWei: string;
+  feeNative: string;
+  nativeSymbol: string;
+  confirmations: 0;
+  logs: [];
+  estimateModel: string;
+  note: string;
+}
+
+const RECEIPT_MODEL = 'anchor-gas-model-v1: 21000 base + calldata (4-byte selector + 32-byte root; 16 gas per non-zero byte, 4 per zero byte) + 22100 for one new storage slot + 3000 overhead. Illustrative, not an RPC estimate; L2 data fees are not modelled.';
+
+/** Deterministic simulated receipt. No chain was contacted, so every field is made up from the root and the attempt. */
+export function simulateAnchorReceipt(network: string, root: string | null, txHash: string, seq: number): SimulatedReceipt {
+  const n = ANCHOR_NETWORKS[network];
+  const rootHex = (root ?? '').replace(/^0x/, '');
+  const data = Buffer.from('7f6dd6b4' + (/^[0-9a-f]{64}$/i.test(rootHex) ? rootHex : '0'.repeat(64)), 'hex'); // placeholder selector + root
+  let calldata = 0;
+  for (const b of data) calldata += b === 0 ? 4 : 16;
+  const gasUsedBreakdown = { base: 21000, calldata, storageWrite: 22100, overhead: 3000 };
+  const gasUsed = gasUsedBreakdown.base + calldata + gasUsedBreakdown.storageWrite + gasUsedBreakdown.overhead;
+  const feeWei = BigInt(gasUsed) * BigInt(Math.round(n.illustrativeGasPriceGwei * 1e9));
+  const WEI = BigInt('1000000000000000000');
+  const whole = feeWei / WEI;
+  const frac = (feeWei % WEI).toString().padStart(18, '0').replace(/0+$/, '');
+  return {
+    simulated: true,
+    onChain: false,
+    network,
+    chainId: n.chainId,
+    transactionHash: txHash,
+    blockNumber: seq,
+    blockHash: '0x' + sha(`dry-run-block:${network}:${txHash}`),
+    status: 'simulated_success',
+    from: null,
+    to: null,
+    gasUsed,
+    gasUsedBreakdown,
+    effectiveGasPriceGwei: n.illustrativeGasPriceGwei,
+    feeWei: feeWei.toString(),
+    feeNative: frac ? `${whole}.${frac}` : whole.toString(),
+    nativeSymbol: n.nativeSymbol,
+    confirmations: 0,
+    logs: [],
+    estimateModel: RECEIPT_MODEL,
+    note: `SIMULATED receipt for ${n.label}. No transaction exists: the hashes and block number are made up, the gas price is a fixed illustrative number (not live), and nothing was anchored.`,
+  };
 }
 
 const gm = globalThis as unknown as { __anchorAttempts?: AnchorAttempt[]; __anchorSeq?: number };
 
 /** Records a dry-run submission of the current root. Returns null root attempts too (empty ledger), flagged by root: null. */
-export async function dryRunAnchorSubmission(limit = 100): Promise<AnchorAttempt> {
+export async function dryRunAnchorSubmission(limit = 100, network?: string): Promise<AnchorAttempt> {
   const a = await computeLedgerAnchor(limit);
   const r = ledgerRedis();
   const seq = r ? await r.incr(ANCHOR_SEQ_KEY) : (gm.__anchorSeq = (gm.__anchorSeq ?? 0) + 1);
@@ -122,7 +198,7 @@ export async function dryRunAnchorSubmission(limit = 100): Promise<AnchorAttempt
     attemptId: `anc_${seq}`,
     status: 'dry-run',
     anchored: false,
-    network: 'none (dry-run)',
+    network: network ?? 'none (dry-run)',
     root: a.root,
     eventCount: a.eventCount,
     algorithm: a.algorithm,
@@ -133,6 +209,7 @@ export async function dryRunAnchorSubmission(limit = 100): Promise<AnchorAttempt
     simulatedBlockNumber: seq,
     attemptedAt,
     note: DRY_RUN_NOTE,
+    ...(network ? { receipt: simulateAnchorReceipt(network, a.root, simulatedTxHash, seq) } : {}),
   };
   if (r) {
     await r.rpush(ANCHOR_ATTEMPTS_KEY, JSON.stringify(attempt));

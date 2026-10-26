@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Redis } from '@upstash/redis';
 import { LEDGER_AUDIT_STATUSES, type AssetDomain, type LedgerEventPayload, type LedgerRecordResponse } from '@/types/ledger';
 import { canonicalLedgerString, signLedger, verifyLedgerSignature } from '@/lib/ledger-signing';
-import { applySiwePolicy, withNonceResult, withNonceSource, parseSiweMessage, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
+import { applySiwePolicy, withCrypto, withNonceResult, withNonceSource, parseSiweMessage, SIWE_NONCE_TTL_SECONDS, type SiweParse } from '@/lib/ledger-siwe';
 import { verifyWalletSignature } from '@/lib/ledger-wallet';
 import { eip1271RpcUrl, verifyEip1271, type Eip1271Result } from '@/lib/ledger-eip1271';
 import { plannedTransfersOf, resolveSettlement, TRANSFERS_FUTURE_WORK, type PlannedTransfer, type SettlementIntent, type SettlementRail } from '@/lib/ledger-settlement';
@@ -185,6 +185,7 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
         siwe = withNonceResult(siwe, await claimSiweNonce(sf.address, sf.nonce));
         siwe = withNonceSource(siwe, await consumeIssuedNonce(sf.nonce), process.env.SIWE_REQUIRE_ISSUED_NONCE === '1');
       }
+      if (siwe) siwe = withCrypto(siwe, { method: 'eip1271', signatureValid: r1271.status === 'eip1271_verified', recoveredAddress: null, signerAddress: walletAddress ?? null, signedExactText: opts.siweMessage !== undefined && text === opts.siweMessage });
       if (r1271.status === 'eip1271_verified' && siwe && siwe.issues.length > 0) signatureReason = `${r1271.reason}; siwe issues (check siwe.structureValid): ${siwe.issues.join('; ')}`;
     } else {
     // Basic EIP-191 personal_sign check (no EIP-1271 contract wallets, no full SIWE crypto). Never rejects: a
@@ -193,6 +194,10 @@ export async function commitLedgerEvent(p: Partial<LedgerEventPayload>, opts: Co
     siwe = w.siwe;
     if (siwe) {
       siwe = applySiwePolicy(siwe, { expectedDomains: opts.siweExpectedDomains ?? [] });
+      // Cryptographic result: the signature was recovered over exactly opts.siweMessage (verifyWalletSignature signs the text it was
+      // given), and w.ok means the recovered address equals the claimed walletAddress. withCrypto also requires the address line
+      // inside the message to be that same address.
+      siwe = withCrypto(siwe, { method: 'eip191', signatureValid: w.ok, recoveredAddress: w.address ?? null, signerAddress: w.ok ? w.address : null, signedExactText: w.ok && w.message === opts.siweMessage });
       // Replay guard and server-issued nonce: only a message whose signature verified touches nonce state, so a bad
       // signature cannot burn someone else's nonce. Both fail open ('unchecked') if the store is unavailable.
       const f = siwe.fields;

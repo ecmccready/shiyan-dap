@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { computeLedgerAnchor, dryRunAnchorSubmission, recentAnchorAttempts } from '@/lib/ledger-anchor';
+import { ANCHOR_NETWORK_NAMES, computeLedgerAnchor, dryRunAnchorSubmission, recentAnchorAttempts } from '@/lib/ledger-anchor';
 import { allowLedgerWrite } from '@/lib/ledger-guard';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic';
  * Optional txHash adds an inclusion proof if that event is inside the window. Nothing is submitted on-chain.
  * `?attempts=N` instead lists the latest N recorded dry-run submissions (read-only).
  *
- * POST { dryRun: true, limit? } records a DRY-RUN submission of the current root and returns a simulated tx
+ * POST { dryRun: true, limit?, network? } (network: ethereum, sepolia, polygon, base, optimism or arbitrum) adds a SIMULATED
+ * receipt with gas used, an illustrative fee and chain id; still anchored false. Records a DRY-RUN submission of the current root and returns a simulated tx
  * hash and block number with status "dry-run" and anchored false. Only dryRun is supported; there is no chain.
  */
 export async function GET(req: Request) {
@@ -43,7 +44,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  let body: { dryRun?: unknown; limit?: unknown };
+  let body: { dryRun?: unknown; limit?: unknown; network?: unknown };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -59,11 +60,18 @@ export async function POST(req: Request) {
   if (!Number.isFinite(limit) || limit < 1) {
     return NextResponse.json({ error: 'limit must be a positive number (max 500)' }, { status: 400 });
   }
+  let network: string | undefined;
+  if (body.network !== undefined) {
+    network = typeof body.network === 'string' ? body.network.trim().toLowerCase() : '';
+    if (!ANCHOR_NETWORK_NAMES.includes(network)) {
+      return NextResponse.json({ error: `network must be one of: ${ANCHOR_NETWORK_NAMES.join(', ')} (simulated receipt only)` }, { status: 400 });
+    }
+  }
   if (!(await allowLedgerWrite(req, 'anchor'))) {
     return NextResponse.json({ error: 'rate limit: too many anchor attempts from this address, try later' }, { status: 429 });
   }
   try {
-    return NextResponse.json(await dryRunAnchorSubmission(limit), { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(await dryRunAnchorSubmission(limit, network), { headers: { 'Cache-Control': 'no-store' } });
   } catch {
     return NextResponse.json({ error: 'ledger storage unavailable' }, { status: 502 });
   }

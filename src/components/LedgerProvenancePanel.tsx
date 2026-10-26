@@ -33,7 +33,7 @@ type Ev = {
   planned_transfers?: { account: string; amountCents: number; status: string; transferId?: string; transferSkipped?: string; transferError?: string }[];
 };
 type DryRun = { attemptId: string; status: string; anchored: boolean; root: string | null; eventCount: number; simulatedTxHash: string; simulatedBlockNumber: number; network: string; note: string };
-type Siwe = { parsed: boolean; structureValid: boolean; issues: string[]; policy?: { domainMatches: boolean; issuedAtAgeSeconds: number | null; issuedAtFresh: boolean; nonce: string; nonceSource?: string }; fields?: { domain: string; address: string; statement?: string; uri?: string; version?: string; chainId?: number; nonce?: string; issuedAt?: string } };
+type Siwe = { parsed: boolean; structureValid: boolean; cryptoVerified?: boolean; crypto?: { method: string; recoveredAddress: string | null; messageAddressMatches: boolean; signedExactText: boolean; addressChecksum: string }; issues: string[]; policy?: { domainMatches: boolean; issuedAtAgeSeconds: number | null; issuedAtFresh: boolean; nonce: string; nonceSource?: string }; fields?: { domain: string; address: string; statement?: string; uri?: string; version?: string; chainId?: number; nonce?: string; issuedAt?: string } };
 type Anchor = { root: string | null; eventCount: number; anchored: boolean; algorithm: string };
 type Snapshot = { store: string; anchor: string; count: number; events: Ev[] };
 
@@ -167,7 +167,7 @@ export default function LedgerProvenancePanel() {
                   <div className="mt-1 text-zinc-400">
                     SIWE-style message: {e.siwe.parsed && e.siwe.fields ? `${e.siwe.fields.domain} · chain ${e.siwe.fields.chainId ?? '?'} · nonce ${e.siwe.fields.nonce ?? '?'} · issued ${e.siwe.fields.issuedAt ?? '?'}` : 'not parsed'}
                     {e.siwe.policy ? ` · domain ${e.siwe.policy.domainMatches ? 'allowed' : 'not allowed'} · issued ${e.siwe.policy.issuedAtAgeSeconds ?? '?'}s ago (${e.siwe.policy.issuedAtFresh ? 'fresh' : 'not fresh'}) · nonce ${e.siwe.policy.nonce}${e.siwe.policy.nonceSource ? ` (${e.siwe.policy.nonceSource.replace('_', ' ')})` : ''}` : ''}
-                    {' '}· structure {e.siwe.structureValid ? 'ok' : `issues: ${e.siwe.issues.join(', ')}`} (parsed only, not full SIWE verification)
+                    {' '}· structure {e.siwe.structureValid ? 'ok' : `issues: ${e.siwe.issues.join(', ')}`} · crypto {e.siwe.cryptoVerified ? `ok (${e.siwe.crypto?.method}: signer matches message address, exact text signed)` : 'not verified'} (not full SIWE verification)
                   </div>
                 ) : null}
                 {e.usageEstimate ? (
