@@ -9,7 +9,9 @@ type Ev = {
   previousHash: string | null;
   txHash: string;
   timestamp: number;
-  signatureStatus?: 'verified' | 'unverified' | 'wallet_unverified';
+  signatureStatus?: 'verified' | 'unverified' | 'wallet_verified' | 'wallet_unverified';
+  signatureReason?: string;
+  walletAddress?: string;
   signatureType?: 'hmac' | 'wallet';
   settlement?: {
     rail: string;
@@ -82,8 +84,8 @@ export default function LedgerProvenancePanel() {
                   <span>{e.assetId}</span>
                   <span className="text-emerald-400">{e.domain}</span>
                   <span className="text-zinc-500">CONFIRMED</span>
-                  <span className={e.signatureStatus === 'verified' ? 'text-emerald-400' : 'text-amber-400'}>
-                    {e.signatureStatus === 'verified' ? 'signature verified' : e.signatureStatus === 'wallet_unverified' ? 'wallet signature (unverified)' : 'unverified'}
+                  <span className={e.signatureStatus === 'verified' || e.signatureStatus === 'wallet_verified' ? 'text-emerald-400' : 'text-amber-400'}>
+                    {e.signatureStatus === 'verified' ? 'signature verified' : e.signatureStatus === 'wallet_verified' ? `wallet signature verified${e.walletAddress ? ` (${e.walletAddress.slice(0, 8)}…)` : ''}` : e.signatureStatus === 'wallet_unverified' ? `wallet signature unverified${e.signatureReason ? `: ${e.signatureReason}` : ''}` : 'unverified'}
                     {e.signatureType ? ` · ${e.signatureType}` : ''}
                   </span>
                   <span className="text-zinc-500">{new Date(e.timestamp).toLocaleString()}</span>

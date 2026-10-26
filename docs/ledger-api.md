@@ -27,7 +27,22 @@ curl -X POST $HOST/api/v1/ledger/commit -H 'content-type: application/json' \
 
 ### Signature type
 
-Optional `signatureType`: `"hmac"` (default, behavior above) or `"wallet"`. A wallet signature is stored as-is with `signatureStatus: "wallet_unverified"` and is never treated as verified. TODO: verify via EIP-191 / SIWE (recover the address from the signature over the canonical string and match it to the asset owner).
+Optional `signatureType`: `"hmac"` (default, behavior above) or `"wallet"`.
+
+Wallet signatures use a basic EIP-191 `personal_sign` check (via `@noble/curves` and `@noble/hashes`; not full SIWE, and no EIP-1271 contract wallets). Send:
+- `signature`: 65-byte hex (`r||s||v`, 130 hex chars, `0x` optional; `v` may be 27/28 or 0/1)
+- `walletAddress`: the address claiming to have signed
+- `timestamp`: required, so the signature is bound to the event
+- `walletMessage` (optional): the signed text. It must contain the canonical string `assetId|domain|timestamp|metadataHash`. If omitted, the signed message is exactly the canonical string.
+
+The server recovers the signer address and compares it to `walletAddress`. Result in `signatureStatus` (stored on the event and returned, never a rejection):
+
+| Status | Meaning |
+|---|---|
+| `wallet_verified` | the signer matches `walletAddress` (also returned as `walletAddress`) |
+| `wallet_unverified` | with `signatureReason`: `signature_not_hex`, `signature_wrong_length`, `timestamp_required_to_bind_signature_to_event`, `walletMessage_must_contain_the_canonical_string`, `walletAddress_missing`, `walletAddress_invalid`, `address_mismatch`, `signature_recovery_failed` |
+
+A missing signature with `signatureType: "wallet"` is still a 400. `wallet_verified` only proves the signer controls that address; it does not prove the address is allowed to write, so it does NOT unlock Stripe settlement (that needs HMAC `verified`). Existing HMAC callers are unchanged.
 
 ### Settlement
 
@@ -122,3 +137,7 @@ HOST=https://shiyan-dap.vercel.app LEDGER_ADMIN_SECRET=... scripts/purge-test-le
 ```
 
 The equivalent single call is `DELETE /api/v1/ledger/commit?assetId=live-test-20261025,trk_7bbda6ed,trk_654015ed,live-test-exec-20261025,live-test-music-20261025&purge=1` with the `x-admin-secret` header. Use soft hide (no `purge=1`) first if you want to be able to restore.
+
+## Status
+
+`GET /api/v1/status` (read-only, no auth, a couple of cheap reads) returns registered plugins (`id`, `name`, `version`, `toolCount`), the ledger summary (`store`, `count` including hidden assets, `latestTxHash`), `config` booleans (`signingSecretConfigured`, `adminSecretConfigured`, `stripeKeyConfigured`, `ledgerStore`; never the values), supported `settlementRails`, `signatureTypes` and the write limit. The Plugins section of the workbench shows it as a collapsible status line.

@@ -34,14 +34,19 @@ export async function POST(req: Request) {
     settlementAmountCents?: number;
     settlementCurrency?: string;
     signatureType?: string;
+    walletAddress?: string;
+    walletMessage?: string;
   };
   try {
     p = (await req.json()) as typeof p;
   } catch {
     return fail('invalid JSON body');
   }
-  const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, ...event } = p ?? {};
-  const res = await commitLedgerEvent(event, { settlementRail, settlementAmountCents, settlementCurrency, signatureType });
+  const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, walletAddress, walletMessage, ...event } = p ?? {};
+  const res = await commitLedgerEvent(event, { settlementRail, settlementAmountCents, settlementCurrency, signatureType,
+    walletAddress: typeof walletAddress === 'string' ? walletAddress.slice(0, 100) : undefined,
+    walletMessage: typeof walletMessage === 'string' ? walletMessage.slice(0, 2000) : undefined,
+  });
   if (!res.ok) return fail(res.error, res.status);
   return NextResponse.json(res.response, {
     headers: { 'x-ledger-store': res.store, 'x-ledger-anchor': 'off-chain' },
