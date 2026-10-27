@@ -100,6 +100,11 @@ export type McpTool = {
 
 export const MCP_TOOLS: McpTool[] = [
   {
+    name: "observe",
+    description: "Observe the current plant. Returns a cold LoopObservation. Does not change state or e.",
+    inputSchema: { type: "object", properties: { case_id: { type: "string" } } },
+  },
+  {
     name: "mark_boundary",
     description: "Mark the pack boundary. Does not change e. First step of the sealed sequence, outside Self().",
     inputSchema: { type: "object", properties: { case_id: { type: "string" } } },

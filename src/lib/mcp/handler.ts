@@ -175,6 +175,15 @@ export function handleMcp(msg: Rpc, ctx?: { adaptive?: AdaptiveBase }): unknown 
         return fail(-32602, err instanceof Error ? err.message : "holographic check failed");
       }
     }
+    if (name === "observe") {
+      // Read-only: reports the current plant without applying W(), so e_next equals e and delta_e is 0. (The "observe" YAction in
+      // closed-loop.ts, which the Level 4 loop may apply, is unchanged and is not used here.)
+      const B = plant(caseId);
+      const meas = measureZ(B, "observe" as YAction);
+      const e = defaultError(B, safetySchema);
+      const cold: LoopObservation = { y: "observe", z: meas.z, z_value: meas.z_value, e, e_next: e, delta_e: 0, gate: gateOf(B), phi: null };
+      return ok(toolResult(cold));
+    }
     if (name === "score_error") {
       const B = plant(caseId);
       return ok(toolResult({ case_id: caseId, e: defaultError(B, safetySchema), gate: gateOf(B) }));
