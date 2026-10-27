@@ -148,6 +148,18 @@ export const MCP_TOOLS: McpTool[] = [
     inputSchema: { type: "object", properties: { case_id: { type: "string" } } },
   },
   {
+    name: "score_sequence",
+    description: "Dry run. Applies the given actions, in order, to a fresh plant inside this one request and returns the steps and final e. Stores nothing, so it does not depend on which server instance answers. B1 (/api/mcp) only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        case_id: { type: "string" },
+        sequence: { type: "array", description: "Up to 8 of: complete_field, request_independent_check, mark_boundary, seal_pack. May be empty (returns the starting e)." },
+      },
+      required: ["sequence"],
+    },
+  },
+  {
     name: "run_sealed_sequence",
     description: "Run the sealed sequence outside Self(). Phi is computed only against the cold final e supplied by the caller.",
     inputSchema: {

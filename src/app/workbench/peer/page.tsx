@@ -27,7 +27,7 @@ export default function PeerPage() {
         await connectHost(rpc);
         const caseId = freshCaseId(plant.name);
         if (useCold && plant.name === "B1") {
-          const run = await coldSelfOverMcp(rpc, caseId);
+          const run = await coldSelfOverMcp(rpc);
           const reuse = await reuseOutsideSelf(rpc, run.coldFinalE, caseId);
           next.push({
             name: plant.name,

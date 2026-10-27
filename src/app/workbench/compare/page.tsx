@@ -24,7 +24,7 @@ export default function ComparePage() {
         await connectHost(rpc);
         const caseId = freshCaseId(plant.id);
         if (useCold && plant.id === "B1") {
-          const run = await coldSelfOverMcp(rpc, caseId);
+          const run = await coldSelfOverMcp(rpc);
           const reuse = await reuseOutsideSelf(rpc, run.coldFinalE, caseId);
           next.push({
             id: plant.id,

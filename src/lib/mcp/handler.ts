@@ -195,6 +195,26 @@ export function handleMcp(msg: Rpc, ctx?: { adaptive?: AdaptiveBase }): unknown 
       const cold: LoopObservation = { y: "observe", z: meas.z, z_value: meas.z_value, e, e_next: e, delta_e: 0, gate: gateOf(B), phi: null };
       return ok(toolResult(cold));
     }
+    if (name === "score_sequence") {
+      // Pure dry run on a fresh plant: nothing is stored, so the answer does not depend on which instance serves the request.
+      const allowed: YName[] = ["complete_field", "request_independent_check", "mark_boundary", "seal_pack"];
+      const seq = (msg.params?.arguments as { sequence?: unknown } | undefined)?.sequence;
+      if (!Array.isArray(seq) || seq.length > 8 || !seq.every((y) => allowed.includes(y as YName))) {
+        return fail(-32602, "sequence must be an array of at most 8 of: " + allowed.join(", "));
+      }
+      let B = fresh(caseId);
+      const startE = defaultError(B, safetySchema);
+      const steps: LoopObservation[] = [];
+      for (const y of seq as YName[]) {
+        const before = defaultError(B, safetySchema);
+        const next = W(B, y as YAction);
+        const meas = measureZ(next, y as YAction);
+        const eNext = defaultError(next, safetySchema);
+        steps.push({ y, z: meas.z, z_value: meas.z_value, e: before, e_next: eNext, delta_e: Number((before - eNext).toFixed(3)), gate: gateOf(next), phi: null });
+        B = next;
+      }
+      return ok(toolResult({ sequence: seq, dry_run: true, start_e: startE, steps, final_e: steps.length ? steps[steps.length - 1].e_next : startE }));
+    }
     if (name === "score_error") {
       const B = plant(caseId);
       return ok(toolResult({ case_id: caseId, e: defaultError(B, safetySchema), gate: gateOf(B) }));
