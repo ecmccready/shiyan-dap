@@ -61,6 +61,10 @@ export async function GET() {
         { type: 'wallet', note: 'EIP-191 personal_sign, basic check; wallet_verified or wallet_unverified with a reason; optional siweMessage adds domain, freshness, nonce checks, a siwe.cryptoVerified boolean (false makes the combined status wallet_siwe_partial) and a siwe.overallValid summary (nonces from GET /api/v1/siwe/nonce preferred) and a combined wallet_siwe_verified or wallet_siwe_partial status; contractWallet:true gives eip1271_verified, eip1271_failed or eip1271_unsupported (an eth_call isValidSignature check when ETH_RPC_URL is set; no full SIWE crypto, no ERC-6492); SIWE domain defaults to SIWE_ALLOWED_DOMAINS or the fixed production domain, not the request Host' },
       ],
       limits: { ledgerWritesPerIpPerHour: LEDGER_WRITES_PER_HOUR },
+      phase: { phase1: 'complete', phase2: 'current (MCP + boundary)', phase3: 'surfaces live: asset map (GET /api/v1/ledger/assets) and audit summary (GET /api/v1/audit/summary)' },
+      looseEnds: [
+        'The 8 original test events are still in the ledger. They can be purged per asset with LEDGER_ADMIN_SECRET (admin hard-purge); they have not been purged.',
+      ],
     },
     { headers: { 'Cache-Control': 'no-store' } },
   );
