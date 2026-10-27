@@ -57,6 +57,16 @@ export default function OfferPage() {
           <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
         </nav>
 
+        <h2 className="text-xl font-semibold mb-3">Enterprise surfaces</h2>
+        <p className="text-zinc-400 text-sm mb-4">
+          Read-only views of the off-chain micro-ledger, live today: an asset map (each asset&apos;s creation domain, latest domain, latest audit status and event timeline) and an audit summary (event counts by domain, signature status and settlement rail, assets with a passed audit, and the current Merkle root, which is not anchored on-chain). Audit results come from a heuristic mock scan, not a third-party attestation. Nothing here is settled or revenue.
+        </p>
+        <nav className="flex flex-wrap gap-4 text-sm mb-8">
+          <Link className="underline" href="/workbench/workspace">Workspace (Assets and Audit summary)</Link>
+          <a className="underline" href="/api/v1/ledger/assets">Asset map (JSON)</a>
+          <a className="underline" href="/api/v1/audit/summary">Audit summary (JSON)</a>
+        </nav>
+
         <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-300 mb-8">
           <p className="mb-3">
             Developmental stack is the product. Public packs are the proof. Client reference is the next plant.
