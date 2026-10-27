@@ -81,6 +81,13 @@ export async function GET() {
       purgeReadiness,
       journeySteps: JOURNEY_STEPS.map((j) => ({ ...j, primaryUrl: JOURNEY_BASE + j.primary, alsoUrls: j.also.map((a) => JOURNEY_BASE + a) })),
       agentRolesDoc: AGENT_ROLES_DOC_URL,
+      economicBenefit: {
+        capture: 'optional form on /workbench/pilot and on /workbench/result',
+        storage: 'browser localStorage only, keyed by run id; not sent to the server and not a ledger event',
+        trust: 'self-reported by the customer; not verified by the engine',
+        evidencePack: 'included as self_reported_economic_benefit in the exported evidence pack when present',
+      },
+      journeyIndicator: 'compact four-step indicator on /workbench/result (step 1 no run, 2 goal not met, 3 eligible run, 4 self-reported benefit saved in this browser)',
       demoHints: [
         { label: 'Workspace (asset map and audit summary blocks; add ?demo=1 for the anchor dry-run)', url: 'https://shiyan-dap.vercel.app/workbench/workspace' },
         { label: 'Asset map (JSON)', url: 'https://shiyan-dap.vercel.app/api/v1/ledger/assets' },

@@ -13,7 +13,7 @@ export default function JourneyNote({ className = "text-zinc-400" }: { className
           <Link href={s.primary} className="underline">{s.name}</Link>
         </span>
       ))}
-      . Each step uses the existing engine and pages; the customer&apos;s own economic benefit is recorded outside the product today.
+      . Each step uses the existing engine and pages; an economic benefit the customer records is self-reported and not verified.
     </p>
   );
 }

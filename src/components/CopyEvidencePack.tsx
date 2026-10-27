@@ -6,6 +6,7 @@ import { showToast } from "@/lib/toast";
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
 import { buildPlainPack, buildMarkdownPack, buildJsonPack, buildDownloadPack, packUrls } from "@/lib/evidence-pack";
 import { useHydrated } from "@/lib/use-hydrated";
+import { loadBenefit } from "@/lib/benefit-record";
 
 /**
  * Copies a short multi-line evidence pack for a run: run id, e, Δe, Φ, the
@@ -52,7 +53,7 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
   const verifyUrl = packUrls(origin, runId).verify;
   const json = buildJsonPack(entry, line, origin);
   function exportPack() {
-    const blob = new Blob([buildDownloadPack(entry!, line, origin)], { type: "application/json" });
+    const blob = new Blob([buildDownloadPack(entry!, line, origin, loadBenefit(runId!))], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

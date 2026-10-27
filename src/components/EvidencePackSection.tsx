@@ -1,5 +1,6 @@
 "use client";
 
+import EconomicBenefitForm from "@/components/EconomicBenefitForm";
 import CopyEvidencePack from "@/components/CopyEvidencePack";
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
 import { fmtE } from "@/lib/level4/experience-client";
@@ -33,6 +34,7 @@ export default function EvidencePackSection({ entry }: { entry: ExperienceEntry 
         <li><a href={rel(u.ledger)} className="underline text-emerald-400">Ledger</a> · this run&apos;s ledger lines</li>
         <li><a href={rel(u.assetMap)} className="underline text-emerald-400">Asset map</a> and <a href={rel(u.auditSummary)} className="underline text-emerald-400">audit summary</a> · off-chain micro-ledger views; the audit scan is a heuristic mock, not a third-party attestation</li>
       </ul>
+      <div className="border-t border-zinc-800 pt-3"><EconomicBenefitForm runId={entry.run_id} /></div>
     </section>
   );
 }

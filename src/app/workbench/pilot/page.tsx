@@ -1,5 +1,6 @@
 import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
+import EconomicBenefitForm from "@/components/EconomicBenefitForm";
 import JourneyNote from "@/components/JourneyNote";
 
 export default function PilotPage() {
@@ -94,6 +95,10 @@ export default function PilotPage() {
         Proof-to-pilot journey and the two agent roles (acquisition and evidence, both human-approved):{" "}
         <a href="https://github.com/ecmccready/shiyan-dap/blob/main/docs/agent-roles.md" className="underline">docs/agent-roles.md</a>
       </p>
+
+      <div className="rounded border p-4">
+        <EconomicBenefitForm tone="light" />
+      </div>
 
       <WhatYouGet tone="light" />
 

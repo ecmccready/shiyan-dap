@@ -6,6 +6,7 @@ import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
 import ShareSection from "@/components/ShareSection";
 import AnchorRoot from "@/components/AnchorRoot";
+import JourneyProgress from "@/components/JourneyProgress";
 import EvidencePackSection from "@/components/EvidencePackSection";
 import HolographicDensity from "@/components/HolographicDensity";
 import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
@@ -61,6 +62,8 @@ export default async function ResultPage({
             The latest eligible result from a bounded, safety-checked run, read from the durable experience store.
           </p>
         </header>
+
+        <JourneyProgress entry={entry} />
 
         {requested && !entry && (
           <p className="text-sm text-zinc-400">

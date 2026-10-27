@@ -69,7 +69,12 @@ export function buildJsonPack(entry: ExperienceEntry, line: string | null, origi
  * and plain disclosures (failed checks, missing values, what the pack does not contain). It organizes what the engine recorded;
  * the verify endpoint, not this file, is the authority.
  */
-export function buildDownloadPack(entry: ExperienceEntry, line: string | null, origin: string): string {
+export function buildDownloadPack(
+  entry: ExperienceEntry,
+  line: string | null,
+  origin: string,
+  benefit?: { amount: string; unit: string; note: string; recorded_at: string } | null,
+): string {
   const u = packUrls(origin, entry.run_id);
   const disclosures: string[] = [];
   if (!entry.eligible) disclosures.push('This run is not eligible: the goal threshold was not met. No Φ claim is made for it.');
@@ -78,7 +83,12 @@ export function buildDownloadPack(entry: ExperienceEntry, line: string | null, o
   if (!line) disclosures.push('The eligible ledger line could not be loaded when this pack was exported; use the ledger link.');
   disclosures.push('The anchor link is a dry run: nothing is submitted on-chain.');
   disclosures.push('The audit summary is a heuristic mock scan of the off-chain micro-ledger, not a third-party attestation, and its Merkle root is not anchored on-chain.');
-  disclosures.push('The declared goal, baseline cost and the customer\'s actual economic benefit are not part of this pack; they are recorded outside the engine. Re-check every value with the verify link.');
+  if (benefit) {
+    disclosures.push('The economic benefit in this pack is self-reported by the customer, was stored in their browser and is not verified by the engine or the ledger.');
+    disclosures.push('The declared goal and baseline cost are not part of this pack. Re-check every value with the verify link.');
+  } else {
+    disclosures.push('The declared goal, baseline cost and the customer\'s actual economic benefit are not part of this pack; they are recorded outside the engine. Re-check every value with the verify link.');
+  }
   return JSON.stringify(
     {
       kind: 'shiyan-evidence-pack',
@@ -100,6 +110,9 @@ export function buildDownloadPack(entry: ExperienceEntry, line: string | null, o
         ? { commitment: entry.tensor_commitment, distance: entry.tensor_distance ?? null, bound: entry.tensor_bound ?? null, max_allowable: entry.tensor_max_allowable ?? null }
         : null,
       ledger_line: line ?? null,
+      self_reported_economic_benefit: benefit
+        ? { amount: benefit.amount || null, unit: benefit.unit || null, note: benefit.note || null, recorded_at: benefit.recorded_at, self_reported: true, verified: false }
+        : null,
       links: {
         proof: u.proof,
         verify: u.verify,

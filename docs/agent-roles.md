@@ -9,7 +9,7 @@ Two roles sit around the existing engine. Neither is a built autonomous agent to
 | 1. Declare the problem | The customer states a measurable outcome, baseline, constraints and success threshold. | `/workbench/outcome`, `/workbench/client` | The declared goal is kept in the browser session today. |
 | 2. Bounded execution | The Level 4 run executes under safety and budget gates and records every transition. | `/workbench/autonomous` | `/workbench/safety`, `/workbench/history`, `/api/level4/run` |
 | 3. Verify the evidence | Replay and verify the run, read measured e, Δe and Φ, disclose failed checks, export the evidence pack. | `/workbench/result` | `/api/level4/verify`, `/api/level4/anchor` (dry run), `/api/level4/experience`, `/api/v1/ledger/assets`, `/api/v1/audit/summary` |
-| 4. Validate the value | The customer reviews the result and decides on a paid pilot. | `/workbench/pilot`, `/workbench/review`, `/workbench/offer` | Actual economic benefit is recorded by the customer outside the product today. There is no recording surface yet. |
+| 4. Validate the value | The customer reviews the result and decides on a paid pilot. | `/workbench/pilot`, `/workbench/review`, `/workbench/offer` | The customer can add a self-reported economic benefit (stored in their browser, added to the evidence pack, not verified). |
 
 The same four steps are returned as `journeySteps` by `GET /api/v1/status`.
 
