@@ -1,5 +1,6 @@
 import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
+import JourneyNote from "@/components/JourneyNote";
 
 export default function PilotPage() {
   return (
@@ -85,6 +86,13 @@ export default function PilotPage() {
         <a href="/api/v1/ledger/assets" className="underline">Asset map (JSON)</a>
         {" · "}
         <a href="/api/v1/audit/summary" className="underline">Audit summary (JSON)</a>
+      </p>
+
+      <JourneyNote className="text-neutral-500" />
+
+      <p className="text-xs text-neutral-500">
+        Proof-to-pilot journey and the two agent roles (acquisition and evidence, both human-approved):{" "}
+        <a href="https://github.com/ecmccready/shiyan-dap/blob/main/docs/agent-roles.md" className="underline">docs/agent-roles.md</a>
       </p>
 
       <WhatYouGet tone="light" />

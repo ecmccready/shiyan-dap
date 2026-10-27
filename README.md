@@ -45,6 +45,17 @@
 - Learned cost/risk models and a generalized state-aware ROE objective.
 
 **Commercial framing.** The product proposition is evidence-backed autonomous execution with durable, qualified experience: define an outcome, run within constraints, inspect the result, and reuse only what passes the relevant checks. The potential advantage is the accumulated implementation, integration, evidence, and validated workflow—not a single formula or an unsupported “consciousness” claim. Customer retention is an outcome to prove through repeat usage, verified improvement, lower repeated-work cost, and paid pilots; it is not established merely by having a retention layer.
+## Proof-to-pilot journey
+
+One customer path over the existing surfaces. Nothing here is a new architecture: the Level 4 run, the safety gates, the experience store, the verify and anchor endpoints and the micro-ledger stay the authority.
+
+1. **Declare the problem:** the customer states a measurable outcome, baseline, constraints and success threshold on [/workbench/outcome](https://shiyan-dap.vercel.app/workbench/outcome) or [/workbench/client](https://shiyan-dap.vercel.app/workbench/client).
+2. **Bounded execution:** the Level 4 run executes under its safety and budget gates and records every transition ([/workbench/autonomous](https://shiyan-dap.vercel.app/workbench/autonomous), with [/workbench/safety](https://shiyan-dap.vercel.app/workbench/safety) and [/workbench/history](https://shiyan-dap.vercel.app/workbench/history)).
+3. **Verify the evidence:** [/workbench/result](https://shiyan-dap.vercel.app/workbench/result) shows the measured e, Δe and Φ, the verify and anchor (dry run) links and the ledger and audit summary links. "Export evidence pack" downloads one JSON file with those values, the recorded baseline fields, every link and a list of disclosures (failed or missing values, dry-run anchor, heuristic audit scan).
+4. **Validate the value:** the customer reviews the result and decides on a paid pilot on [/workbench/pilot](https://shiyan-dap.vercel.app/workbench/pilot), [/workbench/review](https://shiyan-dap.vercel.app/workbench/review) and [/workbench/offer](https://shiyan-dap.vercel.app/workbench/offer). The customer's actual economic benefit is recorded outside the product today; there is no recording surface yet.
+
+The same steps are returned as `journeySteps` in `GET /api/v1/status` and shown as a one-line note on the review, offer, pilot and client pages. Two supporting roles, Agent A (customer acquisition) and Agent B (product evidence), are defined in [docs/agent-roles.md](docs/agent-roles.md) with their human-approval gates. They are role definitions only; no autonomous agent for either is built, and outreach is always sent by a person.
+
 ## Live commercial path
 
 | Surface | Role | Live |

@@ -3,6 +3,7 @@ import { workbenchRegistry } from '@/plugins';
 import { ledgerSummary, readLedger } from '@/lib/ledger-commit';
 import { computeLedgerAnchor, recentAnchorAttempts, type AnchorAttempt } from '@/lib/ledger-anchor';
 import { LEDGER_WRITES_PER_HOUR } from '@/lib/ledger-guard';
+import { JOURNEY_STEPS, JOURNEY_BASE, AGENT_ROLES_DOC_URL } from '@/lib/journey';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,6 +79,8 @@ export async function GET() {
       phaseLine: 'Phase 1 complete; Phase 2 (MCP + boundary) current; Phase 3 asset map and audit summary live.',
       phase: { phase1: 'complete', phase2: 'current (MCP + boundary)', phase3: 'surfaces live: asset map with per-asset domain timeline (GET /api/v1/ledger/assets) and audit summary with audit-status counts (GET /api/v1/audit/summary)' },
       purgeReadiness,
+      journeySteps: JOURNEY_STEPS.map((j) => ({ ...j, primaryUrl: JOURNEY_BASE + j.primary, alsoUrls: j.also.map((a) => JOURNEY_BASE + a) })),
+      agentRolesDoc: AGENT_ROLES_DOC_URL,
       demoHints: [
         { label: 'Workspace (asset map and audit summary blocks; add ?demo=1 for the anchor dry-run)', url: 'https://shiyan-dap.vercel.app/workbench/workspace' },
         { label: 'Asset map (JSON)', url: 'https://shiyan-dap.vercel.app/api/v1/ledger/assets' },

@@ -2,6 +2,7 @@
 
 import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
+import JourneyNote from "@/components/JourneyNote";
 import SiteHeader from "@/components/SiteHeader";
 
 export default function OfferPage() {
@@ -16,6 +17,8 @@ export default function OfferPage() {
         <p className="text-zinc-400 max-w-2xl mb-8">
           Aethel Node proves that the next action is no longer a misdiagnosis. Know which AI workflow works, prove that it works, and reuse it only when the measured evidence supports doing so.
         </p>
+
+        <div className="mb-6"><JourneyNote /></div>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300 space-y-3">
           <p><span className="text-white">Buyer:</span> Organization responsible for the quality, cost, or reliability of repeated workflows.</p>

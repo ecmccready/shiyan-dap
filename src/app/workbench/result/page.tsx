@@ -6,6 +6,7 @@ import RunEndpoints from "@/components/RunEndpoints";
 import VerifyVerdict from "@/components/VerifyVerdict";
 import ShareSection from "@/components/ShareSection";
 import AnchorRoot from "@/components/AnchorRoot";
+import EvidencePackSection from "@/components/EvidencePackSection";
 import HolographicDensity from "@/components/HolographicDensity";
 import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
@@ -74,10 +75,10 @@ export default async function ResultPage({
             <AnchorRoot runId={runId} />
             <HolographicDensity distance={entry?.tensor_distance ?? null} />
             <RunEndpoints variant="inline" runId={runId} />
+            <EvidencePackSection entry={entry} />
             <ShareSection
               runId={entry?.run_id}
               label={requested ? "Public proof URL for this run:" : "Public proof URL for the latest eligible run:"}
-              entry={entry}
             />
           </>
         )}
@@ -86,6 +87,8 @@ export default async function ResultPage({
           <a href="/workbench/outcome" className="underline text-emerald-400">Declare another outcome</a>
           {" · "}
           <a href="/workbench/status" className="underline text-emerald-400">Full status</a>
+          {" · "}
+          <a href="/workbench/pilot" className="underline text-emerald-400">Next: pilot (step 4)</a>
         </p>
       </main>
     </Level4Shell>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import JourneyNote from "@/components/JourneyNote";
 import SiteHeader from "@/components/SiteHeader";
 
 export default function ReviewPage() {
@@ -16,6 +17,8 @@ export default function ReviewPage() {
           Developmental stack is the product. Public packs are the proof. Client reference is the next plant.
           All claims are measured. Φ only when final e falls.
         </p>
+
+        <div className="mb-6"><JourneyNote /></div>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
           <h2 className="text-white font-semibold mb-2">Commercial proposition</h2>

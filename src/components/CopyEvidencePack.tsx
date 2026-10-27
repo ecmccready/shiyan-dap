@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { showToast } from "@/lib/toast";
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
-import { buildPlainPack, buildMarkdownPack, buildJsonPack, packUrls } from "@/lib/evidence-pack";
+import { buildPlainPack, buildMarkdownPack, buildJsonPack, buildDownloadPack, packUrls } from "@/lib/evidence-pack";
 import { useHydrated } from "@/lib/use-hydrated";
 
 /**
@@ -51,8 +51,27 @@ export default function CopyEvidencePack({ entry }: { entry?: ExperienceEntry | 
   const publicUrl = packUrls(origin, runId).proof;
   const verifyUrl = packUrls(origin, runId).verify;
   const json = buildJsonPack(entry, line, origin);
+  function exportPack() {
+    const blob = new Blob([buildDownloadPack(entry!, line, origin)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `evidence-pack-${runId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Evidence pack exported");
+  }
   return (
     <p className="text-xs flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={exportPack}
+        data-export-evidence-pack
+        className="rounded-full bg-emerald-600 px-3 py-1 text-xs text-white"
+        title="Download one JSON file: measured e, baseline, Δe, Φ, verify, anchor, ledger and audit summary links, and disclosures"
+      >
+        Export evidence pack
+      </button>
       <button
         type="button"
         onClick={async () => showToast((await copy(pack)) ? "Evidence pack copied" : "Evidence pack copy failed")}
