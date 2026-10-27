@@ -1,9 +1,11 @@
+import type { ColdRecord } from '@/lib/cold-record';
 import { fmtE, type ExperienceEntry } from "@/lib/level4/experience-client";
 
 /** Shared evidence-pack builders (plain text and Markdown) for a run entry. */
 export function packUrls(origin: string, runId: string) {
   const q = encodeURIComponent(runId);
   return {
+    origin,
     proof: `${origin}/workbench/result?run_id=${q}`,
     verify: `${origin}/api/level4/verify?run_id=${q}`,
     anchor: `${origin}/api/level4/anchor?run_id=${q}`,
@@ -74,6 +76,7 @@ export function buildDownloadPack(
   line: string | null,
   origin: string,
   benefit?: { amount: string; unit: string; note: string; recorded_at: string; ledger?: { txHash: string; assetId: string; recorded_at: string; amount: string; unit: string; note: string } } | null,
+  mcpCold?: ColdRecord | null,
 ): string {
   const u = packUrls(origin, entry.run_id);
   const disclosures: string[] = [];
@@ -90,6 +93,9 @@ export function buildDownloadPack(
   } else {
     disclosures.push('The declared goal, baseline cost and the customer\'s actual economic benefit are not part of this pack; they are recorded outside the engine. Re-check every value with the verify link.');
   }
+  disclosures.push(mcpCold
+    ? 'The mcp_cold_comparison block is a separate MCP-plant check run in this browser, not part of this Level 4 run and not verified by the verify link. It compares the B1 sealed sequence with a greedy cold controller over MCP, which is not the Safety-proof Self().' + (mcpCold.error_win ? '' : ' In that check the sealed sequence did not beat the cold run, so no error win is claimed for it.')
+    : 'No MCP cold comparison was run in this browser, so the pack contains none. It is available on the peer and compare pages; on B1 the sealed sequence currently does not beat the cold run (0.235 vs 0.184), so it is not an error win.');
   return JSON.stringify(
     {
       kind: 'shiyan-evidence-pack',
@@ -114,6 +120,9 @@ export function buildDownloadPack(
       self_reported_economic_benefit: benefit
         ? { amount: benefit.amount || null, unit: benefit.unit || null, note: benefit.note || null, recorded_at: benefit.recorded_at, self_reported: true, verified: false, ledger_event: benefit.ledger ? { tx_hash: benefit.ledger.txHash, asset_id: benefit.ledger.assetId, domain: 'ECONOMIC_BENEFIT', recorded_at: benefit.ledger.recorded_at, amount: benefit.ledger.amount || null, unit: benefit.ledger.unit || null, note: benefit.ledger.note || null, signature_status: 'unverified' } : null }
         : null,
+      mcp_cold_comparison: mcpCold
+        ? { available: true, plant: 'B1', scope: 'MCP plant, measured in this browser on a fresh case; not tied to this run', page: mcpCold.page, case_id: mcpCold.case_id, start_e: mcpCold.start_e, cold_final_e: mcpCold.cold_final_e, cold_sequence: mcpCold.cold_sequence, sealed_sequence_final_e: mcpCold.sealed_final_e, phi: mcpCold.phi, error_win: mcpCold.error_win, verdict: mcpCold.error_win ? 'error win vs the greedy cold run (sealed final e strictly below cold final e)' : 'not a win: sealed final e is not strictly below the cold final e', recorded_at: mcpCold.recorded_at }
+        : { available: false, plant: 'B1', note: 'No cold run was made in this browser. Run it with the opt-in checkbox on the peer or compare page. Last known result: sealed 0.235 vs cold 0.184, Φ −0.051, not an error win.', links: [u.origin + '/workbench/peer', u.origin + '/workbench/compare'] },
       links: {
         proof: u.proof,
         verify: u.verify,

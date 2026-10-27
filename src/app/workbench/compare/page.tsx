@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
+import { saveCold } from "@/lib/cold-record";
 import { COLD_NOT_A_WIN_NOTE, COLD_OPT_IN_TEXT, coldSelfOverMcp } from "@/lib/mcp/cold";
 import { PLANTS } from "@/product/experience";
 
@@ -26,6 +27,7 @@ export default function ComparePage() {
         if (useCold && plant.id === "B1") {
           const run = await coldSelfOverMcp(rpc);
           const reuse = await reuseOutsideSelf(rpc, run.coldFinalE, caseId);
+          saveCold({ page: "/workbench/compare", case_id: caseId, start_e: Number(run.e0), cold_final_e: Number(run.coldFinalE), cold_sequence: run.sequence, sealed_final_e: Number(reuse.final_e), phi: Number(reuse.phi) });
           next.push({
             id: plant.id,
             z: String(reuse.z ?? "none"),

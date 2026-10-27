@@ -2,6 +2,7 @@ import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
 import PilotJourneyProgress from "@/components/PilotJourneyProgress";
 import EconomicBenefitForm from "@/components/EconomicBenefitForm";
+import PilotReadiness from "@/components/PilotReadiness";
 import JourneyNote from "@/components/JourneyNote";
 
 export default function PilotPage() {
@@ -30,6 +31,8 @@ export default function PilotPage() {
           confirmed improved Run under safety constraints.
         </p>
       </div>
+
+      <PilotReadiness />
 
       <section className="rounded border p-4 text-sm">
         <p className="font-medium">Request a pilot</p>
