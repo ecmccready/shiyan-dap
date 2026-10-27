@@ -56,6 +56,10 @@ One customer path over the existing surfaces. Nothing here is a new architecture
 
 /workbench/result and /workbench/pilot show a compact four-step indicator for the run (on the pilot page: this browser session's run, else the latest eligible run) (step 1 no run, step 2 goal threshold not met, step 3 eligible run, step 4 a self-reported benefit saved in this browser; step 4 does not mean a pilot was approved). The same steps are returned as `journeySteps` in `GET /api/v1/status` (with `economicBenefit` and `journeyIndicator` notes) and shown as a one-line note on the review, offer, pilot and client pages. Two supporting roles, Agent A (customer acquisition) and Agent B (product evidence), are defined in [docs/agent-roles.md](docs/agent-roles.md) with their human-approval gates. They are role definitions only; no autonomous agent for either is built, and outreach is always sent by a person.
 
+### Two kinds of Φ
+
+`/workbench/proof` compares the reuse final e with a real cold Self() run on the Safety plants. An error win there means the reuse final e is strictly below the cold final e. `/workbench/peer`, `/workbench/compare`, `/workbench/independent` and `/workbench/independence` run the sealed sequence on the MCP plants B1 and B2 and compare it with the plant's starting error (`observe` or `mark_boundary`, neither of which changes e; each run uses a fresh case). That is an improvement against a baseline, not a cold-run win, and the numbers are not comparable with the proof page. B2 is a fixed fixture with no Self() run. A true cold Self() run over MCP is not built: it would need Self() to drive an MCP plant step by step, and the MCP B1 plant is not the same plant as the Safety cases.
+
 ## Live commercial path
 
 | Surface | Role | Live |

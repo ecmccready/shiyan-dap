@@ -71,6 +71,18 @@ ${d.used ? line(d.reuse) : "same plant as cold"}
             ? "All three later plants beat cold final e."
             : "Not every plant beat cold final e. Do not claim the flywheel."}
         </p>
+        <section className="mt-8 border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-300 space-y-2">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest">Why other pages show a different Φ</p>
+          <p>
+            Here Φ is measured against a real cold Self() run on the Safety plants: an error win means the reuse final e is strictly below the cold final e.
+          </p>
+          <p>
+            <Link className="underline" href="/workbench/peer">Peer</Link>, <Link className="underline" href="/workbench/compare">compare</Link>,{" "}
+            <Link className="underline" href="/workbench/independent">independent</Link> and <Link className="underline" href="/workbench/independence">independence</Link>{" "}
+            run the sealed sequence on MCP plants B1 and B2 and compare it with the plant&apos;s starting error (the observe or mark_boundary reading, which does not change e).
+            That is an improvement against a baseline, not a cold-run win, and their numbers are not comparable with the Φ values on this page. B2 is a fixed fixture with no Self() run, so it has no cold final e.
+          </p>
+        </section>
         <nav className="flex gap-4 text-sm mt-8">
           <Link className="underline" href="/workbench">Workbench B</Link>
           <Link className="underline" href="/workbench/safety">Diagnostic</Link>
