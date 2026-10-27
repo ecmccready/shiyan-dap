@@ -29,13 +29,13 @@ export default function PeerPage() {
         next.push({
           name: plant.name,
           z: String(reuse.z ?? cold?.z ?? "none"),
-          e: `${cold?.e ?? "?"} → ${coldFinal} cold · ${reuse.final_e} reuse`,
+          e: `${cold?.e ?? "?"} → ${coldFinal} observe baseline · ${reuse.final_e} sealed sequence`,
           phi: String(reuse.phi),
           better: Boolean(reuse.better),
         });
       }
       setArms(next);
-      setNote("Same host. A was not modified. Φ is per plant. B2 beating B1 is not an error win.");
+      setNote("Same host. A was not modified. Φ here is the drop from the observe baseline to the sealed-sequence final e, per plant. It is not a cold-run comparison, so it is not an error win.");
     } catch (err) {
       setNote(String(err));
     } finally {
@@ -67,10 +67,10 @@ export default function PeerPage() {
             <p className="text-emerald-400 text-xs">{arm.name}</p>
             <p>z {arm.z}</p>
             <p>e {arm.e}</p>
-            <p>Φ {arm.phi} · {arm.better ? "error win on this plant" : "not a win"}</p>
+            <p>Φ {arm.phi} · {arm.better ? "improvement vs observe baseline, not a cold-run win" : "no improvement vs observe baseline"}</p>
           </section>
         ))}
-        <p className="text-zinc-500 text-sm">{note} A tie is not a win. Safety Φ stays on /workbench/proof. No settled payment.</p>
+        <p className="text-zinc-500 text-sm">{note} An error win needs a real cold run (see the sealed sequence rule: final e is the win, a tie is not a win). Safety Φ stays on /workbench/proof. No settled payment.</p>
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/workbench/mcp">B1 MCP</Link>
           <Link className="underline" href="/api/mcp/independent">B2 identity</Link>
