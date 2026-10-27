@@ -5,8 +5,10 @@ import { useEffect, useState } from 'react';
 type Asset = {
   assetId: string;
   domain: string;
+  createdDomain: string;
+  title: string | null;
+  latestAuditStatus: string | null;
   eventCount: number;
-  latestEvent: { title: string | null; auditStatus: string | null; timestamp: number };
   signatureStatus: string;
   settlementRail: string;
 };
@@ -43,7 +45,7 @@ export default function WorkbenchAssets() {
           <ul className="mt-2 space-y-1 font-mono text-xs text-zinc-400">
             {d.assets.map((a) => (
               <li key={a.assetId} className="break-all">
-                {a.assetId} · {a.domain} · {a.latestEvent.title ?? 'untitled'}{a.latestEvent.auditStatus ? ` (${a.latestEvent.auditStatus})` : ''} · {a.signatureStatus} · {a.settlementRail} · {a.eventCount} event{a.eventCount === 1 ? '' : 's'}
+                {a.assetId} · {a.createdDomain}{a.domain !== a.createdDomain ? ` → ${a.domain}` : ''} · {a.title ?? 'untitled'}{a.latestAuditStatus ? ` (${a.latestAuditStatus})` : ''} · {a.signatureStatus} · {a.settlementRail} · {a.eventCount} event{a.eventCount === 1 ? '' : 's'}
               </li>
             ))}
           </ul>

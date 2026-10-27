@@ -20,7 +20,17 @@ function bump(m: Record<string, number>, k: string) {
 
 export interface AssetEntry {
   assetId: string;
+  /** Domain of the latest event (kept for compatibility); see createdDomain and domains for the full picture. */
   domain: string;
+  /** Domain of the first event in the examined window (usually how the asset was created). */
+  createdDomain: string;
+  /** Distinct domains in order of first appearance. */
+  domains: string[];
+  timeline: { first: { domain: string; timestamp: number; txHash: string }; last: { domain: string; timestamp: number; txHash: string }; byDomain: Record<string, number> };
+  /** Latest title seen on any event of the asset (the audit event usually carries none). */
+  title: string | null;
+  /** auditStatus of the latest event that has one (a heuristic scan result, not a third-party attestation). */
+  latestAuditStatus: string | null;
   eventCount: number;
   latestEvent: {
     txHash: string;
@@ -39,29 +49,49 @@ export interface AssetEntry {
 /** Unique assets (latest event wins), newest first. */
 export async function assetMap(limit = 200) {
   const snap = await readLedger(SUMMARY_WINDOW);
-  const byAsset = new Map<string, { latest: Ev; n: number }>();
+  const byAsset = new Map<string, Ev[]>();
   for (const e of snap.events as Ev[]) {
-    const cur = byAsset.get(e.assetId);
-    byAsset.set(e.assetId, { latest: e, n: (cur?.n ?? 0) + 1 });
+    const list = byAsset.get(e.assetId);
+    if (list) list.push(e);
+    else byAsset.set(e.assetId, [e]);
   }
+  const lastWith = <T,>(evs: Ev[], pick: (e: Ev) => T | undefined | null): T | null => {
+    for (let i = evs.length - 1; i >= 0; i--) {
+      const v = pick(evs[i]);
+      if (v !== undefined && v !== null) return v;
+    }
+    return null;
+  };
   const assets: AssetEntry[] = [...byAsset.values()]
-    .map(({ latest: e, n }) => ({
-      assetId: e.assetId,
-      domain: e.domain,
-      eventCount: n,
-      latestEvent: {
-        txHash: e.txHash,
-        eventId: e.eventId,
-        version: e.version,
-        timestamp: e.timestamp,
-        title: e.stateData?.title ?? null,
-        auditStatus: e.stateData?.auditStatus ?? null,
-        metadataHash: e.stateData?.metadataHash ?? '',
-      },
-      signatureStatus: sigOf(e),
-      settlementRail: railOf(e),
-      settlementStatus: e.settlement?.status ?? null,
-    }))
+    .map((evs) => {
+      const first = evs[0];
+      const e = evs[evs.length - 1];
+      const byDomain: Record<string, number> = {};
+      for (const x of evs) bump(byDomain, x.domain);
+      const brief = (x: Ev) => ({ domain: x.domain, timestamp: x.timestamp, txHash: x.txHash });
+      return {
+        assetId: e.assetId,
+        domain: e.domain,
+        createdDomain: first.domain,
+        domains: Object.keys(byDomain),
+        timeline: { first: brief(first), last: brief(e), byDomain },
+        title: lastWith(evs, (x) => x.stateData?.title),
+        latestAuditStatus: lastWith(evs, (x) => x.stateData?.auditStatus),
+        eventCount: evs.length,
+        latestEvent: {
+          txHash: e.txHash,
+          eventId: e.eventId,
+          version: e.version,
+          timestamp: e.timestamp,
+          title: e.stateData?.title ?? null,
+          auditStatus: e.stateData?.auditStatus ?? null,
+          metadataHash: e.stateData?.metadataHash ?? '',
+        },
+        signatureStatus: sigOf(e),
+        settlementRail: railOf(e),
+        settlementStatus: e.settlement?.status ?? null,
+      };
+    })
     .sort((a, b) => b.latestEvent.timestamp - a.latestEvent.timestamp)
     .slice(0, limit);
   return {
@@ -81,8 +111,17 @@ export async function auditSummary() {
   const byDomain: Record<string, number> = {};
   const bySignatureStatus: Record<string, number> = {};
   const bySettlementRail: Record<string, number> = {};
+  const byAuditStatus: Record<string, number> = {};
   const assets = new Set<string>();
+  const latestAudit = new Map<string, string>();
+  let certificates = 0;
   for (const e of snap.events as Ev[]) {
+    const a = e.stateData?.auditStatus;
+    if (a) {
+      bump(byAuditStatus, a);
+      latestAudit.set(e.assetId, a);
+      if (e.domain === 'DIAGNOSTIC_AUDIT' && e.stateData?.metadataHash) certificates++;
+    }
     bump(byDomain, e.domain);
     bump(bySignatureStatus, sigOf(e));
     bump(bySettlementRail, railOf(e));
@@ -98,6 +137,13 @@ export async function auditSummary() {
     byDomain,
     bySignatureStatus,
     bySettlementRail,
+    audit: {
+      byAuditStatus,
+      certificateEvents: certificates,
+      assetsWithPassedAudit: [...latestAudit.values()].filter((v) => v === 'PASSED').length,
+      assetsWithAudit: latestAudit.size,
+      note: 'certificateEvents counts DIAGNOSTIC_AUDIT events carrying an auditStatus (their metadataHash is the scan certificate hash). assetsWithPassedAudit counts assets whose latest audit result is PASSED. These come from the heuristic mock scan, not a third-party attestation or a reuse decision.',
+    },
     merkle: {
       root: anchor.root,
       algorithm: anchor.algorithm,
