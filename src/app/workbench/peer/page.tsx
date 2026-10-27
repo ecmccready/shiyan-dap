@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { act, connectHost, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
+import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
 
 type Arm = { name: string; z: string; e: string; phi: string; better: boolean };
 
@@ -23,9 +23,10 @@ export default function PeerPage() {
       for (const plant of plants) {
         const rpc = httpTransport(plant.url);
         await connectHost(rpc);
-        const cold = await act(rpc, "observe", plant.name);
+        const caseId = freshCaseId(plant.name);
+        const cold = await act(rpc, "observe", caseId);
         const coldFinal = cold?.e_next ?? 0;
-        const reuse = await reuseOutsideSelf(rpc, coldFinal, plant.name);
+        const reuse = await reuseOutsideSelf(rpc, coldFinal, caseId);
         next.push({
           name: plant.name,
           z: String(reuse.z ?? cold?.z ?? "none"),
@@ -35,7 +36,7 @@ export default function PeerPage() {
         });
       }
       setArms(next);
-      setNote("Same host. A was not modified. Φ here is the drop from the observe baseline to the sealed-sequence final e, per plant. It is not a cold-run comparison, so it is not an error win.");
+      setNote("Same host. A was not modified. Φ here is the drop from the observe baseline to the sealed-sequence final e, per plant. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win.");
     } catch (err) {
       setNote(String(err));
     } finally {

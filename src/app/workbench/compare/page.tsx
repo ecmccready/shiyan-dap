@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { act, connectHost, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
+import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
 import { PLANTS } from "@/product/experience";
 
 type Arm = { id: string; z: string; e: string; phi: string; better: boolean };
@@ -20,9 +20,10 @@ export default function ComparePage() {
       for (const plant of PLANTS) {
         const rpc = httpTransport(plant.href);
         await connectHost(rpc);
-        const cold = await act(rpc, "mark_boundary", plant.id);
+        const caseId = freshCaseId(plant.id);
+        const cold = await act(rpc, "mark_boundary", caseId);
         const coldFinal = cold?.e_next ?? cold?.e ?? 0;
-        const reuse = await reuseOutsideSelf(rpc, coldFinal, plant.id);
+        const reuse = await reuseOutsideSelf(rpc, coldFinal, caseId);
         next.push({
           id: plant.id,
           z: String(reuse.z ?? cold?.z ?? "none"),
@@ -32,7 +33,7 @@ export default function ComparePage() {
         });
       }
       setArms(next);
-      setNote("Same A. No plant import. Outputs are comparable because both printed z and e. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either.");
+      setNote("Same A. No plant import. Outputs are comparable because both printed z and e. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either.");
     } catch (err) {
       setArms([]);
       setNote(String(err));

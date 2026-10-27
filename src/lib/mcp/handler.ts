@@ -23,6 +23,7 @@ import { combineEligibility, isNormalizedMode, normalizedRmsCheck, parseTensor, 
 type Rpc = { jsonrpc: "2.0"; id?: number | string | null; method: string; params?: Record<string, unknown> };
 
 const plants = new Map<string, PlantB>();
+const MAX_PLANTS = 500;
 /** Tensor check from request_independent_check, bound by the next seal_pack. Only set when a tensor was sent. */
 const tensorChecks = new Map<string, TensorCheck>();
 /** Holographic bound info (default for request_independent_check / seal_pack with a tensor; absent when holographic:false). */
@@ -53,6 +54,16 @@ function fresh(caseId: string): PlantB {
 function plant(caseId = "mcp-pack"): PlantB {
   const hit = plants.get(caseId);
   if (hit) return hit;
+  // Bound the in-memory map: prove pages use one throwaway case_id per run. Oldest ids go first; the default pack stays.
+  if (plants.size >= MAX_PLANTS) {
+    for (const key of plants.keys()) {
+      if (key === "mcp-pack") continue;
+      plants.delete(key);
+      tensorChecks.delete(key);
+      holoChecks.delete(key);
+      break;
+    }
+  }
   const next = fresh(caseId);
   plants.set(caseId, next);
   return next;

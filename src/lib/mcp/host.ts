@@ -54,3 +54,13 @@ export async function reuseOutsideSelf(rpc: RpcTransport, coldFinalE: number, ca
   const phi = typeof body?.phi === "number" ? body.phi : phiOf(coldFinalE, body?.final_e ?? coldFinalE);
   return { sequence: SEALED_SEQUENCE, ...body, phi, better: isErrorWin(phi) };
 }
+
+/**
+ * A case_id no earlier run has touched, so the plant it names starts from the fresh baseline.
+ * Used by the prove pages so one run's sealed plant never becomes the next run's baseline.
+ * Matches the server's case_id rule: /^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.
+ */
+export function freshCaseId(prefix: string): string {
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `${prefix}-${Date.now().toString(36)}-${rand}`;
+}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { act, connectHost, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
+import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
 import { PLANTS } from "@/product/experience";
 
 type Arm = { id: string; tools: string; z: string; e: string; phi: string; better: boolean };
@@ -23,9 +23,10 @@ export default function IndependencePage() {
         const listed = Array.isArray(host.tools)
           ? host.tools
           : ((host.tools as { tools?: { name: string }[] })?.tools ?? []);
-        const cold = await act(rpc, "mark_boundary", plant.id);
+        const caseId = freshCaseId(plant.id);
+        const cold = await act(rpc, "mark_boundary", caseId);
         const coldFinal = cold?.e_next ?? cold?.e ?? 0;
-        const reuse = await reuseOutsideSelf(rpc, coldFinal, plant.id);
+        const reuse = await reuseOutsideSelf(rpc, coldFinal, caseId);
         next.push({
           id: plant.id,
           tools: listed.map((tool) => tool.name).join(", ") || "none listed",
@@ -36,7 +37,7 @@ export default function IndependencePage() {
         });
       }
       setArms(next);
-      setNote("Same A. No plant import. Φ stays inside the plant that printed it. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either.");
+      setNote("Same A. No plant import. Φ stays inside the plant that printed it. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either.");
     } catch (err) {
       setNote(String(err));
     } finally {
