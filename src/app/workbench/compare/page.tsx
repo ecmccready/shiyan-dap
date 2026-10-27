@@ -26,13 +26,13 @@ export default function ComparePage() {
         next.push({
           id: plant.id,
           z: String(reuse.z ?? cold?.z ?? "none"),
-          e: `${cold?.e ?? "?"} → ${coldFinal} cold · ${reuse.final_e} reuse`,
+          e: `${cold?.e ?? "?"} → ${coldFinal} mark_boundary baseline · ${reuse.final_e} sealed sequence`,
           phi: String(reuse.phi),
           better: Boolean(reuse.better),
         });
       }
       setArms(next);
-      setNote("Same A. No plant import. Outputs are comparable because both printed z and e. B2 beating B1 is not an error win.");
+      setNote("Same A. No plant import. Outputs are comparable because both printed z and e. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either.");
     } catch (err) {
       setArms([]);
       setNote(String(err));
@@ -66,7 +66,7 @@ export default function ComparePage() {
               <p className="text-emerald-400 text-xs">A → {arm.id}</p>
               <p>z · {arm.z}</p>
               <p>e · {arm.e}</p>
-              <p>Φ · {arm.phi} · {arm.better ? "error win on this plant" : "not a win"}</p>
+              <p>Φ · {arm.phi} · {arm.better ? "improvement vs mark_boundary baseline, not a cold-run win" : "no improvement vs mark_boundary baseline"}</p>
             </section>
           ))}
         </div>

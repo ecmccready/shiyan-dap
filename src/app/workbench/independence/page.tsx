@@ -30,13 +30,13 @@ export default function IndependencePage() {
           id: plant.id,
           tools: listed.map((tool) => tool.name).join(", ") || "none listed",
           z: String(reuse.z ?? cold?.z ?? "none"),
-          e: `${cold?.e ?? "?"} → ${coldFinal} cold · ${reuse.final_e} reuse`,
+          e: `${cold?.e ?? "?"} → ${coldFinal} mark_boundary baseline · ${reuse.final_e} sealed sequence`,
           phi: String(reuse.phi),
           better: Boolean(reuse.better),
         });
       }
       setArms(next);
-      setNote("Same A. No plant import. Φ stays inside the plant that printed it. B2 beating B1 is not an error win.");
+      setNote("Same A. No plant import. Φ stays inside the plant that printed it. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either.");
     } catch (err) {
       setNote(String(err));
     } finally {
@@ -70,7 +70,7 @@ export default function IndependencePage() {
             <p>tools seen by A · {arm.tools}</p>
             <p>z · {arm.z}</p>
             <p>e · {arm.e}</p>
-            <p>Φ · {arm.phi} · {arm.better ? "error win on this plant" : "not a win"}</p>
+            <p>Φ · {arm.phi} · {arm.better ? "improvement vs mark_boundary baseline, not a cold-run win" : "no improvement vs mark_boundary baseline"}</p>
           </section>
         ))}
         <p className="text-zinc-500 text-sm">{note} Safety rows stay on /workbench/proof. No settled payment.</p>
