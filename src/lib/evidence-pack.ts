@@ -138,3 +138,24 @@ export function buildDownloadPack(
     2,
   );
 }
+
+/** Short plain-text pilot summary for the "Ready" state on /workbench/pilot. Self-reported benefit is labelled; nothing has been charged. */
+export function buildPilotSummary(
+  entry: ExperienceEntry,
+  origin: string,
+  benefit?: { amount: string; unit: string; note: string; recorded_at: string } | null,
+): string {
+  const u = packUrls(origin, entry.run_id);
+  const b = benefit && (benefit.amount || benefit.note)
+    ? `Economic benefit (self-reported by the customer, not verified by the engine or the ledger): ${[benefit.amount, benefit.unit].filter(Boolean).join(" ")}${benefit.note ? ` - ${benefit.note}` : ""} (recorded ${benefit.recorded_at})`
+    : "Economic benefit: none recorded (optional; any value would be self-reported and unverified)";
+  return [
+    "Shiyan paid-pilot summary",
+    `Run: ${entry.run_id}`,
+    `e: ${fmtE(entry.e)}${typeof entry.delta_e === "number" ? `, Δe ${fmtE(entry.delta_e)}` : ""}, Φ ${fmtE(entry.phi)} (Φ > 0: error reduction vs cold Self() on this run)`,
+    `Evidence pack: export it from ${u.proof} (Export evidence pack). Verify: ${u.verify}`,
+    b,
+    "Status: ready to start a paid-pilot conversation. This is a checklist result, not an approval. Nothing has been charged or approved; price is agreed per pilot with a person, and there is no charge on ties or regressions.",
+    `Commercial conversation: ${origin}/workbench/offer`,
+  ].join("\n");
+}

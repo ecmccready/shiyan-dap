@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { loadExperienceServer, latestVerified, fmtE, type ExperienceEntry } from "@/lib/level4/experience-client";
 import { useBenefit } from "@/lib/benefit-record";
+import { useCopy, copiedRing } from "@/lib/use-copy";
+import { showToast } from "@/lib/toast";
+import { buildPilotSummary } from "@/lib/evidence-pack";
 
 type Load = { loaded: boolean; entry: ExperienceEntry | null; ledgerLine: boolean | null };
 
@@ -36,6 +39,7 @@ export default function PilotReadiness() {
     return () => { alive = false; };
   }, []);
   const benefit = useBenefit(s.entry?.run_id);
+  const { status, copy } = useCopy(4000, undefined, "pilot summary");
   if (!s.loaded) return null;
   const eligible = Boolean(s.entry?.eligible);
   const exportable = eligible && typeof s.entry?.e === "number" && s.ledgerLine === true;
@@ -65,6 +69,20 @@ export default function PilotReadiness() {
         <li>{mark(phiPositive)} Φ &gt; 0 (strict improvement){phi !== null ? `: Φ ${fmtE(phi)}` : ": not recorded"}.</li>
         <li>{hasBenefit ? "✓" : "–"} Optional: a self-reported economic benefit is saved in this browser for this run{hasBenefit ? "" : " (not required)"}. It is not verified.</li>
       </ul>
+      {ready && s.entry && (
+        <p className="flex flex-wrap items-center gap-3 text-xs">
+          <button
+            type="button"
+            data-copy-pilot-summary
+            onClick={async () => showToast((await copy(buildPilotSummary(s.entry!, window.location.origin, benefit))) ? "Pilot summary copied" : "Pilot summary copy failed")}
+            className={"rounded bg-neutral-900 px-3 py-1.5 text-white" + copiedRing(status)}
+            title="Plain text: run id, e, Φ, evidence-pack link, self-reported benefit if present, and a note that nothing has been charged"
+          >
+            {status === "copied" ? "Copied ✓" : status === "failed" ? "Copy failed" : "Copy pilot summary"}
+          </button>
+          <a data-pilot-offer-link href="/workbench/offer" className="underline">Go to the offer page →</a>
+        </p>
+      )}
       <p className="text-xs text-neutral-500">
         This is a checklist, not an approval. Nothing is charged or approved here; pricing is agreed per pilot with a person, and settlement follows the terms above (no charge on ties or regressions). Φ is read from the recorded run; re-check it with the verify link.
       </p>
