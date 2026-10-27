@@ -47,3 +47,14 @@ Human-approval gates:
 Limits:
 - The audit summary is a heuristic mock scan, not a third-party attestation. The Merkle root and the anchor endpoints are dry runs; nothing is submitted on-chain.
 - The agent never edits the Level 4 loop, never purges the ledger, and never uses admin secrets.
+
+## External confirmation workflow
+
+The aim is confirmation from outside the team, so the evidence has to stand without the team narrating it. The steps:
+
+1. Agent B produces the evidence pack from `/workbench/result` (Export evidence pack) and collects the proof links: `/workbench/proof`, `/api/level4/verify?run_id=…`, the run's public proof URL, and, if it applies, the MCP commercial case on `/workbench/peer` or `/workbench/compare`. The pack carries its own disclosures; Agent B does not remove or soften them.
+2. Agent B checks that the pilot checklist on `/workbench/pilot` agrees with the pack (eligible run, exportable pack, Φ > 0) and lists anything that is not confirmed.
+3. A human reviews the pack, the links and the list of what is not confirmed. The human decides whether anything is shared, with whom, and in what words.
+4. Only after that review is anything shared externally. Agent A may draft the message; a person sends it. Nothing is sent, priced or approved by an agent.
+
+Rules: claims come from the pack and the verify endpoint, not from the draft. The commercial case is described as constructed, and as beating a greedy cold controller rather than an exhaustive search. A benefit is called self-reported, the anchor a dry run, the audit scan a heuristic mock, and no paid pilot or third-party attestation is implied. What outside parties can check today, and what is not yet confirmed, is listed under "External confirmation" in the README and on `/workbench/offer` and `/workbench/pilot`.

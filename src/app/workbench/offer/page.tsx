@@ -3,6 +3,7 @@
 import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
 import JourneyNote from "@/components/JourneyNote";
+import ExternalConfirmation from "@/components/ExternalConfirmation";
 import SiteHeader from "@/components/SiteHeader";
 
 export default function OfferPage() {
@@ -26,6 +27,8 @@ export default function OfferPage() {
           <p><span className="text-white">Primary metric:</span> Change in final error, Φ, alongside task success, cost, latency, and safety.</p>
           <p><span className="text-white">Business model:</span> Subscription for the workbench, usage-based execution, later paid access to verified reusable workflows.</p>
         </section>
+
+        <div className="mb-8"><ExternalConfirmation /></div>
 
         <h2 className="text-xl font-semibold mb-3">Public proof</h2>
         <p className="text-zinc-400 text-sm mb-4">
