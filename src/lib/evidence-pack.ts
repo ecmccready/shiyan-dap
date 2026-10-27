@@ -73,7 +73,7 @@ export function buildDownloadPack(
   entry: ExperienceEntry,
   line: string | null,
   origin: string,
-  benefit?: { amount: string; unit: string; note: string; recorded_at: string } | null,
+  benefit?: { amount: string; unit: string; note: string; recorded_at: string; ledger?: { txHash: string; assetId: string; recorded_at: string; amount: string; unit: string; note: string } } | null,
 ): string {
   const u = packUrls(origin, entry.run_id);
   const disclosures: string[] = [];
@@ -85,6 +85,7 @@ export function buildDownloadPack(
   disclosures.push('The audit summary is a heuristic mock scan of the off-chain micro-ledger, not a third-party attestation, and its Merkle root is not anchored on-chain.');
   if (benefit) {
     disclosures.push('The economic benefit in this pack is self-reported by the customer, was stored in their browser and is not verified by the engine or the ledger.');
+    if (benefit.ledger) disclosures.push(`The customer also chose to record this benefit on the ledger as an unsigned ECONOMIC_BENEFIT event (tx ${benefit.ledger.txHash}). The ledger shows that the entry was recorded, not that it is true; its signature status is unverified.`);
     disclosures.push('The declared goal and baseline cost are not part of this pack. Re-check every value with the verify link.');
   } else {
     disclosures.push('The declared goal, baseline cost and the customer\'s actual economic benefit are not part of this pack; they are recorded outside the engine. Re-check every value with the verify link.');
@@ -111,7 +112,7 @@ export function buildDownloadPack(
         : null,
       ledger_line: line ?? null,
       self_reported_economic_benefit: benefit
-        ? { amount: benefit.amount || null, unit: benefit.unit || null, note: benefit.note || null, recorded_at: benefit.recorded_at, self_reported: true, verified: false }
+        ? { amount: benefit.amount || null, unit: benefit.unit || null, note: benefit.note || null, recorded_at: benefit.recorded_at, self_reported: true, verified: false, ledger_event: benefit.ledger ? { tx_hash: benefit.ledger.txHash, asset_id: benefit.ledger.assetId, domain: 'ECONOMIC_BENEFIT', recorded_at: benefit.ledger.recorded_at, amount: benefit.ledger.amount || null, unit: benefit.ledger.unit || null, note: benefit.ledger.note || null, signature_status: 'unverified' } : null }
         : null,
       links: {
         proof: u.proof,

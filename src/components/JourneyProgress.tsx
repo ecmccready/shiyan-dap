@@ -10,7 +10,8 @@ import type { ExperienceEntry } from "@/lib/level4/experience-client";
  * no run → step 1; a run whose goal threshold was not met → step 2; an eligible run → step 3;
  * an eligible run with a self-reported benefit saved in this browser → step 4. It does not mean a pilot was approved.
  */
-export default function JourneyProgress({ entry }: { entry: ExperienceEntry | null }) {
+export default function JourneyProgress({ entry, here, tone = "dark" }: { entry: ExperienceEntry | null; /** The step whose page this is: shown as plain text, not a link. */ here?: number; tone?: "dark" | "light" }) {
+  const light = tone === "light";
   const benefit = useBenefit(entry?.run_id);
   const current = !entry ? 1 : !entry.eligible ? 2 : benefit ? 4 : 3;
   const why: Record<number, string> = {
@@ -20,19 +21,19 @@ export default function JourneyProgress({ entry }: { entry: ExperienceEntry | nu
     4: "A self-reported benefit is saved in this browser for this run. This does not mean a pilot was approved.",
   };
   return (
-    <nav aria-label="Proof-to-pilot journey" data-journey-progress data-journey-current={current} className="rounded-xl border border-zinc-800 p-3 text-xs space-y-2">
+    <nav aria-label="Proof-to-pilot journey" data-journey-progress data-journey-current={current} className={`rounded-xl border p-3 text-xs space-y-2 ${light ? "border-neutral-300" : "border-zinc-800"}`}>
       <ol className="flex flex-wrap gap-x-4 gap-y-1">
         {JOURNEY_STEPS.map((s) => {
           const state = s.step < current ? "done" : s.step === current ? "current" : "next";
           return (
-            <li key={s.step} aria-current={state === "current" ? "step" : undefined} className={state === "current" ? "text-emerald-400 font-medium" : state === "done" ? "text-zinc-300" : "text-zinc-500"}>
+            <li key={s.step} aria-current={state === "current" ? "step" : undefined} className={state === "current" ? (light ? "text-emerald-700 font-medium" : "text-emerald-400 font-medium") : state === "done" ? (light ? "text-neutral-700" : "text-zinc-300") : (light ? "text-neutral-500" : "text-zinc-500")}>
               {state === "done" ? "✓ " : ""}{s.step}.{" "}
-              {s.step === 3 ? <span>{s.name}</span> : <Link href={s.primary} className="underline">{s.name}</Link>}
+              {s.step === here ? <span>{s.name}</span> : <Link href={s.step === 3 && entry ? `${s.primary}?run_id=${encodeURIComponent(entry.run_id)}` : s.primary} className="underline">{s.name}</Link>}
             </li>
           );
         })}
       </ol>
-      <p className="text-zinc-500">{why[current]}</p>
+      <p className={light ? "text-neutral-500" : "text-zinc-500"}>{entry ? <>Run <span className="font-mono">{entry.run_id}</span>. </> : null}{why[current]}</p>
     </nav>
   );
 }

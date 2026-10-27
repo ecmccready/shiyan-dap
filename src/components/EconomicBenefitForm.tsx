@@ -19,6 +19,8 @@ export default function EconomicBenefitForm({ runId, tone = "dark" }: { runId?: 
   const [unit, setUnit] = useState("USD");
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [posting, setPosting] = useState(false);
   const muted = tone === "dark" ? "text-zinc-500" : "text-neutral-500";
   const field = tone === "dark" ? "border-zinc-700 bg-transparent" : "border-neutral-300 bg-white";
 
@@ -30,11 +32,36 @@ export default function EconomicBenefitForm({ runId, tone = "dark" }: { runId?: 
     setMsg(saveBenefit(activeRun, amount, unit, note) ? "Saved in this browser." : "Could not save: browser storage is unavailable.");
   }
 
+  function valid(): boolean {
+    if (!activeRun) { setMsg("Enter a run id first."); return false; }
+    if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(activeRun)) { setMsg("That does not look like a run id."); return false; }
+    if (!amount.trim() && !note.trim()) { setMsg("Enter an amount or a short note."); return false; }
+    return true;
+  }
+
+  async function recordOnLedger() {
+    setMsg(null);
+    if (!valid()) { setConfirming(false); return; }
+    setPosting(true);
+    try {
+      const res = await fetch("/api/v1/ledger/benefit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ runId: activeRun, amount, unit, note }) });
+      const j = await res.json();
+      if (!res.ok || !j.txHash) throw new Error(j.error ?? "ledger write failed");
+      saveBenefit(activeRun, amount, unit, note, { txHash: j.txHash, assetId: j.assetId, recorded_at: new Date().toISOString(), amount: amount.trim(), unit: unit.trim(), note: note.trim() });
+      setMsg("Recorded on the ledger (unsigned, self-reported).");
+    } catch (e) {
+      setMsg(`Not recorded: ${e instanceof Error ? e.message : "ledger write failed"}. Nothing was changed on the ledger.`);
+    } finally {
+      setPosting(false);
+      setConfirming(false);
+    }
+  }
+
   return (
     <div data-economic-benefit className="space-y-2 text-xs">
       <p className="font-medium">Record actual economic benefit (optional)</p>
       <p className={muted}>
-        Self-reported by you. It is stored only in this browser, is not verified by the engine and is not written to the ledger. If present, it is added to the exported evidence pack and labelled self-reported.
+        Self-reported by you. By default it is stored only in this browser and is not written to the ledger. It is not verified by the engine. If present, it is added to the exported evidence pack and labelled self-reported. The ledger button below is opt-in.
       </p>
       {!runId && (
         <input
@@ -55,9 +82,20 @@ export default function EconomicBenefitForm({ runId, tone = "dark" }: { runId?: 
         {saved ? <button type="button" onClick={() => { clearBenefit(activeRun); setMsg("Cleared."); }} className={muted}>clear saved entry</button> : null}
         {msg ? <span role="status" className={muted}>{msg}</span> : null}
       </div>
+      <div className="flex flex-wrap items-center gap-3" data-benefit-ledger>
+        {!confirming ? (
+          <button type="button" onClick={() => { if (valid()) setConfirming(true); }} disabled={posting} data-benefit-ledger-start className={`rounded-full border px-3 py-1 ${tone === "dark" ? "border-zinc-600 text-zinc-300" : "border-neutral-400 text-neutral-700"}`}>Record benefit on ledger (optional)</button>
+        ) : (
+          <>
+            <span className={muted}>This adds a permanent, append-only ECONOMIC_BENEFIT event to the shared ledger, unsigned and marked self-reported and unverified. Only an admin can remove it.</span>
+            <button type="button" onClick={recordOnLedger} disabled={posting} data-benefit-ledger-confirm className="rounded-full bg-emerald-600 px-3 py-1 text-white">{posting ? "Recording…" : "Confirm: record on ledger"}</button>
+            <button type="button" onClick={() => setConfirming(false)} disabled={posting} className={muted}>cancel</button>
+          </>
+        )}
+      </div>
       {saved ? (
         <p data-benefit-saved className={muted}>
-          Saved for {saved.run_id}: {saved.amount || "no amount"} {saved.unit}{saved.note ? `, ${saved.note}` : ""} (self-reported, {saved.recorded_at}).
+          Saved for {saved.run_id}: {saved.amount || "no amount"} {saved.unit}{saved.note ? `, ${saved.note}` : ""} (self-reported, {saved.recorded_at}).{saved.ledger ? ` Also recorded on the ledger as an unsigned, unverified ECONOMIC_BENEFIT event (tx ${saved.ledger.txHash}).` : ""}
         </p>
       ) : null}
     </div>

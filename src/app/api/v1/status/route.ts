@@ -83,11 +83,12 @@ export async function GET() {
       agentRolesDoc: AGENT_ROLES_DOC_URL,
       economicBenefit: {
         capture: 'optional form on /workbench/pilot and on /workbench/result',
-        storage: 'browser localStorage only, keyed by run id; not sent to the server and not a ledger event',
+        storage: 'browser localStorage by default, keyed by run id; not sent to the server unless the customer presses the opt-in "Record benefit on ledger" button',
+        ledgerOptIn: 'POST /api/v1/ledger/benefit commits one unsigned ECONOMIC_BENEFIT event on asset benefit_<runId> (signatureStatus unverified, selfReported true, verified false); append-only, only an admin can purge it; the generic commit endpoint rejects this domain',
         trust: 'self-reported by the customer; not verified by the engine',
-        evidencePack: 'included as self_reported_economic_benefit in the exported evidence pack when present',
+        evidencePack: 'included as self_reported_economic_benefit in the exported evidence pack when present, with its ledger tx hash if the customer also recorded it on the ledger',
       },
-      journeyIndicator: 'compact four-step indicator on /workbench/result (step 1 no run, 2 goal not met, 3 eligible run, 4 self-reported benefit saved in this browser)',
+      journeyIndicator: 'compact four-step indicator on /workbench/result (step 1 no run, 2 goal not met, 3 eligible run, 4 self-reported benefit saved in this browser), and the same indicator on /workbench/pilot',
       demoHints: [
         { label: 'Workspace (asset map and audit summary blocks; add ?demo=1 for the anchor dry-run)', url: 'https://shiyan-dap.vercel.app/workbench/workspace' },
         { label: 'Asset map (JSON)', url: 'https://shiyan-dap.vercel.app/api/v1/ledger/assets' },

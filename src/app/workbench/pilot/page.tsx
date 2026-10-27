@@ -1,5 +1,6 @@
 import WhatYouGet from "@/components/WhatYouGet";
 import Link from "next/link";
+import PilotJourneyProgress from "@/components/PilotJourneyProgress";
 import EconomicBenefitForm from "@/components/EconomicBenefitForm";
 import JourneyNote from "@/components/JourneyNote";
 
@@ -96,7 +97,8 @@ export default function PilotPage() {
         <a href="https://github.com/ecmccready/shiyan-dap/blob/main/docs/agent-roles.md" className="underline">docs/agent-roles.md</a>
       </p>
 
-      <div className="rounded border p-4">
+      <div className="rounded border p-4 space-y-4">
+        <PilotJourneyProgress />
         <EconomicBenefitForm tone="light" />
       </div>
 

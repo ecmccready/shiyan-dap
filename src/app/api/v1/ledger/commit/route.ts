@@ -47,6 +47,8 @@ export async function POST(req: Request) {
     return fail('invalid JSON body');
   }
   const { settlementRail, settlementAmountCents, settlementCurrency, signatureType, walletAddress, walletMessage, siweMessage, contractWallet, ...event } = p ?? {};
+  // ECONOMIC_BENEFIT events carry a sanitized, self-reported payload and are written only through POST /api/v1/ledger/benefit.
+  if ((event as { domain?: unknown }).domain === 'ECONOMIC_BENEFIT') return fail('ECONOMIC_BENEFIT events are written through POST /api/v1/ledger/benefit');
   // usageEstimate is only accepted from server-side plugin tools, never from a client body.
   // Likewise the server-derived record fields can't be forged through the body.
   for (const k of ['usageEstimate', 'siwe', 'eip191Status', 'signatureReason', 'signatureStatus', 'signatureType', 'settlement', 'planned_transfers', 'txHash']) delete (event as Record<string, unknown>)[k];

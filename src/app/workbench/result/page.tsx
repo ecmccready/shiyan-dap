@@ -63,7 +63,7 @@ export default async function ResultPage({
           </p>
         </header>
 
-        <JourneyProgress entry={entry} />
+        <JourneyProgress entry={entry} here={3} />
 
         {requested && !entry && (
           <p className="text-sm text-zinc-400">

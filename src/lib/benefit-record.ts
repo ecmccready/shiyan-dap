@@ -14,6 +14,8 @@ export interface BenefitRecord {
   note: string;
   recorded_at: string;
   self_reported: true;
+  /** Set only after the opt-in "Record benefit on ledger" call succeeded: a snapshot of what was recorded. */
+  ledger?: { txHash: string; assetId: string; recorded_at: string; amount: string; unit: string; note: string };
 }
 
 const PREFIX = "aethel-economic-benefit:";
@@ -32,7 +34,7 @@ export function parseBenefit(raw: string | null): BenefitRecord | null {
   try {
     const j = JSON.parse(raw) as Partial<BenefitRecord>;
     if (j && typeof j.run_id === "string" && typeof j.amount === "string" && typeof j.recorded_at === "string") {
-      return { run_id: j.run_id, amount: j.amount, unit: j.unit ?? "", note: j.note ?? "", recorded_at: j.recorded_at, self_reported: true };
+      return { run_id: j.run_id, amount: j.amount, unit: j.unit ?? "", note: j.note ?? "", recorded_at: j.recorded_at, self_reported: true, ...(j.ledger && typeof j.ledger.txHash === "string" ? { ledger: j.ledger } : {}) };
     }
   } catch {}
   return null;
@@ -43,8 +45,10 @@ export function loadBenefit(runId: string): BenefitRecord | null {
 }
 
 /** Saves the record with the current time. Returns false when browser storage is unavailable. */
-export function saveBenefit(runId: string, amount: string, unit: string, note: string): boolean {
-  const rec: BenefitRecord = { run_id: runId, amount: amount.trim(), unit: unit.trim(), note: note.trim(), recorded_at: new Date().toISOString(), self_reported: true };
+export function saveBenefit(runId: string, amount: string, unit: string, note: string, ledger?: BenefitRecord["ledger"]): boolean {
+  const prior = loadBenefit(runId);
+  const keep = ledger ?? prior?.ledger;
+  const rec: BenefitRecord = { run_id: runId, amount: amount.trim(), unit: unit.trim(), note: note.trim(), recorded_at: new Date().toISOString(), self_reported: true, ...(keep ? { ledger: keep } : {}) };
   try {
     window.localStorage.setItem(PREFIX + runId, JSON.stringify(rec));
     window.dispatchEvent(new Event(EVENT));
