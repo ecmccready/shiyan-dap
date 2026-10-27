@@ -4,14 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
+import { coldSelfOverMcp } from "@/lib/mcp/cold";
 import { PLANTS } from "@/product/experience";
 
-type Arm = { id: string; z: string; e: string; phi: string; better: boolean };
+type Arm = { id: string; z: string; e: string; phi: string; verdict: string };
 
 export default function ComparePage() {
   const [arms, setArms] = useState<Arm[]>([]);
   const [note, setNote] = useState("Not run. A does not change. Identity is not a measurement.");
   const [busy, setBusy] = useState(false);
+  const [useCold, setUseCold] = useState(false);
 
   async function prove() {
     setBusy(true);
@@ -21,6 +23,18 @@ export default function ComparePage() {
         const rpc = httpTransport(plant.href);
         await connectHost(rpc);
         const caseId = freshCaseId(plant.id);
+        if (useCold && plant.id === "B1") {
+          const run = await coldSelfOverMcp(rpc, caseId);
+          const reuse = await reuseOutsideSelf(rpc, run.coldFinalE, caseId);
+          next.push({
+            id: plant.id,
+            z: String(reuse.z ?? "none"),
+            e: `${run.e0} → ${run.coldFinalE} cold Self() (${run.sequence.join(" → ") || "no step lowered e"}) · ${reuse.final_e} sealed sequence`,
+            phi: String(reuse.phi),
+            verdict: reuse.better ? "error win vs the cold Self() run (reuse final e strictly below cold final e)" : "not a win: reuse final e is not strictly below the cold final e",
+          });
+          continue;
+        }
         const cold = await act(rpc, "mark_boundary", caseId);
         const coldFinal = cold?.e_next ?? cold?.e ?? 0;
         const reuse = await reuseOutsideSelf(rpc, coldFinal, caseId);
@@ -29,11 +43,15 @@ export default function ComparePage() {
           z: String(reuse.z ?? cold?.z ?? "none"),
           e: `${cold?.e ?? "?"} → ${coldFinal} mark_boundary baseline · ${reuse.final_e} sealed sequence`,
           phi: String(reuse.phi),
-          better: Boolean(reuse.better),
+          verdict: reuse.better ? "improvement vs mark_boundary baseline, not a cold-run win" : "no improvement vs mark_boundary baseline",
         });
       }
       setArms(next);
-      setNote("Same A. No plant import. Outputs are comparable because both printed z and e. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either.");
+      setNote(
+        useCold
+          ? "Same A. No plant import. B1: Φ is the cold Self() final e minus the sealed-sequence final e, an error win only when strictly positive. That cold run is a greedy one-step-lookahead controller over MCP, not the Safety-proof Self(). B2: no cold Self() exists (fixed fixture), so its Φ is the drop from the mark_boundary baseline and is not a cold-run win."
+          : "Same A. No plant import. Outputs are comparable because both printed z and e. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either."
+      );
     } catch (err) {
       setArms([]);
       setNote(String(err));
@@ -58,6 +76,13 @@ export default function ComparePage() {
         EXPERIENCE
         per plant`}</pre>
         <p className="text-zinc-400">A does not change. One controller. Two independently addressed Workbenches. Same measurement contract.</p>
+        <label className="flex items-start gap-3 text-sm text-zinc-300">
+          <input type="checkbox" className="mt-1" checked={useCold} disabled={busy} onChange={(e) => setUseCold(e.target.checked)} />
+          <span>
+            Measure a true cold Self() run on B1 first (opt-in, slower). The controller picks each step by asking B1 to score the options,
+            with no memory of earlier runs, so Φ is measured against a cold final e. B2 is a fixed fixture with no Self() run, so it always uses the fast baseline.
+          </span>
+        </label>
         <button disabled={busy} onClick={prove} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
           Print z and e on both
         </button>
@@ -67,7 +92,7 @@ export default function ComparePage() {
               <p className="text-emerald-400 text-xs">A → {arm.id}</p>
               <p>z · {arm.z}</p>
               <p>e · {arm.e}</p>
-              <p>Φ · {arm.phi} · {arm.better ? "improvement vs mark_boundary baseline, not a cold-run win" : "no improvement vs mark_boundary baseline"}</p>
+              <p>Φ · {arm.phi} · {arm.verdict}</p>
             </section>
           ))}
         </div>
