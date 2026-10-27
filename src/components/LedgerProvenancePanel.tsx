@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useHydrated } from '@/lib/use-hydrated';
 import type { LedgerAuditStatus } from '@/types/ledger';
 
@@ -54,6 +54,7 @@ export default function LedgerProvenancePanel() {
   const [dryError, setDryError] = useState<string | null>(null);
   // Secondary by default: the ledger works in the background; expand to inspect it.
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   // Latest three recorded dry-run attempts (read-only GET). Secondary: failure just hides the list.
   function loadAttempts() {
@@ -80,6 +81,17 @@ export default function LedgerProvenancePanel() {
     }
   }, []);
 
+  // The Audit summary block can ask this panel to open (for the dry-run anchor) and scrolls it into view.
+  useEffect(() => {
+    const onOpen = () => {
+      setOpen(true);
+      void load();
+      rootRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    window.addEventListener('ledger-provenance-open', onOpen);
+    return () => window.removeEventListener('ledger-provenance-open', onOpen);
+  }, [load]);
+
   async function runDry() {
     setDryBusy(true);
     setDryError(null);
@@ -100,7 +112,7 @@ export default function LedgerProvenancePanel() {
   const known = new Set(events.map((e) => e.txHash));
 
   return (
-    <div data-ledger-provenance className="mt-6 border-t border-zinc-800 pt-3 text-sm text-zinc-300">
+    <div ref={rootRef} data-ledger-provenance className="mt-6 border-t border-zinc-800 pt-3 text-sm text-zinc-300">
       <div className="flex items-center justify-between">
         <button
           type="button"

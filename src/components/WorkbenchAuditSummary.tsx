@@ -52,7 +52,14 @@ export default function WorkbenchAuditSummary() {
               <p>assets with passed audit: {s.audit.assetsWithPassedAudit} of {s.audit.assetsWithAudit} audited ({s.audit.certificateEvents} certificate events; heuristic scan, not a third-party attestation)</p>
               <p>merkle root: {s.merkle.root ?? 'none yet'} over {s.merkle.eventsInRoot} events · anchored: {String(s.merkle.anchored)} (not on-chain)</p>
               {s.windowTruncated ? <p className="text-zinc-600">Counts cover the latest 500 events only.</p> : null}
-              <p><a className="underline" href="/api/v1/audit/summary">JSON</a></p>
+              <p>
+                <a className="underline" href="/api/v1/audit/summary" download="audit-summary.json">Download JSON</a>
+                {' · '}
+                <button type="button" onClick={() => window.dispatchEvent(new Event('ledger-provenance-open'))} data-audit-open-dryrun className="underline hover:text-zinc-200">Open dry-run anchor in the provenance panel</button>
+                {' · '}
+                <a className="underline" href="/api/v1/ledger/anchor?limit=100">Anchor JSON</a>
+              </p>
+              <p className="text-zinc-600">The dry-run is simulated (nothing is submitted on-chain) and its button is enabled only when the page URL has ?demo=1, like the other writers.</p>
             </div>
           ) : null}
         </>
