@@ -78,6 +78,11 @@ export async function GET() {
       phaseLine: 'Phase 1 complete; Phase 2 (MCP + boundary) current; Phase 3 asset map and audit summary live.',
       phase: { phase1: 'complete', phase2: 'current (MCP + boundary)', phase3: 'surfaces live: asset map with per-asset domain timeline (GET /api/v1/ledger/assets) and audit summary with audit-status counts (GET /api/v1/audit/summary)' },
       purgeReadiness,
+      demoHints: [
+        { label: 'Workspace (asset map and audit summary blocks; add ?demo=1 for the anchor dry-run)', url: 'https://shiyan-dap.vercel.app/workbench/workspace' },
+        { label: 'Asset map (JSON)', url: 'https://shiyan-dap.vercel.app/api/v1/ledger/assets' },
+        { label: 'Audit summary (JSON)', url: 'https://shiyan-dap.vercel.app/api/v1/audit/summary' },
+      ],
       looseEnds: [
         'The 8 original test events are still in the ledger. They can be purged per asset with LEDGER_ADMIN_SECRET (admin hard-purge); they have not been purged. The exact assetIds are listed in purgeReadiness.',
       ],
