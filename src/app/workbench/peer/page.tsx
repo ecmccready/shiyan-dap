@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
-import { coldSelfOverMcp } from "@/lib/mcp/cold";
+import { COLD_NOT_A_WIN_NOTE, COLD_OPT_IN_TEXT, coldSelfOverMcp } from "@/lib/mcp/cold";
 
 type Arm = { name: string; z: string; e: string; phi: string; verdict: string };
 
@@ -50,11 +50,12 @@ export default function PeerPage() {
         });
       }
       setArms(next);
+      const lost = useCold && next.some((a) => a.name === "B1" && a.verdict.startsWith("not a win"));
       setNote(
-        useCold
+        (useCold
           ? "Same host. A was not modified. B1: Φ is the cold Self() final e minus the sealed-sequence final e, so it counts as an error win only when strictly positive. That cold run is a greedy one-step-lookahead controller over MCP, not the Safety-proof Self(). B2: no cold Self() exists (fixed fixture), so its Φ is the drop from the observe baseline and is not a cold-run win."
           : "Same host. A was not modified. Φ here is the drop from the observe baseline to the sealed-sequence final e, per plant. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win."
-      );
+      ) + (lost ? " " + COLD_NOT_A_WIN_NOTE : ""));
     } catch (err) {
       setNote(String(err));
     } finally {
@@ -82,10 +83,7 @@ export default function PeerPage() {
  Φ / experience`}</pre>
         <label className="flex items-start gap-3 text-sm text-zinc-300">
           <input type="checkbox" className="mt-1" checked={useCold} disabled={busy} onChange={(e) => setUseCold(e.target.checked)} />
-          <span>
-            Measure a true cold Self() run on B1 first (opt-in, slower). The controller picks each step by asking B1 to score the options,
-            with no memory of earlier runs, so Φ is measured against a cold final e. B2 is a fixed fixture with no Self() run, so it always uses the fast baseline.
-          </span>
+          <span>{COLD_OPT_IN_TEXT}</span>
         </label>
         <button disabled={busy} onClick={prove} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">Prove the peer</button>
         {arms.map((arm) => (

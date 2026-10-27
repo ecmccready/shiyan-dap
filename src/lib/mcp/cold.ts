@@ -56,3 +56,14 @@ export async function coldSelfOverMcp(rpc: RpcTransport): Promise<ColdRun> {
   }
   return { sequence, steps: best.steps, e0: start.start_e, coldFinalE: best.final_e };
 }
+
+/** Checkbox label on the prove pages. */
+export const COLD_OPT_IN_TEXT =
+  "Measure a true cold Self() run on B1 first (opt-in, slower). The controller picks each step by asking B1 to score the options, with no memory of earlier runs, so Φ is measured against a cold final e. B2 is a fixed fixture with no Self() run, so it always uses the fast baseline.";
+
+/**
+ * Why the fixed sealed sequence does not beat this cold run on B1's starting plant (checked by enumerating every sequence of up to
+ * four of the four tools against B1's transition, and by reading seal_pack in closed-loop.ts). Shown only when B1 is not a win.
+ */
+export const COLD_NOT_A_WIN_NOTE =
+  "Why B1 is not a win: from B1's fixed starting plant, any sequence that ends with seal_pack finishes at e 0.235, because seal_pack sets completeness to 0.849 and none of the four tools lowers contradiction (0.18). The cold run reaches 0.184 by skipping the seal, and the best of all four-step orders (0.18) puts complete_field after the seal, which would edit the pack after sealing it. So the sealed sequence cannot beat a search on this plant; that is a property of the plant and the fixed sequence, not a page bug.";

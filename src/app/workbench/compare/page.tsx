@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
-import { coldSelfOverMcp } from "@/lib/mcp/cold";
+import { COLD_NOT_A_WIN_NOTE, COLD_OPT_IN_TEXT, coldSelfOverMcp } from "@/lib/mcp/cold";
 import { PLANTS } from "@/product/experience";
 
 type Arm = { id: string; z: string; e: string; phi: string; verdict: string };
@@ -47,11 +47,12 @@ export default function ComparePage() {
         });
       }
       setArms(next);
+      const lost = useCold && next.some((a) => a.id === "B1" && a.verdict.startsWith("not a win"));
       setNote(
-        useCold
+        (useCold
           ? "Same A. No plant import. B1: Φ is the cold Self() final e minus the sealed-sequence final e, an error win only when strictly positive. That cold run is a greedy one-step-lookahead controller over MCP, not the Safety-proof Self(). B2: no cold Self() exists (fixed fixture), so its Φ is the drop from the mark_boundary baseline and is not a cold-run win."
           : "Same A. No plant import. Outputs are comparable because both printed z and e. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either."
-      );
+      ) + (lost ? " " + COLD_NOT_A_WIN_NOTE : ""));
     } catch (err) {
       setArms([]);
       setNote(String(err));
@@ -78,10 +79,7 @@ export default function ComparePage() {
         <p className="text-zinc-400">A does not change. One controller. Two independently addressed Workbenches. Same measurement contract.</p>
         <label className="flex items-start gap-3 text-sm text-zinc-300">
           <input type="checkbox" className="mt-1" checked={useCold} disabled={busy} onChange={(e) => setUseCold(e.target.checked)} />
-          <span>
-            Measure a true cold Self() run on B1 first (opt-in, slower). The controller picks each step by asking B1 to score the options,
-            with no memory of earlier runs, so Φ is measured against a cold final e. B2 is a fixed fixture with no Self() run, so it always uses the fast baseline.
-          </span>
+          <span>{COLD_OPT_IN_TEXT}</span>
         </label>
         <button disabled={busy} onClick={prove} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
           Print z and e on both
