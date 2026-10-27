@@ -9,10 +9,14 @@ type Asset = {
   title: string | null;
   latestAuditStatus: string | null;
   eventCount: number;
+  timeline: { first: { timestamp: number }; last: { timestamp: number } };
   signatureStatus: string;
   settlementRail: string;
 };
 type Assets = { assetCount: number; assets: Asset[]; store: string };
+
+const stamp = (t: number) => new Date(t).toISOString().slice(0, 16).replace('T', ' ') + 'Z';
+const span = (t: Asset['timeline']) => (t.first.timestamp === t.last.timestamp ? stamp(t.first.timestamp) : `${stamp(t.first.timestamp)} → ${stamp(t.last.timestamp)}`);
 
 /** Small "Assets" block for the Plugins section. Reads GET /api/v1/ledger/assets once; read-only. */
 export default function WorkbenchAssets() {
@@ -45,7 +49,7 @@ export default function WorkbenchAssets() {
           <ul className="mt-2 space-y-1 font-mono text-xs text-zinc-400">
             {d.assets.map((a) => (
               <li key={a.assetId} className="break-all">
-                {a.assetId} · {a.createdDomain}{a.domain !== a.createdDomain ? ` → ${a.domain}` : ''} · {a.title ?? 'untitled'}{a.latestAuditStatus ? ` (${a.latestAuditStatus})` : ''} · {a.signatureStatus} · {a.settlementRail} · {a.eventCount} event{a.eventCount === 1 ? '' : 's'}
+                {a.assetId} · {a.createdDomain}{a.domain !== a.createdDomain ? ` → ${a.domain}` : ''} · {a.title ?? 'untitled'}{a.latestAuditStatus ? ` (${a.latestAuditStatus})` : ''} · {span(a.timeline)} · {a.signatureStatus} · {a.settlementRail} · {a.eventCount} event{a.eventCount === 1 ? '' : 's'}
               </li>
             ))}
           </ul>

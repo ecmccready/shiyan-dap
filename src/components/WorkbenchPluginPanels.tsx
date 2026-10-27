@@ -5,6 +5,7 @@ import { workbenchRegistry } from '@/plugins';
 import LedgerProvenancePanel from './LedgerProvenancePanel';
 import WorkbenchStatus from './WorkbenchStatus';
 import WorkbenchAssets from './WorkbenchAssets';
+import WorkbenchAuditSummary from './WorkbenchAuditSummary';
 
 export default function WorkbenchPluginPanels({ workspaceId }: { workspaceId: string }) {
   const plugins = workbenchRegistry.listPlugins();
@@ -36,6 +37,7 @@ export default function WorkbenchPluginPanels({ workspaceId }: { workspaceId: st
       )}
       <WorkbenchStatus />
       <WorkbenchAssets />
+      <WorkbenchAuditSummary />
       <LedgerProvenancePanel />
     </section>
   );
