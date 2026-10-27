@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { workbenchRegistry } from '@/plugins';
-import { ledgerSummary } from '@/lib/ledger-commit';
+import { ledgerSummary, readLedger } from '@/lib/ledger-commit';
 import { computeLedgerAnchor, recentAnchorAttempts, type AnchorAttempt } from '@/lib/ledger-anchor';
 import { LEDGER_WRITES_PER_HOUR } from '@/lib/ledger-guard';
 
@@ -38,6 +38,20 @@ export async function GET() {
   } catch {
     anchor = { error: 'ledger storage unavailable' };
   }
+  // Purge readiness (read-only): every assetId currently stored, hidden ones included, ready to copy into an admin purge.
+  let purgeReadiness: { eventCount: number; assetIds: string[]; assetIdsCsv: string; note: string } | { error: string };
+  try {
+    const snap = await readLedger(500, true);
+    const assetIds = [...new Set(snap.events.map((e) => e.assetId))];
+    purgeReadiness = {
+      eventCount: snap.count,
+      assetIds,
+      assetIdsCsv: assetIds.join(','),
+      note: 'Nothing has been purged. To purge, an admin calls DELETE /api/v1/ledger/commit?assetId=<comma-separated ids, max 20>&purge=1 with the x-admin-secret header (LEDGER_ADMIN_SECRET). Irreversible. Lists the latest 500 events only.',
+    };
+  } catch {
+    purgeReadiness = { error: 'ledger storage unavailable' };
+  }
   return NextResponse.json(
     {
       ok: true,
@@ -63,8 +77,9 @@ export async function GET() {
       limits: { ledgerWritesPerIpPerHour: LEDGER_WRITES_PER_HOUR },
       phaseLine: 'Phase 1 complete; Phase 2 (MCP + boundary) current; Phase 3 asset map and audit summary live.',
       phase: { phase1: 'complete', phase2: 'current (MCP + boundary)', phase3: 'surfaces live: asset map with per-asset domain timeline (GET /api/v1/ledger/assets) and audit summary with audit-status counts (GET /api/v1/audit/summary)' },
+      purgeReadiness,
       looseEnds: [
-        'The 8 original test events are still in the ledger. They can be purged per asset with LEDGER_ADMIN_SECRET (admin hard-purge); they have not been purged.',
+        'The 8 original test events are still in the ledger. They can be purged per asset with LEDGER_ADMIN_SECRET (admin hard-purge); they have not been purged. The exact assetIds are listed in purgeReadiness.',
       ],
     },
     { headers: { 'Cache-Control': 'no-store' } },

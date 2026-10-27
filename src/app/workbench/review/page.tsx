@@ -56,6 +56,20 @@ export default function ReviewPage() {
         </section>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
+          <h2 className="text-white font-semibold mb-2">Enterprise surfaces</h2>
+          <p>
+            Read-only views of the off-chain micro-ledger: an asset map (creation domain, latest domain, latest audit status, timeline) and an audit summary (counts by domain, signature status and settlement rail, assets with a passed audit, Merkle root not anchored on-chain). Audit results come from a heuristic mock scan, not a third-party attestation. Not settled. Not revenue.
+          </p>
+          <p className="mt-2">
+            <Link className="underline" href="/workbench/workspace">Workspace</Link>
+            {" · "}
+            <a className="underline" href="/api/v1/ledger/assets">Asset map (JSON)</a>
+            {" · "}
+            <a className="underline" href="/api/v1/audit/summary">Audit summary (JSON)</a>
+          </p>
+        </section>
+
+        <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
           <h2 className="text-white font-semibold mb-2">Request a scored pack</h2>
           <p>
             Supply the repeated workflow and the objective reference. The workbench scores it.
