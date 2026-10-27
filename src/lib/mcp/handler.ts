@@ -38,7 +38,26 @@ function holographicOf(tensor: unknown, baseEpsilon: unknown): HolographicBound 
   return verifyHolographicBound(out, ref, base);
 }
 
+/**
+ * "MCP commercial case": a separate B1 starting plant, used only for case_ids that start with "commercial". It is constructed for the
+ * commercial MCP path (more of the pack is complete, a few fields are still missing, little contradiction) and has nothing to do with the
+ * Safety-proof plants or Level 4. Every other case_id, including the default B1 and "mcp-pack", starts from the original plant below.
+ * W, the sealed sequence and seal_pack are the same for both.
+ */
+export const COMMERCIAL_CASE_PREFIX = "commercial";
 function fresh(caseId: string): PlantB {
+  if (caseId.startsWith(COMMERCIAL_CASE_PREFIX)) {
+    return {
+      case_id: caseId,
+      completeness: 0.8,
+      contradiction: 0.08,
+      missing: 0.4,
+      uncertainty: 0.22,
+      independent_check: 0.1,
+      useful: 0.4,
+      boundary_ready: 0,
+    };
+  }
   return {
     case_id: caseId,
     completeness: 0.42,

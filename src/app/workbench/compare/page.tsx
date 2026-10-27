@@ -5,7 +5,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
 import { saveCold } from "@/lib/cold-record";
-import { COLD_NOT_A_WIN_NOTE, COLD_OPT_IN_TEXT, coldSelfOverMcp } from "@/lib/mcp/cold";
+import { COLD_NOT_A_WIN_NOTE, COLD_OPT_IN_TEXT, COMMERCIAL_CASE_NOTE, COMMERCIAL_OPT_IN_TEXT, coldSelfOverMcp } from "@/lib/mcp/cold";
 import { PLANTS } from "@/product/experience";
 
 type Arm = { id: string; z: string; e: string; phi: string; verdict: string };
@@ -15,6 +15,7 @@ export default function ComparePage() {
   const [note, setNote] = useState("Not run. A does not change. Identity is not a measurement.");
   const [busy, setBusy] = useState(false);
   const [useCold, setUseCold] = useState(false);
+  const [useCommercial, setUseCommercial] = useState(false);
 
   async function prove() {
     setBusy(true);
@@ -23,17 +24,18 @@ export default function ComparePage() {
       for (const plant of PLANTS) {
         const rpc = httpTransport(plant.href);
         await connectHost(rpc);
-        const caseId = freshCaseId(plant.id);
+        const commercial = useCold && useCommercial && plant.id === "B1";
+        const caseId = freshCaseId(commercial ? "commercial" : plant.id);
         if (useCold && plant.id === "B1") {
-          const run = await coldSelfOverMcp(rpc);
+          const run = await coldSelfOverMcp(rpc, caseId);
           const reuse = await reuseOutsideSelf(rpc, run.coldFinalE, caseId);
-          saveCold({ page: "/workbench/compare", case_id: caseId, start_e: Number(run.e0), cold_final_e: Number(run.coldFinalE), cold_sequence: run.sequence, sealed_final_e: Number(reuse.final_e), phi: Number(reuse.phi) });
+          saveCold({ plant: commercial ? "commercial" : "default", page: "/workbench/compare", case_id: caseId, start_e: Number(run.e0), cold_final_e: Number(run.coldFinalE), cold_sequence: run.sequence, sealed_final_e: Number(reuse.final_e), phi: Number(reuse.phi) });
           next.push({
             id: plant.id,
             z: String(reuse.z ?? "none"),
             e: `${run.e0} → ${run.coldFinalE} cold Self() (${run.sequence.join(" → ") || "no step lowered e"}) · ${reuse.final_e} sealed sequence`,
             phi: String(reuse.phi),
-            verdict: reuse.better ? "error win vs the cold Self() run (reuse final e strictly below cold final e)" : "not a win: reuse final e is not strictly below the cold final e",
+            verdict: reuse.better ? `error win vs the greedy cold run${commercial ? " on the MCP commercial case" : ""} (reuse final e strictly below cold final e)` : "not a win: reuse final e is not strictly below the cold final e",
           });
           continue;
         }
@@ -49,12 +51,12 @@ export default function ComparePage() {
         });
       }
       setArms(next);
-      const lost = useCold && next.some((a) => a.id === "B1" && a.verdict.startsWith("not a win"));
+      const lost = useCold && !useCommercial && next.some((a) => a.id === "B1" && a.verdict.startsWith("not a win"));
       setNote(
         (useCold
           ? "Same A. No plant import. B1: Φ is the cold Self() final e minus the sealed-sequence final e, an error win only when strictly positive. That cold run is a greedy one-step-lookahead controller over MCP, not the Safety-proof Self(). B2: no cold Self() exists (fixed fixture), so its Φ is the drop from the mark_boundary baseline and is not a cold-run win."
           : "Same A. No plant import. Outputs are comparable because both printed z and e. Φ here is the drop from the mark_boundary baseline (which does not change e) to the sealed-sequence final e. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win. B2 beating B1 is not an error win either."
-      ) + (lost ? " " + COLD_NOT_A_WIN_NOTE : ""));
+      ) + (lost ? " " + COLD_NOT_A_WIN_NOTE : "") + (useCold && useCommercial ? " " + COMMERCIAL_CASE_NOTE : ""));
     } catch (err) {
       setArms([]);
       setNote(String(err));
@@ -82,6 +84,10 @@ export default function ComparePage() {
         <label className="flex items-start gap-3 text-sm text-zinc-300">
           <input type="checkbox" className="mt-1" checked={useCold} disabled={busy} onChange={(e) => setUseCold(e.target.checked)} />
           <span>{COLD_OPT_IN_TEXT}</span>
+        </label>
+        <label className="flex items-start gap-3 text-sm text-zinc-300">
+          <input type="checkbox" data-commercial-case className="mt-1" checked={useCommercial} disabled={busy || !useCold} onChange={(e) => setUseCommercial(e.target.checked)} />
+          <span>{COMMERCIAL_OPT_IN_TEXT}</span>
         </label>
         <button disabled={busy} onClick={prove} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
           Print z and e on both

@@ -8,6 +8,8 @@
 export interface ColdRecord {
   page: string;
   case_id: string;
+  /** "default" is B1's original start plant; "commercial" is the constructed MCP commercial case. */
+  plant: "default" | "commercial";
   start_e: number;
   cold_final_e: number;
   cold_sequence: string[];
@@ -27,6 +29,7 @@ export function parseCold(raw: string | null): ColdRecord | null {
       return {
         page: j.page,
         case_id: String(j.case_id ?? ""),
+        plant: j.plant === "commercial" ? "commercial" : "default",
         start_e: Number(j.start_e),
         cold_final_e: j.cold_final_e,
         cold_sequence: Array.isArray(j.cold_sequence) ? j.cold_sequence.map(String) : [],

@@ -5,7 +5,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { act, connectHost, freshCaseId, httpTransport, reuseOutsideSelf } from "@/lib/mcp/host";
 import { saveCold } from "@/lib/cold-record";
-import { COLD_NOT_A_WIN_NOTE, COLD_OPT_IN_TEXT, coldSelfOverMcp } from "@/lib/mcp/cold";
+import { COLD_NOT_A_WIN_NOTE, COLD_OPT_IN_TEXT, COMMERCIAL_CASE_NOTE, COMMERCIAL_OPT_IN_TEXT, coldSelfOverMcp } from "@/lib/mcp/cold";
 
 type Arm = { name: string; z: string; e: string; phi: string; verdict: string };
 
@@ -14,6 +14,7 @@ export default function PeerPage() {
   const [note, setNote] = useState("Not run.");
   const [busy, setBusy] = useState(false);
   const [useCold, setUseCold] = useState(false);
+  const [useCommercial, setUseCommercial] = useState(false);
 
   async function prove() {
     setBusy(true);
@@ -26,17 +27,18 @@ export default function PeerPage() {
       for (const plant of plants) {
         const rpc = httpTransport(plant.url);
         await connectHost(rpc);
-        const caseId = freshCaseId(plant.name);
+        const commercial = useCold && useCommercial && plant.name === "B1";
+        const caseId = freshCaseId(commercial ? "commercial" : plant.name);
         if (useCold && plant.name === "B1") {
-          const run = await coldSelfOverMcp(rpc);
+          const run = await coldSelfOverMcp(rpc, caseId);
           const reuse = await reuseOutsideSelf(rpc, run.coldFinalE, caseId);
-          saveCold({ page: "/workbench/peer", case_id: caseId, start_e: Number(run.e0), cold_final_e: Number(run.coldFinalE), cold_sequence: run.sequence, sealed_final_e: Number(reuse.final_e), phi: Number(reuse.phi) });
+          saveCold({ plant: commercial ? "commercial" : "default", page: "/workbench/peer", case_id: caseId, start_e: Number(run.e0), cold_final_e: Number(run.coldFinalE), cold_sequence: run.sequence, sealed_final_e: Number(reuse.final_e), phi: Number(reuse.phi) });
           next.push({
             name: plant.name,
             z: String(reuse.z ?? "none"),
             e: `${run.e0} → ${run.coldFinalE} cold Self() (${run.sequence.join(" → ") || "no step lowered e"}) · ${reuse.final_e} sealed sequence`,
             phi: String(reuse.phi),
-            verdict: reuse.better ? "error win vs the cold Self() run (reuse final e strictly below cold final e)" : "not a win: reuse final e is not strictly below the cold final e",
+            verdict: reuse.better ? `error win vs the greedy cold run${commercial ? " on the MCP commercial case" : ""} (reuse final e strictly below cold final e)` : "not a win: reuse final e is not strictly below the cold final e",
           });
           continue;
         }
@@ -52,12 +54,12 @@ export default function PeerPage() {
         });
       }
       setArms(next);
-      const lost = useCold && next.some((a) => a.name === "B1" && a.verdict.startsWith("not a win"));
+      const lost = useCold && !useCommercial && next.some((a) => a.name === "B1" && a.verdict.startsWith("not a win"));
       setNote(
         (useCold
           ? "Same host. A was not modified. B1: Φ is the cold Self() final e minus the sealed-sequence final e, so it counts as an error win only when strictly positive. That cold run is a greedy one-step-lookahead controller over MCP, not the Safety-proof Self(). B2: no cold Self() exists (fixed fixture), so its Φ is the drop from the observe baseline and is not a cold-run win."
           : "Same host. A was not modified. Φ here is the drop from the observe baseline to the sealed-sequence final e, per plant. Each run uses a fresh case, so earlier runs do not change the baseline. It is not a cold-run comparison, so it is not an error win."
-      ) + (lost ? " " + COLD_NOT_A_WIN_NOTE : ""));
+      ) + (lost ? " " + COLD_NOT_A_WIN_NOTE : "") + (useCold && useCommercial ? " " + COMMERCIAL_CASE_NOTE : ""));
     } catch (err) {
       setNote(String(err));
     } finally {
@@ -86,6 +88,10 @@ export default function PeerPage() {
         <label className="flex items-start gap-3 text-sm text-zinc-300">
           <input type="checkbox" className="mt-1" checked={useCold} disabled={busy} onChange={(e) => setUseCold(e.target.checked)} />
           <span>{COLD_OPT_IN_TEXT}</span>
+        </label>
+        <label className="flex items-start gap-3 text-sm text-zinc-300">
+          <input type="checkbox" data-commercial-case className="mt-1" checked={useCommercial} disabled={busy || !useCold} onChange={(e) => setUseCommercial(e.target.checked)} />
+          <span>{COMMERCIAL_OPT_IN_TEXT}</span>
         </label>
         <button disabled={busy} onClick={prove} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">Prove the peer</button>
         {arms.map((arm) => (

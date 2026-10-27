@@ -38,8 +38,8 @@ export default function EvidencePackSection({ entry }: { entry: ExperienceEntry 
       </ul>
       <p data-mcp-cold-note className="text-xs text-zinc-500">
         {cold
-          ? <>MCP cold comparison (B1, run in this browser, separate from this run): cold {fmtE(cold.cold_final_e)} vs sealed {fmtE(cold.sealed_final_e)}, Φ {fmtE(cold.phi)}, {cold.error_win ? "an error win vs the greedy cold run" : "not an error win"}. It is included in the exported pack and is not part of the verify link.</>
-          : <>MCP cold comparison: none run in this browser, so the exported pack says so. It is available on <a href="/workbench/peer" className="underline text-emerald-400">peer</a> and <a href="/workbench/compare" className="underline text-emerald-400">compare</a> (opt-in checkbox). On B1 the sealed sequence currently does not beat the cold run (0.235 vs 0.184), so it is not a win.</>}
+          ? <>MCP cold comparison (B1{cold.plant === "commercial" ? ", MCP commercial case" : ", default start"}, run in this browser, separate from this run): cold {fmtE(cold.cold_final_e)} vs sealed {fmtE(cold.sealed_final_e)}, Φ {fmtE(cold.phi)}, {cold.error_win ? "an error win vs the greedy cold run" : "not an error win"}. It is included in the exported pack and is not part of the verify link.</>
+          : <>MCP cold comparison: none run in this browser, so the exported pack says so. It is available on <a href="/workbench/peer" className="underline text-emerald-400">peer</a> and <a href="/workbench/compare" className="underline text-emerald-400">compare</a> (opt-in checkbox). On B1&apos;s default start the sealed sequence does not beat the cold run (0.235 vs 0.184); on the constructed MCP commercial case it beats the greedy cold run (0.171 vs 0.330).</>}
       </p>
       <div className="border-t border-zinc-800 pt-3"><EconomicBenefitForm runId={entry.run_id} /></div>
     </section>
