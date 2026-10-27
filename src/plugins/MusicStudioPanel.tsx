@@ -53,6 +53,7 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
   const [signature, setSignature] = useState('');
   const [prepared, setPrepared] = useState<{ assetId: string; timestamp: number; key: string; canonical: string } | null>(null);
   const [prepError, setPrepError] = useState<string | null>(null);
+  const [walletBusy, setWalletBusy] = useState(false);
   const walletUsed = Boolean(signature.trim() || siweMessage.trim() || walletAddress.trim());
   const splitSum = splits.reduce((a, b) => a + (Number(b.percentage) || 0), 0);
   const splitsUsed = splits.some((x) => x.account.trim());
@@ -64,26 +65,59 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
 
   // Builds the text to sign: fixes assetId and timestamp, computes the same metadataHash the server will, fetches a server nonce,
   // and fills in a SIWE message whose statement is the canonical string. The user signs it in their own wallet and pastes the signature.
+  // Shared by the manual Prepare button and the browser wallet button. Returns the message and the prepared record.
+  async function buildMessage(address: string) {
+    if (!title.trim()) throw new Error('enter a title first');
+    if (!/^0x[0-9a-fA-F]{40}$/.test(address)) throw new Error('enter the wallet address (0x plus 40 hex characters) first');
+    const { splitRule, duration: dur } = formKey();
+    const assetId = `trk_${crypto.randomUUID().slice(0, 8)}`;
+    const timestamp = Date.now();
+    const data = new TextEncoder().encode(JSON.stringify({ assetId, title: title.trim(), duration: dur, splitRule }));
+    const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', data))).map((b) => b.toString(16).padStart(2, '0')).join('');
+    const canonical = `${assetId}|MUSIC_TRACK|${timestamp}|${hash}`;
+    const n = await fetch('/api/v1/siwe/nonce');
+    const nj = await n.json();
+    if (!n.ok || !nj.nonce) throw new Error(nj.error ?? 'could not get a server nonce');
+    const host = window.location.host;
+    const message = `${host} wants you to sign in with your Ethereum account:\n${address}\n\n${canonical}\n\nURI: ${window.location.origin}\nVersion: 1\nChain ID: 1\nNonce: ${nj.nonce}\nIssued At: ${new Date().toISOString()}`;
+    setWalletAddress(address);
+    setSiweMessage(message);
+    setPrepared({ assetId, timestamp, canonical, key: JSON.stringify({ t: title.trim(), ...formKey() }) });
+    setSignature('');
+    return message;
+  }
+
   async function prepareMessage() {
     setPrepError(null);
     try {
-      if (!title.trim()) throw new Error('enter a title first');
-      if (!/^0x[0-9a-fA-F]{40}$/.test(walletAddress.trim())) throw new Error('enter the wallet address (0x plus 40 hex characters) first');
-      const { splitRule, duration: dur } = formKey();
-      const assetId = `trk_${crypto.randomUUID().slice(0, 8)}`;
-      const timestamp = Date.now();
-      const data = new TextEncoder().encode(JSON.stringify({ assetId, title: title.trim(), duration: dur, splitRule }));
-      const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', data))).map((b) => b.toString(16).padStart(2, '0')).join('');
-      const canonical = `${assetId}|MUSIC_TRACK|${timestamp}|${hash}`;
-      const n = await fetch('/api/v1/siwe/nonce');
-      const nj = await n.json();
-      if (!n.ok || !nj.nonce) throw new Error(nj.error ?? 'could not get a server nonce');
-      const host = window.location.host;
-      setSiweMessage(`${host} wants you to sign in with your Ethereum account:\n${walletAddress.trim()}\n\n${canonical}\n\nURI: ${window.location.origin}\nVersion: 1\nChain ID: 1\nNonce: ${nj.nonce}\nIssued At: ${new Date().toISOString()}`);
-      setPrepared({ assetId, timestamp, canonical, key: JSON.stringify({ t: title.trim(), ...formKey() }) });
-      setSignature('');
+      await buildMessage(walletAddress.trim());
     } catch (e) {
       setPrepError(e instanceof Error ? e.message : 'prepare failed');
+    }
+  }
+
+  // One click: ask the browser wallet (window.ethereum, EIP-1193) for an account, prepare the message for it and personal_sign it.
+  // Falls back with a plain message when no wallet is present or the user declines; the manual paste path is unchanged.
+  async function signWithBrowserWallet() {
+    setPrepError(null);
+    setWalletBusy(true);
+    try {
+      const eth = (window as unknown as { ethereum?: { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
+      if (!eth || typeof eth.request !== 'function') throw new Error('no browser wallet detected: use Prepare and sign the text in your own wallet, then paste the signature');
+      if (!title.trim()) throw new Error('enter a title first');
+      const accounts = (await eth.request({ method: 'eth_requestAccounts' })) as string[];
+      const account = accounts?.[0];
+      if (!account) throw new Error('the wallet returned no account');
+      const message = await buildMessage(account);
+      const hex = '0x' + Array.from(new TextEncoder().encode(message)).map((b) => b.toString(16).padStart(2, '0')).join('');
+      const sig = (await eth.request({ method: 'personal_sign', params: [hex, account] })) as string;
+      if (typeof sig !== 'string' || !sig) throw new Error('the wallet returned no signature');
+      setSignature(sig);
+    } catch (e) {
+      const err = e as { code?: number; message?: string };
+      setPrepError(err.code === 4001 ? 'the wallet request was declined: nothing was signed' : err.message ?? 'wallet signing failed');
+    } finally {
+      setWalletBusy(false);
     }
   }
 
@@ -166,7 +200,11 @@ export default function MusicStudioPanel({ workspaceId }: { workspaceId: string 
           <div className="mt-2 space-y-2">
             <p className="text-zinc-500">Default is a server-signed record. Here you can submit a wallet signature for the MUSIC_TRACK event only (the audit event stays server-signed). Enter your address, press Prepare, sign the text in your own wallet with personal_sign, paste the signature. The result shows the combined status and the SIWE overall line. A wallet record never reaches the server-signed &quot;verified&quot; status, so it never unlocks Stripe transfers.</p>
             <input value={walletAddress} onChange={(e) => setWalletAddress(e.target.value)} placeholder="Wallet address 0x…" className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1 font-mono" />
-            <button type="button" onClick={prepareMessage} data-music-wallet-prepare className="rounded-full border border-zinc-600 px-3 py-1 text-zinc-300">Prepare message to sign</button>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={signWithBrowserWallet} disabled={walletBusy} data-music-wallet-browser className="rounded-full border border-emerald-700 px-3 py-1 text-emerald-300 disabled:opacity-50">{walletBusy ? 'Waiting for wallet…' : 'Sign with browser wallet'}</button>
+              <button type="button" onClick={prepareMessage} data-music-wallet-prepare className="rounded-full border border-zinc-600 px-3 py-1 text-zinc-300">Prepare message to sign</button>
+            </div>
+            <p className="text-zinc-600">Sign with browser wallet connects the wallet in this browser (window.ethereum), prepares the message for its first account and asks it to personal_sign. Without a wallet, or if you decline, use Prepare and paste a signature as before.</p>
             {prepError ? <p className="text-red-400">{prepError}</p> : null}
             <textarea value={siweMessage} onChange={(e) => setSiweMessage(e.target.value)} placeholder="SIWE message to sign (filled by Prepare)" rows={7} className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1 font-mono" />
             <input value={signature} onChange={(e) => setSignature(e.target.value)} placeholder="Signature 0x… (65 bytes)" className="w-full rounded border border-zinc-700 bg-transparent px-2 py-1 font-mono" />

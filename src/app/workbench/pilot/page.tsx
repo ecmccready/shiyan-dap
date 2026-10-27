@@ -76,6 +76,17 @@ export default function PilotPage() {
         <Link href="/workbench/autonomous/proof" className="underline">proof page</Link>
       </p>
 
+      <p className="text-xs text-neutral-500">
+        Enterprise surfaces (read-only, off-chain micro-ledger): an asset map and an audit summary with counts by domain,
+        signature status and settlement rail, plus the current Merkle root, which is not anchored on-chain. Audit results
+        come from a heuristic mock scan, not a third-party attestation. Not settled, not revenue.{" "}
+        <Link href="/workbench/workspace" className="underline">Workspace</Link>
+        {" · "}
+        <a href="/api/v1/ledger/assets" className="underline">Asset map (JSON)</a>
+        {" · "}
+        <a href="/api/v1/audit/summary" className="underline">Audit summary (JSON)</a>
+      </p>
+
       <WhatYouGet tone="light" />
 
       <p className="text-xs text-neutral-500">
