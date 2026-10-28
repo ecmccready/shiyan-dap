@@ -22,6 +22,7 @@ const DOMAIN_GROUPS = [
   {
     label: "Know How",
     items: [
+      { label: "Loop · closed loop", href: "/loop" },
       { label: "Level 4 run", href: "/workbench/autonomous" },
       { label: "ROE · Reciprocal Optimization Engine", href: "/workbench/autonomous?roe_drive=1" },
       { label: "Level 3 Self()", href: "/workbench/self" },

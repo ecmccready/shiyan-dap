@@ -46,6 +46,7 @@ Pages that use the shared header show a **Domains** dropdown with four groups, K
 | Know | Global · misdiagnosis | `/workbench/global` |
 | Know | Level 4 status | `/workbench/status` |
 | Know | Review | `/workbench/review` |
+| Know How | Loop · closed loop | `/loop` |
 | Know How | Level 4 run | `/workbench/autonomous` |
 | Know How | ROE · Reciprocal Optimization Engine | `/workbench/autonomous?roe_drive=1` |
 | Know How | Level 3 Self() | `/workbench/self` |
