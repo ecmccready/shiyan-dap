@@ -3,11 +3,51 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-// Domain selector options (non-music). Diagnostics is the default domain.
-const DOMAIN_OPTIONS = [
-  { id: "diagnostics", label: "Diagnostics", href: "/workbench/diagnostic" },
-  { id: "safety", label: "Safety", href: "/workbench/safety" },
+// Domains dropdown: every in-scope Workbench surface, grouped. No music or removed routes.
+const DOMAIN_GROUPS = [
+  {
+    label: "Domains",
+    items: [
+      { label: "Diagnostics", href: "/workbench/diagnostic" },
+      { label: "Safety", href: "/workbench/safety" },
+      { label: "Global · misdiagnosis", href: "/workbench/global" },
+    ],
+  },
+  {
+    label: "Evidence",
+    items: [
+      { label: "Proof", href: "/workbench/proof" },
+      { label: "Result", href: "/workbench/result" },
+      { label: "Level 4 status", href: "/workbench/status" },
+    ],
+  },
+  {
+    label: "Workbench",
+    items: [
+      { label: "Workspace", href: "/workbench/workspace" },
+      { label: "Peer", href: "/workbench/peer" },
+      { label: "Compare", href: "/workbench/compare" },
+      { label: "MCP", href: "/workbench/mcp" },
+    ],
+  },
+  {
+    label: "Commercial",
+    items: [
+      { label: "Offer", href: "/workbench/offer" },
+      { label: "Pilot", href: "/workbench/pilot" },
+    ],
+  },
 ];
+const DOMAIN_ITEMS = DOMAIN_GROUPS.flatMap((g) => g.items);
+
+/** Preselect the item whose href is the longest prefix of the current path. */
+function domainFor(pathname: string): string {
+  let best = "";
+  for (const i of DOMAIN_ITEMS) {
+    if ((pathname === i.href || pathname.startsWith(i.href + "/")) && i.href.length > best.length) best = i.href;
+  }
+  return best;
+}
 
 const NAV = [
   { href: "/", label: "Workbench" },
@@ -35,15 +75,7 @@ export default function SiteHeader({ section }: { section?: string }) {
   const router = useRouter();
   const isWorkbenchLanding = pathname === "/" || pathname === "/workbench";
   const isFocused = pathname === "/workbench/marketplace" || pathname === "/workbench/diagnostic";
-  const isDomainPromptPage = isWorkbenchLanding || TRIMMED_PATHS.has(pathname);
-  const selectedDomain =
-    pathname.startsWith("/workbench/diagnostic")
-      ? "diagnostics"
-      : pathname.startsWith("/workbench/safety")
-        ? "safety"
-        : isDomainPromptPage
-          ? ""
-          : "diagnostics";
+  const selectedDomain = domainFor(pathname);
   const nav = isFocused
     ? NAV.filter((n) => n.href !== pathname)
     : isWorkbenchLanding
@@ -71,8 +103,7 @@ export default function SiteHeader({ section }: { section?: string }) {
             data-domain-select
             value={selectedDomain}
             onChange={(e) => {
-              const d = DOMAIN_OPTIONS.find((o) => o.id === e.target.value);
-              if (d) router.push(d.href);
+              if (e.target.value) router.push(e.target.value);
             }}
             className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
           >
@@ -81,10 +112,14 @@ export default function SiteHeader({ section }: { section?: string }) {
                 Select domain
               </option>
             )}
-            {DOMAIN_OPTIONS.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.label}
-              </option>
+            {DOMAIN_GROUPS.map((g) => (
+              <optgroup key={g.label} label={g.label}>
+                {g.items.map((i) => (
+                  <option key={i.href} value={i.href}>
+                    {i.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </label>

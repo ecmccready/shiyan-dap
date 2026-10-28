@@ -1,0 +1,123 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
+
+type Row = {
+  run_id: string;
+  iteration: number;
+  e: number | null;
+  e0: number | null;
+  delta_e: number | null;
+  cold_e: number | null;
+  phi: number | null;
+  eligible: boolean;
+  state: string;
+  verified_at: string;
+};
+
+type RunSummary = Row & { status: "ELIGIBLE_EXPERIENCE" | "MISDIAGNOSIS_REJECTED" | "IN_PROGRESS" };
+
+const fmt = (n: number | null | undefined) => (typeof n === "number" ? n.toFixed(3) : "n/a");
+
+function summarize(rows: Row[]): RunSummary[] {
+  const latest = new Map<string, Row>();
+  for (const r of rows) {
+    const cur = latest.get(r.run_id);
+    if (!cur || r.iteration >= cur.iteration) latest.set(r.run_id, r);
+  }
+  return [...latest.values()]
+    .map((r) => ({
+      ...r,
+      status: (r.eligible ? "ELIGIBLE_EXPERIENCE" : r.state === "COMPLETE" ? "MISDIAGNOSIS_REJECTED" : "IN_PROGRESS") as RunSummary["status"],
+    }))
+    .sort((a, b) => (a.verified_at < b.verified_at ? 1 : -1));
+}
+
+export default function GlobalMisdiagnosisPage() {
+  const [runs, setRuns] = useState<RunSummary[] | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/level4/experience")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`experience ${r.status}`))))
+      .then((data) => setRuns(summarize(Array.isArray(data) ? data : data.experience || [])))
+      .catch((e) => setError(e instanceof Error ? e.message : "could not load"));
+  }, []);
+
+  const eligible = runs?.filter((r) => r.status === "ELIGIBLE_EXPERIENCE").length ?? 0;
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <SiteHeader section="Global · misdiagnosis" />
+      <main className="max-w-4xl mx-auto px-6 py-12 space-y-6">
+        <p className="text-emerald-400 text-xs uppercase tracking-widest">Global view</p>
+        <h1 className="text-3xl font-bold">Misdiagnosis as a global systemic error</h1>
+        <p className="text-zinc-400 max-w-2xl">
+          One domain-neutral view of every recorded Level 4 run. Misdiagnosis here means a wrong next action: observed
+          variance e stays above the goal threshold, or the tensor check fails. It is not a clinical finding, makes no
+          device claim, and handles no PHI. This page only reads recorded runs; it does not change the Level 4 loop.
+        </p>
+
+        <section className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">
+          <p className="text-emerald-400 text-xs">How to read a row</p>
+          <p className="text-zinc-300">
+            e is the final observed error. Δe = e0 − e. Φ compares that run&apos;s final e with the cold baseline recorded
+            for the same run, so it is an improvement against that recorded baseline, not an independent cold run.
+          </p>
+          <ul className="text-zinc-400 list-disc pl-5">
+            <li><code>ELIGIBLE_EXPERIENCE</code>: the run reached the goal threshold and may be reused.</li>
+            <li><code>MISDIAGNOSIS_REJECTED</code>: the run completed without reaching the threshold; it is not reused.</li>
+            <li><code>IN_PROGRESS</code>: the latest recorded step has not completed the run.</li>
+          </ul>
+        </section>
+
+        <section className="border border-zinc-800 rounded-2xl p-5">
+          <p className="text-emerald-400 text-xs mb-3">Recorded runs (GET /api/level4/experience)</p>
+          {error ? (
+            <p className="text-sm text-amber-400">Could not load recorded runs: {error}.</p>
+          ) : runs === null ? (
+            <p className="text-sm text-zinc-500">Loading…</p>
+          ) : runs.length === 0 ? (
+            <p className="text-sm text-zinc-500">No recorded runs yet.</p>
+          ) : (
+            <>
+              <p className="text-sm text-zinc-400 mb-3">
+                {runs.length} runs recorded, {eligible} eligible. Status is derived from the latest recorded step.
+              </p>
+              <div className="overflow-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="text-zinc-500">
+                    <tr><th className="py-2 pr-3">Run</th><th className="pr-3">e</th><th className="pr-3">Δe</th><th className="pr-3">Φ</th><th className="pr-3">Status</th><th>Verify</th></tr>
+                  </thead>
+                  <tbody>
+                    {runs.map((r) => (
+                      <tr key={r.run_id} className="border-t border-zinc-800 font-mono">
+                        <td className="py-2 pr-3">{r.run_id}</td>
+                        <td className="pr-3">{fmt(r.e)}</td>
+                        <td className="pr-3">{fmt(r.delta_e)}</td>
+                        <td className="pr-3">{fmt(r.phi)}</td>
+                        <td className="pr-3">{r.status}</td>
+                        <td>
+                          <a className="underline" href={`/api/level4/verify?run_id=${encodeURIComponent(r.run_id)}`}>verify</a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
+
+        <nav className="flex flex-wrap gap-4 text-sm">
+          <Link className="underline" href="/workbench/status">Level 4 status</Link>
+          <Link className="underline" href="/workbench/proof">Proof</Link>
+          <Link className="underline" href="/workbench/safety">Safety</Link>
+          <Link className="underline" href="/workbench/diagnostic">Diagnostics</Link>
+        </nav>
+      </main>
+    </div>
+  );
+}
