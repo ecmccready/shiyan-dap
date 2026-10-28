@@ -78,6 +78,8 @@ export async function GET() {
       limits: { ledgerWritesPerIpPerHour: LEDGER_WRITES_PER_HOUR },
       phaseLine: 'Phase 1 complete; Phase 2 (MCP + boundary) current; Phase 3 asset map and audit summary live.',
       phase: { phase1: 'complete', phase2: 'current (MCP + boundary)', phase3: 'surfaces live: asset map with per-asset domain timeline (GET /api/v1/ledger/assets) and audit summary with audit-status counts (GET /api/v1/audit/summary)' },
+      scope: 'Aethel Node, diagnostics and related pipelines (Level 4 plant, safety, MCP, micro-ledger, proof-to-pilot). The music scope has been removed: no music routes or tools, and new ledger commits reject the MUSIC_TRACK domain; older stored events stay readable.',
+      license: 'Proprietary, all rights reserved. There is no LICENSE file by design; the repository is publicly viewable only.',
       purgeReadiness,
       journeySteps: JOURNEY_STEPS.map((j) => ({ ...j, primaryUrl: JOURNEY_BASE + j.primary, alsoUrls: j.also.map((a) => JOURNEY_BASE + a) })),
       agentRolesDoc: AGENT_ROLES_DOC_URL,
@@ -95,7 +97,7 @@ export async function GET() {
         { label: 'Audit summary (JSON)', url: 'https://shiyan-dap.vercel.app/api/v1/audit/summary' },
       ],
       looseEnds: [
-        'The 8 original test events are still in the ledger. They can be purged per asset with LEDGER_ADMIN_SECRET (admin hard-purge); they have not been purged. The exact assetIds are listed in purgeReadiness.',
+        'The 8 original test events are still in the ledger (not customer settlements). They can be purged per asset with LEDGER_ADMIN_SECRET (admin hard-purge); they have not been purged. The exact assetIds are listed in purgeReadiness.',
       ],
     },
     { headers: { 'Cache-Control': 'no-store' } },

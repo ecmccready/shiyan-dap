@@ -32,7 +32,7 @@ Scope: Aethel Node, diagnostics and the related pipelines (Level 4 plant, safety
 - Level 4 plant, durable experience store, replay verification and the Workbench MCP contract (`aethel.loop.v1`) are live and are not modified by the other surfaces below.
 - Phase 3 surfaces (asset map, audit summary) are read-only and off-chain.
 - Loose end: the 8 original test events are still in the ledger. Only the project owner can purge them, with `LEDGER_ADMIN_SECRET`. `GET /api/v1/status` lists their asset ids under `purgeReadiness` (`assetIds`, `assetIdsCsv`). The purge call is `DELETE /api/v1/ledger/commit?assetId=<ids>&purge=1` with the `x-admin-secret` header.
-- `GET /api/v1/status` also reports `signingSecretConfigured` and `adminSecretConfigured` (both true on Vercel, confirmed by the project owner). The assistant that maintains this repo does not hold the admin secret and has not run a purge.
+- `GET /api/v1/status` also reports `scope` (music scope removed), `license` (proprietary, all rights reserved) and `looseEnds` (the 8 test events), plus `signingSecretConfigured` and `adminSecretConfigured` (both true on Vercel, confirmed by the project owner). The assistant that maintains this repo does not hold the admin secret and has not run a purge.
 
 ## Surfaces and the Domains dropdown
 
@@ -70,7 +70,7 @@ Pages that use the shared header show a **Domains** dropdown with four groups, K
 | Do | Offer | `/workbench/offer` |
 | Do | Pilot | `/workbench/pilot` |
 
-The verify and anchor references point at one recorded eligible run id, which is hard-coded in `src/components/SiteHeader.tsx` (`REF_RUN`) and must be updated if that run is retired. The homepage itself carries only the title, description, "Start a durable run" and the Create run button.
+The verify and anchor references point at one recorded eligible run id, which is hard-coded in `src/components/SiteHeader.tsx` (`REF_RUN`) and must be updated if that run is retired. The homepage itself carries only the title, description, "Start a durable run", the Create run button and a one-line pointer to the Domains menu.
 
 Other live pages:
 

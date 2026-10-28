@@ -56,6 +56,11 @@ export default function WorkbenchHome() {
           </div>
           {startError && <p role="alert" className="mt-3 text-sm text-red-400">{startError}</p>}
         </section>
+
+        <p className="mt-8 max-w-2xl text-sm text-zinc-500">
+          Everything else is in the Domains menu above: Know (what it is), Know How (how it works), Show (evidence and
+          reference data) and Do (start, declare, pilot).
+        </p>
       </main>
     </div>
   );
