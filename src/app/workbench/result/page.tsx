@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import type { Metadata } from "next";
+import Link from "next/link";
 import Level4Shell from "@/components/Level4Shell";
 import LatestVerified from "@/components/LatestVerified";
 import RunEndpoints from "@/components/RunEndpoints";
@@ -8,6 +9,7 @@ import ShareSection from "@/components/ShareSection";
 import AnchorRoot from "@/components/AnchorRoot";
 import JourneyProgress from "@/components/JourneyProgress";
 import EvidencePackSection from "@/components/EvidencePackSection";
+import CopyVerificationSummary from "@/components/CopyVerificationSummary";
 import HolographicDensity from "@/components/HolographicDensity";
 import { latestVerified, type ExperienceEntry } from "@/lib/level4/experience-client";
 
@@ -85,6 +87,16 @@ export default async function ResultPage({
             />
           </>
         )}
+
+        <section data-result-external-confirmation className="rounded-2xl border border-zinc-800 p-5 text-sm text-zinc-300">
+          <p className="text-xs text-emerald-400">External confirmation</p>
+          <p className="mt-2">
+            The claims an outside party can check today, and what is not yet confirmed, are in the{" "}
+            <Link className="underline" href="/#outside-verification">&quot;What an outside party can verify today&quot; block on the homepage</Link>
+            {" "}and in <a className="underline" href="/workbench/offer">/workbench/offer</a>. The runs on this page were made by us, and no outside party has reviewed or replicated them.
+          </p>
+          <CopyVerificationSummary />
+        </section>
 
         <p className="text-sm">
           <a href="/workbench/outcome" className="underline text-emerald-400">Declare another outcome</a>
