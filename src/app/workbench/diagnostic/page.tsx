@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import CopyVerificationSummary from "@/components/CopyVerificationSummary";
 
 const READINGS = [
   ["e", "Diagnostic error."],
@@ -36,6 +37,15 @@ export default function DiagnosticReadingPage() {
           Recorded Safety values are 0.014, 0.065, and 0.065. The watched run tied at 0.235 and was refused.
           Live peer Φ does not replace these recorded values.
         </p>
+        <section data-diagnostic-external-confirmation className="mt-6 rounded-2xl border border-zinc-800 p-5 text-sm text-zinc-300">
+          <p className="text-xs text-emerald-400">External confirmation</p>
+          <p className="mt-2">
+            The claims an outside party can check today, and what is not yet confirmed, are in the{" "}
+            <Link className="underline" href="/#outside-verification">&quot;What an outside party can verify today&quot; block on the homepage</Link>
+            {" "}and in <Link className="underline" href="/workbench/offer">/workbench/offer</Link>. The Safety values above are our own constructed plants, and no outside party has reviewed them.
+          </p>
+          <CopyVerificationSummary />
+        </section>
         <nav className="mt-8 flex flex-wrap gap-4 text-sm text-zinc-400">
           <Link className="underline" href="/workbench/safety">Safety plant</Link>
           <Link className="underline" href="/workbench/diagnostic/reference">Evidence-gate reference</Link>
