@@ -1,73 +1,173 @@
-## Tensor Scope: Verifying Latent State
+# Aethel Node
 
-**Definition.** The tensor scope brings tensors into verification alongside the text and state logs. A tensor T ∈ ℝ^(d₁×…×dₙ) can be an embedding, an activation state, a logit distribution, or a sensor vector. It is stored row-major with its shape.
+Aethel Node turns a declared goal into a bounded run, checks the result against evidence, and keeps only the experience that qualifies for reuse. The claim to test is narrow: that a verified, reusable workflow can reduce repeated work and next-action error. Retention, savings and willingness to pay still have to be shown with external users and measured outcomes. "Conscious" is a product metaphor for persistent state, feedback and continuity across runs, not a claim about machine consciousness.
 
-**Proprietary scope — Workspace A → Workbench B → Z, governed by ROE.** The proprietary opportunity is the integrated, testable loop that turns a declared goal into a bounded run, checks the result against evidence, and retains only experience that qualifies for reuse. Its value is not a claim of machine consciousness: “conscious” is a product metaphor for persistent state, feedback, and continuity across runs. The commercial thesis is that this continuity can reduce repeated work and next-action error; retention, savings, and willingness to pay must be demonstrated with external users and measured outcomes.
+Live: https://shiyan-dap.vercel.app
 
-1. *Workspace A — Goal, reference, planning, and oversight.* Workspace A defines the intended outcome and reference, coordinates the run, and remains the control and feedback layer. It does not treat a proposal as proof or let a model bypass the execution gates.
-2. *Workbench B — Execution, observation, and verification.* Workbench B is the execution environment. It applies permitted actions, observes state, measures error e and Δe, checks safety, budget, idempotency and any supplied tensor constraint, and records the run. The Workbench B MCP contract is `aethel.loop.v1`; the `aethel-anchor/1` payload and independent replay verification are implemented.
-3. *Z — Evidence-qualified verified experience.* Z is the outcome eligible to inform future runs: provenance, measured result, verification status, and reuse eligibility. It is not simply a successful-looking action. The live experience store is Upstash-backed and idempotent per run and iteration; the public experience API exposes the recorded evidence. `GET /api/level4/verify` replays the demo run on a fresh plant and currently reports 26/26 checks. `GET /api/level4/anchor` prepares a Merkle root with `anchored:false`; on-chain submission is not live.
-4. *ROE — Reciprocal Optimization Engine.* ROE evaluates improvement against the reference and governs how improvement evidence informs selection and reuse. Implemented slices include normalized RMS checking, gated improvement I_t, adaptive ε for the normalized/RMS mode, a reuse-eligibility overlay, a step-aware next-action objective, and the opt-in `?roe_drive=1` selector. Some ROE views are informational or inspect-only; the opt-in selector changes action choice, while the existing planner remains the default. Learned cost/risk models and a richer state model are directional.
-5. *Retention and revalidation.* The durable experience feed supports continuity across runs, but retention must be earned by evidence. Reuse requires eligible experience and the ROE eligibility overlay; the autonomous page replays a durable sequence client-side and falls back to the built-in sequence when stored experience is missing, invalid, or does not meet the goal. Retained experience should be revalidated when its reference, environment, constraints, or relevant state changes. The current system demonstrates persistence and constrained reuse on its reference plants, not universal validity across domains.
+Scope: Aethel Node, diagnostics and the related pipelines (Level 4 plant, safety, MCP, micro-ledger, proof-to-pilot journey). Nothing here is a clinical or diagnostic product, and the system handles no PHI.
 
-**What is live today:** the Level 4 reference plant; durable run and experience records; measured e, Δe, cold `Self()` baseline, Φ and ROE I_t; pre-action safety/budget checks and idempotency; tensor commitment and independent distance checks; the Workbench MCP contract; replay verification; an anchor payload and Merkle-root calculation; the ROE inspection endpoints and opt-in selector; and client-side validation of durable sequences before reuse.
+## Contents
 
-**Phase status:** Phase 1 complete; Phase 2 (MCP + boundary) current; Phase 3 asset map and audit summary live (the same line is `phaseLine` in `GET /api/v1/status`). In detail: Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 surfaces are now live: the asset map (`GET /api/v1/ledger/assets`, with each asset's creation domain, latest domain and timeline) and the enterprise audit summary (`GET /api/v1/audit/summary`). Both are visible on `/workbench/workspace` in the Plugins section (and linked, with the endpoints, from an "Enterprise surfaces" note on `/workbench/offer`, `/workbench/review` and `/workbench/pilot`): a compact Assets block (creation domain → latest domain, latest audit status, first-to-last time) and a collapsible Audit summary block (counts by domain, signature status and settlement rail, assets with a passed audit, Merkle root and anchored flag). Each block has a Download JSON link that saves the current response of its endpoint; the Assets block has client-side filters by domain and signature status (over up to 100 assets, showing the first 8 matches); and the Audit summary block has a button that opens the provenance panel, where the simulated dry-run anchor lives (its button works only with `?demo=1` in the page URL, and nothing is submitted on-chain). Both are read-only, off-chain, and do not touch the Level 4 plant, its demo numbers or `aethel.loop.v1`. Loose end: the 8 original test events are still in the ledger; they can be purged with `LEDGER_ADMIN_SECRET` (not purged), and `GET /api/v1/status` lists their exact assetIds under `purgeReadiness` (`assetIds` and a copyable `assetIdsCsv`, read-only; the purge call is `DELETE /api/v1/ledger/commit?assetId=<ids>&purge=1` with the `x-admin-secret` header), and `GET /api/v1/status` reports both `signingSecretConfigured` and `adminSecretConfigured`.
+1. [Status](#status)
+2. [Surfaces and the Domains dropdown](#surfaces-and-the-domains-dropdown)
+3. [Core loop: Workspace A, Workbench B, Z, ROE](#core-loop-workspace-a-workbench-b-z-roe)
+4. [Autonomy levels and Level 4](#autonomy-levels-and-level-4)
+5. [Diagnostics and Global · misdiagnosis](#diagnostics-and-global--misdiagnosis)
+6. [MCP](#mcp)
+7. [Plugins and micro-ledger](#plugins-and-micro-ledger)
+8. [Proof-to-pilot journey](#proof-to-pilot-journey)
+9. [Two kinds of Φ](#two-kinds-of-φ)
+10. [External confirmation](#external-confirmation)
+11. [Evidence and data support](#evidence-and-data-support)
+12. [Live vs directional](#live-vs-directional)
+13. [Architecture notes](#architecture-notes)
+14. [Next](#next)
 
-**Domain Workbench plugins, micro-ledger and diagnostics (live on main, early-stage):** these sit beside the Level 4 plant and do not change it. The default Level 4 path, its demo numbers and `aethel.loop.v1` are untouched.
+## Status
 
-- *Domain Workbench Plugin Architecture.* Plugins register through `workbenchRegistry`: `diagnostics-safety` and `agent-compute`. Each exposes tools, an optional `onLedgerEvent` hook, and a `renderPanel` component, and appears in the Plugins section of `/workbench/workspace`. Tools are callable over HTTP (`POST /api/v1/plugins/tools/execute`) and over MCP (`POST /api/mcp?plugins=1`, named `pluginId__toolName`; the default MCP list remains the six Level 4 tools). Writing tools and demo buttons in the UI need `?demo=1`.
-- *Invisible Micro-Ledger.* `POST /api/v1/ledger/commit` persists events to Upstash, chains `previousHash` per asset, and records a signature status: HMAC-SHA256 by default, or a basic EIP-191 `personal_sign` wallet check that yields `wallet_verified` or `wallet_unverified` with a reason and never rejects. Each commit carries a settlement intent (`INTERNAL_MICRO` settled internally; `STRIPE` and `X_MONEY` queued unless configured), recorded per recipient. When Stripe is configured, a verified commit with an explicit amount creates a PaymentIntent and records it, and test-mode Connect `acct_` recipients get Transfers (live keys skip transfers unless explicitly enabled). The provenance panel is collapsible. Admin soft-hide and hard-purge sit behind `LEDGER_ADMIN_SECRET`. Writes are rate-limited per IP. `GET /api/v1/status` reports plugins, ledger count and latest tx hash, configuration booleans (never values), and supported rails.
-- *Asset map and audit summary (Phase 3, read-only).* `GET /api/v1/ledger/assets` returns one row per unique `assetId` (newest first) with its latest `domain`, the `createdDomain` (first event), the ordered `domains` it has passed through, a `timeline` (first and last event with domain, timestamp and txHash, plus event counts per domain), the latest `title` and `latestAuditStatus` from any of its events, a latest-event summary, `signatureStatus` and `settlementRail` (the recorded rail, or the default `INTERNAL_MICRO` when the event has no settlement intent). `GET /api/v1/audit/summary` returns event counts by domain, by signature status and by settlement rail, an `audit` block (counts by `auditStatus`, `certificateEvents`, and `assetsWithPassedAudit`, all from the heuristic mock scan, not a third-party attestation or a reuse decision), plus the current Merkle root over the latest 100 events and `anchored` (always `false`; nothing is on-chain). Both read the latest 500 events, exclude hidden assets, and report `windowTruncated` if older events were not counted.
+**Phase 1 complete; Phase 2 (MCP + boundary) current; Phase 3 asset map and audit summary live.** The same line is `phaseLine` in `GET /api/v1/status`. No new architectural phases are planned; work is focused on the proof-to-pilot journey on the existing engine.
 
-**How to demo the asset map + audit summary** (read-only; the audit results are a heuristic mock scan, and the Merkle root is not anchored on-chain):
+- Level 4 plant, durable experience store, replay verification and the Workbench MCP contract (`aethel.loop.v1`) are live and are not modified by the other surfaces below.
+- Phase 3 surfaces (asset map, audit summary) are read-only and off-chain.
+- Loose end: the 8 original test events are still in the ledger. Only the project owner can purge them, with `LEDGER_ADMIN_SECRET`. `GET /api/v1/status` lists their asset ids under `purgeReadiness` (`assetIds`, `assetIdsCsv`). The purge call is `DELETE /api/v1/ledger/commit?assetId=<ids>&purge=1` with the `x-admin-secret` header.
+- `GET /api/v1/status` also reports `signingSecretConfigured` and `adminSecretConfigured` (both true on Vercel, confirmed by the project owner). The assistant that maintains this repo does not hold the admin secret and has not run a purge.
 
-1. Open [/workbench/workspace](https://shiyan-dap.vercel.app/workbench/workspace) and find the Assets block under the Plugins section (filter by domain or signature status if you like).
-2. Expand the Audit summary block to see counts by domain, signature status and settlement rail, the audit-status counts and the current Merkle root.
-3. Use the Download JSON links on either block, or open `/api/v1/ledger/assets` and `/api/v1/audit/summary` directly (the same URLs are listed as `demoHints` in `GET /api/v1/status`).
-4. Optional: open the workspace with `?demo=1` and press the dry-run button in the Audit summary block to open the provenance panel. The dry-run writes a simulated, unanchored record, so skip it if you do not want one.
+## Surfaces and the Domains dropdown
 
-- *SIWE-style message structure.* For `signatureType: "wallet"`, an optional `siweMessage` (EIP-4361 shape) is the signed text, must still contain the event's canonical string, and is parsed into `siwe` fields (domain, address, statement, URI, version, chain ID, nonce, issued-at) with a list of structural issues on the stored event. It also checks the message domain against the allowed domains (`SIWE_ALLOWED_DOMAINS`, else the request host), that `issuedAt` is within 10 minutes and not in the future, and that a nonce is present, recording a verified nonce so a replay is flagged. `GET /api/v1/siwe/nonce` issues single-use server nonces; when a siweMessage is present the stored `signatureStatus` is a combined `wallet_siwe_verified` (EIP-191 passed, SIWE checks clean, server-issued nonce consumed) or `wallet_siwe_partial` (with reasons), and the raw result stays in `eip191Status`. Without a siweMessage the plain EIP-191 behavior is unchanged. `contractWallet: true` is recorded as `eip1271_unsupported` and verifies nothing. Neither status unlocks Stripe.
-- *Anchor preparation and dry run (not on-chain).* `GET /api/v1/ledger/anchor` returns a Merkle root (`sha256-merkle-v1`) over the latest ledger events with the event count, `anchored: false`, and an optional inclusion proof for one event. `POST /api/v1/ledger/anchor` with `{"dryRun": true}` records a logged dry-run attempt and returns a simulated tx hash and block number with status `dry-run` and `anchored: false`. The root and the last dry run are shown in `GET /api/v1/status` and the provenance panel. Nothing is submitted on-chain, and the simulated hash and block do not exist on any chain.
-- *Diagnostics Compliance & Risk Audit (mock, heuristic).* `POST /api/v1/diagnostics/scan` returns a `certificateHash`, a simulated `fingerprint` (a metadata-only hash of the normalized title, rounded duration and asset type; `audioFingerprint` is always `null`/`not_implemented`), and `overallStatus` (`PASSED`, `FLAGGED` or `REJECTED`) plus a `reasons` list that explains every term in the score. Scoring is a deterministic keyword, title, duration and length heuristic: the same contentHash, assetType, title and duration always give the same score and certificate. It is not a real compliance, legal or clinical check, and the certificate is a record of that heuristic, not a third-party attestation.
-- *Estimated compute records.* `agent-compute.record_compute_usage` records AGENT_COMPUTE events and can attach a self-reported FLOP and cost estimate (`usageEstimate`, always marked estimated and not metered). Nothing is metered, billed or paid out.
+Pages that use the shared header show a **Domains** dropdown listing every in-scope surface. Selecting an item navigates to it. The current page is preselected (longest matching path, so `/workbench/diagnostic/reference` shows Diagnostics); on a page with no entry the dropdown shows "Select domain".
 
-**Directional, not live:**
+| Group | Entry | Path |
+| --- | --- | --- |
+| Domains | Diagnostics | `/workbench/diagnostic` |
+| Domains | Safety | `/workbench/safety` |
+| Domains | Global · misdiagnosis | `/workbench/global` |
+| Evidence | Proof | `/workbench/proof` |
+| Evidence | Result | `/workbench/result` |
+| Evidence | Level 4 status | `/workbench/status` |
+| Workbench | Workspace | `/workbench/workspace` |
+| Workbench | Peer | `/workbench/peer` |
+| Workbench | Compare | `/workbench/compare` |
+| Workbench | MCP | `/workbench/mcp` |
+| Commercial | Offer | `/workbench/offer` |
+| Commercial | Pilot | `/workbench/pilot` |
 
-- Generalized, validated multi-domain workbenches. The loop is designed to be domain-independent, and the plugin architecture is now live with two plugins, but validated demonstrations are still reference plants and the diagnostics scan is a mock. Healthcare diagnostics is a later, higher-risk direction, not a diagnostic product, and this system handles no PHI.
-- On-chain submission of anchor roots, for both the Level 4 run and the micro-ledger. Partial progress: the Level 4 anchor payload and Merkle root, the micro-ledger Merkle root with inclusion proofs, a logged dry-run submission that returns a simulated tx hash and block number (the provenance panel lists the last three attempts with network, simulated tx and gas; with an optional `network` of ethereum, sepolia, polygon, base, optimism or arbitrum it also returns a simulated receipt: chain id, gas used from a documented gas model, an illustrative fee at a fixed non-live gas price, `anchored: false`), and the `AnchorAdapter` interface exist. No chain connection exists: nothing is submitted on-chain, no real transaction or block is produced, and nothing is verified against a chain.
-- Real money movement to recipients in live mode. Stripe PaymentIntent and test-mode Connect Transfer recording exist and are guarded; live-mode transfers are off by default and have not been exercised with a real live account. The project owner has confirmed that `LEDGER_SIGNING_SECRET` and `LEDGER_ADMIN_SECRET` are now set on Vercel (`GET /api/v1/status` reports `signingSecretConfigured` and `adminSecretConfigured` as true), so the Stripe signing guard and admin hide/purge are available in production; the assistant that maintains this repo does not hold the admin secret and has not run a purge, and Stripe settlement against a real live account remains unexercised. X Money settlement is queued only; there is no integration.
-- Stronger wallet identity: full SIWE (Sign-In with Ethereum) verification and reliable EIP-1271 contract-wallet signatures. Partial progress: an optional SIWE-style message is parsed and its domain, issued-at freshness and nonce replay are checked; `GET /api/v1/siwe/nonce` issues single-use server nonces (accepted-but-flagged for legacy client nonces; `SIWE_REQUIRE_ISSUED_NONCE=1` makes them an issue); and a combined `wallet_siwe_verified` / `wallet_siwe_partial` status folds the EIP-191 result, the SIWE checks and nonce source into one field. Nothing rejects a commit. A chain policy stub compares the message's Chain ID with `SIWE_ALLOWED_CHAIN_IDS` (default 1,137) and records the result in `siwe.policy`; it is informational unless `SIWE_ENFORCE_CHAIN=1`. Domain binding no longer trusts the request Host by default: allowed domains are `SIWE_ALLOWED_DOMAINS`, else the fixed `shiyan-dap.vercel.app` plus the platform-set production URL (so preview and custom domains do not match unless listed; `SIWE_TRUST_REQUEST_HOST=1` restores the old request-host behaviour, and non-production runs still accept their own host). EIP-1271 is now callable: with `contractWallet: true` and an https `ETH_RPC_URL`, the server makes one `eth_call` to `isValidSignature(bytes32,bytes)` on the wallet and records `eip1271_verified`, `eip1271_failed` (with a reason) or `eip1271_unsupported` (no RPC). That call has not been run against a real chain or contract wallet (only a mock RPC), `ETH_RPC_URL` is not set on Vercel, and it trusts the RPC provider, serves one chain, has no ERC-6492 (undeployed wallets) and no retries. With a siweMessage the server now also records `siwe.cryptoVerified`: true only when the recovered signer equals the claimed address, the address inside the message is that same address, and the signature was checked over exactly the stored message text (EIP-55 checksum of the message address is reported but informational). It is server-computed and now feeds the combined status: when it is false the commit is `wallet_siwe_partial` with a `siwe_crypto_not_verified (...)` reason (including a contract wallet that accepted the signature but is not the address named in the message). Plain EIP-191 commits without a siweMessage are unchanged and nothing is rejected. A single `siwe.overallValid` boolean (with `overallFailures`) summarises every check: it is true only when the crypto check, structure, domain, issuedAt freshness, first-use server-issued nonce and an allowed chain all pass. It is shown in the commit response, the provenance panel and (read-only, per ledger record) the Music Studio result, which says so explicitly when a record carries no SIWE data; the Music Studio flows are server-signed by default (no wallet message, so they show that no-SIWE line), but Music Studio can now optionally submit a wallet signature: the form has an optional wallet section (address, a Prepare button that fetches a server nonce and builds the SIWE text containing the canonical string, and a signature box; you can sign in your own wallet and paste the signature, or press "Sign with browser wallet", which uses `window.ethereum` (EIP-1193) to request an account, prepare the message for it and `personal_sign` it, fills the signature, and falls back to a plain message if no wallet is detected or you decline; the button has been exercised with a mock EIP-1193 provider (real signature, local host) but not with a real browser wallet extension), and the `create_music_asset` tool accepts `walletAddress`, `signature`, `siweMessage` or `walletMessage`, plus the `assetId` and `timestamp` that were signed. That signature replaces the server HMAC for the MUSIC_TRACK event only (the audit event stays server-signed), goes through the normal EIP-191/SIWE pipeline and shows `overallValid` in the result; the wallet record is never `verified`, so it does not unlock Stripe transfers; I have not tested it with a real browser wallet, does not change `signatureStatus` (an unenforced chain outside the allowed list is still `wallet_siwe_verified` but not `overallValid`) and never rejects a commit. Not done: full SIWE verification (`cryptoVerified` does not cover domain, nonce, expiry or chain policy, which stay separate informational checks), and any other on-chain check. Server nonces need Upstash to work across serverless instances. No wallet status unlocks Stripe.
-- Settlement or monetization of verified tensor transformations (T_in → T_out). The ledger's settlement intents apply to plugin assets, not to tensor transformations.
-- FLOP-based micro-payments. Partial progress: the `agent-compute` plugin records compute usage with an optional self-reported FLOP and cost estimate as ledger events. Nothing is metered (FLOPs are not measured), billed or paid out.
-- Real diagnostics and compliance checks to replace the heuristic scan. Partial progress: the scan is now deterministic and explains its score, and it emits a simulated metadata fingerprint, but it is still a keyword and length heuristic. The `fingerprint` is a hash of title, duration and asset type only. There is now an audio hook: the scan route and `create_music_asset` accept optional `audioBase64` (max 2 MB) or `audioHash` (64-hex SHA-256) and return `audioFingerprint` as `sha256:<hex>` with status `content_hash_only` (bytes the server hashed) or `content_hash_provided` (client-supplied, unverified); with neither it stays null (`not_implemented: no audio bytes analyzed`). That is a content hash of byte-identical files, not a perceptual or acoustic fingerprint: it cannot match re-encodes, edits or copies, the audio is never stored and the hash is not written to the ledger, and the score and `certificateHash` are unchanged. Real audio fingerprinting (Chromaprint or a matching service) is still not built; the hook is `computeAudioFingerprint()` in `src/services/diagnostics-core.ts`. There is no external database.
-- Hosted-model tensors in the live demo. The Level 4 demo uses a deterministic proposer and deterministic demo sensor tensor, not embeddings, activations, or logits from a hosted model.
-- Learned cost/risk models and a generalized state-aware ROE objective.
+Other live pages:
 
-**Commercial framing.** The product proposition is evidence-backed autonomous execution with durable, qualified experience: define an outcome, run within constraints, inspect the result, and reuse only what passes the relevant checks. The potential advantage is the accumulated implementation, integration, evidence, and validated workflow—not a single formula or an unsupported “consciousness” claim. Customer retention is an outcome to prove through repeat usage, verified improvement, lower repeated-work cost, and paid pilots; it is not established merely by having a retention layer.
+| Path | Role |
+| --- | --- |
+| `/` | Commercial center |
+| `/workbench#guided-run` | Guided first run |
+| `/workbench/outcome` | Client declares a measurable goal |
+| `/workbench/client` | Target-client pipeline and exportable Run |
+| `/workbench/autonomous`, `/workbench/autonomous/proof` | Level 4 run and end-to-end recovery proof |
+| `/workbench/history` | Inspectable Runs |
+| `/workbench/review` | Acquirer / funding one-pager |
+| `/workbench/marketplace` | Verified sequences (listing only; no trading or settlement) |
+| `/workbench/shiyan` | Shiyan plant |
+| `/workbench/diagnostic/reference` | Evidence-gate reference fixture |
+| `/workbench/independent`, `/workbench/independence` | MCP independent-plant comparisons |
+
+Φ is reported only when final e falls. The same sealed sequence runs across the Safety, Shiyan and Client plants. Not a diagnosis, no PHI, and not revenue until a client settles.
+
+## Core loop: Workspace A, Workbench B, Z, ROE
+
+1. **Workspace A (goal, reference, planning, oversight).** Defines the intended outcome and reference, coordinates the run, and stays the control and feedback layer. A proposal is not proof, and a model cannot bypass the execution gates.
+2. **Workbench B (execution, observation, verification).** Applies permitted actions, observes state, measures error e and Δe, checks safety, budget, idempotency and any supplied tensor constraint, and records the run. Its MCP contract is `aethel.loop.v1`. The `aethel-anchor/1` payload and independent replay verification are implemented.
+3. **Z (evidence-qualified verified experience).** The outcome eligible to inform future runs: provenance, measured result, verification status and reuse eligibility. The live experience store is Upstash-backed and idempotent per run and iteration, and the public experience API exposes the record.
+4. **ROE (Reciprocal Optimization Engine).** Evaluates improvement against the reference and governs how that evidence informs selection and reuse. Implemented: normalized RMS checking, gated improvement I_t, adaptive ε for the normalized/RMS mode, a reuse-eligibility overlay, a step-aware next-action objective, and the opt-in `?roe_drive=1` selector. Some ROE views are inspect-only, and the existing planner remains the default. Learned cost/risk models and a richer state model are directional.
+5. **Retention and revalidation.** Reuse requires eligible experience and the ROE eligibility overlay. `/workbench/autonomous` replays a durable sequence client-side and falls back to the built-in sequence when stored experience is missing, invalid or does not meet the goal. Retained experience should be revalidated when its reference, environment, constraints or state change. The system demonstrates persistence and constrained reuse on its reference plants, not validity across domains.
+
+**Tensor scope.** A tensor T ∈ ℝ^(d₁×…×dₙ) (an embedding, activation state, logit distribution or sensor vector) is stored row-major with its shape and can be verified alongside the text and state logs. Tensor commitment and independent distance checks are live. The Level 4 demo uses a deterministic proposer and a deterministic demo sensor tensor, not tensors from a hosted model.
+
+## Autonomy levels and Level 4
+
+- Level 1: execute and measure.
+- Level 2: reuse verified experience.
+- Level 3: learn across Runs. `Self()` retrieves only approved, safety-passed, positive-Φ experience; causal comparison separates improved, tied and regressed. Implemented and in use.
+- Level 4: operate autonomously within constraints. This is the current plant and it is live.
+
+Level 4 is a bounded control loop. It plans, checks a safety gate before every action, executes only permitted actions, records every transition, recovers from interruption, and records eligible experience for reuse. It builds on Level 3 and wraps the existing closed loop, `Self()`, measurement of e and safety modules without modifying them.
+
+Each step is measured on the core plant: applied actions are replayed through the same engine that scores every Run, so e is computed, not reported. The recorded verified run (`demo-run`, readable at `/api/level4/experience`) takes four gated steps, e 1.561 → 0.151 (Δe 1.410), reaches COMPLETE, and beats a cold `Self()` baseline of 0.165 (Φ 0.014). Only the final step is marked eligible.
+
+What is built:
+
+- Durable state and checkpoint recovery (client and server); the server record is in Upstash Redis (`/api/level4/run`) and survives cold starts and redeploys.
+- Idempotent handling of retried actions, and a pre-action safety and budget gate before every permitted action.
+- Verified results in run history and the durable experience store (`/api/level4/experience`), idempotent per run and iteration.
+- An end-to-end recovery proof that also exercises the gate.
+- Acquisition counters (`/api/level4/acquisition`) incremented atomically.
+- Guided first run at `/workbench#guided-run` (`/workbench/start` redirects there).
+- External client path: declare a goal (`/workbench/outcome`), run, view the verified result (`/workbench/result`, server-rendered from the durable store).
+- Status (`/workbench/status`) reads the durable store directly.
+
+Modules are under `src/lib/level4/`: controller, goal, loop, safety-gate, checkpoint, idempotency, precheck, verified, measured, server-record, acquisition, plus `systemic.ts` (the domain-agnostic view used for Global · misdiagnosis).
+
+## Diagnostics and Global · misdiagnosis
+
+- **Diagnostics** (`/workbench/diagnostic`, reference fixture at `/workbench/diagnostic/reference`) and **Safety** (`/workbench/safety`) are the evidence-gate surfaces.
+- **Global · misdiagnosis** (`/workbench/global`) is the single consolidated view of misdiagnosis as a global systemic error. "Misdiagnosis" here means a wrong next action, not a clinical finding. The page is read-only: it reads `/api/level4/experience`, keeps the latest iteration per run, and shows e, Δe and Φ with a derived status and a link to `/api/level4/verify?run_id=…`. Statuses: `ELIGIBLE_EXPERIENCE` (eligible), `MISDIAGNOSIS_REJECTED` (run ended COMPLETE without being eligible), `IN_PROGRESS` (otherwise). Φ is against the recorded baseline for that run, not an independent cold run. It changes no Level 4 code.
+- **Diagnostics compliance scan (mock, heuristic).** `POST /api/v1/diagnostics/scan` returns `certificateHash`, a simulated `fingerprint` (a hash of the normalized title, rounded duration and asset type), `overallStatus` (`PASSED`, `FLAGGED` or `REJECTED`) and a `reasons` list explaining every term of the score. Scoring is a deterministic keyword, title, duration and length heuristic: the same inputs always give the same score and certificate. It is not a compliance, legal or clinical check, and the certificate records the heuristic, not a third-party attestation. Optional `audioBase64` (max 2 MB) or `audioHash` (64-hex SHA-256) returns a content hash only (`content_hash_only` or `content_hash_provided`); it cannot match re-encodes or edits, is never stored, and does not change the score. `computeAudioFingerprint()` in `src/services/diagnostics-core.ts` is the hook for a real fingerprinting service, which is not built.
+
+## MCP
+
+- The default `POST /api/mcp` tool list is the six Level 4 tools. `POST /api/mcp?plugins=1` adds plugin tools named `pluginId__toolName` (10 tools in total today).
+- Independent MCP plants: `/api/mcp/independent` and `/api/b2` (B1 and B2). `score_sequence` is a stateless dry-run tool: one request replays a sequence on a fresh plant and stores nothing. It is listed in every endpoint's `tools/list` but only B1 implements it; B2 answers it as unsupported.
+- `/workbench/mcp` is the MCP surface in the Domains dropdown.
+
+## Plugins and micro-ledger
+
+These live on main, are early-stage, and sit beside the Level 4 plant without changing it.
+
+- **Plugin architecture.** Plugins register through `workbenchRegistry`: `diagnostics-safety` and `agent-compute`. Each exposes tools, an optional `onLedgerEvent` hook and a `renderPanel` component, and appears in the Plugins section of `/workbench/workspace`. Tools are callable over HTTP (`POST /api/v1/plugins/tools/execute`) and over MCP. Writing tools and demo buttons in the UI need `?demo=1`.
+- **Micro-ledger.** `POST /api/v1/ledger/commit` persists events to Upstash, chains `previousHash` per asset, and records a signature status: HMAC-SHA256 by default, or an EIP-191 `personal_sign` wallet check that yields `wallet_verified` or `wallet_unverified` and never rejects. Asset domains for new commits are `STEM`, `DIAGNOSTIC_AUDIT`, `AGENT_COMPUTE` and `ECONOMIC_BENEFIT`. Each commit carries a settlement intent per recipient: `INTERNAL_MICRO` settles internally; `STRIPE` and `X_MONEY` are queued unless configured. With Stripe configured, a verified commit with an explicit amount creates a PaymentIntent, and test-mode Connect `acct_` recipients get Transfers (live keys skip transfers unless explicitly enabled). Writes are rate-limited per IP. Admin soft-hide and hard-purge sit behind `LEDGER_ADMIN_SECRET`. Older stored events remain readable. API details: [docs/ledger-api.md](docs/ledger-api.md).
+- **Asset map and audit summary (Phase 3, read-only).** `GET /api/v1/ledger/assets` returns one row per `assetId` (newest first) with its latest `domain`, `createdDomain`, the ordered `domains` it passed through, a `timeline`, `latestAuditStatus`, `signatureStatus` and `settlementRail`. `GET /api/v1/audit/summary` returns counts by domain, signature status and settlement rail, an `audit` block from the heuristic mock scan, and the Merkle root over the latest 100 events with `anchored: false`. Both read the latest 500 events, exclude hidden assets and report `windowTruncated` when older events were not counted. They are shown on `/workbench/workspace` (an Assets block with client-side filters, and a collapsible Audit summary block, each with a Download JSON link) and linked from `/workbench/offer`, `/workbench/review` and `/workbench/pilot`.
+- **Wallet identity (partial).** For `signatureType: "wallet"`, an optional `siweMessage` (EIP-4361 shape) is parsed and checked for domain, `issuedAt` freshness (10 minutes, not in the future), nonce and chain policy. `GET /api/v1/siwe/nonce` issues single-use server nonces. The stored status is `wallet_siwe_verified` or `wallet_siwe_partial` (with reasons), and `siwe.overallValid` summarises every check. Nothing rejects a commit and no wallet status unlocks Stripe. EIP-1271 contract-wallet checks are implemented with an https `ETH_RPC_URL` but have only been run against a mock RPC, and `ETH_RPC_URL` is not set on Vercel. Full SIWE verification is not done. Server nonces need Upstash to work across serverless instances.
+- **Anchor preparation and dry run (not on-chain).** `GET /api/v1/ledger/anchor` returns a Merkle root (`sha256-merkle-v1`) with an event count, `anchored: false` and an optional inclusion proof. `POST /api/v1/ledger/anchor` with `{"dryRun": true}` records a logged dry run and returns a simulated tx hash and block number (status `dry-run`); with an optional `network` it also returns a simulated receipt. Nothing is submitted on-chain and the simulated values do not exist on any chain.
+- **Estimated compute records.** `agent-compute.record_compute_usage` records `AGENT_COMPUTE` events and can attach a self-reported FLOP and cost estimate (`usageEstimate`, always marked estimated). Nothing is metered, billed or paid out.
+
+**Demo of the asset map and audit summary** (read-only; the audit is a heuristic mock scan and the Merkle root is not anchored):
+
+1. Open [/workbench/workspace](https://shiyan-dap.vercel.app/workbench/workspace) and find the Assets block in the Plugins section.
+2. Expand the Audit summary block for counts and the current Merkle root.
+3. Use the Download JSON links, or open `/api/v1/ledger/assets` and `/api/v1/audit/summary` directly (also listed as `demoHints` in `GET /api/v1/status`).
+4. Optional: with `?demo=1`, the dry-run button in the Audit summary block writes a simulated, unanchored record. Skip it if you do not want one.
+
 ## Proof-to-pilot journey
 
 One customer path over the existing surfaces. Nothing here is a new architecture: the Level 4 run, the safety gates, the experience store, the verify and anchor endpoints and the micro-ledger stay the authority.
 
-1. **Declare the problem:** the customer states a measurable outcome, baseline, constraints and success threshold on [/workbench/outcome](https://shiyan-dap.vercel.app/workbench/outcome) or [/workbench/client](https://shiyan-dap.vercel.app/workbench/client).
-2. **Bounded execution:** the Level 4 run executes under its safety and budget gates and records every transition ([/workbench/autonomous](https://shiyan-dap.vercel.app/workbench/autonomous), with [/workbench/safety](https://shiyan-dap.vercel.app/workbench/safety) and [/workbench/history](https://shiyan-dap.vercel.app/workbench/history)).
-3. **Verify the evidence:** [/workbench/result](https://shiyan-dap.vercel.app/workbench/result) shows the measured e, Δe and Φ, the verify and anchor (dry run) links and the ledger and audit summary links. "Export evidence pack" downloads one JSON file with those values, the recorded baseline fields, every link and a list of disclosures (failed or missing values, dry-run anchor, heuristic audit scan).
-4. **Validate the value:** the customer reviews the result and decides on a paid pilot on [/workbench/pilot](https://shiyan-dap.vercel.app/workbench/pilot), [/workbench/review](https://shiyan-dap.vercel.app/workbench/review) and [/workbench/offer](https://shiyan-dap.vercel.app/workbench/offer). The customer can record an actual economic benefit (amount and unit or a short note, with a timestamp) in an optional form on /workbench/pilot or /workbench/result. It is self-reported: stored only in the customer's browser (localStorage, per run id), not sent to the server unless the customer chooses the opt-in "Record benefit on ledger" button, not verified. That button calls `POST /api/v1/ledger/benefit`, which appends one unsigned `ECONOMIC_BENEFIT` event on asset `benefit_<runId>` (signature status `unverified`, marked self-reported and not verified; the ledger shows the entry was recorded, not that it is true). It is permanent and append-only: only an admin can purge it, and the generic commit endpoint rejects this domain. If present it is added to the exported evidence pack as `self_reported_economic_benefit`, labelled as self-reported and including the ledger tx hash when it was recorded there.
+1. **Declare the problem.** The customer states a measurable outcome, baseline, constraints and success threshold on [/workbench/outcome](https://shiyan-dap.vercel.app/workbench/outcome) or [/workbench/client](https://shiyan-dap.vercel.app/workbench/client).
+2. **Bounded execution.** The Level 4 run executes under its safety and budget gates and records every transition ([/workbench/autonomous](https://shiyan-dap.vercel.app/workbench/autonomous), [/workbench/safety](https://shiyan-dap.vercel.app/workbench/safety), [/workbench/history](https://shiyan-dap.vercel.app/workbench/history)).
+3. **Verified evidence.** [/workbench/result](https://shiyan-dap.vercel.app/workbench/result) shows e, Δe and Φ, the verify and anchor (dry run) links, and the ledger and audit summary links. "Export evidence pack" downloads one JSON file with those values, the recorded baseline fields, every link and a list of disclosures (failed or missing values, dry-run anchor, heuristic audit scan).
+4. **Customer validates the value.** The customer reviews the result and decides on a paid pilot on [/workbench/pilot](https://shiyan-dap.vercel.app/workbench/pilot), [/workbench/review](https://shiyan-dap.vercel.app/workbench/review) and [/workbench/offer](https://shiyan-dap.vercel.app/workbench/offer).
 
-/workbench/result and /workbench/pilot show a compact four-step indicator for the run (on the pilot page: this browser session's run, else the latest eligible run) (step 1 no run, step 2 goal threshold not met, step 3 eligible run, step 4 a self-reported benefit saved in this browser; step 4 does not mean a pilot was approved). The same steps are returned as `journeySteps` in `GET /api/v1/status` (with `economicBenefit` and `journeyIndicator` notes) and shown as a one-line note on the review, offer, pilot and client pages. Two supporting roles, Agent A (customer acquisition) and Agent B (product evidence), are defined in [docs/agent-roles.md](docs/agent-roles.md) with their human-approval gates. They are role definitions only; no autonomous agent for either is built, and outreach is always sent by a person.
+**Pilot terms.** Pricing is set per pilot against the measured Φ, with no charge on ties or regressions. There is no fixed price and no self-serve checkout. `/workbench/pilot` shows "Ready for paid pilot?" only for an eligible run with an exportable pack and Φ > 0; it approves and charges nothing.
 
-### Two kinds of Φ
+**Self-reported economic benefit (optional).** The customer can record an amount and unit or a short note, with a timestamp, on `/workbench/pilot` or `/workbench/result`. It is stored only in the customer's browser (localStorage, per run id) and is not verified. The opt-in "Record benefit on ledger" button calls `POST /api/v1/ledger/benefit`, which appends one unsigned `ECONOMIC_BENEFIT` event on asset `benefit_<runId>` (status `unverified`, marked self-reported). The ledger shows that the entry was recorded, not that it is true. It is permanent and append-only (only an admin can purge it), and the generic commit endpoint rejects this domain. If present, it is added to the evidence pack as `self_reported_economic_benefit` with the tx hash when recorded.
 
-`/workbench/proof` compares the reuse final e with a real cold Self() run on the Safety plants. An error win there means the reuse final e is strictly below the cold final e. `/workbench/peer`, `/workbench/compare`, `/workbench/independent` and `/workbench/independence` run the sealed sequence on the MCP plants B1 and B2 and compare it with the plant's starting error (`observe` or `mark_boundary`, neither of which changes e; each run uses a fresh case). That is an improvement against a baseline, not a cold-run win, and the numbers are not comparable with the proof page. B2 is a fixed fixture with no Self() run. On `/workbench/peer` and `/workbench/compare` there is an opt-in checkbox, "Measure a true cold Self() run on B1 first". It drives B1 over MCP: at each of up to four steps the controller asks B1 to score every candidate action (`complete_field`, `request_independent_check`, `mark_boundary`, `seal_pack`) appended to the actions chosen so far, keeps the one with the lowest final e, and stops when none lowers e strictly. Scoring uses B1's new stateless dry-run tool `score_sequence` (one request replays the sequence on a fresh plant and stores nothing), so the result is the same on every serverless instance; the first version replayed steps across requests and gave different values on Vercel because B1's plant lives in each instance's memory. `score_sequence` is listed in every endpoint's `tools/list` (shared tool list) but only B1 implements it; B2 answers it as unsupported. It reads no prior Runs. The final e of that run is the cold final e, and Φ is that value minus the sealed-sequence final e, an error win only when strictly positive (`src/lib/mcp/cold.ts`). It is a greedy one-step-lookahead controller over MCP, not the Safety-proof Self() (a different plant), and it is slower (about 17 MCP calls). B2 is a fixed fixture with no Self() run, so the option does not apply to it and B2 always shows the baseline label. The same checkbox is on `/workbench/independent` and `/workbench/independence`. Current result on B1: the cold run reaches e 0.184 (`request_independent_check`, then `complete_field` three times) against 0.235 for the sealed sequence, so Φ is -0.051 and the sealed sequence is not an error win on B1 against this cold controller. This is structural, not a bug: enumerating every sequence of up to four of the four MCP tools on B1's fixed starting plant, any sequence that ends with `seal_pack` finishes at 0.235, because `seal_pack` sets completeness to 0.849 and no MCP tool lowers contradiction (0.18). The best four-step order overall reaches 0.18 only by putting `complete_field` after the seal, which edits the pack after sealing it, and the best sequence without a seal reaches 0.184. Changing that would mean changing `seal_pack` in `closed-loop.ts` or the fixed `SEALED_SEQUENCE`, which is shared with Level 4 and the proof, so it was not changed. A win on B1 would need a different starting plant or a different sealed sequence. That is what the second opt-in checkbox does: the **MCP commercial case** is a separate, constructed B1 starting plant (completeness 0.80, contradiction 0.08, missing 0.40) used for case ids that start with `commercial`; every other case id, the Safety-proof plants and Level 4 are unchanged, and `W`, `seal_pack` and `SEALED_SEQUENCE` are the same. On it the sealed sequence ends at 0.171 and the greedy cold controller stops at 0.33, so Φ is 0.159, an error win over the greedy cold controller. Why: `seal_pack` takes completeness from 0.98 to 0.849, just under the 0.85 review gate, and zeroes missing, while the greedy controller cannot reach the seal because `mark_boundary` alone does not change e. An exhaustive search of all four-step orders also reaches 0.171, so the sealed sequence ties the best possible four-step result; it does not beat an exhaustive search. The case is constructed for this path, not customer data. The evidence pack's `mcp_cold_comparison` records which starting plant was used.
+**Journey indicator.** `/workbench/result` and `/workbench/pilot` show a four-step indicator for the run (on the pilot page, this browser session's run, else the latest eligible run): step 1 no run, step 2 goal threshold not met, step 3 eligible run, step 4 a self-reported benefit saved in this browser. Step 4 does not mean a pilot was approved. The same steps are returned as `journeySteps` in `GET /api/v1/status` and shown as a one-line note on the review, offer, pilot and client pages.
+
+**Agent roles.** Agent A (customer acquisition) and Agent B (product evidence) are defined in [docs/agent-roles.md](docs/agent-roles.md) with their human-approval gates. They are role definitions only; no autonomous agent for either is built, and outreach is always sent by a person.
+
+## Two kinds of Φ
+
+- **Cold-run comparison (`/workbench/proof`).** Compares the reuse final e with a real cold `Self()` run on the Safety plants. An *error win* means the reuse final e is strictly below the cold final e.
+- **Improvement against a baseline (`/workbench/peer`, `/workbench/compare`, `/workbench/independent`, `/workbench/independence`).** Runs the sealed sequence on the MCP plants B1 and B2 and compares it with the plant's starting error (`observe` or `mark_boundary`, neither of which changes e; each run uses a fresh case). This is an improvement against a baseline, not a cold-run win, and the numbers are not comparable with the proof page. B2 is a fixed fixture with no `Self()` run.
+
+**Optional true cold run on B1.** On `/workbench/peer` and `/workbench/compare` (and on the independent pages) the checkbox "Measure a true cold Self() run on B1 first" drives B1 over MCP. At each of up to four steps the controller asks B1 to score every candidate action (`complete_field`, `request_independent_check`, `mark_boundary`, `seal_pack`) appended to the actions chosen so far, keeps the lowest final e, and stops when none lowers e strictly. It uses `score_sequence`, so results are the same on every serverless instance (B1's plant lives in each instance's memory, which made an earlier cross-request version inconsistent on Vercel). It reads no prior Runs. It is a greedy one-step-lookahead controller over MCP, not the Safety-proof `Self()`, and it takes about 17 MCP calls. Φ is the cold final e minus the sealed-sequence final e, and it is an error win only when strictly positive (`src/lib/mcp/cold.ts`).
+
+- **B1 default start: not a win.** The cold run reaches e 0.184 (`request_independent_check`, then `complete_field` three times) against 0.235 for the sealed sequence, so Φ is −0.051. This is structural. Over every sequence of up to four MCP tools on B1's fixed starting plant, any sequence ending in `seal_pack` finishes at 0.235, because `seal_pack` sets completeness to 0.849 and no MCP tool lowers contradiction (0.18). The best order overall reaches 0.18 only by editing the pack after sealing it. Changing this would mean changing `seal_pack` in `closed-loop.ts` or the fixed `SEALED_SEQUENCE`, which Level 4 and the proof share, so it was not changed.
+- **MCP commercial case: a win over the greedy cold run.** A second opt-in checkbox selects a constructed B1 starting plant (completeness 0.80, contradiction 0.08, missing 0.40) for case ids that start with `commercial`. Every other case id, the Safety-proof plants and Level 4 are unchanged. The sealed sequence ends at 0.171 and the greedy cold controller stops at 0.33, so Φ is +0.159. The reason: `seal_pack` takes completeness from 0.98 to 0.849, just under the 0.85 review gate, and zeroes missing, while the greedy controller cannot reach the seal because `mark_boundary` alone does not change e. An exhaustive search of all four-step orders also reaches 0.171, so the sealed sequence ties the best possible four-step result and does not beat an exhaustive search. The case is constructed, not customer data. The evidence pack's `mcp_cold_comparison` records which starting plant was used.
 
 ## External confirmation
 
 What an outside party can check today without the team narrating it:
 
-- **Safety-proof error wins.** `/workbench/proof` recomputes three cold-vs-reuse pairs in the browser from code in this repo: Φ 0.014 (incomplete evidence pack), 0.065 (missing measurements), 0.065 (provenance gap). A win means the reuse final e is strictly below the cold Self() final e on the same plant.
+- **Safety-proof error wins.** `/workbench/proof` recomputes three cold-versus-reuse pairs in the browser from code in this repo: Φ 0.014 (incomplete evidence pack), 0.065 (missing measurements), 0.065 (provenance gap).
 - **Recorded run verification.** `GET /api/level4/verify?run_id=…` replays a recorded Level 4 run and recomputes its stored e, e0, cold e, Φ and eligibility. It covers recorded runs, not the three proof plants.
-- **MCP commercial case.** On `/workbench/peer`, `/workbench/compare`, `/workbench/independent` and `/workbench/independence`, tick the cold-run checkbox and then the commercial-case checkbox: the sealed sequence ends at 0.171 against a greedy cold run at 0.33, Φ +0.159. The starting plant is constructed by us, not customer data, and an exhaustive search of all four-step orders also reaches 0.171, so it beats the greedy cold controller, not an exhaustive one. On B1's default start the same comparison gives Φ −0.051, not a win.
-- **Evidence pack and pilot checklist.** `/workbench/result` exports the evidence pack (with its disclosures and the `mcp_cold_comparison` block when a cold run was made in that browser). `/workbench/pilot` shows "Ready for paid pilot?" only for an eligible run with an exportable pack and Φ > 0; it approves and charges nothing.
+- **MCP commercial case.** On the peer, compare, independent and independence pages, tick the cold-run checkbox and then the commercial-case checkbox: 0.171 against a greedy cold run at 0.33, Φ +0.159. The plant is constructed by us, and an exhaustive search also reaches 0.171. On B1's default start the same comparison gives Φ −0.051, not a win.
+- **Evidence pack and pilot checklist.** `/workbench/result` exports the evidence pack with its disclosures and the `mcp_cold_comparison` block when a cold run was made in that browser.
 
 Not yet externally confirmed:
 
@@ -79,173 +179,56 @@ Not yet externally confirmed:
 
 The same text is on `/workbench/offer` and `/workbench/pilot`. How evidence moves from Agent B to a human reviewer before anything is shared: [docs/agent-roles.md](docs/agent-roles.md#external-confirmation-workflow).
 
-## Live commercial path
+## Evidence and data support
 
-| Surface | Role | Live |
+What an acquirer can check today without trusting this repo. Live unless marked directional.
+
+- **Independent verify (live).** `GET /api/level4/verify?run_id=` replays a stored run on a fresh plant and returns PASS, FAIL or SKIP per check. The demo run `run_mvculg3c_wn6w0q` returns PASS 26/26, and anyone can re-run it.
+- **Anchor root (live; on-chain anchoring directional).** `GET /api/level4/anchor?run_id=` returns the `aethel-anchor/1` payload and a SHA-256 Merkle ledger root with `anchored: false`. Only a dry-run adapter exists.
+- **Public record (live).** `GET /api/level4/experience` is the durable public record. `?format=ledger` returns ledger lines and `?run_id=` filters to one run.
+- **founder-z outcome log (live).** Outcome and event records are published to the public Hugging Face dataset [shiyan-dap/founder-z](https://huggingface.co/datasets/shiyan-dap/founder-z); card: [docs/founder-z-dataset-card.md](docs/founder-z-dataset-card.md). The Hub's Dataset Viewer shows a `CastError` because the files have mixed schemas; the data is intact and loads file by file. `/api/memory` reads its `latest-z.json` head (overridable with `HF_DATASET`) and commits new records when a Hugging Face token is configured.
+- **Durable feed (live).** `/workbench/autonomous` uses the `Self()` durable feed by default (`?durable=0` opts out), vetted by client-side replay, with the built-in sequence as fallback.
+- **Write gate (live, opt-in).** With `LEVEL4_WRITE_TOKEN` set, POST on `/api/memory` and the other Level 4 writes needs `Authorization: Bearer <token>` or an allowed origin; unset, writes are unchanged. GETs stay public. See [docs/level4-write-auth.md](docs/level4-write-auth.md).
+
+**Copy and share controls (live).** Copy all metrics, Φ, e, run id, ledger line, anchor root, full evidence pack (Markdown or JSON), public URL only, verify URL only, and verify summary are available on the result, status and proof pages as relevant; Share pack uses the native share sheet, else a mailto with no recipient. Copy actions show a lasting "Copied ✓" state and a toolbar that clears on Esc.
+
+## Live vs directional
+
+**Live today:** the Level 4 reference plant; durable run and experience records; measured e, Δe, cold `Self()` baseline, Φ and ROE I_t; pre-action safety and budget checks and idempotency; tensor commitment and independent distance checks; the Workbench MCP contract and independent MCP plants; replay verification; an anchor payload and Merkle-root calculation; ROE inspection endpoints and the opt-in selector; client-side validation of durable sequences; the plugin registry and micro-ledger; the read-only asset map and audit summary; Global · misdiagnosis; the proof-to-pilot pages.
+
+**Directional, not live:**
+
+- **Multi-domain workbenches.** The loop is designed to be domain-independent and the plugin architecture has two plugins, but validated demonstrations are reference plants and the diagnostics scan is a mock. Healthcare diagnostics is a later, higher-risk direction.
+- **On-chain anchoring.** Anchor payloads, Merkle roots, inclusion proofs, a dry run with simulated receipts and the `AnchorAdapter` interface exist. There is no chain connection and nothing is verified against a chain.
+- **Real money movement in live mode.** Stripe PaymentIntent and test-mode Connect Transfer recording exist and are guarded; live-mode transfers are off by default and have not been exercised with a real live account. X Money settlement is queued only; there is no integration.
+- **Stronger wallet identity.** Full SIWE verification and tested EIP-1271 (see Plugins and micro-ledger).
+- **Settlement of verified tensor transformations (T_in → T_out).** Ledger settlement intents apply to plugin assets, not tensor transformations.
+- **FLOP-based micro-payments.** Compute records exist with self-reported estimates; nothing is metered, billed or paid out.
+- **Real diagnostics and compliance checks** to replace the heuristic scan.
+- **Hosted-model tensors** in the live demo.
+- **Learned cost/risk models** and a generalized state-aware ROE objective.
+- **Authentication on Level 4 writes** beyond the opt-in write gate, and wallet-signature authentication of runtime operations.
+- **Server-side `Self()` across runs.** Verified experience persists and `/workbench/autonomous` reuses it through `loadDurablePlan` (client, via `GET /api/level4/experience`). No server route consumes it yet; `loadDurablePlanServer` (`durable-self-server.ts`) exists but is not called.
+- **Tokenization and trading.** The repo does not mint tokens or NFTs. Run ids are unique and experience writes are idempotent, but Redis records can be overwritten and duplicate protection expires after 30 days, so entries are not tamper-proof until moved to a tamper-evident rail. `/workbench/marketplace` lists verified sequences only; trading and settlement are not live. The marketplace stays downstream of the proof system: lower aggregate error does not override a failed safety constraint or a required human review.
+
+## Architecture notes
+
+- **Models only propose.** One adapter (`src/lib/model-adapter.ts`) puts Grok (xAI API), Hy4, OpenAI and a deterministic mock behind one interface. The routing layer (`src/lib/router.ts`) runs Grok alone on the fast path and Grok and Hy4 in parallel on the deep path, scoring their disagreement. In Level 4 the proposer is an injectable function, so a different model can be swapped in without changing the closed loop, the safety gate, measurement of e or the experience store. Hy4 falls back to a stub unless `HY4_API_URL` is set. The live Level 4 demo uses the deterministic experience proposer, not a hosted model.
+- **Planning is separate from tool execution**, and the MCP boundary keeps client data layers outside the orchestration loop. This is a design property, not a security certification.
+- **Evidence by inscription.** Client, operator, proposer, safety gate, plant and durable store only count when their contribution is recorded as a measurable step: a proposal becomes an action only by passing the pre-action gate, and each step is written as a run record and, when it verifies, an experience entry. Because the loop is held together by these records rather than by any one model, the proposer can be swapped.
+- **Durable, inspectable evidence.** Run records, verified experience and counters persist in Upstash Redis. Redis is a durable store, not an immutable ledger.
+- **Additive by construction.** Level 4 wraps the existing closed loop; commercial surfaces read the same evidence the engine writes.
+
+| Component | Current implementation | Planned mapping |
 | --- | --- | --- |
-| / | Commercial center | https://shiyan-dap.vercel.app/ |
-| /workbench/diagnostic/reference | Evidence-gate reference fixture | https://shiyan-dap.vercel.app/workbench/diagnostic/reference |
-| /workbench/review | Acquirer / funding one-pager | https://shiyan-dap.vercel.app/workbench/review |
-| /workbench/offer | Solicitation | https://shiyan-dap.vercel.app/workbench/offer |
-| /workbench/client | Target-client pipeline + exportable Run | https://shiyan-dap.vercel.app/workbench/client |
-| /workbench/pilot | Paid pilot gate | https://shiyan-dap.vercel.app/workbench/pilot |
-| /workbench/autonomous | Level 4 autonomous run | https://shiyan-dap.vercel.app/workbench/autonomous |
-| /workbench/autonomous/proof | End-to-end recovery + gate proof | https://shiyan-dap.vercel.app/workbench/autonomous/proof |
-| /workbench#guided-run | Guided first run | https://shiyan-dap.vercel.app/workbench#guided-run |
-| /workbench/outcome | External client declares a measurable goal | https://shiyan-dap.vercel.app/workbench/outcome |
-| /workbench/result | Simple verified result view | https://shiyan-dap.vercel.app/workbench/result |
-| /workbench/status | Level 4 durability and acquisition status | https://shiyan-dap.vercel.app/workbench/status |
-| /workbench/history | Inspectable Runs | https://shiyan-dap.vercel.app/workbench/history |
-| /workbench/marketplace | Verified sequences | https://shiyan-dap.vercel.app/workbench/marketplace |
-| /workbench/proof | Safety proof | https://shiyan-dap.vercel.app/workbench/proof |
-| /workbench/shiyan | Shiyan plant | https://shiyan-dap.vercel.app/workbench/shiyan |
-
-Φ only when final e falls. Same sealed sequence across Safety, Shiyan, and Client plants.  
-Not a diagnosis. No PHI. Not revenue until a client settles.  
-Healthcare diagnostics remains a higher-risk, later vertical.
-
-## Autonomy levels
-
-Level 1 — Execute and measure  
-Level 2 — Reuse verified experience  
-Level 3 — Learn across Runs (Self() uses approved historical experience)  
-Level 4 — Operate autonomously within constraints  
-
-Level 3 is implemented and remains in use: Self() retrieves only approved, safety-passed, positive-Φ experience; causal comparison distinguishes improved / tied / regressed; Runs are persisted; clients can export evidence.
-
-Level 4 is the current plant and is live. A bounded control loop plans, checks a safety gate before every action, executes only permitted actions, records every transition, recovers from interruption, and records eligible experience for reuse. Recovery, idempotency, safety/budget enforcement, and an end-to-end proof are demonstrated. An external client path (declare outcome → run → verified result) is open.
-
-Each autonomous step is measured on the core plant: applied actions are replayed through the same engine that scores every Run, so e is computed rather than reported. The live verified record (`demo-run`, readable at `/api/level4/experience`) runs four gated steps, e 1.561 → 0.151 (Δe 1.410), reaches COMPLETE, and beats a cold `Self()` baseline of 0.165 (Φ 0.014). Only that final step is marked eligible.
-
-## What’s built
-
-Level 4 durability plant (this slice):
-
-- Durable state and checkpoint recovery (client + server).
-- Autonomous steps measured on the core plant (`measured.ts` replays applied actions through the core engine; the core loop itself is unchanged).
-- Server record in Upstash Redis (`/api/level4/run`) that survives cold starts and redeploys.
-- Idempotent handling of retried actions.
-- Pre-action safety and budget gate before every permitted action.
-- Verified results recorded in run history and the durable experience store (`/api/level4/experience`, Upstash). Writes are idempotent: one entry per run and iteration.
-- End-to-end recovery proof that also exercises the pre-action gate.
-- Unique run id per guided start; recent runs tracked.
-- Acquisition counters that persist (`/api/level4/acquisition`), incremented atomically so concurrent starts are not lost.
-- Guided first-run entry integrated into `/workbench` (`/workbench#guided-run`); `/workbench/start` redirects there for existing links.
-- External client path: declare a measurable goal (`/workbench/outcome`) → run → view verified result (`/workbench/result`). The result page is server-rendered from the durable store, so the latest eligible result is visible without JavaScript.
-- Status (`/workbench/status`) reads the durable store directly: guided starts, recent runs, latest verified result, and recent verified steps.
-- One shared Level 4 navigation across start, outcome, autonomous run, result, recovery proof, status, spine, and roadmap.
-- Product spine view and status summary with cross-links.
-
-Supporting modules under `src/lib/level4/`: controller, goal, loop, safety-gate, checkpoint, idempotency, precheck, verified, measured, server-record, acquisition.
-
-## Wins
-
-- A run can be interrupted and resumed without losing progress or repeating side effects.
-- Safety and budget limits are enforced before any action is applied.
-- Eligible verified results are stored durably and are publicly inspectable (`/api/level4/experience`). They feed back into Self() across runs via the durable feed on `/workbench/autonomous` (see Self() durable feed).
-- New users have a clear starting point and an understandable result without needing to understand the algorithm.
-- Acquisition is measured: guided starts and recent runs are recorded and persist.
-- The external client path is closed: declare outcome → bounded run → verified result.
-- Measured Δe is inspectable: every verified step carries e, e0, Δe, the cold baseline, and Φ in a public record.
-
-## Evidence & data support
-
-What an acquirer can check today, without trusting this repo. Live unless marked directional.
-
-- **Independent verify (live).** `GET /api/level4/verify?run_id=` replays a stored run on a fresh plant and returns PASS/FAIL/SKIP per check. The demo run `run_mvculg3c_wn6w0q` returns PASS 26/26. Anyone can re-run it.
-- **Anchor root (live; on-chain anchoring directional).** `GET /api/level4/anchor?run_id=` returns the `aethel-anchor/1` payload and a SHA-256 Merkle ledger root with `anchored: false`: a prepared root, not on-chain. Only a dry-run adapter exists; on-chain submission is planned, not live.
-- **Public ledger (live).** `GET /api/level4/experience` is the durable, public record; `?format=ledger` returns ledger lines and `?run_id=` optionally filters to one run.
-- **founder-z outcome log (live).** Outcome and event records are published to the public Hugging Face dataset [shiyan-dap/founder-z](https://huggingface.co/datasets/shiyan-dap/founder-z). The dataset card is [docs/founder-z-dataset-card.md](docs/founder-z-dataset-card.md) (publication status above). The Hub's Dataset Viewer shows a `CastError` because the files have mixed schemas; the data is intact and loads file by file.
-- **Durable feed (live).** `/workbench/autonomous` uses the Self() durable feed by default (`?durable=0` opts out), vetted by client-side replay, with the built-in sequence as fallback.
-- **Write gate (live, opt-in).** With `LEVEL4_WRITE_TOKEN` set, POST on `/api/memory` (and the other Level 4 writes) needs `Authorization: Bearer <token>` or an allowed origin; unset, writes are unchanged. GETs stay public. See [docs/level4-write-auth.md](docs/level4-write-auth.md).
-
-**Copy / share controls (live).**
-
-| Control | Pages |
-| --- | --- |
-| Copy all metrics, Copy Φ, Copy e, Copy run id (latest-result card) | result, status |
-| Copy ledger line, Copy anchor root | result, status |
-| Copy full evidence pack, Copy as Markdown, Copy as JSON, Copy public URL only, Copy verify URL only, Share pack | result, status, proof (`/workbench/autonomous/proof`) |
-| Copy verify summary | result, proof |
-| Share section | result, status, proof |
-
-All copy actions share a lasting "Copied ✓" state, a high-contrast toast, and a sticky "Copied: <label> · Clear" toolbar that collapses and clears on Esc. Share pack uses the native share sheet, else a mailto with no recipient.
-
-**Commercial lines (live).**
-
-- `/workbench/pilot`: the success metric; "Evidence you can share" (public proof URL, downloadable ledger, verify and anchor endpoints); "Proof you can send" (public URL checkable against `/api/level4/verify`); "Get the proof" (open the result, check it against verify, then Request a pilot).
-
-## Continuity
-
-This plant builds on the existing Level 3 implementation and does not replace it. Level 4 adds durability, recovery, and a measurable external path on top of the same controller, safety gate, and history.
-
-Marketplace remains downstream of the proof system. A lower aggregate error does not override a failed safety constraint or a required human review.
-
-The Model 3 sealed sequence remains in the continuity and proof language. The Shiyan plant is live at [/workbench/shiyan](https://shiyan-dap.vercel.app/workbench/shiyan).
+| Ledger | Durable Upstash Redis records (`/api/level4/run`, `/api/level4/experience`); overwritable | On-chain state persistence |
+| Asset | Verified experience entries with calculated Δe and Φ | Tokenized data assets |
+| Constraints | Pre-action safety and budget gates | Programmable execution constraints |
+| Commercial | Paid-pilot gate (`/workbench/pilot`); settlement not live | Escrow and settlement triggers |
 
 ## Next
 
-- External client with a predeclared measurable outcome that settles.
+- An external client with a predeclared measurable outcome that settles.
 - Measured acquisition traffic against the durable counters.
-- Server-side Self() across runs and restarts. Live: verified experience persists in the Upstash store and `/workbench/autonomous` reuses it across runs and restarts through `loadDurablePlan` (client, via `GET /api/level4/experience`). Directional: no server route consumes it yet; `loadDurablePlanServer` (`durable-self-server.ts`) exists but is not called.
-- Durable store already live (Upstash); next is volume and external settlement.
-
-## Assets that stay listed
-
-Do not orphan traction while the engine generalizes. The product boundary is Aethel Node: Level 4, diagnostics, the micro-ledger, MCP and the proof-to-pilot journey.
-
-## Architectural Leverage & Enterprise Readiness
-
-Aethel Node does not rely on fragile prompting or linear agent chains. Under the hood, it operates as a model-portable cognitive engine built for zero-downtime corporate environments:
-
-* **Decoupled Orchestration:** Separates cognitive planning from tool execution, enabling seamless hot-swapping of underlying LLMs based on cost, latency, or compute needs.
-
-* **Topological Fault Isolation:** Uses mereotopological boundaries instead of standard graph networks, allowing the system to naturally isolate, bypass, and recover from localized environment failures.
-
-* **Enterprise Data Sovereignty:** Powered by a clean Model Context Protocol (MCP) refactor, ensuring client data layers never bleed into the orchestration loop, fulfilling strict security compliance out of the box.
-
-* **Actor-Network Loop:** The closed loop is designed as an actor network in the sense of actor-network theory: human and non-human actors (client, operator, proposer models, safety gate, plant, durable store) only count when their contribution is translated into a recorded, measurable step. A client is enrolled by declaring an outcome or taking a guided start; a proposal is translated into action only by passing the pre-action gate, which every action must go through; and each translation is inscribed as a run record and, when it verifies, an experience entry. Because the network is held together by inscriptions rather than by any single model, a proposer can be swapped without breaking the loop.
-
-* **Durable, Inspectable Evidence (Level 4, live):** Run records, verified experience, and guided-start counters persist in Upstash Redis and survive cold starts and redeploys. Experience writes are idempotent per run and iteration; counters increment atomically. Every verified step exposes e, Δe, the cold `Self()` baseline, and Φ at `/api/level4/experience`, and the same record renders server-side on `/workbench/result`.
-
-* **Safety Before Side Effects:** Every action passes a pre-action safety and budget gate and an idempotency check before it is applied, so a retried or resumed run does not repeat side effects. The recovery proof (`/workbench/autonomous/proof`) exercises interruption, resume, and the gate end to end.
-
-* **Additive by Construction:** Level 4 wraps the existing closed loop, `Self()`, measurement of e, and safety modules without modifying them. Commercial surfaces read from the same evidence the engine writes.
-
-
-## Model Portability & Open Evidence
-
-* **Model-portable proposer:** Models only propose; they never bypass the loop. One adapter (`src/lib/model-adapter.ts`) puts Grok (xAI API), Hy4, OpenAI, and a deterministic mock behind the same interface. The Grok Bot routing layer (`src/lib/router.ts`) runs Grok alone on the fast path and Grok and Hy4 in parallel on the deep path, scoring how much they disagree. In Level 4, the proposer is an injectable function, so a different model can be swapped in without changing the closed loop, the safety gate, measurement of e, or the experience store. Hy4 falls back to a stub unless `HY4_API_URL` is set. The live Level 4 demo run uses the deterministic experience proposer, not a hosted model.
-* **Open evidence dataset (founder-z):** Outcome and event records are published to the public Hugging Face dataset [shiyan-dap/founder-z](https://huggingface.co/datasets/shiyan-dap/founder-z). `/api/memory` reads its `latest-z.json` head (overridable with `HF_DATASET`) and commits new records when a Hugging Face token is configured. The dataset card is `docs/founder-z-dataset-card.md` (see the founder-z dataset card note for its publication status).
-
-## Decentralized Asset Engine & Independent Settlement
-
-The system’s primary commercial goal is to let external clients declare a measurable outcome that eventually settles based on verified performance. Settlement is the goal, not a live function today.
-
-- **State Inscription for Inspection:** The Level 4 plant records run state and verified experience in a durable Upstash Redis store. Every verified step carries e, Δe, the cold baseline, and Φ, and is publicly inspectable at `/api/level4/experience`. Redis is a durable store, not an immutable ledger: records can be overwritten or deleted. It mirrors a ledger for inspection; on-chain persistence is the planned rail for tamper-evident records.
-- **Authentication and Signatures (planned):** The Level 4 write endpoints currently have no authentication. Endpoint auth and free cryptographic text signatures from browser wallets, to authenticate and trigger runtime operations, are planned, not live.
-
-## Tokenization of Verified Experience
-
-The core engine operates on a loop that captures positive experiences (Φ) where error successfully falls.
-
-- **Data Provenance:** In a tokenized ecosystem, these sealed sequences would represent the tokenization of AI compute history. Each verified step records that a specific sequence of actions reduced error under safety and budget constraints, which is the provenance a reusable digital asset would need.
-- **Distributed Compute Marketplace:** The long-term roadmap positions a verified marketplace downstream of the proof system, so verified autonomous sequences could be discovered, traded, or used across distributed AI nodes. Today `/workbench/marketplace` lists verified sequences; trading and settlement are not live.
-
-## NFT Analogy: Runs as Unique Digital Assets
-
-The repo does not mint ERC-721 tokens. Structurally, individual execution records resemble NFTs:
-
-- **Unique Run Identities:** Every guided start generates a unique run id.
-- **Idempotency and Non-Fungibility:** Experience writes are idempotent per run and iteration, and a double-action guard keeps an action from being applied twice. The run record itself is overwritten at each step, and duplicate protection on experience entries expires after 30 days. Each verified experience entry is a unique, non-fungible proof of work for audit; it is not tamper-proof until records move to a tamper-evident rail.
-
-## Technical Continuity Matrix
-
-| Component | Current Software Implementation | Planned mapping |
-| --- | --- | --- |
-| The Ledger | Durable Upstash Redis records (`/api/level4/run`, `/api/level4/experience`); overwritable | On-chain state persistence / Distributed Ledger Technology (DLT) |
-| The Asset | Verified experience entries with calculated Δe and Φ | Tokenized data assets / Provenance protocol layers |
-| The Smart Contract | Pre-action safety & budget gates checking execution boundaries | Programmable, trustless execution constraints |
-| Commercial Vector | Paid-pilot gate (`/workbench/pilot`); settlement not live | Escrow, Web3 transaction triggers, and utility token gates |
-
-Aethel Node provides the infrastructure to orchestrate AI models within safety and budget constraints, with Web3 rails as a planned path for decentralized compute funding, wallet-based access controls, and programmatic settlement.
+- Volume on the existing durable store, then external settlement.
+- Server-side `Self()` across runs and restarts (see Live vs directional).
