@@ -1,32 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
-import { loadAcquisitionServer, newRunId, recordStartServer } from "@/lib/level4/acquisition";
+import { newRunId, recordStartServer } from "@/lib/level4/acquisition";
 
 export default function WorkbenchHome() {
   const router = useRouter();
-  const [starts, setStarts] = useState<number | null>(null);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadStarts() {
-      const data = await loadAcquisitionServer();
-      setStarts(data.starts);
-    }
-    void loadStarts();
-  }, []);
 
   async function beginGuidedRun() {
     setStarting(true);
     setStartError(null);
     try {
       const id = newRunId();
-      const count = await recordStartServer(id);
-      if (count !== null) setStarts(count);
+      await recordStartServer(id);
       window.sessionStorage.setItem("aethel-active-run-id", id);
       router.push(`/workbench/autonomous?run=${id}`);
     } catch {
@@ -55,20 +45,6 @@ export default function WorkbenchHome() {
               Set a measurable goal. Actions are safety-checked and recorded, and run progress can be resumed after interruption.
             </p>
           </header>
-          <div className="grid gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-xl border border-zinc-800 p-4">
-              <p className="font-medium">1. Goal</p>
-              <p className="mt-1 text-zinc-400">Reduce final error under explicit safety and budget limits.</p>
-            </div>
-            <div className="rounded-xl border border-zinc-800 p-4">
-              <p className="font-medium">2. Step</p>
-              <p className="mt-1 text-zinc-400">Each action is pre-checked, applied once, and recorded.</p>
-            </div>
-            <div className="rounded-xl border border-zinc-800 p-4">
-              <p className="font-medium">3. Result</p>
-              <p className="mt-1 text-zinc-400">Verified outcome appears in history. Leave and return; progress is kept.</p>
-            </div>
-          </div>
           <div className="mt-4 flex flex-wrap items-center gap-4">
             <button
               type="button"
@@ -78,7 +54,6 @@ export default function WorkbenchHome() {
             >
               {starting ? "Starting run…" : "Create run"}
             </button>
-            <p className="text-xs text-zinc-500">Guided starts so far: {starts ?? "…"}</p>
             <Link href="/workbench/status" className="text-sm text-emerald-400 underline">
               Level 4 status
             </Link>
