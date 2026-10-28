@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import JourneyNote from "@/components/JourneyNote";
+import SiteHeader from "@/components/SiteHeader";
 import { loadRun, exportRunJSON, type PersistedRun } from "@/lib/run-store";
 
 export default function ClientPage() {
@@ -24,6 +25,10 @@ export default function ClientPage() {
   }
 
   return (
+    <>
+    <div className="bg-black text-white">
+      <SiteHeader section="Client pipeline" />
+    </div>
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-xl font-semibold">Client proof record</h1>
       <p className="text-sm text-neutral-600">
@@ -115,5 +120,6 @@ export default function ClientPage() {
         <a href="https://github.com/ecmccready/shiyan-dap/blob/main/docs/agent-roles.md" className="underline">docs/agent-roles.md</a>
       </p>
     </main>
+    </>
   );
 }

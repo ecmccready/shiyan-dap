@@ -41,15 +41,25 @@ Pages that use the shared header show a **Domains** dropdown listing every in-sc
 | Domains | Diagnostics | `/workbench/diagnostic` |
 | Domains | Safety | `/workbench/safety` |
 | Domains | Global · misdiagnosis | `/workbench/global` |
+| Level 3 / 4 | Level 4 run | `/workbench/autonomous` |
+| Level 3 / 4 | Level 4 status | `/workbench/status` |
+| Level 3 / 4 | ROE · Reciprocal Optimization Engine | `/workbench/autonomous?roe_drive=1` |
+| Level 3 / 4 | Level 3 Self() | `/workbench/self` |
 | Evidence | Proof | `/workbench/proof` |
+| Evidence | Shiyan + Model 3 proof | `/workbench/shiyan` |
 | Evidence | Result | `/workbench/result` |
-| Evidence | Level 4 status | `/workbench/status` |
+| Evidence | History | `/workbench/history` |
+| Evidence | Review | `/workbench/review` |
 | Workbench | Workspace | `/workbench/workspace` |
 | Workbench | Peer | `/workbench/peer` |
 | Workbench | Compare | `/workbench/compare` |
 | Workbench | MCP | `/workbench/mcp` |
+| Workbench | Actor network | `/workbench/network` |
+| Commercial | Client pipeline | `/workbench/client` |
 | Commercial | Offer | `/workbench/offer` |
 | Commercial | Pilot | `/workbench/pilot` |
+
+The homepage itself carries only the title, description, "Start a durable run" and the Create run button; everything else is reached through the dropdown.
 
 Other live pages:
 
@@ -58,12 +68,8 @@ Other live pages:
 | `/` | Commercial center |
 | `/workbench#guided-run` | Guided first run |
 | `/workbench/outcome` | Client declares a measurable goal |
-| `/workbench/client` | Target-client pipeline and exportable Run |
-| `/workbench/autonomous`, `/workbench/autonomous/proof` | Level 4 run and end-to-end recovery proof |
-| `/workbench/history` | Inspectable Runs |
-| `/workbench/review` | Acquirer / funding one-pager |
+| `/workbench/autonomous/proof` | End-to-end recovery and gate proof |
 | `/workbench/marketplace` | Verified sequences (listing only; no trading or settlement) |
-| `/workbench/shiyan` | Shiyan plant |
 | `/workbench/diagnostic/reference` | Evidence-gate reference fixture |
 | `/workbench/independent`, `/workbench/independence` | MCP independent-plant comparisons |
 

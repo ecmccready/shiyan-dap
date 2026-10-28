@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 // Domains dropdown: every in-scope Workbench surface, grouped. No music or removed routes.
@@ -14,11 +15,22 @@ const DOMAIN_GROUPS = [
     ],
   },
   {
+    label: "Level 3 / 4",
+    items: [
+      { label: "Level 4 run", href: "/workbench/autonomous" },
+      { label: "Level 4 status", href: "/workbench/status" },
+      { label: "ROE · Reciprocal Optimization Engine", href: "/workbench/autonomous?roe_drive=1" },
+      { label: "Level 3 Self()", href: "/workbench/self" },
+    ],
+  },
+  {
     label: "Evidence",
     items: [
       { label: "Proof", href: "/workbench/proof" },
+      { label: "Shiyan + Model 3 proof", href: "/workbench/shiyan" },
       { label: "Result", href: "/workbench/result" },
-      { label: "Level 4 status", href: "/workbench/status" },
+      { label: "History", href: "/workbench/history" },
+      { label: "Review", href: "/workbench/review" },
     ],
   },
   {
@@ -28,25 +40,37 @@ const DOMAIN_GROUPS = [
       { label: "Peer", href: "/workbench/peer" },
       { label: "Compare", href: "/workbench/compare" },
       { label: "MCP", href: "/workbench/mcp" },
+      { label: "Actor network", href: "/workbench/network" },
     ],
   },
   {
     label: "Commercial",
     items: [
+      { label: "Client pipeline", href: "/workbench/client" },
       { label: "Offer", href: "/workbench/offer" },
       { label: "Pilot", href: "/workbench/pilot" },
     ],
   },
 ];
 const DOMAIN_ITEMS = DOMAIN_GROUPS.flatMap((g) => g.items);
+const ROE_HREF = "/workbench/autonomous?roe_drive=1";
 
-/** Preselect the item whose href is the longest prefix of the current path. */
-function domainFor(pathname: string): string {
+/**
+ * Preselect the item whose path is the longest prefix of the current path.
+ * Items with a query string (ROE) match only when that query is present.
+ */
+function domainFor(pathname: string, search: string): string {
+  if (pathname === "/workbench/autonomous" && new URLSearchParams(search).get("roe_drive") === "1") return ROE_HREF;
   let best = "";
+  let bestHref = "";
   for (const i of DOMAIN_ITEMS) {
-    if ((pathname === i.href || pathname.startsWith(i.href + "/")) && i.href.length > best.length) best = i.href;
+    if (i.href.includes("?")) continue;
+    if ((pathname === i.href || pathname.startsWith(i.href + "/")) && i.href.length > best.length) {
+      best = i.href;
+      bestHref = i.href;
+    }
   }
-  return best;
+  return bestHref;
 }
 
 const NAV = [
@@ -75,7 +99,13 @@ export default function SiteHeader({ section }: { section?: string }) {
   const router = useRouter();
   const isWorkbenchLanding = pathname === "/" || pathname === "/workbench";
   const isFocused = pathname === "/workbench/marketplace" || pathname === "/workbench/diagnostic";
-  const selectedDomain = domainFor(pathname);
+  // Query string is read on the client only (no Suspense boundary needed on static pages).
+  const search = useSyncExternalStore(
+    () => () => {},
+    () => window.location.search,
+    () => "",
+  );
+  const selectedDomain = domainFor(pathname, search);
   const nav = isFocused
     ? NAV.filter((n) => n.href !== pathname)
     : isWorkbenchLanding

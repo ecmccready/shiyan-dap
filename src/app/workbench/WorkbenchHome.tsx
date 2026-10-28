@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import { newRunId, recordStartServer } from "@/lib/level4/acquisition";
@@ -54,9 +53,6 @@ export default function WorkbenchHome() {
             >
               {starting ? "Starting run…" : "Create run"}
             </button>
-            <Link href="/workbench/status" className="text-sm text-emerald-400 underline">
-              Level 4 status
-            </Link>
           </div>
           {startError && <p role="alert" className="mt-3 text-sm text-red-400">{startError}</p>}
         </section>
