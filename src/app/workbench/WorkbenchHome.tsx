@@ -60,37 +60,6 @@ export default function WorkbenchHome() {
           </div>
           {startError && <p role="alert" className="mt-3 text-sm text-red-400">{startError}</p>}
         </section>
-
-        <nav aria-label="Workbench resources" className="mt-10 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
-          <section className="rounded-2xl border border-zinc-800 p-5">
-            <h2 className="text-xs uppercase tracking-wide text-zinc-500">1 · Run &amp; review</h2>
-            <div className="mt-3 grid gap-2">
-              <Link className="underline" href="/workbench/review">Review</Link>
-              <Link className="underline" href="/workbench/history">History</Link>
-              <Link className="underline" href="/workbench/self">Level 3 Self()</Link>
-            </div>
-          </section>
-          <section className="rounded-2xl border border-zinc-800 p-5">
-            <h2 className="text-xs uppercase tracking-wide text-zinc-500">2 · Proof</h2>
-            <div className="mt-3 grid gap-2">
-              <Link className="underline" href="/workbench/proof">Safety proof</Link>
-              <Link className="underline" href="/workbench/compare">Peer proof</Link>
-              <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3 proof</Link>
-              <Link className="underline" href="/workbench/network">Actor network</Link>
-            </div>
-          </section>
-          <section className="rounded-2xl border border-zinc-800 p-5">
-            <h2 className="text-xs uppercase tracking-wide text-zinc-500">3 · Commercial</h2>
-            <div className="mt-3 grid gap-2">
-              <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
-              <Link className="underline" href="/workbench/client">Client pipeline</Link>
-              <Link className="underline" href="/workbench/pilot">Pilot</Link>
-              <Link className="underline" href="/workbench/offer">Offer</Link>
-              <Link className="underline" href="/workbench/offer">Offer (public)</Link>
-              <Link className="underline" href="/workbench/autonomous?roe_drive=1">ROE · Reciprocal Optimization Engine</Link>
-            </div>
-          </section>
-        </nav>
       </main>
     </div>
   );
