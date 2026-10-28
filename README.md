@@ -22,6 +22,8 @@ Scope: Aethel Node, diagnostics and the related pipelines (Level 4 plant, safety
 12. [Live vs directional](#live-vs-directional)
 13. [Architecture notes](#architecture-notes)
 14. [Next](#next)
+15. [Local development](#local-development)
+16. [License](#license)
 
 ## Status
 
@@ -245,3 +247,19 @@ What an acquirer can check today without trusting this repo. Live unless marked 
 - Measured acquisition traffic against the durable counters.
 - Volume on the existing durable store, then external settlement.
 - Server-side `Self()` across runs and restarts (see Live vs directional).
+
+## Local development
+
+```bash
+git pull origin main
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # next build --webpack
+npm run lint
+```
+
+Without Upstash credentials the micro-ledger falls back to per-instance memory (`GET /api/v1/status` reports `ledgerStore: memory`) and does not persist across restarts; Level 4 durable records also need the Upstash variables to persist. Integrations are configured through environment variables and are all optional locally; for example `UPSTASH_KV_REST_API_URL` / `UPSTASH_KV_REST_API_TOKEN` (durable store), `LEDGER_SIGNING_SECRET` and `LEDGER_ADMIN_SECRET` (ledger signing and admin), `LEVEL4_WRITE_TOKEN` (opt-in write gate), `STRIPE_SECRET_KEY`, `ETH_RPC_URL`, `XAI_API_KEY`, `OPENAI_API_KEY`, `HY4_API_URL` and `HF_TOKEN`. Never commit secret values.
+
+## License
+
+This repository does not currently include a LICENSE file. Until the owner chooses one, default copyright applies (all rights reserved): the code is publicly viewable on GitHub but no right to copy, modify or redistribute it is granted. The `founder-z` dataset card lists its license as unspecified.
