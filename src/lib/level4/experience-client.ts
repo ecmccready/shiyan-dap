@@ -11,6 +11,10 @@ export type ExperienceEntry = {
   cold_e?: number | null;
   phi?: number | null;
   state?: string;
+  /** Optional domain label (absent on older entries). Read-only here; the server type owns it. */
+  system?: string;
+  /** Opt-in ROE drive only: which selector chose y. Absent on default-path entries. */
+  selector?: "roe_step_aware";
   /** Optional tensor scope fields (absent on entries without a tensor check). */
   tensor_commitment?: string;
   tensor_distance?: number;

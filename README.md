@@ -70,6 +70,13 @@ Pages that use the shared header show a **Domains** dropdown with four groups, K
 | Do | Offer | `/workbench/offer` |
 | Do | Pilot | `/workbench/pilot` |
 
+**Adaptive ranking and one-click reuse.** The dropdown is also a read-only view of the verified-experience store. After the page loads it fetches `GET /api/level4/experience` once (cached in the browser for 30 seconds, never written to) and joins it to the table above (`src/lib/domains/`: `groups.ts` for the static groups, `experience-rank.ts` for the join and rank, `experience-cache.ts` for the fetch).
+
+- **What counts.** Only records the durable feed would reuse: eligible, state `COMPLETE`, Φ > 0, tensor distance within ε. Φ is each run's own value against its recorded cold baseline, not an independent cold run.
+- **Annotation and order.** Diagnostics, Safety, Level 4 run, Result and ROE (ROE only from records written by the ROE drive) show their best Φ, for example `Level 4 run · Φ 0.014`. Inside each group, annotated items sort first, highest Φ first; everything else keeps its static order. The four group names and their order never change, and with no eligible record the menu is exactly the static table.
+- **Reuse hand-off.** Choosing Level 4 run opens `/workbench/autonomous?reuse=<run id>`, where the run id is the record behind the shown Φ. The run page loads that run's ordered action sequence as its durable plan only if it passes the same gates as the best-Φ durable feed (reusable record, contiguous sequence, permitted actions, and the client-side replay vet against the built-in sequence and the goal threshold). Otherwise it falls back to the best durable plan, then the built-in sequence, and the page says why. `?durable=0` still disables it. The hand-off code is `src/lib/level4/reuse-handoff.ts`; the Level 4 loop, controller and engine are unchanged.
+- **Check it.** `npx tsx scripts/check-domain-rank.ts` runs the join, rank, href and fallback cases on fixture records with no network.
+
 The verify and anchor references point at one recorded eligible run id, which is hard-coded in `src/components/SiteHeader.tsx` (`REF_RUN`) and must be updated if that run is retired. The homepage itself carries the title, description, "Start a durable run", the Create run button, a compact external-confirmation block and a one-line pointer to the Domains menu.
 
 Other live pages:

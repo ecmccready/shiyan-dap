@@ -25,8 +25,9 @@ import type { YAction } from "@/lib/closed-loop";
 import { demoTensorCheck, DEMO_TENSOR_EPSILON } from "@/lib/level4/demo-tensor";
 import { combineEligibility, type TensorCheck } from "@/lib/level4/tensor";
 import { experienceTensorFields } from "@/lib/level4/seal";
-import { loadDurablePlan, nextFromPlan, type DurablePlan } from "@/lib/level4/durable-self";
-import { vetDurablePlan, type DurableVet } from "@/lib/level4/durable-vet";
+import { nextFromPlan, type DurablePlan } from "@/lib/level4/durable-self";
+import { resolveDurableSource, type ReuseOutcome } from "@/lib/level4/reuse-handoff";
+import { type DurableVet } from "@/lib/level4/durable-vet";
 import { loadExperienceServer, type ExperienceEntry } from "@/lib/level4/experience-client";
 import { roeNextAction } from "@/lib/level4/roe-next-action";
 import { roeForEntry } from "@/lib/level4/roe";
@@ -85,6 +86,8 @@ function AutonomousInner() {
   // Self() durable feed, on by default; ?durable=0 disables (?durable=1 still accepted).
   // A durable plan is used only after a client-side replay vets it (see durable-vet.ts).
   const [durableOn] = useState(() => searchParams.get("durable") !== "0");
+  const [reuseId] = useState(() => searchParams.get("reuse"));
+  const [reuse, setReuse] = useState<ReuseOutcome | null>(null);
   const [plan, setPlan] = useState<DurablePlan | null>(null);
   const [vet, setVet] = useState<DurableVet | null>(null);
   // ROE drive (opt-in, ?roe_drive=1): the step-aware objective picks the action. Off by default.
@@ -124,16 +127,18 @@ function AutonomousInner() {
   useEffect(() => {
     if (!durableOn) return;
     let active = true;
-    loadDurablePlan(goal.permitted_actions, runId).then((p) => {
+    // ?reuse=<run id> (from the Domains dropdown) tries that verified run's sequence first, behind the same
+    // replay vet; any failure falls back to the best durable plan, then the built-in sequence.
+    resolveDurableSource(goal.permitted_actions, runId, successThreshold(goal.success_condition), reuseId).then((r) => {
       if (!active) return;
-      const v = vetDurablePlan(p, successThreshold(goal.success_condition));
-      setVet(v);
-      setPlan(v.ok ? p : null);
+      setVet(r.vet);
+      setPlan(r.plan);
+      setReuse(r.reuse);
     });
     return () => {
       active = false;
     };
-  }, [durableOn, goal.permitted_actions, goal.success_condition, runId]);
+  }, [durableOn, goal.permitted_actions, goal.success_condition, runId, reuseId]);
 
   useEffect(() => {
     let active = true;
@@ -374,6 +379,18 @@ function AutonomousInner() {
         <p className="text-xs text-zinc-500">
           Cold Self() after {applied.length} step(s): e = {fmt(cold)}. Φ vs cold = {fmt(phi)}
           {phi > 0 ? " · reuse wins" : phi === 0 ? " · tie (not a win)" : " · cold is ahead so far"}.
+        </p>
+      )}
+
+      {reuseId && (
+        <p data-reuse-status className="text-xs text-zinc-500">
+          {!durableOn
+            ? `Reuse of ${reuseId} ignored: the durable feed is disabled with ?durable=0.`
+            : reuse
+              ? reuse.status === "applied"
+                ? `Reuse: sequence from verified run ${reuse.requested} injected (${reuse.reason}).`
+                : `Reuse of ${reuse.requested} not applied: ${reuse.reason}. Fell back to the default source below.`
+              : `Reuse: checking run ${reuseId}…`}
         </p>
       )}
 
