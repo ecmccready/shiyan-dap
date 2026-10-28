@@ -262,4 +262,4 @@ Without Upstash credentials the micro-ledger falls back to per-instance memory (
 
 ## License
 
-This repository does not currently include a LICENSE file. Until the owner chooses one, default copyright applies (all rights reserved): the code is publicly viewable on GitHub but no right to copy, modify or redistribute it is granted. The `founder-z` dataset card lists its license as unspecified.
+Proprietary. All rights reserved by the owner. This repository has no LICENSE file by design: the code is publicly viewable on GitHub, but no right to copy, modify, redistribute or use it commercially is granted without the owner's written permission. The `founder-z` dataset card lists its license as unspecified.
