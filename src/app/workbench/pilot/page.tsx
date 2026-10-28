@@ -5,9 +5,14 @@ import EconomicBenefitForm from "@/components/EconomicBenefitForm";
 import PilotReadiness from "@/components/PilotReadiness";
 import ExternalConfirmation from "@/components/ExternalConfirmation";
 import JourneyNote from "@/components/JourneyNote";
+import SiteHeader from "@/components/SiteHeader";
 
 export default function PilotPage() {
   return (
+    <>
+    <div className="bg-black text-white">
+      <SiteHeader section="Pilot" />
+    </div>
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-xl font-semibold">Paid pilot</h1>
       <p className="text-sm text-neutral-700">Aethel Node proves that the next action is no longer a misdiagnosis.</p>
@@ -117,5 +122,6 @@ export default function PilotPage() {
         . Export the JSON from there before any commercial discussion.
       </p>
     </main>
+    </>
   );
 }
