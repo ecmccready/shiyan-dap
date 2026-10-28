@@ -8,6 +8,7 @@ import {
 import { parseReuseParam, findHighlighted } from "../src/lib/marketplace/listings";
 import { errorSurfaceFor, rankKey, surfaceNote, ERROR_SURFACE_SCHEMA } from "../src/lib/marketplace/error-surface";
 import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/peer";
+import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE } from "../src/lib/marketplace/peers";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -184,4 +185,42 @@ for (const x of pj.listings) {
 assert.deepEqual(pj.listings.map((x: { run_id: string }) => x.run_id), ["run_high", "run_tie_new", "run_tie_old", "run_low"], "order unchanged");
 assert.equal(buildIndex([]).peer_ready_count, 0);
 console.log("peer JSON        -> peer_ready, peer_status, peer_handoff_path per listing; peer_ready_count; order unchanged");
+
+// 14. Static peer registry (pure; no network, no store, no writes).
+const reg = buildPeerRegistry("https://shiyan-dap.vercel.app");
+assert.equal(reg.schema_version, PEERS_SCHEMA); assert.equal(reg.schema_version, "aethel.marketplace.peers.v1");
+assert.equal(reg.self_id, "self"); assert.equal(reg.peers[0].id, "self", "self first"); assert.equal(reg.peers[0].role, "self");
+assert.equal(reg.peers[0].status, "this_node");
+assert.equal(reg.peers[0].index_url, "https://shiyan-dap.vercel.app/workbench/marketplace");
+assert.equal(reg.peers[0].listings_url, "https://shiyan-dap.vercel.app/api/marketplace/listings");
+assert.equal(reg.peers.length, 3); assert.equal(reg.note, PEERS_REGISTRY_NOTE); assert.match(reg.note, /No discovery protocol/);
+for (const ph of reg.peers.slice(1)) {
+  assert.equal(ph.role, "placeholder"); assert.equal(ph.status, "placeholder");
+  assert.equal(ph.index_url, null); assert.equal(ph.listings_url, null); assert.equal(ph.note, PLACEHOLDER_NOTE);
+  assert.match(ph.name, /\(placeholder\)$/);
+}
+assert.deepEqual(reg.peers.map((x) => x.id), ["self", "peer-example-a", "peer-example-b"]);
+assert.equal(buildPeerRegistry("https://shiyan-dap.vercel.app/").peers[0].index_url, "https://shiyan-dap.vercel.app/workbench/marketplace", "trailing slash");
+assert.equal(buildPeerRegistry("http://localhost:3000").peers[0].listings_url, "http://localhost:3000/api/marketplace/listings", "local http");
+for (const bad of [null, undefined, "", "not a url", "javascript:alert(1)", "ftp://a.example", "https://u:p@a.example", "https://a.example/path", "https://a.example?x=1"]) {
+  const r = buildPeerRegistry(bad as string | null | undefined);
+  assert.equal(r.peers[0].index_url, "/workbench/marketplace", `relative fallback: ${String(bad)}`);
+  assert.equal(r.peers[0].listings_url, "/api/marketplace/listings");
+}
+assert.equal(normalizeOrigin("https://a.example///"), null, "path other than / is not an origin");
+assert.deepEqual(JSON.parse(JSON.stringify(reg)), reg, "JSON-safe and pure");
+assert.deepEqual(buildPeerRegistry("https://x.example"), buildPeerRegistry("https://x.example"), "pure");
+console.log("peer registry    -> self first, absolute URLs from origin, relative fallback, placeholders have null URLs, schema v1");
+
+// 15. Peer URL validator for future entries (https only, no credentials, no local/private hosts).
+for (const ok of ["https://peer.example.org", "https://peer.example.org/workbench/marketplace", "https://a.b.example.com:8443/api/marketplace/listings", "https://8.8.8.8/x"]) assert.equal(isValidPeerUrl(ok), true, ok);
+for (const bad of [
+  "http://peer.example.org", "https://user:pw@peer.example.org", "https://user@peer.example.org", "https://localhost/x", "https://localhost:3000",
+  "https://127.0.0.1", "https://127.1.2.3", "https://10.0.0.5", "https://192.168.1.1", "https://172.16.0.1", "https://172.31.255.255", "https://169.254.169.254",
+  "https://0.0.0.0", "https://100.64.0.1", "https://[::1]", "https://[fe80::1]", "https://[fd00::1]", "https://2130706433", "https://printer.local", "https://db.internal",
+  "https://intranet", "javascript:alert(1)", "ftp://peer.example.org", "file:///etc/passwd", "data:text/html,x", "", "not a url", "https://peer.example.org/a b",
+]) assert.equal(isValidPeerUrl(bad), false, bad);
+assert.equal(isValidPeerUrl("https://172.32.0.1"), true, "172.32 is public");
+assert.equal(isValidPeerUrl(null), false); assert.equal(isValidPeerUrl(undefined), false); assert.equal(isValidPeerUrl(42), false);
+console.log("peer url gate    -> https public hosts accepted; http, credentials, localhost, private/link-local IPs, IPv6, non-http schemes rejected");
 console.log("OK");

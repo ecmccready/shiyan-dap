@@ -3,6 +3,9 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import MarketplaceListings from "@/components/MarketplaceListings";
+import { buildPeerRegistry, PEERS_REGISTRY_NOTE } from "@/lib/marketplace/peers";
+
+const PEERS = buildPeerRegistry(null).peers;
 
 const LISTINGS = [
   {
@@ -46,6 +49,39 @@ export default function MarketplacePage() {
             <p className="text-zinc-500 text-xs">{item.status}</p>
           </section>
         ))}
+
+        <h2 className="text-xl font-semibold text-white mb-3">Known peers</h2>
+        <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300" aria-label="Known peers">
+          <p className="text-zinc-400 text-xs mb-3">{PEERS_REGISTRY_NOTE}</p>
+          <ul className="space-y-3">
+            {PEERS.map((peer) => (
+              <li key={peer.id} className="border border-zinc-800 rounded-xl p-3">
+                <p className="text-white">
+                  {peer.name}{" "}
+                  <span className="text-xs text-zinc-500">
+                    · {peer.status === "this_node" ? "this node" : "placeholder — not a live node"}
+                  </span>
+                </p>
+                {peer.index_url ? (
+                  <p className="text-xs mt-1">
+                    <Link className="underline" href={peer.index_url}>Marketplace index</Link>
+                    {peer.listings_url ? (
+                      <>
+                        {" · "}
+                        <a className="underline" href={peer.listings_url}>Listings JSON</a>
+                      </>
+                    ) : null}
+                  </p>
+                ) : (
+                  <p className="text-xs text-zinc-500 mt-1">{peer.note}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-zinc-500 mt-3">
+            The same list is available as JSON at <a className="underline" href="/api/marketplace/peers">/api/marketplace/peers</a>.
+          </p>
+        </section>
 
         <p className="text-sm text-zinc-300 mb-8">
           Same sealed sequence as the Safety and Shiyan plants. Φ stays inside the plant that produced it.
