@@ -5,6 +5,8 @@ import {
   buildListings, buildIndex, createLicenseIntent, reuseHref, licenseGate,
   LICENSE_INTENT_PHI_MIN, LISTINGS_SCHEMA, INTENT_SCHEMA, DEFAULT_DOMAIN,
 } from "../src/lib/marketplace/listings";
+import { parseReuseParam, findHighlighted } from "../src/lib/marketplace/listings";
+import { errorSurfaceFor, rankKey, surfaceNote, ERROR_SURFACE_SCHEMA } from "../src/lib/marketplace/error-surface";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -98,4 +100,55 @@ const idx = buildIndex(rankedEntries);
 assert.equal(idx.count, 4); assert.equal(idx.license_intent_phi_min, 0.01);
 assert.ok(idx.listings.every((x) => x.reuse_href.startsWith("/workbench/autonomous?reuse=")));
 console.log("index            -> schema, count, threshold, reuse hrefs");
+
+// 8. Error surface (display only): shape, placeholders null, nothing invented.
+const es = l.error_surface;
+assert.equal(es.schema_version, ERROR_SURFACE_SCHEMA); assert.equal(es.ranking_key, "phi");
+assert.deepEqual(es.primary, { axis: "phi", value: 0.014 });
+assert.deepEqual(es.axes.map((a) => a.axis), ["accuracy", "tensor_distance", "latency", "cost", "safety"]);
+const ax = (n: string) => es.axes.find((a) => a.axis === n)!;
+assert.equal(ax("accuracy").value, 0.151); assert.equal(ax("accuracy").status, "measured");
+assert.equal(ax("tensor_distance").value, 0.1); assert.equal(ax("tensor_distance").status, "measured");
+for (const n of ["latency", "cost", "safety"]) {
+  assert.equal(ax(n).value, null, n); assert.equal(ax(n).status, "placeholder", n);
+  assert.match(ax(n).note, /placeholder — not measured yet/, n);
+}
+assert.equal(surfaceNote(es), "[Φ 0.014 · e 0.151 · tensor 0.100 · latency — · cost — · safety —]");
+const noTd = run("run_notd"); delete (noTd[3] as Partial<ExperienceEntry>).tensor_distance;
+const esNo = buildListings(noTd)[0].error_surface;
+assert.equal(esNo.axes.find((a) => a.axis === "tensor_distance")!.value, null);
+assert.equal(esNo.axes.find((a) => a.axis === "tensor_distance")!.status, "placeholder", "absent tensor distance is not invented");
+assert.deepEqual(errorSurfaceFor({ phi: 0.014, final_e: 0.151, tensor_distance: 0.1 }), es, "pure: same input, same output");
+console.log("error surface    -> phi primary; e + tensor measured; latency/cost/safety null placeholders; " + surfaceNote(es));
+
+// 9. Ranking unchanged by the surface: Φ-only, rankKey is Φ, order matches the pre-surface expectation.
+assert.equal(rankKey(l), l.phi);
+const withTd = [
+  ...run("run_low", { phi: 0.02, t: "2026-10-26T00:00:00.000Z", extra: { tensor_distance: 0.0 } }),
+  ...run("run_tie_old", { phi: 0.05, t: "2026-10-20T00:00:00.000Z", extra: { tensor_distance: 0.15 } }),
+  ...run("run_high", { phi: 0.2, t: "2026-10-19T00:00:00.000Z", extra: { tensor_distance: 0.15 } }),
+  ...run("run_tie_new", { phi: 0.05, t: "2026-10-25T00:00:00.000Z", extra: { tensor_distance: 0.0 } }),
+];
+assert.deepEqual(buildListings(withTd).map((x) => x.run_id), ranked.map((x) => x.run_id), "order identical whatever the other axes hold");
+console.log("ranking hook     -> rankKey = Φ; order unchanged by tensor distance or any other axis");
+
+// 10. JSON index includes error_surface and keeps every existing field.
+const json = JSON.parse(JSON.stringify(buildIndex(rankedEntries)));
+assert.equal(json.schema, LISTINGS_SCHEMA);
+for (const x of json.listings) {
+  for (const k of ["run_id", "domain", "final_e", "baseline_e", "e0", "delta_e", "phi", "verified_at", "sequence", "reuse_href", "license_intent"]) assert.ok(k in x, k);
+  assert.equal(x.error_surface.ranking_key, "phi"); assert.equal(x.error_surface.primary.value, x.phi);
+  assert.equal(x.error_surface.axes.find((a: { axis: string }) => a.axis === "latency").value, null);
+}
+console.log("index JSON       -> error_surface on every listing; existing fields intact");
+
+// 11. Marketplace ?reuse= highlight parsing (pure).
+assert.equal(parseReuseParam("?reuse=run_ok"), "run_ok");
+assert.equal(parseReuseParam("reuse=run_ok&x=1"), "run_ok");
+assert.equal(parseReuseParam(""), null); assert.equal(parseReuseParam("?reuse="), null);
+assert.equal(parseReuseParam("?reuse=../etc"), null); assert.equal(parseReuseParam("?reuse=<script>"), null);
+assert.equal(findHighlighted(ranked, "run_high")?.run_id, "run_high");
+assert.equal(findHighlighted(ranked, "run_missing"), null, "not a listing -> note, no error");
+assert.equal(findHighlighted(ranked, null), null);
+console.log("reuse highlight  -> valid id highlights its listing; unknown or malformed id yields null (note only)");
 console.log("OK");

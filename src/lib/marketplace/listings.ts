@@ -17,6 +17,7 @@
  */
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
 import { isReusable, sequenceOf } from "@/lib/level4/durable-self";
+import { errorSurfaceFor, rankKey, type ErrorSurface } from "@/lib/marketplace/error-surface";
 
 export const LISTINGS_SCHEMA = "aethel.marketplace.listings.v1";
 export const INTENT_SCHEMA = "aethel.marketplace.license_intent.v1";
@@ -54,6 +55,10 @@ export type MarketplaceListing = {
   /** Relative path; the run page still applies its replay vet and falls back with a reason. */
   reuse_href: string;
   license_intent: LicenseIntentGate;
+  /** The record's tensor-check distance when stored; null otherwise. Additive field. */
+  tensor_distance: number | null;
+  /** Display-only multi-dimensional note (error-surface.ts). Φ remains the only ranking key. Additive field. */
+  error_surface: ErrorSurface;
 };
 
 export type ListingsIndex = {
@@ -66,6 +71,22 @@ export type ListingsIndex = {
 
 const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
 const r3 = (n: number) => Number(n.toFixed(3));
+
+const RUN_ID_RE = /^[A-Za-z0-9_-]{1,80}$/;
+
+/**
+ * Parse the optional `?reuse=<run_id>` on the marketplace page (pure, read-only). Returns the run id only when it
+ * is a plausibly valid id; otherwise null. Accepts a `location.search` string with or without the leading "?".
+ */
+export function parseReuseParam(search: string): string | null {
+  const v = new URLSearchParams(search).get("reuse");
+  return v !== null && RUN_ID_RE.test(v) ? v : null;
+}
+
+/** Where a `?reuse=` id points: the matching listing, or null when it is not a verified listing. */
+export function findHighlighted(listings: MarketplaceListing[], reuseId: string | null): MarketplaceListing | null {
+  return reuseId ? (listings.find((l) => l.run_id === reuseId) ?? null) : null;
+}
 
 export function reuseHref(runId: string): string {
   return `/workbench/autonomous?reuse=${encodeURIComponent(runId)}`;
@@ -113,6 +134,7 @@ export function buildListings(
     const recordedDelta = num(x.delta_e);
     const hasDomain = typeof x.system === "string" && x.system.length > 0;
     const phi = x.phi as number;
+    const tensorDistance = num(x.tensor_distance);
     out.push({
       idx,
       l: {
@@ -128,11 +150,14 @@ export function buildListings(
         sequence,
         reuse_href: reuseHref(x.run_id),
         license_intent: licenseGate(phi, threshold),
+        tensor_distance: tensorDistance,
+        error_surface: errorSurfaceFor({ phi, final_e: finalE, tensor_distance: tensorDistance }),
       },
     });
   }
   out.sort((a, b) => {
-    if (a.l.phi !== b.l.phi) return b.l.phi - a.l.phi;
+    // rankKey() is the ranking hook; today it is Φ alone, so the order is unchanged by the error surface.
+    if (rankKey(a.l) !== rankKey(b.l)) return rankKey(b.l) - rankKey(a.l);
     const ta = Date.parse(a.l.verified_at);
     const tb = Date.parse(b.l.verified_at);
     if (ta !== tb) return tb - ta;

@@ -87,4 +87,24 @@ assert.equal(notPermitted.plan, null); // nothing usable: caller keeps the built
 const strict = chooseDurableSource(list, permitted, "run_new", 0.0001, "run_a");
 assert.equal(strict.reuse?.status, "fallback"); // fails the replay vet against a tighter goal
 console.log("hand-off       -> applied; missing / self / bad id / not permitted / vet failure all fall back with a reason");
+
+// 7. Marketplace in the Do group: annotated, ranked first in Do, hands off ?reuse= for highlighting.
+assert.deepEqual(DOMAIN_GROUPS.map((g) => g.label), ["Know", "Know How", "Show", "Do"]);
+assert.deepEqual(
+  DOMAIN_GROUPS[3].items.map((i) => i.href),
+  ["/workbench#guided-run", "/workbench/outcome", "/workbench/client", "/workbench/offer", "/workbench/pilot", "/workbench/marketplace"],
+);
+assert.equal(items(empty).filter((i) => i.href === "/workbench/marketplace").length, 1, "listed once");
+assert.equal(find(empty, "Marketplace").phi, null);
+assert.equal(hrefFor(find(empty, "Marketplace")), "/workbench/marketplace"); // no data: plain navigation
+const mk2 = rankDomainGroups(DOMAIN_GROUPS, list);
+assert.equal(mk2[3].items[0].label, "Marketplace"); // annotated -> first in Do
+assert.deepEqual(mk2[3].items.slice(1).map((i) => i.label), ["Start a durable run", "Declare an outcome", "Client pipeline", "Offer", "Pilot"]);
+assert.equal(find(mk2, "Marketplace").phi, phi);
+assert.equal(phiSuffix(find(mk2, "Marketplace")), ` · Φ ${phi.toFixed(3)}`);
+assert.equal(hrefFor(find(mk2, "Marketplace")), "/workbench/marketplace?reuse=run_a");
+assert.equal(hrefFor(find(mk2, "Level 4 run")), "/workbench/autonomous?reuse=run_a", "Level 4 run unchanged");
+const bad2 = rankDomainGroups(DOMAIN_GROUPS, run("run_bad", { eligible: false }));
+assert.equal(find(bad2, "Marketplace").phi, null, "ineligible never annotates Marketplace");
+console.log("marketplace    -> Do group, first when annotated (Φ " + phi + "), href /workbench/marketplace?reuse=run_a; plain path with no data");
 console.log("OK");

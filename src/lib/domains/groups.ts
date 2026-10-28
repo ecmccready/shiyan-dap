@@ -6,7 +6,8 @@ import type { DomainGroup } from "./experience-rank";
  *
  * `experience` (optional) says which verified-experience records back an item, so the dropdown can annotate
  * it with the best eligible Φ (see experience-rank.ts). `{}` means all reusable records; `reuse: true` means
- * the destination accepts `?reuse=<run id>` (only /workbench/autonomous does).
+ * the destination accepts `?reuse=<run id>`: /workbench/autonomous (replays that sequence behind the replay vet)
+ * and /workbench/marketplace (read-only: highlights that run's listing).
  */
 export const REF_RUN = "run_mvmt18dm_dpbybz"; // recorded eligible Level 4 run
 
@@ -58,6 +59,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "Client pipeline", href: "/workbench/client" },
       { label: "Offer", href: "/workbench/offer" },
       { label: "Pilot", href: "/workbench/pilot" },
+      { label: "Marketplace", href: "/workbench/marketplace", experience: { reuse: true } },
     ],
   },
 ];

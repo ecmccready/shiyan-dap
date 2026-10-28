@@ -21,7 +21,7 @@ export type DomainExperienceScope = {
   systems?: string[];
   /** Only records written by this selector (ROE drive). */
   selector?: "roe_step_aware";
-  /** The destination accepts `?reuse=<run id>` (the Level 4 run page). */
+  /** The destination accepts `?reuse=<run id>`: the Level 4 run page (replay) and the marketplace page (highlight only). */
   reuse?: boolean;
 };
 

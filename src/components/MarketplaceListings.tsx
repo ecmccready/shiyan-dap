@@ -1,19 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
 import { loadExperienceCached } from "@/lib/domains/experience-cache";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import {
   buildListings,
   createLicenseIntent,
+  findHighlighted,
+  parseReuseParam,
   LICENSE_INTENT_PHI_MIN,
   NO_MONEY_NOTICE,
   type LicenseIntent,
   type MarketplaceListing,
 } from "@/lib/marketplace/listings";
 import { toLedgerEventShape } from "@/lib/marketplace/ledger-preview";
+import { surfaceNote, SURFACE_CAVEAT } from "@/lib/marketplace/error-surface";
 
 const fmt = (n: number | null) => (typeof n === "number" ? n.toFixed(3) : "—");
 
@@ -40,13 +43,19 @@ function IntentPanel({ intent }: { intent: LicenseIntent }) {
   );
 }
 
-function Row({ l }: { l: MarketplaceListing }) {
+function Row({ l, highlighted }: { l: MarketplaceListing; highlighted: boolean }) {
   const [intent, setIntent] = useState<LicenseIntent | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
   const allowed = l.license_intent.allowed;
   return (
-    <li className="border border-zinc-800 rounded-2xl p-5 mb-4 text-sm text-zinc-300" data-listing={l.run_id}>
+    <li
+      id={`listing-${l.run_id}`}
+      className={`border rounded-2xl p-5 mb-4 text-sm text-zinc-300 ${highlighted ? "border-emerald-500 ring-1 ring-emerald-500" : "border-zinc-800"}`}
+      data-listing={l.run_id}
+      data-highlighted={highlighted ? "true" : undefined}
+    >
       <h3 className="text-base font-semibold text-white mb-2 break-all">{l.run_id}</h3>
+      {highlighted && <p className="text-xs text-emerald-300 mb-2" data-reuse-highlight>Selected from the Domains menu (?reuse=). Read-only: nothing is applied until you click Reuse.</p>}
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
         <div><dt className="text-zinc-500 text-xs">Plant / domain</dt><dd>{l.domain}</dd></div>
         <div><dt className="text-zinc-500 text-xs">Final e</dt><dd>{fmt(l.final_e)}</dd></div>
@@ -56,10 +65,16 @@ function Row({ l }: { l: MarketplaceListing }) {
         <div><dt className="text-zinc-500 text-xs">Cold baseline e</dt><dd>{fmt(l.baseline_e)}</dd></div>
       </dl>
       <p className="mt-2 text-xs text-zinc-400"><span className="text-zinc-200">Sequence:</span> {l.sequence.join(" → ")}</p>
+      <p className="mt-2 text-xs text-zinc-400" data-error-surface title={l.error_surface.axes.map((a) => `${a.axis}: ${a.status} — ${a.note}`).join("\n")}>
+        <span className="text-zinc-200">Error surface (stub):</span> <code className="text-zinc-300">{surfaceNote(l.error_surface)}</code>
+        <span className="block text-zinc-500">{SURFACE_CAVEAT}</span>
+      </p>
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <Link
           href={l.reuse_href}
-          className="inline-flex h-9 items-center rounded-full border border-emerald-600 px-4 text-xs text-emerald-300 hover:border-emerald-400"
+          className={highlighted
+            ? "inline-flex h-9 items-center rounded-full bg-emerald-600 px-5 text-xs font-semibold text-black hover:bg-emerald-500"
+            : "inline-flex h-9 items-center rounded-full border border-emerald-600 px-4 text-xs text-emerald-300 hover:border-emerald-400"}
         >
           Reuse
         </Link>
@@ -91,6 +106,17 @@ export default function MarketplaceListings() {
     return () => { active = false; };
   }, []);
   const listings = useMemo(() => (entries ? buildListings(entries) : []), [entries]);
+  // Optional ?reuse=<run_id> from the Domains menu: highlight that listing (read-only). Read on the client only.
+  const search = useSyncExternalStore(
+    () => () => {},
+    () => window.location.search,
+    () => "",
+  );
+  const reuseId = parseReuseParam(search);
+  const highlighted = findHighlighted(listings, reuseId);
+  useEffect(() => {
+    if (highlighted) document.getElementById(`listing-${highlighted.run_id}`)?.scrollIntoView({ block: "center" });
+  }, [highlighted]);
   return (
     <section className="mb-10" aria-labelledby="live-listings">
       <h2 id="live-listings" className="text-xl font-semibold text-white mb-2">Live verified sequences</h2>
@@ -108,12 +134,21 @@ export default function MarketplaceListings() {
         License intent only records a copyable intent when Φ &gt; {LICENSE_INTENT_PHI_MIN}. {NO_MONEY_NOTICE} No payment,
         settlement or ledger write happens.
       </p>
+      <p className="text-xs text-zinc-500 mb-4">
+        Each listing carries a display-only error surface: Φ plus the axes already recorded (final e, tensor distance) and
+        placeholders for latency, cost and safety, which are not measured yet. Φ is the only ranking key.
+      </p>
+      {entries !== null && reuseId && !highlighted && (
+        <p className="text-xs text-amber-300 mb-4" data-reuse-note>
+          <code>{reuseId}</code> is not a verified listing right now (not eligible, not complete, or not in the store). Showing all listings.
+        </p>
+      )}
       {entries === null ? (
         <p className="text-sm text-zinc-500">Loading verified sequences…</p>
       ) : listings.length === 0 ? (
         <p className="text-sm text-zinc-500">No verified sequence with Φ &gt; 0 is available right now.</p>
       ) : (
-        <ul>{listings.map((l) => <Row key={l.run_id} l={l} />)}</ul>
+        <ul>{listings.map((l) => <Row key={l.run_id} l={l} highlighted={highlighted?.run_id === l.run_id} />)}</ul>
       )}
     </section>
   );
