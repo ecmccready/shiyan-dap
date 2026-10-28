@@ -34,32 +34,40 @@ Scope: Aethel Node, diagnostics and the related pipelines (Level 4 plant, safety
 
 ## Surfaces and the Domains dropdown
 
-Pages that use the shared header show a **Domains** dropdown listing every in-scope surface. Selecting an item navigates to it. The current page is preselected (longest matching path, so `/workbench/diagnostic/reference` shows Diagnostics); on a page with no entry the dropdown shows "Select domain".
+Pages that use the shared header show a **Domains** dropdown with four groups, Know, Know How, Show and Do, listing every in-scope surface plus live reference links. Selecting an item navigates to it. The current page is preselected (longest matching path, so `/workbench/diagnostic/reference` shows "Diagnostic reference fixture"); on a page with no entry, such as the homepage, it shows "Select domain". The ROE entry is preselected when `?roe_drive=1` is in the URL (set in the browser after load). Reference entries marked `Ref` open the live JSON record in the same tab and are never preselected (they have no header).
 
 | Group | Entry | Path |
 | --- | --- | --- |
-| Domains | Diagnostics | `/workbench/diagnostic` |
-| Domains | Safety | `/workbench/safety` |
-| Domains | Global · misdiagnosis | `/workbench/global` |
-| Level 3 / 4 | Level 4 run | `/workbench/autonomous` |
-| Level 3 / 4 | Level 4 status | `/workbench/status` |
-| Level 3 / 4 | ROE · Reciprocal Optimization Engine | `/workbench/autonomous?roe_drive=1` |
-| Level 3 / 4 | Level 3 Self() | `/workbench/self` |
-| Evidence | Proof | `/workbench/proof` |
-| Evidence | Shiyan + Model 3 proof | `/workbench/shiyan` |
-| Evidence | Result | `/workbench/result` |
-| Evidence | History | `/workbench/history` |
-| Evidence | Review | `/workbench/review` |
-| Workbench | Workspace | `/workbench/workspace` |
-| Workbench | Peer | `/workbench/peer` |
-| Workbench | Compare | `/workbench/compare` |
-| Workbench | MCP | `/workbench/mcp` |
-| Workbench | Actor network | `/workbench/network` |
-| Commercial | Client pipeline | `/workbench/client` |
-| Commercial | Offer | `/workbench/offer` |
-| Commercial | Pilot | `/workbench/pilot` |
+| Know | Diagnostics | `/workbench/diagnostic` |
+| Know | Diagnostic reference fixture | `/workbench/diagnostic/reference` |
+| Know | Safety | `/workbench/safety` |
+| Know | Global · misdiagnosis | `/workbench/global` |
+| Know | Level 4 status | `/workbench/status` |
+| Know | Review | `/workbench/review` |
+| Know How | Level 4 run | `/workbench/autonomous` |
+| Know How | ROE · Reciprocal Optimization Engine | `/workbench/autonomous?roe_drive=1` |
+| Know How | Level 3 Self() | `/workbench/self` |
+| Know How | Workspace | `/workbench/workspace` |
+| Know How | MCP | `/workbench/mcp` |
+| Know How | Actor network | `/workbench/network` |
+| Show | Proof | `/workbench/proof` |
+| Show | Result | `/workbench/result` |
+| Show | History | `/workbench/history` |
+| Show | Peer | `/workbench/peer` |
+| Show | Compare | `/workbench/compare` |
+| Show | Shiyan + Model 3 proof | `/workbench/shiyan` |
+| Show | Ref · Experience record (JSON) | `/api/level4/experience` |
+| Show | Ref · Verify eligible run (JSON) | `/api/level4/verify?run_id=run_mvmt18dm_dpbybz` |
+| Show | Ref · Anchor payload (JSON) | `/api/level4/anchor?run_id=run_mvmt18dm_dpbybz` |
+| Show | Ref · Audit summary (JSON) | `/api/v1/audit/summary` |
+| Show | Ref · Asset map (JSON) | `/api/v1/ledger/assets` |
+| Do | Start a durable run | `/workbench#guided-run` |
+| Do | Declare an outcome | `/workbench/outcome` |
+| Do | Client pipeline | `/workbench/client` |
+| Do | Offer | `/workbench/offer` |
+| Do | Pilot | `/workbench/pilot` |
 
-The homepage itself carries only the title, description, "Start a durable run" and the Create run button; everything else is reached through the dropdown.
+The verify and anchor references point at one recorded eligible run id, which is hard-coded in `src/components/SiteHeader.tsx` (`REF_RUN`) and must be updated if that run is retired. The homepage itself carries only the title, description, "Start a durable run" and the Create run button.
 
 Other live pages:
 
@@ -67,7 +75,6 @@ Other live pages:
 | --- | --- |
 | `/` | Commercial center |
 | `/workbench#guided-run` | Guided first run |
-| `/workbench/outcome` | Client declares a measurable goal |
 | `/workbench/autonomous/proof` | End-to-end recovery and gate proof |
 | `/workbench/marketplace` | Verified sequences (listing only; no trading or settlement) |
 | `/workbench/diagnostic/reference` | Evidence-gate reference fixture |
