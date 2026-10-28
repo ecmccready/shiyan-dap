@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import CopyVerificationSummary from "@/components/CopyVerificationSummary";
 
 type Row = {
   run_id: string;
@@ -109,6 +110,16 @@ export default function GlobalMisdiagnosisPage() {
               </div>
             </>
           )}
+        </section>
+
+        <section data-global-external-confirmation className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">
+          <p className="text-emerald-400 text-xs">External confirmation</p>
+          <p className="text-zinc-300">
+            The claims an outside party can check today, and what is not yet confirmed, are in the{" "}
+            <Link className="underline" href="/#outside-verification">&quot;What an outside party can verify today&quot; block on the homepage</Link>
+            {" "}and in <Link className="underline" href="/workbench/offer">/workbench/offer</Link>. The recorded runs above are our own, and Φ here is against a recorded baseline, not an independent cold run.
+          </p>
+          <CopyVerificationSummary />
         </section>
 
         <nav className="flex flex-wrap gap-4 text-sm">

@@ -60,6 +60,7 @@ export default function WorkbenchHome() {
         </section>
 
         <section
+          id="outside-verification"
           data-home-verify
           aria-labelledby="home-verify-heading"
           className="mt-8 max-w-2xl rounded-2xl border border-zinc-800 p-5 text-sm text-zinc-300"
