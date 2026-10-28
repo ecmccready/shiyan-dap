@@ -323,9 +323,6 @@ CASE INPUT  →  CONTROLLER A  →  WORKBENCH B  →  z
           <Link className="underline" href="/workbench">
             Outcome Engine
           </Link>
-          <Link className="underline" href="/workbench/marketplace">
-            Marketplace
-          </Link>
         </nav>
       </main>
     </div>
