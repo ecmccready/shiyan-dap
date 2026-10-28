@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import CopyVerificationSummary from "@/components/CopyVerificationSummary";
 import {
   LoopPlant,
   SAFETY_PACK,
@@ -304,6 +305,16 @@ CASE INPUT  →  CONTROLLER A  →  WORKBENCH B  →  z
             </table>
           </div>
         ) : null}
+
+        <section data-safety-external-confirmation className="mb-8 rounded-2xl border border-zinc-800 p-5 text-sm text-zinc-300">
+          <p className="text-xs text-emerald-400">External confirmation</p>
+          <p className="mt-2">
+            The claims an outside party can check today, and what is not yet confirmed, are in the{" "}
+            <Link className="underline" href="/#outside-verification">&quot;What an outside party can verify today&quot; block on the homepage</Link>
+            {" "}and in <Link className="underline" href="/workbench/offer">/workbench/offer</Link>. The Safety plants here are our own constructed cases, and no outside party has reviewed them.
+          </p>
+          <CopyVerificationSummary />
+        </section>
 
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/">
