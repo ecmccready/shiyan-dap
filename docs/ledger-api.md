@@ -139,29 +139,15 @@ curl -X DELETE "$HOST/api/v1/ledger/commit?assetId=live-test-20261025&purge=1" -
 
 Tool `agent-compute.record_compute_usage` (args: `model`, `tokens`, optional `computeSeconds`, optional `assetId` to chain records) commits an `AGENT_COMPUTE` event (server-signed; the title holds the usage summary, `duration` holds the compute seconds). Usage is self-reported, not metered. Optional estimate args: `estimatedFlops` (self-reported), or `modelParamsBillions` (FLOPs approximated as 2 x params x tokens when `estimatedFlops` is absent), and `costPer1kTokensUsd` (adds `tokens / 1000 x rate`). When any is given the event record carries `usageEstimate: {estimated: true, metered: false, flops?, costUsd?, basis, note}` (also in the tool result and the commit response). It is always an estimate, never metered, and only server-side plugin tools can set it: a `usageEstimate` in a client commit body is ignored. The estimate is bound to the event through `metadataHash`. Available over `POST /api/v1/plugins/tools/execute`, as `agent-compute__record_compute_usage` on `POST /api/mcp` (listed with `?plugins=1`), and in the Plugins panel (writes need `?demo=1`).
 
-## Music Studio one-action asset flow
-
-Tool `music-studio.create_music_asset`: registers a MUSIC_TRACK (title, optional `durationSeconds`, optional `splitRule`), runs the mock diagnostics scan on it, and commits a DIAGNOSTIC_AUDIT event carrying the same `splitRule`. Both are server-signed and chained (`audit.previousHash` = track `txHash`) in the off-chain micro-ledger; this is not a public blockchain. The audit event preserves the exact diagnostics outcome (`PASSED`, `FLAGGED` or `REJECTED`). Settlement (`settlementRail`, `settlementAmountCents`, `settlementCurrency`) applies to the track event only; the audit event settles internally so an external rail runs once. Writes count against the 20 per hour per IP limit (two per call).
-
-```bash
-curl -X POST $HOST/api/v1/plugins/tools/execute -H 'content-type: application/json' -d '{
-  "pluginId": "music-studio", "toolName": "create_music_asset",
-  "args": {"title": "Night Drive", "durationSeconds": 200,
-           "splitRule": [{"account": "acct_a", "percentage": 70}, {"account": "acct_b", "percentage": 30}]}}'
-```
-
-The response has `result` (assetId, trackTxHash, auditTxHash, audit, reasons), `ledgerTxHashes` and `ledgerRecords` (full records with `previousHash`, `signatureStatus`, `settlementRef`, `settlement`). In the UI, the Music Studio panel has a "Create track and run diagnostics" form (writes need `?demo=1`).
-
 ## Agents and MCP
 
 Plugin tools are available on the existing MCP endpoint `POST /api/mcp` without touching the Level 4 handler. Tool names are `<pluginId>__<toolName>`.
 
-- Discover (opt-in so the default list is unchanged): `POST /api/mcp?plugins=1` with `{"jsonrpc":"2.0","id":1,"method":"tools/list"}`. The Level 4 tools come first, then `music-studio__describe_track`, `music-studio__register_track`, `music-studio__create_music_asset`, `diagnostics-safety__run_diagnostic_scan`, `agent-compute__record_compute_usage`.
+- Discover (opt-in so the default list is unchanged): `POST /api/mcp?plugins=1` with `{"jsonrpc":"2.0","id":1,"method":"tools/list"}`. The Level 4 tools come first, then `diagnostics-safety__run_diagnostic_scan`, `agent-compute__record_compute_usage`.
 - Call (works on `/api/mcp` with or without `?plugins=1`):
 
 ```json
-{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"music-studio__register_track","arguments":{"title":"Night Drive"}}}
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"diagnostics-safety__run_diagnostic_scan","arguments":{"assetId":"trk_1","assetType":"AUDIO","contentHash":"<sha256>","title":"Night Drive"}}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"diagnostics-safety__run_diagnostic_scan","arguments":{"assetId":"asset_1","assetType":"AUDIO","contentHash":"<sha256>","title":"Example asset"}}}
 ```
 
 The result is a standard MCP tool result; `structuredContent` has `result`, `ledgerTxHashes` and `ledgerRecords`. Errors (bad args, rate limit) return `isError: true`. The same tools are listed read-only at `GET /api/v1/plugins/tools` and run over plain HTTP at `POST /api/v1/plugins/tools/execute`. In-process callers can use `workbenchRegistry.getAllTools()`.
@@ -172,11 +158,11 @@ The result is a standard MCP tool result; `structuredContent` has `result`, `led
 
 ### Simulated fingerprint (metadata only, not audio)
 
-**Limitation, read first:** the `fingerprint` is a hash of metadata. No audio is read, decoded or analysed for it, so it cannot match re-encodes, edits or copies of audio, and it must not be used as evidence of originality or infringement. The response says so explicitly: `fingerprintKind: "metadata_simulation"`, and `audioFingerprint: null` with `audioFingerprintStatus: "not_implemented"` and `audioFingerprintNote: "not_implemented: no audio bytes analyzed"` unless audio input is supplied (see the audio hook below), which the Music Studio panel also shows. Hook point for real fingerprinting: `computeAudioFingerprint()` in `src/services/diagnostics-core.ts`. Only the fingerprint and verdict would ever go on the ledger, never the audio, and the last `reasons` line starts with `SIMULATION ONLY`.
+**Limitation, read first:** the `fingerprint` is a hash of metadata. No audio is read, decoded or analysed for it, so it cannot match re-encodes, edits or copies of audio, and it must not be used as evidence of originality or infringement. The response says so explicitly: `fingerprintKind: "metadata_simulation"`, and `audioFingerprint: null` with `audioFingerprintStatus: "not_implemented"` and `audioFingerprintNote: "not_implemented: no audio bytes analyzed"` unless audio input is supplied (see the audio hook below). Hook point for real fingerprinting: `computeAudioFingerprint()` in `src/services/diagnostics-core.ts`. Only the fingerprint and verdict would ever go on the ledger, never the audio, and the last `reasons` line starts with `SIMULATION ONLY`.
 
-Audio hook (optional, content hash only): `POST /api/v1/diagnostics/scan` and the `create_music_asset` tool accept `audioBase64` (base64 or base64url, at most 2 MB decoded) or `audioHash` (64 hex SHA-256, optional `sha256:` prefix). The response `audioFingerprint` is then `sha256:<hex>` with `audioFingerprintStatus` `content_hash_only` (the server hashed the bytes it received) or `content_hash_provided` (the client supplied the hash; unverified), and `audioFingerprintNote` says so. Bytes win over a hash. With neither, or with invalid or oversized input, it stays `null` / `not_implemented` (`not_implemented: no audio bytes analyzed`). A SHA-256 of the file only matches byte-identical files: re-encoding, trimming or retagging changes it, so it is NOT a perceptual or acoustic fingerprint and is no evidence of originality or infringement. `fingerprintKind` stays `metadata_simulation` for the `fingerprint` field. The audio and the hash are not stored on the ledger, and the score and `certificateHash` are unchanged. Real fingerprinting (Chromaprint or a matching API) would replace the body of `computeAudioFingerprint()` in `src/services/diagnostics-core.ts` with a new status such as `computed`.
+Audio hook (optional, content hash only): `POST /api/v1/diagnostics/scan` accepts `audioBase64` (base64 or base64url, at most 2 MB decoded) or `audioHash` (64 hex SHA-256, optional `sha256:` prefix). The response `audioFingerprint` is then `sha256:<hex>` with `audioFingerprintStatus` `content_hash_only` (the server hashed the bytes it received) or `content_hash_provided` (the client supplied the hash; unverified), and `audioFingerprintNote` says so. Bytes win over a hash. With neither, or with invalid or oversized input, it stays `null` / `not_implemented` (`not_implemented: no audio bytes analyzed`). A SHA-256 of the file only matches byte-identical files: re-encoding, trimming or retagging changes it, so it is NOT a perceptual or acoustic fingerprint and is no evidence of originality or infringement. `fingerprintKind` stays `metadata_simulation` for the `fingerprint` field. The audio and the hash are not stored on the ledger, and the score and `certificateHash` are unchanged. Real fingerprinting (Chromaprint or a matching API) would replace the body of `computeAudioFingerprint()` in `src/services/diagnostics-core.ts` with a new status such as `computed`.
 
-The scan response, the Music Studio result and the last entry of `reasons` also carry `fingerprint` (`fp_` plus 16 hex) and `fingerprintVersion` (`sim-fp-v1`): a SHA-256 over the normalized title (lowercase, letters and digits only), the duration rounded to whole seconds, and the assetType. It is distinct from `certificateHash` (which also covers assetId, contentHash, text, score and verdict) and is stable across case, punctuation and sub-second duration differences. It is a simulation: a hash of metadata, not an audio fingerprint, and it knows nothing about the audio. It is not part of the `DiagnosticAuditResult` type or the ledger event.
+The scan response and the last entry of `reasons` also carry `fingerprint` (`fp_` plus 16 hex) and `fingerprintVersion` (`sim-fp-v1`): a SHA-256 over the normalized title (lowercase, letters and digits only), the duration rounded to whole seconds, and the assetType. It is distinct from `certificateHash` (which also covers assetId, contentHash, text, score and verdict) and is stable across case, punctuation and sub-second duration differences. It is a simulation: a hash of metadata, not an audio fingerprint, and it knows nothing about the audio. It is not part of the `DiagnosticAuditResult` type or the ledger event.
 
 ## Anchor root (preparation only)
 
@@ -190,7 +176,7 @@ Optional `network` (case-insensitive: `ethereum`, `sepolia`, `polygon`, `base`, 
 
 ## Cleaning up test data
 
-Test assets known on the production ledger: `live-test-20261025`, `trk_7bbda6ed`, `trk_654015ed`, `live-test-exec-20261025`, `live-test-music-20261025`. After `LEDGER_ADMIN_SECRET` is set in Vercel (and redeployed):
+Test assets known on the production ledger (legacy ids from earlier testing; some carry events from the removed music vertical, which stay readable and are not purged): `live-test-20261025`, `trk_7bbda6ed`, `trk_654015ed`, `live-test-exec-20261025`, `live-test-music-20261025`. After `LEDGER_ADMIN_SECRET` is set in Vercel (and redeployed):
 
 ```bash
 HOST=https://shiyan-dap.vercel.app LEDGER_ADMIN_SECRET=... scripts/purge-test-ledger.sh        # dry run, lists what is there
@@ -202,12 +188,6 @@ The equivalent single call is `DELETE /api/v1/ledger/commit?assetId=live-test-20
 ## Status
 
 `GET /api/v1/status` (read-only, no auth, a couple of cheap reads) returns registered plugins (`id`, `name`, `version`, `toolCount`), the ledger summary (`store`, `count` including hidden assets, `latestTxHash`), `config` booleans (`signingSecretConfigured`, `adminSecretConfigured`, `stripeKeyConfigured`, `ledgerStore`; never the values), supported `settlementRails`, `signatureTypes` and the write limit. The Plugins section of the workbench shows it as a collapsible status line.
-
-## Music Studio: optional wallet signature on `create_music_asset`
-
-Default is unchanged: both events (MUSIC_TRACK, DIAGNOSTIC_AUDIT) are server-signed (`verified`, `hmac`, no `siwe`). Optionally, `POST /api/v1/plugins/tools/execute` with `music-studio` / `create_music_asset` accepts `walletAddress`, `signature`, `siweMessage` (or `walletMessage`), `assetId` and `timestamp`. When a signature is present the MUSIC_TRACK event is committed with `signatureType: wallet` instead of the server HMAC, using the normal commit pipeline (EIP-191 recovery, SIWE parse and policy, server nonce, `cryptoVerified`, `overallValid`). The DIAGNOSTIC_AUDIT event stays server-signed because its timestamp and hash come from the scan and cannot be signed in advance.
-
-What you sign: the canonical string `<assetId>|MUSIC_TRACK|<timestamp>|<metadataHash>`, either directly (EIP-191) or inside a SIWE message (for example as its statement). `metadataHash` is the hex SHA-256 of `JSON.stringify({assetId, title, duration, splitRule})` (`duration` and `splitRule` omitted when not used; `title` trimmed; splits as `{account, percentage}`). So `assetId` and `timestamp` must be fixed by the client up front. Input errors return 500 from the tool with a message (signature without `assetId`, `timestamp` or a valid `walletAddress`, or wallet fields without a signature). A bad or mismatched signature does not fail the call: the record is stored `wallet_unverified` or `wallet_siwe_partial` like any wallet commit. A wallet record is never `verified`, so with a STRIPE rail it does not unlock transfers. Not tested with a real browser wallet.
 
 ## Self-reported economic benefit (`POST /api/v1/ledger/benefit`)
 

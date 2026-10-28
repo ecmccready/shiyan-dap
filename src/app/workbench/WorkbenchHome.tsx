@@ -111,7 +111,7 @@ export default function WorkbenchHome() {
               <Link className="underline" href="/workbench/client">Client pipeline</Link>
               <Link className="underline" href="/workbench/pilot">Pilot</Link>
               <Link className="underline" href="/workbench/offer">Offer</Link>
-              <Link className="underline" href="/offer">Offer (public)</Link>
+              <Link className="underline" href="/workbench/offer">Offer (public)</Link>
               <Link className="underline" href="/workbench/autonomous?roe_drive=1">ROE · Reciprocal Optimization Engine</Link>
             </div>
           </section>

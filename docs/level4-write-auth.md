@@ -10,10 +10,9 @@
 | `/api/level4/experience` | POST | GET (incl. `?format=ledger`) |
 | `/api/level4/acquisition` | POST | GET |
 | `/api/memory` | POST (commits to the founder-z HF dataset) | GET |
-| `/api/mint` | POST (commits `mints/*.json` to HF when `HF_TOKEN` is set) | — |
 | `/api/level4/tensor-check` | — (stateless POST, stores nothing; left public) | GET, POST |
 
-Browser callers of `/api/memory` and `/api/mint` (`src/lib/outcomes.ts`, `src/lib/validation.ts`, `/nfts`, `/outcomes`, `/upload`, `/tokens`) all use relative same-origin `fetch`, so they keep working under the default same-origin rule.
+Browser callers of `/api/memory` (`src/lib/outcomes.ts`, `/outcomes`) all use relative same-origin `fetch`, so they keep working under the default same-origin rule.
 
 ## Environment variables
 

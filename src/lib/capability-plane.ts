@@ -75,7 +75,7 @@ export const POINTS: CapabilityPoint[] = [
     capability: "Do",
     meaning: "Execute peer-to-peer. List only when final e falls. Φ > 0 is the only win.",
     surface: "Marketplace",
-    href: "/marketplace",
+    href: "/workbench/marketplace",
   },
 ];
 

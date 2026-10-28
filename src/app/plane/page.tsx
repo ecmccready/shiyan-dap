@@ -123,7 +123,7 @@ export default function PlanePage() {
           <Link className="underline" href="/architecture">Architecture</Link>
           <Link className="underline" href="/workbench">Workbench B</Link>
           <Link className="underline" href="/workbench/proof">Proof</Link>
-          <Link className="underline" href="/marketplace">Marketplace</Link>
+          <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
           <Link className="underline" href="/api/plane">Plane JSON</Link>
         </nav>
       </main>

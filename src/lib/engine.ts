@@ -1,7 +1,7 @@
 /**
  * Sovereign orchestration hook.
  * Pass an environment schema + error function. That is a new workbench.
- * Music / safety / compliance are schemas, not engine branches.
+ * Safety / compliance are schemas, not engine branches.
  */
 import {
   Gate,

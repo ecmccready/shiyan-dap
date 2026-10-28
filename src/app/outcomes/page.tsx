@@ -47,13 +47,13 @@ export default function OutcomesPage() {
         <p className="text-zinc-400 mb-6">
           Browser ledger first. Hugging Face is the durable copy.
         </p>
-        <p className="text-xl font-semibold mb-8">{z || "Measure on Learn."}</p>
+        <p className="text-xl font-semibold mb-8">{z || "No outcome recorded yet."}</p>
         <div className="flex flex-wrap gap-3 mb-8">
           <Link
-            href="/measurements"
+            href="/workbench/result"
             className="h-11 px-5 rounded-full bg-emerald-600 text-sm inline-flex items-center"
           >
-            Learn
+            Result
           </Link>
           <button onClick={persist} className="h-11 px-5 rounded-full border border-zinc-700 text-sm">
             Persist to Hugging Face

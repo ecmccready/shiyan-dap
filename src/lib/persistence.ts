@@ -32,18 +32,14 @@ export function getPersistencePlan(): PersistencePlan {
       region: "us-west-2 (preferred starting region)",
     },
     stores: [
-      "clusters / marketplace inventory",
-      "tokens and token transactions",
-      "NFTs",
+      "verified sequences / marketplace inventory",
       "outcomes / .self() measurements",
-      "user Social Transmedia inputs",
     ],
     notes: [
       "Keep local/memory mode as the default during JIT development.",
       "Do not couple pages or API routes directly to AWS SDKs.",
       "Grok Bot, Model Adapter, and GTP remain portable above storage.",
-      "Music + AI content assets will later live in S3, with cluster metadata in the database.",
-      "Ad-based signals and token events should persist so .self() can train across sessions.",
+      "Large artifacts will later live in object storage, with metadata in the database.",
     ],
   };
 }

@@ -7,7 +7,7 @@ export type Check = {
 };
 
 export type DiagnosticState = {
-  domain: "music" | "safety";
+  domain: "safety";
   candidate: string | null;
   status: "validated" | "unresolved";
   required: string[];

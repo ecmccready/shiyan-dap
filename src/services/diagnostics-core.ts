@@ -23,7 +23,7 @@ export interface AudioFingerprintInfo {
 }
 export const AUDIO_FINGERPRINT_PLACEHOLDER: AudioFingerprintInfo = { fingerprintKind: 'metadata_simulation', audioFingerprint: null, audioFingerprintStatus: 'not_implemented', audioFingerprintNote: AUDIO_FINGERPRINT_NOTE };
 
-/** Largest audio payload the scan route and the Music Studio tool accept inline (decoded bytes). */
+/** Largest audio payload the scan route accepts inline (decoded bytes). */
 export const MAX_AUDIO_BYTES = 2 * 1024 * 1024;
 
 /**

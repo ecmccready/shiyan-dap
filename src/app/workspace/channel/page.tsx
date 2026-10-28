@@ -27,13 +27,13 @@ export default function ChannelPage() {
         </div>
         <div className="border border-emerald-800 rounded-lg p-4">
           <p className="text-xs text-emerald-400">CH-b</p>
-          <p className="text-lg">External B · $1</p>
+          <p className="text-lg">External B</p>
           <p className="text-xs text-zinc-500 mt-2">
             Authoritative when webhook observed=1. Founder here is
             still A.
           </p>
-          <Link className="text-sm underline" href="/offer">
-            Offer $1
+          <Link className="text-sm underline" href="/workbench/offer">
+            Pilot offer
           </Link>
         </div>
       </section>
@@ -57,12 +57,6 @@ E_B    = B_observed - B_pred`}
         </Link>
         <Link className="underline" href="/loop">
           Loop
-        </Link>
-        <Link className="underline" href="/proof">
-          Proof
-        </Link>
-        <Link className="underline" href="/nfts">
-          /nfts rail
         </Link>
       </nav>
     </main>

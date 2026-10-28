@@ -36,8 +36,7 @@ export default function ArchitecturePage() {
         </ul>
         <p className="text-zinc-400 text-sm">
           That triad is the product. Models do not sit outside it.
-          Intelligence is the measured reduction of e on B. Music rail
-          remains /nfts. Domain = safety opens the safety plant.
+          Intelligence is the measured reduction of e on B. Domain = safety opens the safety plant.
         </p>
         <p className="text-zinc-500 text-sm">
           Not SIMA 2. Not AGI. Not unsupervised clinical diagnosis or

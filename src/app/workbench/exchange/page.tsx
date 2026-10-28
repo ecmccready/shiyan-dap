@@ -34,23 +34,6 @@ export default function ExchangePage() {
       .catch(() => setNote("Experience API did not answer."));
   }, []);
 
-  async function buy() {
-    setNote("Opening Stripe for a Safety proof…");
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        assetId: "safety_proof_001",
-        title: "Safety proof · measured run",
-        cluster: "B",
-        offerId: "OFFER-safety-proof-001",
-      }),
-    });
-    const data = await res.json();
-    if (data.url) window.location.href = data.url;
-    else setNote(data.error || "Checkout did not return a URL.");
-  }
-
   async function register(e: React.FormEvent) {
     e.preventDefault();
     const res = await fetch("/api/experience", {
@@ -78,7 +61,7 @@ export default function ExchangePage() {
         <p className="text-zinc-500 text-sm max-w-2xl mb-8">{note}</p>
 
         <pre className="text-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 mb-8 overflow-auto leading-6 text-emerald-300">{`Workbench B → Run → Experience → /api/experience
-        ├─ Customers   checkout
+        ├─ Customers   pilot offer
         └─ Developers  register a B
                  ↓
         more workbenches only after a reference exists`}</pre>
@@ -107,11 +90,9 @@ export default function ExchangePage() {
           <section className="border border-zinc-800 rounded-2xl p-5">
             <p className="text-emerald-400 text-xs mb-2">Customers</p>
             <p className="text-sm text-zinc-400 mb-4">
-              Buy one measured Safety run. Stripe settles it, or the button shows the error.
+              No self-serve checkout. A measured run is offered through a pilot conversation.
             </p>
-            <button onClick={buy} className="h-11 px-5 rounded-full bg-emerald-600 text-sm">
-              Checkout Safety proof
-            </button>
+            <Link className="underline text-sm" href="/workbench/offer">Pilot offer</Link>
           </section>
           <section className="border border-zinc-800 rounded-2xl p-5">
             <p className="text-emerald-400 text-xs mb-2">Developers</p>
@@ -127,7 +108,7 @@ export default function ExchangePage() {
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/workbench">Workbench B</Link>
           <Link className="underline" href="/workbench/proof">Proof</Link>
-          <Link className="underline" href="/marketplace">Marketplace</Link>
+          <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
         </nav>
       </main>
     </div>

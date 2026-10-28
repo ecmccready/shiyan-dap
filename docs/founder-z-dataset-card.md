@@ -8,7 +8,6 @@ language:
 tags:
   - outcome-learning
   - event-log
-  - music
   - autonomous-agents
   - shiyan-dap
   - aethel-node
@@ -30,6 +29,8 @@ configs:
 ---
 
 # founder-z
+
+> **Historical note.** Records dated before 2026-10-27 come from a music vertical and its mint-queue route, both removed from the app. They are kept as published history only; the app no longer writes mint records or music-related events.
 
 > **Dataset Viewer note.** The Hub's Dataset Viewer shows a `CastError` for this repo because the JSON files have mixed schemas (older and newer outcome files, events, mints and `latest-z.json` differ in shape). The data is intact; load files directly instead:
 >

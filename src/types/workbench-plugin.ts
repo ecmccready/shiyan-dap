@@ -21,7 +21,7 @@ export interface ExecutionContext {
 }
 
 export interface WorkbenchPlugin {
-  id: string; // e.g., 'music-studio', 'diagnostics-safety'
+  id: string; // e.g., 'diagnostics-safety'
   name: string;
   version: string;
   registerTools: () => AgentTool[];

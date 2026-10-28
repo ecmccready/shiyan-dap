@@ -37,7 +37,7 @@ export default function SaasPricingPage() {
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/saas">SaaS frame</Link>
           <Link className="underline" href="/workbench">Charge a Safety run</Link>
-          <Link className="underline" href="/offer">Music offer</Link>
+          <Link className="underline" href="/workbench/offer">Pilot offer</Link>
         </nav>
       </main>
     </div>

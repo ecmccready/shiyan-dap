@@ -75,9 +75,9 @@ export default function LedgerPage() {
           <Link className="underline" href="/workspace">
             /workspace
           </Link>{" "}
-          or calibrate on{" "}
-          <Link className="underline" href="/offer">
-            /offer
+          or review the pilot path on{" "}
+          <Link className="underline" href="/workbench/offer">
+            /workbench/offer
           </Link>
           .
         </p>
@@ -106,11 +106,8 @@ export default function LedgerPage() {
         <Link className="underline" href="/workspace/channel">
           Channel
         </Link>
-        <Link className="underline" href="/offer">
+        <Link className="underline" href="/workbench/offer">
           Offer
-        </Link>
-        <Link className="underline" href="/proof">
-          Proof
         </Link>
       </nav>
     </main>

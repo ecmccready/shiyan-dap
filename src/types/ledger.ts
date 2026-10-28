@@ -1,6 +1,6 @@
 /** Micro-ledger API contract. Distinct from the localStorage ledger in src/lib/ledger.ts. */
 
-export type AssetDomain = 'MUSIC_TRACK' | 'STEM' | 'DIAGNOSTIC_AUDIT' | 'AGENT_COMPUTE' | 'ECONOMIC_BENEFIT';
+export type AssetDomain = 'STEM' | 'DIAGNOSTIC_AUDIT' | 'AGENT_COMPUTE' | 'ECONOMIC_BENEFIT';
 export const LEDGER_AUDIT_STATUSES = ['PENDING', 'PASSED', 'FLAGGED', 'REJECTED', 'FAILED'] as const;
 export type LedgerAuditStatus = (typeof LEDGER_AUDIT_STATUSES)[number];
 

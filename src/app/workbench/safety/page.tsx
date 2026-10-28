@@ -134,7 +134,7 @@ CASE INPUT  →  CONTROLLER A  →  WORKBENCH B  →  z
             href="/"
             className="h-11 px-5 rounded-full border border-zinc-700 text-sm inline-flex items-center"
           >
-            Music
+            Home
           </Link>
           <Link
             href="/workbench"
@@ -307,12 +307,12 @@ CASE INPUT  →  CONTROLLER A  →  WORKBENCH B  →  z
 
         <nav className="flex flex-wrap gap-4 text-sm">
           <Link className="underline" href="/">
-            Music home
+            Home
           </Link>
           <Link className="underline" href="/workbench">
             Outcome Engine
           </Link>
-          <Link className="underline" href="/marketplace">
+          <Link className="underline" href="/workbench/marketplace">
             Marketplace
           </Link>
         </nav>

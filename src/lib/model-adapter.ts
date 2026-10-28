@@ -21,7 +21,7 @@ export interface ModelResponse {
 }
 
 const NARRATIVE_CLEANING_PROMPT =
-  "You are a precise cleaning and structuring assistant for the Shiyan Yishu Generative Transform Protocol. Clean and lightly normalize the user's narrative. Keep the original meaning. Return only the cleaned text.";
+  "You are a precise cleaning and structuring assistant for the Aethel Node pipeline. Clean and lightly normalize the user's text. Keep the original meaning. Return only the cleaned text.";
 
 export function normalizeNarrativeText(raw?: string | null): string {
   if (typeof raw !== "string") return "";

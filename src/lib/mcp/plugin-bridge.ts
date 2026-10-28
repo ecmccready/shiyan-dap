@@ -1,7 +1,7 @@
 import { listPluginTools } from '@/lib/plugin-tools';
 import { executePluginTool } from '@/lib/plugin-exec';
 
-/** MCP tool name for a plugin tool: `<pluginId>__<toolName>`, e.g. `music-studio__create_music_asset`. */
+/** MCP tool name for a plugin tool: `<pluginId>__<toolName>`, e.g. `agent-compute__<tool>`. */
 export const pluginMcpName = (pluginId: string, toolName: string) => `${pluginId}__${toolName}`;
 
 export function pluginMcpTools() {

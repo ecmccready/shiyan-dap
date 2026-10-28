@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { runAB, type ABAction, type Actor } from "@/lib/actors";
 import { Self, computeB, readOutcomes } from "@/lib/outcomes";
@@ -88,17 +87,6 @@ export default function ABPage() {
           )}
         </section>
 
-        <div className="flex flex-wrap gap-3">
-          <Link href="/measurements" className="h-11 px-6 rounded-full bg-emerald-600 text-sm inline-flex items-center">
-            Learn
-          </Link>
-          <Link href="/protocol" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
-            Protocol
-          </Link>
-          <Link href="/nfts" className="h-11 px-6 rounded-full border border-zinc-700 text-sm inline-flex items-center">
-            Prove
-          </Link>
-        </div>
       </main>
     </div>
   );

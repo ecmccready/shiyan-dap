@@ -92,7 +92,7 @@ export function sanitizeUsageEstimate(x: unknown): UsageEstimate | undefined {
     note: 'self-reported estimate, not metered',
   };
 }
-const DOMAINS: AssetDomain[] = ['MUSIC_TRACK', 'STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE', 'ECONOMIC_BENEFIT'];
+const DOMAINS: AssetDomain[] = ['STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE', 'ECONOMIC_BENEFIT'];
 const g = globalThis as unknown as {
   __ledgerMem?: Array<LedgerEventPayload & { txHash: string }>;
   __ledgerHeads?: Map<string, string>;

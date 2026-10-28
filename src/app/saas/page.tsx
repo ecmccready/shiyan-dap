@@ -79,7 +79,7 @@ export default function SaasPage() {
           <Link className="underline" href="/workbench/mcp">MCP</Link>
           <Link className="underline" href="/workbench/proof">Proof</Link>
           <Link className="underline" href="/audit">Audit</Link>
-          <Link className="underline" href="/marketplace">Marketplace</Link>
+          <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
         </nav>
       </main>
     </div>

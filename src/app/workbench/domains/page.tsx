@@ -20,7 +20,7 @@ export default function DomainsPage() {
         <p className="text-emerald-400 text-xs uppercase tracking-widest">Generic B</p>
         <h1 className="text-3xl font-bold">The vertical demonstrates the engine. It does not imprison it.</h1>
         <p className="text-zinc-400">
-          Music and Safety are the plants that exist. A new Workbench speaks MCP. It does not fork Controller A.
+          Diagnostics and Safety are the plants that exist. A new Workbench speaks MCP. It does not fork Controller A.
           Named below is not built, and not measured.
         </p>
         <ul className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">

@@ -1,11 +1,10 @@
 import { workbenchRegistry } from '@/plugins';
 import { commitLedgerEvent } from '@/lib/ledger-commit';
 import { allowLedgerWrite } from '@/lib/ledger-guard';
-import { siweExpectedDomains } from '@/lib/ledger-siwe-domains';
 import type { AssetDomain, LedgerEventPayload } from '@/types/ledger';
 import type { ExecutionContext, LedgerHookEvent } from '@/types/workbench-plugin';
 
-const DOMAINS: AssetDomain[] = ['MUSIC_TRACK', 'STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE'];
+const DOMAINS: AssetDomain[] = ['STEM', 'DIAGNOSTIC_AUDIT', 'AGENT_COMPUTE'];
 
 export interface PluginExecOutcome {
   ok: boolean;
@@ -47,23 +46,11 @@ export async function executePluginTool(
         throw new Error('rate limit: too many ledger writes from this address, try later');
       }
       const p = event.payload as Partial<LedgerEventPayload['stateData']>;
-      // Optional wallet path (create_music_asset, MUSIC_TRACK event only): a client-supplied wallet signature replaces the server
-      // HMAC for this one event. The signature is checked by the normal commit pipeline (EIP-191 + SIWE), never trusted here.
-      const w = event.payload.wallet as { address?: unknown; signature?: unknown; siweMessage?: unknown; walletMessage?: unknown } | undefined;
-      const wallet = w && typeof w.signature === 'string'
-        ? {
-            signature: w.signature,
-            address: typeof w.address === 'string' ? w.address.slice(0, 100) : undefined,
-            siweMessage: typeof w.siweMessage === 'string' ? w.siweMessage.slice(0, 2000) : undefined,
-            walletMessage: typeof w.walletMessage === 'string' ? w.walletMessage.slice(0, 2000) : undefined,
-          }
-        : undefined;
       const res = await commitLedgerEvent(
         {
           domain: event.action as AssetDomain,
           assetId: event.assetId,
           timestamp: event.timestamp,
-          ...(wallet ? { signature: wallet.signature } : {}),
           stateData: {
             title: p.title,
             duration: p.duration,
@@ -73,9 +60,7 @@ export async function executePluginTool(
           },
         },
         {
-          ...(wallet
-            ? { signatureType: 'wallet', walletAddress: wallet.address, siweMessage: wallet.siweMessage, walletMessage: wallet.walletMessage, siweExpectedDomains: siweExpectedDomains(req) }
-            : { serverSign: true }),
+          serverSign: true,
           settlementRail: typeof event.payload.settlementRail === 'string' ? event.payload.settlementRail : undefined,
           settlementAmountCents: typeof event.payload.settlementAmountCents === 'number' ? event.payload.settlementAmountCents : undefined,
           settlementCurrency: typeof event.payload.settlementCurrency === 'string' ? event.payload.settlementCurrency : undefined,

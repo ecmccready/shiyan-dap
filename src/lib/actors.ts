@@ -56,7 +56,7 @@ export function runAB(input: {
     action,
     y_before: before,
     y_after: after,
-    vertical: "music",
+    vertical: "diagnostics",
     agent: actor === "A" ? AGENT_A : CONTROLLED_B,
     simulated: false,
   });

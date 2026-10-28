@@ -180,13 +180,9 @@ export default function LoopPage() {
         )}
 
         <p className="text-sm text-zinc-500 mt-8">
-          Music still proves on{" "}
-          <Link className="underline" href="/nfts">
-            /nfts
-          </Link>
-          . e listings live on{" "}
-          <Link className="underline" href="/marketplace">
-            /marketplace
+          Verified sequences are listed on{" "}
+          <Link className="underline" href="/workbench/marketplace">
+            /workbench/marketplace
           </Link>
           .
         </p>

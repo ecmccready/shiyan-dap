@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Note: these are legacy test ids from earlier testing (the "music" id is a historical test label, not a live feature).
 # Purges the known test assets from the micro-ledger (permanent). Needs LEDGER_ADMIN_SECRET set on the
 # server and exported here. Dry run by default; pass --yes to purge. Usage:
 #   HOST=https://shiyan-dap.vercel.app LEDGER_ADMIN_SECRET=... scripts/purge-test-ledger.sh [--yes]

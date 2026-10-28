@@ -1,20 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { writeVertical } from "@/lib/verticles";
+import { usePathname } from "next/navigation";
 
 const NAV = [
   { href: "/", label: "Workbench" },
-  { href: "/workbench/music", label: "Music" },
   { href: "/#guided-run", label: "New run" },
+  { href: "/workbench/diagnostic", label: "Diagnostics" },
   { href: "/workbench/marketplace", label: "Marketplace" },
 ];
 
 // Hidden on the Workbench home page only; other pages keep them.
-const HOME_HIDDEN = new Set(["/", "/workbench", "/workbench/music", "/emergence", "/#guided-run", "/workbench#guided-run", "/workbench/marketplace", "/playlist", "/single"]);
-// Hidden on /workbench/status only.
-const STATUS_HIDDEN = new Set(["/", "/workbench", "/workbench/music", "/emergence", "/workbench/marketplace", "/playlist", "/single"]);
+const HOME_HIDDEN = new Set(["/", "/workbench", "/#guided-run", "/workbench#guided-run", "/workbench/diagnostic", "/workbench/marketplace"]);
 // Level 4 pages that share the trimmed /workbench/status header (exact paths; query ignored).
 const TRIMMED_PATHS = new Set([
   "/",
@@ -29,38 +26,15 @@ const TRIMMED_PATHS = new Set([
 
 export default function SiteHeader({ section }: { section?: string }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const isWorkbenchMarketplace = pathname === "/workbench/marketplace";
-  const isWorkbenchDiagnostic = pathname === "/workbench/diagnostic";
-  const isWorkbenchMusic = pathname === "/workbench/music";
-  const isPlaylistPage = pathname === "/playlist";
   const isWorkbenchLanding = pathname === "/" || pathname === "/workbench";
-  const isDomainPromptPage = isWorkbenchLanding || TRIMMED_PATHS.has(pathname);
-  const isFocusedWorkbenchPage = isWorkbenchMarketplace || isWorkbenchDiagnostic;
-  const selectedDomain =
-    pathname === "/workbench/diagnostic" ||
-    pathname === "/workbench/diagnostic/reference" ||
-    pathname === "/workbench/diagnostics"
-      ? "diagnostics"
-      : isDomainPromptPage
-        ? ""
-        : "music";
-  const nav =
-    isWorkbenchMusic || isPlaylistPage
-      ? []
-      : isFocusedWorkbenchPage
-      ? NAV.filter((n) => n.label !== "Music")
-      : isWorkbenchLanding
+  const isFocused = pathname === "/workbench/marketplace" || pathname === "/workbench/diagnostic";
+  const nav = isFocused
+    ? NAV.filter((n) => n.href !== pathname)
+    : isWorkbenchLanding
       ? NAV.filter((n) => !HOME_HIDDEN.has(n.href))
       : TRIMMED_PATHS.has(pathname)
-        ? NAV.filter((n) => !STATUS_HIDDEN.has(n.href))
+        ? NAV.filter((n) => n.label === "Diagnostics" || n.label === "Marketplace")
         : NAV;
-  // Upload is hidden on focused Workbench pages and trimmed Level 4 pages.
-  const showUpload =
-    pathname !== "/" &&
-    pathname !== "/workbench" &&
-    !TRIMMED_PATHS.has(pathname) &&
-    !isFocusedWorkbenchPage;
 
   return (
     <header className="border-b border-zinc-800">
@@ -73,10 +47,6 @@ export default function SiteHeader({ section }: { section?: string }) {
             <span className="text-zinc-500 text-sm">
               {TRIMMED_PATHS.has(pathname) ? section.replace(/\s*·\s*Level 4$/, "") : section}
             </span>
-          ) : !section ? (
-            <Link href="/workbench/music" className="text-zinc-500 text-sm hover:text-white">
-              Music
-            </Link>
           ) : null}
         </div>
         {nav.length > 0 && (
@@ -87,36 +57,6 @@ export default function SiteHeader({ section }: { section?: string }) {
               </Link>
             ))}
           </nav>
-        )}
-        {!isWorkbenchMarketplace && (
-          <label className="flex items-center gap-2 text-sm text-zinc-400">
-            Domains
-            <select
-              value={selectedDomain}
-              onChange={(e) => {
-                const id = e.target.value;
-                if (id === "diagnostics") {
-                  router.push("/workbench/diagnostic");
-                  return;
-                }
-                writeVertical("music");
-                router.push("/workbench/music");
-              }}
-              className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
-            >
-              {isDomainPromptPage && <option value="" disabled>Select domain</option>}
-              <option value="music">Music</option>
-              <option value="diagnostics">Diagnostics</option>
-            </select>
-          </label>
-        )}
-        {showUpload && (
-          <Link
-            href="/upload"
-            className="h-10 px-4 rounded-full bg-emerald-600 text-sm inline-flex items-center"
-          >
-            Upload
-          </Link>
         )}
       </div>
     </header>

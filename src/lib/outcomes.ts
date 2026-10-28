@@ -264,7 +264,7 @@ export function recordSelf() {
     action: "SELF",
     y_before: settled,
     y_after: settled,
-    vertical: "music",
+    vertical: "diagnostics",
     agent: "Self()",
     simulated: false,
   });
@@ -286,7 +286,7 @@ export function recordAudience(asset_id: string) {
     action: "OBSERVE_AUDIENCE",
     y_before: before,
     y_after: after,
-    vertical: "music",
+    vertical: "diagnostics",
     agent: "Agent A · ECMcCready",
     simulated: false,
   });
@@ -327,7 +327,7 @@ export function recordOutcome(input: {
     measurement_id: "m_" + Date.now(),
     asset_id: input.asset_id,
     action: input.action,
-    vertical: input.vertical || "music",
+    vertical: input.vertical || "diagnostics",
     agent: input.agent || "Controlled B · session",
     simulated: input.simulated ?? false,
     y_before: input.y_before,
@@ -353,11 +353,11 @@ export function recordOutcome(input: {
 export function recordBReturn() {
   const settled = yFromAsset("settled");
   const row = recordOutcome({
-    asset_id: "cl_sleep_terrors_001",
+    asset_id: "b_return_001",
     action: "RETURN",
     y_before: settled,
     y_after: settled,
-    vertical: "music",
+    vertical: "diagnostics",
     agent: "Controlled B · session",
     simulated: false,
   });

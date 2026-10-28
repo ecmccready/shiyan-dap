@@ -1,5 +1,5 @@
 ﻿import { redirect } from "next/navigation";
 
 export default function Dashboard() {
-  redirect("/measurements");
+  redirect("/workbench/status");
 } 
