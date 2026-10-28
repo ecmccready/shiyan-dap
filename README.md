@@ -178,7 +178,7 @@ One customer path over the existing surfaces. Nothing here is a new architecture
 
 ## External confirmation
 
-The homepage carries a short "What an outside party can verify today" block with the same pointers (Safety-proof wins, MCP commercial case, evidence pack, and what is not yet confirmed); the full text is on `/workbench/offer` and `/workbench/pilot`.
+The homepage carries a short "What an outside party can verify today" block with the same pointers (Safety-proof wins, MCP commercial case, evidence pack, and what is not yet confirmed); the full text is on `/workbench/offer` and `/workbench/pilot`. A "Copy verification summary" button in that block copies a short plain-text version (the three Safety-proof Φ values, the MCP commercial case with both Φ values, +0.159 and −0.051, the evidence pack and verify links, and the not-yet-confirmed line) with absolute links for sharing; it is static text and approves nothing.
 
 What an outside party can check today without the team narrating it:
 
