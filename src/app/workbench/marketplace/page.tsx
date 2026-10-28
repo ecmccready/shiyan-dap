@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import MarketplaceListings from "@/components/MarketplaceListings";
 
 const LISTINGS = [
   {
@@ -34,6 +35,9 @@ export default function MarketplacePage() {
           A listing is not a settled sale. An unsettled receipt is not revenue.
         </p>
 
+        <MarketplaceListings />
+
+        <h2 className="text-xl font-semibold text-white mb-3">Reference listings (static)</h2>
         {LISTINGS.map((item) => (
           <section key={item.id} className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
             <h2 className="text-lg font-semibold text-white mb-2">{item.title}</h2>

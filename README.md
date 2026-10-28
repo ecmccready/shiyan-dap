@@ -77,6 +77,14 @@ Pages that use the shared header show a **Domains** dropdown with four groups, K
 - **Reuse hand-off.** Choosing Level 4 run opens `/workbench/autonomous?reuse=<run id>`, where the run id is the record behind the shown Φ. The run page loads that run's ordered action sequence as its durable plan only if it passes the same gates as the best-Φ durable feed (reusable record, contiguous sequence, permitted actions, and the client-side replay vet against the built-in sequence and the goal threshold). Otherwise it falls back to the best durable plan, then the built-in sequence, and the page says why. `?durable=0` still disables it. The hand-off code is `src/lib/level4/reuse-handoff.ts`; the Level 4 loop, controller and engine are unchanged.
 - **Check it.** `npx tsx scripts/check-domain-rank.ts` runs the join, rank, href and fallback cases on fixture records with no network.
 
+**Marketplace: the Do-surface of the Verified Action OS.** `/workbench/marketplace` lists proven action sequences from the same experience records the Domains dropdown ranks (`GET /api/level4/experience` through the shared 30-second cached loader). It sits beside the Do group in the header and does not change the Domains table above. Code: `src/lib/marketplace/listings.ts` (pure join, rank and intent), `ledger-preview.ts`, `src/components/MarketplaceListings.tsx`, `src/app/api/marketplace/listings/route.ts`.
+
+- **Listing contract (`aethel.marketplace.listings.v1`).** One listing per run, only when the run has a reusable record (eligible, `COMPLETE`, Φ > 0, tensor within ε, contiguous sequence). Fields: `run_id` (the sequence reference; the store has no separate sequence ids), `domain` (the record's `system`, else "level4 plant"), `final_e`, `baseline_e` (recorded cold baseline), `e0`, `delta_e`, `phi`, `verified_at`, `sequence`, `reuse_href`, `license_intent`. Ranked by Φ descending; ties go to the later record. Φ = baseline_e − final_e, each run's own value against its recorded cold baseline, not an independent cold run. Δe = e0 − final_e, the store's recorded Δe from the run's starting error. They use different baselines.
+- **Peer index.** `GET /api/marketplace/listings` is public, read-only and cached for 30 seconds. It returns the same listings with `reuse_href` = `/workbench/autonomous?reuse=<run_id>`. Reuse still passes the run page's permitted-action check and replay vet and falls back with a reason. Listings are plain action lists with no model-specific fields.
+- **License intent (stub, no money moves).** "License intent" is enabled only when Φ > `LICENSE_INTENT_PHI_MIN` (0.01, a policy placeholder: ten times the 0.001 display precision and just under the one Φ verified in production, 0.014; not a price). It generates `{type: "license_intent", sequence_ref, phi, final_e, delta_e, threshold, created_at, settlement: "none — no money movement", status: "intent_only"}` in the browser for the user to copy, with a preview of the micro-ledger event shape (`toLedgerEventShape`, mirrors `LedgerEventPayload`). Nothing is posted or stored, there is no payment or settlement rail call, and the ledger is not written. Committing an intent through `/api/v1/ledger/commit` is a possible later step and is not wired.
+- **Gaps.** Production's experience store currently has four eligible runs, all with the same Φ 0.014 (the same sealed sequence on the same plant), so rank order by differing Φ is verified on fixtures only. No third-party attestation, no buyer, price or settlement, and no real money movement. The static reference listings further down the page predate this contract and remain unsettled.
+- **Check it.** `npx tsx scripts/check-marketplace.ts` runs the filter, rank, Δe, threshold, intent and href cases on fixture records with no network.
+
 The verify and anchor references point at one recorded eligible run id, which is hard-coded in `src/components/SiteHeader.tsx` (`REF_RUN`) and must be updated if that run is retired. The homepage itself carries the title, description, "Start a durable run", the Create run button, a compact external-confirmation block and a one-line pointer to the Domains menu.
 
 Other live pages:
@@ -86,7 +94,8 @@ Other live pages:
 | `/` | Commercial center |
 | `/workbench#guided-run` | Guided first run |
 | `/workbench/autonomous/proof` | End-to-end recovery and gate proof |
-| `/workbench/marketplace` | Verified sequences (listing only; no trading or settlement) |
+| `/workbench/marketplace` | Do-surface of the Verified Action OS: verified sequences with Φ > 0, one-click reuse, license intent (intent only; no trading or settlement) |
+| `/api/marketplace/listings` | Read-only JSON index of the same listings for peers and models |
 | `/workbench/diagnostic/reference` | Evidence-gate reference fixture |
 | `/workbench/independent`, `/workbench/independence` | MCP independent-plant comparisons |
 
