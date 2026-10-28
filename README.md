@@ -115,7 +115,7 @@ What is built:
 - Acquisition counters (`/api/level4/acquisition`) incremented atomically.
 - Guided first run at `/workbench#guided-run` (`/workbench/start` redirects there).
 - External client path: declare a goal (`/workbench/outcome`), run, view the verified result (`/workbench/result`, server-rendered from the durable store).
-- Status (`/workbench/status`) reads the durable store directly.
+- Status (`/workbench/status`) reads the durable store directly. It also carries the External confirmation note and the "Copy verification summary" button.
 
 Modules are under `src/lib/level4/`: controller, goal, loop, safety-gate, checkpoint, idempotency, precheck, verified, measured, server-record, acquisition, plus `systemic.ts` (the domain-agnostic view used for Global · misdiagnosis).
 
@@ -178,7 +178,7 @@ One customer path over the existing surfaces. Nothing here is a new architecture
 
 ## External confirmation
 
-The homepage carries a short "What an outside party can verify today" block with the same pointers (Safety-proof wins, MCP commercial case, evidence pack, and what is not yet confirmed); the full text is on `/workbench/offer` and `/workbench/pilot`. A "Copy verification summary" button in that block copies a short plain-text version (the three Safety-proof Φ values, the MCP commercial case with both Φ values, +0.159 and −0.051, the evidence pack and verify links, and the not-yet-confirmed line) with absolute links for sharing; the same button is in the External confirmation section on `/workbench/offer` and `/workbench/pilot` and on `/workbench/global`, `/workbench/diagnostic`, `/workbench/safety`, `/workbench/proof`, `/workbench/result` and `/workbench/workspace` (one shared component, `CopyVerificationSummary`). It is static text and approves nothing.
+The homepage carries a short "What an outside party can verify today" block with the same pointers (Safety-proof wins, MCP commercial case, evidence pack, and what is not yet confirmed); the full text is on `/workbench/offer` and `/workbench/pilot`. A "Copy verification summary" button in that block copies a short plain-text version (the three Safety-proof Φ values, the MCP commercial case with both Φ values, +0.159 and −0.051, the evidence pack and verify links, and the not-yet-confirmed line) with absolute links for sharing; the same button is in the External confirmation section on `/workbench/offer` and `/workbench/pilot` and on `/workbench/global`, `/workbench/diagnostic`, `/workbench/safety`, `/workbench/proof`, `/workbench/result`, `/workbench/workspace` and `/workbench/status` (one shared component, `CopyVerificationSummary`). It is static text and approves nothing.
 
 What an outside party can check today without the team narrating it:
 

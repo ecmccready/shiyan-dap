@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { loadAcquisitionServer } from "@/lib/level4/acquisition";
 import Level4Shell from "@/components/Level4Shell";
 import BenchmarkTable from "@/components/BenchmarkTable";
+import CopyVerificationSummary from "@/components/CopyVerificationSummary";
 import {
   loadExperienceServer,
   latestVerified,
@@ -150,6 +152,16 @@ export default function StatusPage() {
           </ul>
         </section>
       )}
+
+      <section data-status-external-confirmation className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-300">
+        <p className="text-xs text-emerald-400">External confirmation</p>
+        <p className="mt-2">
+          The claims an outside party can check today, and what is not yet confirmed, are in the{" "}
+          <Link className="underline" href="/#outside-verification">&quot;What an outside party can verify today&quot; block on the homepage</Link>
+          {" "}and in <Link className="underline" href="/workbench/offer">/workbench/offer</Link>. The runs and counts on this page were made by us, and no outside party has reviewed or replicated them.
+        </p>
+        <CopyVerificationSummary />
+      </section>
     </main>
     </Level4Shell>
   );
