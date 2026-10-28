@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CopyVerificationSummary from "@/components/CopyVerificationSummary";
 import { AGENT_ROLES_DOC_URL } from "@/lib/journey";
 
 const WORKFLOW_URL = `${AGENT_ROLES_DOC_URL}#external-confirmation-workflow`;
@@ -36,6 +37,9 @@ export default function ExternalConfirmation({ tone = "dark" }: { tone?: "dark" 
         <li>The anchor is a dry run: the Merkle root is prepared, nothing is submitted on-chain. The micro-ledger holds test events, not customer settlements.</li>
         <li>The proof plants and the commercial case are our own constructed cases, and the Level 4 runs were made by us.</li>
       </ul>
+      <div>
+        <CopyVerificationSummary tone={tone} />
+      </div>
       <p className={`text-xs ${muted}`}>
         Evidence goes to an outside party only after a person reviews it:{" "}
         <a className="underline" href={WORKFLOW_URL}>External confirmation workflow</a> (Agent B produces the pack and links, a human reviews, then it is shared).
