@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { newRunId, recordStartServer } from "@/lib/level4/acquisition";
 
@@ -55,6 +56,33 @@ export default function WorkbenchHome() {
             </button>
           </div>
           {startError && <p role="alert" className="mt-3 text-sm text-red-400">{startError}</p>}
+        </section>
+
+        <section
+          data-home-verify
+          aria-labelledby="home-verify-heading"
+          className="mt-8 max-w-2xl rounded-2xl border border-zinc-800 p-5 text-sm text-zinc-300"
+        >
+          <h2 id="home-verify-heading" className="text-base font-semibold">What an outside party can verify today</h2>
+          <ul className="mt-3 list-disc space-y-1.5 pl-5 text-xs">
+            <li>
+              Three Safety-proof error wins (Φ 0.014, 0.065, 0.065), recomputed in your browser on{" "}
+              <Link className="underline" href="/workbench/proof">/workbench/proof</Link>.
+            </li>
+            <li>
+              The MCP commercial case, Φ +0.159 against a greedy cold run, on a starting plant we constructed (on B1&apos;s
+              default start the same comparison is Φ −0.051, not a win):{" "}
+              <Link className="underline" href="/workbench/compare">/workbench/compare</Link>.
+            </li>
+            <li>
+              The evidence pack export on <Link className="underline" href="/workbench/result">/workbench/result</Link>, and
+              recorded runs replayable at <a className="underline" href="/api/level4/verify?run_id=run_mvmt18dm_dpbybz">/api/level4/verify</a>.
+            </li>
+          </ul>
+          <p className="mt-3 text-xs text-zinc-500">
+            Not yet confirmed: no paid pilot, no customer validation, no third-party attestation, and the anchor is a dry run.
+            Full list: <Link className="underline" href="/workbench/offer">/workbench/offer</Link>.
+          </p>
         </section>
 
         <p className="mt-8 max-w-2xl text-sm text-zinc-500">

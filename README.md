@@ -70,7 +70,7 @@ Pages that use the shared header show a **Domains** dropdown with four groups, K
 | Do | Offer | `/workbench/offer` |
 | Do | Pilot | `/workbench/pilot` |
 
-The verify and anchor references point at one recorded eligible run id, which is hard-coded in `src/components/SiteHeader.tsx` (`REF_RUN`) and must be updated if that run is retired. The homepage itself carries only the title, description, "Start a durable run", the Create run button and a one-line pointer to the Domains menu.
+The verify and anchor references point at one recorded eligible run id, which is hard-coded in `src/components/SiteHeader.tsx` (`REF_RUN`) and must be updated if that run is retired. The homepage itself carries the title, description, "Start a durable run", the Create run button, a compact external-confirmation block and a one-line pointer to the Domains menu.
 
 Other live pages:
 
@@ -177,6 +177,8 @@ One customer path over the existing surfaces. Nothing here is a new architecture
 - **MCP commercial case: a win over the greedy cold run.** A second opt-in checkbox selects a constructed B1 starting plant (completeness 0.80, contradiction 0.08, missing 0.40) for case ids that start with `commercial`. Every other case id, the Safety-proof plants and Level 4 are unchanged. The sealed sequence ends at 0.171 and the greedy cold controller stops at 0.33, so Φ is +0.159. The reason: `seal_pack` takes completeness from 0.98 to 0.849, just under the 0.85 review gate, and zeroes missing, while the greedy controller cannot reach the seal because `mark_boundary` alone does not change e. An exhaustive search of all four-step orders also reaches 0.171, so the sealed sequence ties the best possible four-step result and does not beat an exhaustive search. The case is constructed, not customer data. The evidence pack's `mcp_cold_comparison` records which starting plant was used.
 
 ## External confirmation
+
+The homepage carries a short "What an outside party can verify today" block with the same pointers (Safety-proof wins, MCP commercial case, evidence pack, and what is not yet confirmed); the full text is on `/workbench/offer` and `/workbench/pilot`.
 
 What an outside party can check today without the team narrating it:
 
