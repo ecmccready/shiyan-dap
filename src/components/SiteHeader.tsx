@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+
+// Domain selector options (non-music). Diagnostics is the default domain.
+const DOMAIN_OPTIONS = [
+  { id: "diagnostics", label: "Diagnostics", href: "/workbench/diagnostic" },
+  { id: "safety", label: "Safety", href: "/workbench/safety" },
+];
 
 const NAV = [
   { href: "/", label: "Workbench" },
@@ -26,8 +32,18 @@ const TRIMMED_PATHS = new Set([
 
 export default function SiteHeader({ section }: { section?: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isWorkbenchLanding = pathname === "/" || pathname === "/workbench";
   const isFocused = pathname === "/workbench/marketplace" || pathname === "/workbench/diagnostic";
+  const isDomainPromptPage = isWorkbenchLanding || TRIMMED_PATHS.has(pathname);
+  const selectedDomain =
+    pathname.startsWith("/workbench/diagnostic")
+      ? "diagnostics"
+      : pathname.startsWith("/workbench/safety")
+        ? "safety"
+        : isDomainPromptPage
+          ? ""
+          : "diagnostics";
   const nav = isFocused
     ? NAV.filter((n) => n.href !== pathname)
     : isWorkbenchLanding
@@ -49,6 +65,29 @@ export default function SiteHeader({ section }: { section?: string }) {
             </span>
           ) : null}
         </div>
+        <label className="flex items-center gap-2 text-sm text-zinc-400">
+          Domains
+          <select
+            data-domain-select
+            value={selectedDomain}
+            onChange={(e) => {
+              const d = DOMAIN_OPTIONS.find((o) => o.id === e.target.value);
+              if (d) router.push(d.href);
+            }}
+            className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
+          >
+            {selectedDomain === "" && (
+              <option value="" disabled>
+                Select domain
+              </option>
+            )}
+            {DOMAIN_OPTIONS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
         {nav.length > 0 && (
           <nav className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
             {nav.map((n) => (
