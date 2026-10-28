@@ -18,6 +18,7 @@
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
 import { isReusable, sequenceOf } from "@/lib/level4/durable-self";
 import { errorSurfaceFor, rankKey, type ErrorSurface } from "@/lib/marketplace/error-surface";
+import { peerStatus, PEERS_NOTE, type PeerStatus } from "@/lib/marketplace/peer";
 
 export const LISTINGS_SCHEMA = "aethel.marketplace.listings.v1";
 export const INTENT_SCHEMA = "aethel.marketplace.license_intent.v1";
@@ -59,12 +60,22 @@ export type MarketplaceListing = {
   tensor_distance: number | null;
   /** Display-only multi-dimensional note (error-surface.ts). Φ remains the only ranking key. Additive field. */
   error_surface: ErrorSurface;
+  /** Display-only peer flag (peer.ts). true = verified reusable sequence with a link-safe id; reuse still passes the run page's gates. Additive. */
+  peer_ready: boolean;
+  /** "available_for_reuse" when peer_ready, else "not_ready". Additive. */
+  peer_status: PeerStatus["status"];
+  /** Relative hand-off path (same as reuse_href); clients prefix their own origin. Additive. */
+  peer_handoff_path: string;
 };
 
 export type ListingsIndex = {
   schema: typeof LISTINGS_SCHEMA;
   count: number;
   license_intent_phi_min: number;
+  /** Listings with peer_ready true. Additive. */
+  peer_ready_count: number;
+  /** States that this is this node's own index only. Additive. */
+  peers_note: string;
   notice: string;
   listings: MarketplaceListing[];
 };
@@ -135,6 +146,7 @@ export function buildListings(
     const hasDomain = typeof x.system === "string" && x.system.length > 0;
     const phi = x.phi as number;
     const tensorDistance = num(x.tensor_distance);
+    const peer = peerStatus({ run_id: x.run_id, sequence, phi });
     out.push({
       idx,
       l: {
@@ -152,6 +164,9 @@ export function buildListings(
         license_intent: licenseGate(phi, threshold),
         tensor_distance: tensorDistance,
         error_surface: errorSurfaceFor({ phi, final_e: finalE, tensor_distance: tensorDistance }),
+        peer_ready: peer.peer_ready,
+        peer_status: peer.status,
+        peer_handoff_path: reuseHref(x.run_id),
       },
     });
   }
@@ -172,6 +187,8 @@ export function buildIndex(list: ExperienceEntry[], threshold: number = LICENSE_
     schema: LISTINGS_SCHEMA,
     count: listings.length,
     license_intent_phi_min: threshold,
+    peer_ready_count: listings.filter((l) => l.peer_ready).length,
+    peers_note: PEERS_NOTE,
     notice: `Read-only index of verified sequences (Φ > 0). Reuse passes the run page's replay vet and falls back with a reason. ${NO_MONEY_NOTICE}`,
     listings,
   };

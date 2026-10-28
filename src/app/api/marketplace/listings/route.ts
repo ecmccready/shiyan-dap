@@ -6,7 +6,9 @@ import { buildIndex } from "@/lib/marketplace/listings";
  * GET /api/marketplace/listings: read-only, public JSON index of verified sequences (Φ > 0) for peers and
  * models. Built from the same experience records the Adaptive Domains dropdown ranks, through the pure
  * buildIndex(). No auth, no writes, GET only. Reuse is `reuse_href` → /workbench/autonomous?reuse=<run_id>,
- * which still applies the run page's replay vet and falls back with a reason.
+ * which still applies the run page's replay vet and falls back with a reason. Each listing also carries the
+ * display-only peer_ready / peer_status / peer_handoff_path (relative); the index adds peer_ready_count and
+ * peers_note (this node's own index only).
  */
 export async function GET() {
   try {

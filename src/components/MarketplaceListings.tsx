@@ -17,6 +17,7 @@ import {
 } from "@/lib/marketplace/listings";
 import { toLedgerEventShape } from "@/lib/marketplace/ledger-preview";
 import { surfaceNote, SURFACE_CAVEAT } from "@/lib/marketplace/error-surface";
+import { peerHandoffUrl, peerStatus } from "@/lib/marketplace/peer";
 
 const fmt = (n: number | null) => (typeof n === "number" ? n.toFixed(3) : "—");
 
@@ -43,10 +44,31 @@ function IntentPanel({ intent }: { intent: LicenseIntent }) {
   );
 }
 
+/** Copies the absolute peer hand-off link for a listing. Read-only: it only puts text on the clipboard. */
+function CopyPeerLink({ runId }: { runId: string }) {
+  const copy = useCopy(4000, undefined, "peer link");
+  return (
+    <button
+      type="button"
+      data-copy-peer-link
+      onClick={() => {
+        const url = peerHandoffUrl(window.location.origin, runId);
+        if (url) void copy.copy(url);
+      }}
+      className={`inline-flex h-9 items-center rounded-full border border-zinc-600 px-4 text-xs text-zinc-200 hover:border-zinc-400${copiedRing(copy.status)}`}
+    >
+      {copy.status === "copied" ? "Copied ✓" : copy.status === "failed" ? "Copy failed" : "Copy peer link"}
+    </button>
+  );
+}
+
 function Row({ l, highlighted }: { l: MarketplaceListing; highlighted: boolean }) {
   const [intent, setIntent] = useState<LicenseIntent | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
   const allowed = l.license_intent.allowed;
+  const peer = peerStatus(l);
+  const origin = useSyncExternalStore(() => () => {}, () => window.location.origin, () => "");
+  const peerUrl = peerHandoffUrl(origin || "http://localhost", l.run_id);
   return (
     <li
       id={`listing-${l.run_id}`}
@@ -55,6 +77,15 @@ function Row({ l, highlighted }: { l: MarketplaceListing; highlighted: boolean }
       data-highlighted={highlighted ? "true" : undefined}
     >
       <h3 className="text-base font-semibold text-white mb-2 break-all">{l.run_id}</h3>
+      <p className="mb-2" data-peer-status={peer.status}>
+        <span
+          title={peer.reason}
+          className={`inline-flex items-center rounded-full border px-3 py-0.5 text-xs ${peer.peer_ready ? "border-emerald-600 text-emerald-300" : "border-zinc-600 text-zinc-400"}`}
+        >
+          {peer.peer_ready ? "Available for reuse" : "Not ready for reuse"}
+        </span>
+        <span className="ml-2 text-xs text-zinc-500">Final check is the run page&apos;s permitted-action check and replay vet.</span>
+      </p>
       {highlighted && <p className="text-xs text-emerald-300 mb-2" data-reuse-highlight>Selected from the Domains menu (?reuse=). Read-only: nothing is applied until you click Reuse.</p>}
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
         <div><dt className="text-zinc-500 text-xs">Plant / domain</dt><dd>{l.domain}</dd></div>
@@ -89,8 +120,10 @@ function Row({ l, highlighted }: { l: MarketplaceListing; highlighted: boolean }
         >
           License intent
         </button>
+        <CopyPeerLink runId={l.run_id} />
         <span className="text-xs text-zinc-500">{allowed ? l.license_intent.reason : `Unavailable: ${l.license_intent.reason}`}</span>
       </div>
+      {peerUrl && origin && <p className="mt-2 text-xs text-zinc-500 break-all" data-peer-url>Peer link: <code className="text-zinc-400">{peerUrl}</code></p>}
       {refusal && <p className="mt-2 text-xs text-amber-300">{refusal}</p>}
       {intent && <IntentPanel intent={intent} />}
     </li>
@@ -133,6 +166,12 @@ export default function MarketplaceListings() {
       <p className="text-xs text-amber-300 mb-4">
         License intent only records a copyable intent when Φ &gt; {LICENSE_INTENT_PHI_MIN}. {NO_MONEY_NOTICE} No payment,
         settlement or ledger write happens.
+      </p>
+      <p className="text-xs text-zinc-500 mb-4" data-peers-note>
+        Peer view: this is this node&apos;s index of its own verified runs. A peer reads the JSON index, or opens a copied peer link
+        (<code>/workbench/autonomous?reuse=&lt;run_id&gt;</code>). &ldquo;Available for reuse&rdquo; only means the listing is a verified
+        reusable sequence; it does not guarantee reuse applies. There is no discovery of other nodes and no cross-node trust yet,
+        and nothing here writes anything.
       </p>
       <p className="text-xs text-zinc-500 mb-4">
         Each listing carries a display-only error surface: Φ plus the axes already recorded (final e, tensor distance) and

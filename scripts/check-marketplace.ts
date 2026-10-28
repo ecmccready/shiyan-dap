@@ -7,6 +7,7 @@ import {
 } from "../src/lib/marketplace/listings";
 import { parseReuseParam, findHighlighted } from "../src/lib/marketplace/listings";
 import { errorSurfaceFor, rankKey, surfaceNote, ERROR_SURFACE_SCHEMA } from "../src/lib/marketplace/error-surface";
+import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/peer";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -151,4 +152,36 @@ assert.equal(findHighlighted(ranked, "run_high")?.run_id, "run_high");
 assert.equal(findHighlighted(ranked, "run_missing"), null, "not a listing -> note, no error");
 assert.equal(findHighlighted(ranked, null), null);
 console.log("reuse highlight  -> valid id highlights its listing; unknown or malformed id yields null (note only)");
+
+// 12. Peer status and hand-off link (display only).
+const ps = peerStatus(l);
+assert.equal(ps.peer_ready, true); assert.equal(ps.status, "available_for_reuse"); assert.match(ps.reason, /replay-vets/);
+assert.equal(peerStatus({ run_id: "run_ok", sequence: [], phi: 0.014 }).peer_ready, false, "empty sequence");
+assert.equal(peerStatus({ run_id: "run_ok", sequence: ["a", ""], phi: 0.014 }).peer_ready, false, "blank action");
+assert.equal(peerStatus({ run_id: "bad id!", sequence: SEQ, phi: 0.014 }).peer_ready, false, "invalid run id");
+assert.equal(peerStatus({ run_id: "x".repeat(81), sequence: SEQ, phi: 0.014 }).status, "not_ready", "id over 80 chars");
+assert.equal(peerStatus({ run_id: "run_ok", sequence: SEQ, phi: 0 }).peer_ready, false, "phi not above 0");
+assert.deepEqual(peerStatus(l), peerStatus(l), "pure");
+assert.equal(peerHandoffUrl("https://shiyan-dap.vercel.app", "run_ok"), "https://shiyan-dap.vercel.app/workbench/autonomous?reuse=run_ok");
+assert.equal(peerHandoffUrl("https://shiyan-dap.vercel.app/", "run_ok"), "https://shiyan-dap.vercel.app/workbench/autonomous?reuse=run_ok", "trailing slash");
+assert.equal(peerHandoffUrl("http://localhost:3000//", "demo-run"), "http://localhost:3000/workbench/autonomous?reuse=demo-run");
+for (const bad of ["", "a b", "../etc", "run?x=1", "run&x=1", "<script>", "x".repeat(81)]) assert.equal(peerHandoffUrl("https://a.example", bad), null, bad);
+assert.equal(peerHandoffUrl("not an origin", "run_ok"), null);
+assert.equal(peerHandoffUrl("javascript:alert(1)", "run_ok"), null);
+assert.equal(new URL(peerHandoffUrl("https://a.example", "run_ok")!).searchParams.get("reuse"), "run_ok");
+assert.equal(parseReuseParam(new URL(peerHandoffUrl("https://a.example", "run_ok")!).search), "run_ok", "link round-trips");
+console.log("peer status/link -> peerStatus gates id, sequence, Φ; peerHandoffUrl validates id and origin (trailing slash ok)");
+
+// 13. JSON index: peer fields additive; ranking unchanged.
+const pj = JSON.parse(JSON.stringify(buildIndex(rankedEntries)));
+assert.equal(pj.schema, LISTINGS_SCHEMA, "schema string unchanged");
+assert.equal(pj.peer_ready_count, 4); assert.equal(pj.peers_note, PEERS_NOTE); assert.match(pj.peers_note, /this node's index/);
+for (const x of pj.listings) {
+  assert.equal(x.peer_ready, true); assert.equal(x.peer_status, "available_for_reuse");
+  assert.equal(x.peer_handoff_path, x.reuse_href); assert.ok(x.peer_handoff_path.startsWith("/workbench/autonomous?reuse="));
+  assert.ok(!/^https?:/.test(x.peer_handoff_path), "relative: nothing server-dependent");
+}
+assert.deepEqual(pj.listings.map((x: { run_id: string }) => x.run_id), ["run_high", "run_tie_new", "run_tie_old", "run_low"], "order unchanged");
+assert.equal(buildIndex([]).peer_ready_count, 0);
+console.log("peer JSON        -> peer_ready, peer_status, peer_handoff_path per listing; peer_ready_count; order unchanged");
 console.log("OK");

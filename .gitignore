@@ -3,3 +3,5 @@ node_modules
 .env.local
 src/data/marketplace.json
 src/data/playlist.json
+.env
+.env.*.local
