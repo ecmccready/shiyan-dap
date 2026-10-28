@@ -279,6 +279,23 @@ npm run lint
 
 Without Upstash credentials the micro-ledger falls back to per-instance memory (`GET /api/v1/status` reports `ledgerStore: memory`) and does not persist across restarts; Level 4 durable records also need the Upstash variables to persist. Integrations are configured through environment variables and are all optional locally; for example `UPSTASH_KV_REST_API_URL` / `UPSTASH_KV_REST_API_TOKEN` (durable store), `LEDGER_SIGNING_SECRET` and `LEDGER_ADMIN_SECRET` (ledger signing and admin), `LEVEL4_WRITE_TOKEN` (opt-in write gate), `STRIPE_SECRET_KEY`, `ETH_RPC_URL`, `XAI_API_KEY`, `OPENAI_API_KEY`, `HY4_API_URL` and `HF_TOKEN`. Never commit secret values.
 
+### Local verification (ranking, reuse, marketplace)
+
+```bash
+git pull origin main
+npm ci
+npx tsx scripts/check-domain-rank.ts   # Domains join/rank + ?reuse= hand-off, fixtures, no network
+npx tsx scripts/check-marketplace.ts   # listing contract, Δe, threshold, intent shape, reuse href; prints OK
+npm run dev                            # http://localhost:3000   (or: npm run build && npm start)
+```
+
+With no Upstash variables, `GET /api/level4/experience` and `GET /api/marketplace/listings` return `503 {"error":"Experience store is not configured"}`. The pages still load and show no Φ suffixes and no listings ("No verified sequence with Φ > 0 is available right now"). To see data locally, set `UPSTASH_KV_REST_API_URL` / `UPSTASH_KV_REST_API_TOKEN` (ideally a read-only token). Be careful: a run on `/workbench/autonomous` with those variables writes experience records to that store. No variable is needed to run the check scripts, and `LEDGER_ADMIN_SECRET` is not needed for any of this.
+
+- **Ranking.** Open the Domains menu on any page and look for `· Φ 0.014` suffixes (Diagnostics, Safety, Level 4 run, Result). The browser caches the fetch for 30 seconds; hard-refresh the page (or wait) after the store changes. `clearExperienceCache()` in `src/lib/domains/experience-cache.ts` resets it in tests.
+- **Reuse.** `/workbench/autonomous?reuse=<run_id>` uses that run's sequence if it passes the replay vet. `?reuse=run_nope` shows a fallback reason. `?durable=0` ignores reuse and the durable feed.
+- **Marketplace.** `/workbench/marketplace` (the "Live verified sequences" section), `GET /api/marketplace/listings` (JSON), and the intent button, which only generates copyable JSON in the browser.
+- **Ledger.** Nothing in the ranking, reuse or marketplace code writes to the ledger; the license intent is never posted.
+
 ## License
 
 Proprietary. All rights reserved by the owner. This repository has no LICENSE file by design: the code is publicly viewable on GitHub, but no right to copy, modify, redistribute or use it commercially is granted without the owner's written permission. The `founder-z` dataset card lists its license as unspecified.
