@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import CopyVerificationSummary from "@/components/CopyVerificationSummary";
 import {
   coldRoll,
   phi,
@@ -82,6 +83,15 @@ ${d.used ? line(d.reuse) : "same plant as cold"}
             run the sealed sequence on MCP plants B1 and B2 and compare it with the plant&apos;s starting error (the observe or mark_boundary reading, which does not change e).
             That is an improvement against a baseline, not a cold-run win, and their numbers are not comparable with the Φ values on this page. B2 is a fixed fixture with no Self() run, so it has no cold final e.
           </p>
+        </section>
+        <section data-proof-external-confirmation className="mt-8 rounded-2xl border border-zinc-800 p-5 text-sm text-zinc-300">
+          <p className="text-xs text-emerald-400">External confirmation</p>
+          <p className="mt-2">
+            The claims an outside party can check today, and what is not yet confirmed, are in the{" "}
+            <Link className="underline" href="/#outside-verification">&quot;What an outside party can verify today&quot; block on the homepage</Link>
+            {" "}and in <Link className="underline" href="/workbench/offer">/workbench/offer</Link>. The three Φ values above come from our own constructed Safety plants, and no outside party has reviewed or replicated them.
+          </p>
+          <CopyVerificationSummary />
         </section>
         <nav className="flex gap-4 text-sm mt-8">
           <Link className="underline" href="/workbench">Workbench B</Link>
