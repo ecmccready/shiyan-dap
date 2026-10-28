@@ -5,6 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import { readRuns, type OutcomeRun } from "@/product/run";
 import { useHydrated } from "@/lib/use-hydrated";
 import WorkbenchPluginPanels from "@/components/WorkbenchPluginPanels";
+import CopyVerificationSummary from "@/components/CopyVerificationSummary";
 
 export default function WorkspacePage() {
   const hydrated = useHydrated();
@@ -32,6 +33,15 @@ export default function WorkspacePage() {
           Billing is not instrumented. A closed Run is not a charge. Authentication is not built.
         </section>
         <WorkbenchPluginPanels workspaceId={workspace} />
+        <section data-workspace-external-confirmation className="mt-8 rounded-2xl border border-zinc-800 p-5 text-sm text-zinc-300">
+          <p className="text-xs text-emerald-400">External confirmation</p>
+          <p className="mt-2">
+            The claims an outside party can check today, and what is not yet confirmed, are in the{" "}
+            <Link className="underline" href="/#outside-verification">&quot;What an outside party can verify today&quot; block on the homepage</Link>
+            {" "}and in <Link className="underline" href="/workbench/offer">/workbench/offer</Link>. The asset map and audit summary above are read-only views of our own test ledger events and a heuristic mock scan, not third-party attestation.
+          </p>
+          <CopyVerificationSummary />
+        </section>
         <nav className="mt-8 flex flex-wrap gap-4 text-sm text-zinc-400">
           <Link className="underline" href="/workbench/history">History</Link>
           <Link className="underline" href="/workbench">Workbench</Link>
