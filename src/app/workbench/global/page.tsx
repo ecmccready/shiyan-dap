@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyVerificationSummary from "@/components/CopyVerificationSummary";
+import { useCopy, copiedRing } from "@/lib/use-copy";
+import { buildGlobalSnapshot, classifyRun, latestPerRun, GLOBAL_SNAPSHOT_SCHEMA } from "@/lib/diagnostics/global-snapshot";
 
 type Row = {
   run_id: string;
@@ -22,28 +24,39 @@ type RunSummary = Row & { status: "ELIGIBLE_EXPERIENCE" | "MISDIAGNOSIS_REJECTED
 
 const fmt = (n: number | null | undefined) => (typeof n === "number" ? n.toFixed(3) : "n/a");
 
+// Classification and latest-per-run are shared with the copyable snapshot (src/lib/diagnostics/global-snapshot.ts).
 function summarize(rows: Row[]): RunSummary[] {
-  const latest = new Map<string, Row>();
-  for (const r of rows) {
-    const cur = latest.get(r.run_id);
-    if (!cur || r.iteration >= cur.iteration) latest.set(r.run_id, r);
-  }
-  return [...latest.values()]
-    .map((r) => ({
-      ...r,
-      status: (r.eligible ? "ELIGIBLE_EXPERIENCE" : r.state === "COMPLETE" ? "MISDIAGNOSIS_REJECTED" : "IN_PROGRESS") as RunSummary["status"],
-    }))
-    .sort((a, b) => (a.verified_at < b.verified_at ? 1 : -1));
+  return latestPerRun(rows).map((r) => ({ ...r, status: classifyRun(r) }));
+}
+
+/** Builds aethel.global.snapshot.v1 from the rows already loaded and copies it. Local clipboard only; nothing is sent. */
+function CopySnapshot({ rows }: { rows: Row[] }) {
+  const copy = useCopy(4000, undefined, "global snapshot");
+  return (
+    <button
+      type="button"
+      data-copy-global-snapshot
+      onClick={() => void copy.copy(JSON.stringify(buildGlobalSnapshot(rows, new Date().toISOString()), null, 2))}
+      className={`inline-flex h-9 items-center rounded-full border border-zinc-600 px-4 text-xs text-zinc-200 hover:border-zinc-400${copiedRing(copy.status)}`}
+    >
+      {copy.status === "copied" ? "Copied ✓" : copy.status === "failed" ? "Copy failed" : "Copy snapshot JSON"}
+    </button>
+  );
 }
 
 export default function GlobalMisdiagnosisPage() {
   const [runs, setRuns] = useState<RunSummary[] | null>(null);
+  const [rows, setRows] = useState<Row[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("/api/level4/experience")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`experience ${r.status}`))))
-      .then((data) => setRuns(summarize(Array.isArray(data) ? data : data.experience || [])))
+      .then((data) => {
+        const list: Row[] = Array.isArray(data) ? data : data.experience || [];
+        setRows(list);
+        setRuns(summarize(list));
+      })
       .catch((e) => setError(e instanceof Error ? e.message : "could not load"));
   }, []);
 
@@ -94,6 +107,13 @@ export default function GlobalMisdiagnosisPage() {
                 {runs.length} runs · {eligible} eligible · {rejected} misdiagnosis rejected · {inProgress} in progress
               </p>
               <p className="text-sm text-zinc-400 mb-3">Status is derived from the latest recorded step.</p>
+              <div className="flex flex-wrap items-center gap-3 mb-4" data-global-snapshot>
+                <CopySnapshot rows={rows} />
+                <span className="text-xs text-zinc-500">
+                  Operator hand-off: <code>{GLOBAL_SNAPSHOT_SCHEMA}</code> built in your browser from the runs above and copied to your clipboard.
+                  Status only, not attestation or a clinical diagnosis; nothing is sent or stored.
+                </span>
+              </div>
               <div className="overflow-auto">
                 <table className="w-full text-xs text-left">
                   <thead className="text-zinc-500">

@@ -13,6 +13,7 @@ import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } fr
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
 import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE } from "../src/lib/marketplace/route-contract";
 import { parseOperatorOrigin, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, type RouteProbe } from "../src/lib/marketplace/origin-check";
+import { buildGlobalSnapshot, classifyRun, GLOBAL_SNAPSHOT_SCHEMA, SNAPSHOT_NOTE } from "../src/lib/diagnostics/global-snapshot";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -431,5 +432,32 @@ const rInj = formatOriginReport(O, [pOk, { route: "listings", status: 502, failu
 assert.ok(rInj.lines.every((x) => !/[\u0000-\u001f]/.test(x)), "remote text cannot add lines or control characters");
 assert.deepEqual(formatOriginReport(O, [pOk, lOk]), formatOriginReport(O, [pOk, lOk]), "pure and deterministic");
 console.log("origin check     -> origin parser (https any host, http localhost/127.0.0.1 only), two fixed URLs, report for ok / contract failure / 503 / 3xx / network failure; deterministic (CLI run by hand)");
+
+// 20. Global · misdiagnosis snapshot (pure; copyable operator hand-off, same classification as /workbench/global).
+const GT = "2026-10-29T18:00:00.000Z";
+const s0 = buildGlobalSnapshot([], GT);
+assert.deepEqual(s0, { schema_version: "aethel.global.snapshot.v1", generated_at: GT, note: SNAPSHOT_NOTE, counts: { total: 0, eligible: 0, misdiagnosis_rejected: 0, in_progress: 0 }, runs: [] });
+assert.equal(GLOBAL_SNAPSHOT_SCHEMA, "aethel.global.snapshot.v1");
+assert.match(SNAPSHOT_NOTE, /not attestation/); assert.match(SNAPSHOT_NOTE, /not a clinical diagnosis/); assert.match(SNAPSHOT_NOTE, /wrong next action/);
+const gRows = [
+  ...run("run_elig", { t: "2026-10-27T00:00:00.000Z" }),
+  ...run("run_rej", { t: "2026-10-28T00:00:00.000Z", extra: { eligible: false, phi: -0.2 } }),
+  { run_id: "run_wip", iteration: 1, e: 0.9, verified_at: "2026-10-26T00:00:00.000Z", eligible: false, state: "CONTINUE", y: "mark_boundary" },
+  { run_id: "run_wip", iteration: 2, e: 0.7, verified_at: "2026-10-26T00:01:00.000Z", eligible: false, state: "CONTINUE", y: "complete_field" },
+];
+const gs = buildGlobalSnapshot(gRows, GT);
+assert.deepEqual(gs.counts, { total: 3, eligible: 1, misdiagnosis_rejected: 1, in_progress: 1 });
+assert.equal(gs.counts.total, gs.counts.eligible + gs.counts.misdiagnosis_rejected + gs.counts.in_progress);
+assert.deepEqual(gs.runs.map((r) => [r.run_id, r.status]), [["run_rej", "MISDIAGNOSIS_REJECTED"], ["run_elig", "ELIGIBLE_EXPERIENCE"], ["run_wip", "IN_PROGRESS"]], "newest first");
+assert.deepEqual(gs.runs[1], { run_id: "run_elig", status: "ELIGIBLE_EXPERIENCE", final_e: 0.151, delta_e: 1.41, phi: 0.014, verified_at: "2026-10-27T00:00:00.000Z" });
+assert.equal(gs.runs[2].final_e, 0.7, "latest iteration per run"); assert.equal(gs.runs[2].phi, null, "missing phi is null");
+assert.equal(classifyRun({ eligible: true, state: "CONTINUE" }), "ELIGIBLE_EXPERIENCE");
+assert.equal(classifyRun({ eligible: false, state: "COMPLETE" }), "MISDIAGNOSIS_REJECTED");
+assert.equal(classifyRun({ state: "ABORTED" }), "IN_PROGRESS");
+assert.deepEqual(Object.keys(gs.runs[0]).sort(), ["delta_e", "final_e", "phi", "run_id", "status", "verified_at"], "no extra fields copied");
+assert.deepEqual(JSON.parse(JSON.stringify(gs)), gs, "JSON-safe");
+assert.deepEqual(buildGlobalSnapshot(gRows, GT), gs, "pure and deterministic");
+assert.equal(buildGlobalSnapshot(null as never, GT).counts.total, 0, "non-array input gives an empty snapshot");
+console.log("global snapshot  -> aethel.global.snapshot.v1; eligible / misdiagnosis rejected / in progress counts; latest iteration per run; pure");
 
 console.log("OK");
