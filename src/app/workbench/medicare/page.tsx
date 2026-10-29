@@ -1,6 +1,8 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyMedicareJson from "@/components/CopyMedicareJson";
+import MedicareDispositionStub from "@/components/MedicareDispositionStub";
+import { MEDICARE_CASE, formatInvestigationCaseBrief } from "@/lib/medicare/case-brief";
 import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE, FIXTURE_INVESTIGATION, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
 
 /**
@@ -144,6 +146,17 @@ export default function MedicarePage() {
           <p className="text-xs text-zinc-500">{FIXTURE_EVIDENCE.uncertainty_note} Each item links to dataset hash {FIXTURE_EVIDENCE.source.content_hash.slice(0, 16)}…; patterns for review, not conclusions.</p>
         </section>
 
+        <section data-medicare-case-brief className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">
+          <h2 className="text-white font-semibold">Case brief · {MEDICARE_CASE.case_id}</h2>
+          <p className="text-zinc-300"><span className="text-zinc-500">Dataset:</span> {MEDICARE_CASE.dataset}</p>
+          <p className="text-xs text-zinc-500">{MEDICARE_CASE.dataset_note}</p>
+          <p className="text-zinc-300"><span className="text-zinc-500">Anomaly class:</span> {MEDICARE_CASE.anomaly_class}</p>
+          <div><p className="text-zinc-500 text-xs">Why this case</p><ul className="list-disc pl-5 text-zinc-300">{MEDICARE_CASE.why.map((w) => <li key={w}>{w}</li>)}</ul></div>
+          <div><p className="text-zinc-500 text-xs">Human-in-the-loop flow</p><ol className="list-decimal pl-5 text-zinc-300">{MEDICARE_CASE.hitl.map((w) => <li key={w}>{w}</li>)}</ol></div>
+          <div data-medicare-pilot-metrics><p className="text-zinc-500 text-xs">Pilot metrics ({MEDICARE_CASE.metrics_note})</p><ul className="list-disc pl-5 text-zinc-300">{MEDICARE_CASE.metrics.map((w) => <li key={w}>{w}</li>)}</ul></div>
+          <p className="text-xs text-amber-300">{MEDICARE_CASE.guardrail}</p>
+        </section>
+
         <section data-medicare-do-panel className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">
           <h2 className="text-white font-semibold">Do · investigation report (synthetic fixture)</h2>
           <p className="text-zinc-400">
@@ -162,7 +175,9 @@ export default function MedicarePage() {
           <div className="flex flex-wrap gap-2" data-medicare-copy-row>
             <CopyMedicareJson kind="investigation" label="Copy investigation JSON" json={JSON.stringify(FIXTURE_INVESTIGATION, null, 2)} />
             <CopyMedicareJson kind="evidence" label="Copy evidence pack JSON" json={JSON.stringify(FIXTURE_EVIDENCE, null, 2)} />
+            <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
           </div>
+          <MedicareDispositionStub pack={FIXTURE_EVIDENCE} />
           <p className="text-xs text-zinc-500">{FIXTURE_INVESTIGATION.scope_note} No reviewer has filled this in; nothing is stored or sent.</p>
         </section>
 

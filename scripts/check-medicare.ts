@@ -5,7 +5,8 @@ import { createHash } from "node:crypto";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
-import { buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { MEDICARE_CASE, formatInvestigationCaseBrief } from "../src/lib/medicare/case-brief";
+import { applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -132,5 +133,24 @@ for (const s of DISPOSITION_STATUSES) assert.ok(!banned.test(s));
 assert.deepEqual(buildInvestigationReport({ pack: FIXTURE_EVIDENCE }), inv, "deterministic");
 assert.deepEqual(JSON.parse(JSON.stringify(inv)), inv, "JSON-safe");
 console.log(`investigation -> 3 items unreviewed, linked to pack ${inv.evidence.pack_hash?.slice(0, 16)}…; 3 statuses only, bad status/id/pack rejected; report ${inv.report_hash.slice(0, 16)}… tamper-evident`);
+
+// 8. Chosen case, reviewer case brief and client disposition helper (pure; no fraud statuses).
+assert.equal(MEDICARE_CASE.domain_label, "medicare"); assert.match(MEDICARE_CASE.dataset, /Physician & Other Practitioners/);
+assert.match(MEDICARE_CASE.anomaly_class, /payment_vs_charge\.v1/); assert.match(MEDICARE_CASE.anomaly_class, /required_nonnegative\.v1/);
+const brief = formatInvestigationCaseBrief(inv, ev, FIXTURE_PROVENANCE);
+for (const needle of [FIXTURE_PROVENANCE.content_hash, ev.pack_hash, inv.report_hash, ...ids, "Detected pattern ≠ verified conclusion", "3 unreviewed"]) assert.ok(brief.includes(needle), `brief has ${needle}`);
+assert.equal(formatInvestigationCaseBrief(inv, ev, FIXTURE_PROVENANCE), brief, "deterministic");
+assert.match(formatInvestigationCaseBrief(null as never, null as never, null as never), /could not be read/);
+const d0 = {}; const d1 = applyDisposition(d0, ids[0], "needs_human_review", "rev-1");
+assert.deepEqual(d0, {}, "input not mutated"); assert.deepEqual(d1, { [ids[0]]: { status: "needs_human_review", reviewer: "rev-1" } });
+assert.deepEqual(applyDisposition(d1, ids[0], "fraud"), d1, "invented status ignored");
+assert.deepEqual(applyDisposition(d1, "", "needs_human_review"), d1);
+assert.deepEqual(applyDisposition(d1, ids[0], "unreviewed"), {}, "unreviewed clears");
+for (const j of [null, "x", []]) assert.deepEqual(applyDisposition(j, ids[1], "cleared_pattern_only"), { [ids[1]]: { status: "cleared_pattern_only" } });
+const live = buildInvestigationReport({ pack: ev, dispositions: applyDisposition(applyDisposition({}, ids[0], "cleared_pattern_only"), ids[2], "needs_human_review") });
+assert.deepEqual(live.counts, { items: 3, unreviewed: 1, needs_human_review: 1, cleared_pattern_only: 1, rejected: 0 });
+assert.notEqual(live.report_hash, inv.report_hash); assert.ok(verifyReportHash(live));
+assert.ok(formatInvestigationCaseBrief(live, ev, FIXTURE_PROVENANCE).includes(live.report_hash));
+console.log(`case        -> ${MEDICARE_CASE.case_id}; brief links dataset/pack/report hashes; applyDisposition pure, rejects invented statuses; report hash updates`);
 
 console.log("OK");

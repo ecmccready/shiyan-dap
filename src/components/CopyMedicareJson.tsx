@@ -3,7 +3,7 @@
 import { useCopy, copiedRing } from "@/lib/use-copy";
 
 /** Copies a precomputed medicare-labeled JSON string (synthetic fixture) to the local clipboard. Nothing is sent. */
-export default function CopyMedicareJson({ json, label, kind }: { json: string; label: string; kind: "investigation" | "evidence" }) {
+export default function CopyMedicareJson({ json, label, kind }: { json: string; label: string; kind: "investigation" | "evidence" | "brief" }) {
   const copy = useCopy(4000, undefined, `medicare ${kind}`);
   return (
     <button

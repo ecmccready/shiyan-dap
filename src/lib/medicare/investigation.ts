@@ -93,3 +93,17 @@ export function verifyReportHash(report: unknown): boolean {
     return typeof report_hash === "string" && report_hash === contentHash(body);
   } catch { return false; }
 }
+
+/**
+ * Pure: returns a NEW dispositions object with item_id set to status (or removed when status is "unreviewed").
+ * Statuses outside DISPOSITION_STATUSES and empty ids return the input unchanged; the input is never mutated.
+ */
+export function applyDisposition(current: unknown, item_id: unknown, status: unknown, reviewer?: unknown): DispositionInput {
+  let base: DispositionInput = {};
+  try { if (current && typeof current === "object" && !Array.isArray(current)) base = { ...(current as DispositionInput) }; } catch { base = {}; }
+  if (typeof item_id !== "string" || !item_id || typeof status !== "string" || !(DISPOSITION_STATUSES as readonly string[]).includes(status)) return base;
+  if (status === "unreviewed") { delete base[item_id]; return base; }
+  const r = str(reviewer, 80);
+  base[item_id] = r ? { status, reviewer: r } : { status };
+  return base;
+}
