@@ -176,7 +176,7 @@ Optional `network` (case-insensitive: `ethereum`, `sepolia`, `polygon`, `base`, 
 
 ## Cleaning up test data
 
-Test assets known on the production ledger (legacy ids from earlier testing; some carry events from the removed music vertical, which stay readable and are not purged): `live-test-20261025`, `trk_7bbda6ed`, `trk_654015ed`, `live-test-exec-20261025`, `live-test-music-20261025`. After `LEDGER_ADMIN_SECRET` is set in Vercel (and redeployed):
+Test assets known on the production ledger (legacy test assets from an earlier vertical, removed from the app; their events stay readable and are not purged): `live-test-20261025`, `trk_7bbda6ed`, `trk_654015ed`, `live-test-exec-20261025`, `live-test-music-20261025`. After `LEDGER_ADMIN_SECRET` is set in Vercel (and redeployed):
 
 ```bash
 HOST=https://shiyan-dap.vercel.app LEDGER_ADMIN_SECRET=... scripts/purge-test-ledger.sh        # dry run, lists what is there

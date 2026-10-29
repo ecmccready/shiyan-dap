@@ -9,7 +9,7 @@ const LATER = [
   "financial operations",
   "IT/SecOps",
   "enterprise workflows",
-  "AI evaluation",
+  "SI (Super Intelligence) evaluation",
 ];
 
 export default function DomainsPage() {

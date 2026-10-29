@@ -53,9 +53,9 @@ export default function ShiyanPage() {
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           Initial commercial proposition
         </p>
-        <h1 className="text-3xl font-bold mb-3">For teams operating AI-assisted workflows</h1>
+        <h1 className="text-3xl font-bold mb-3">For teams operating SI-assisted workflows</h1>
         <p className="text-zinc-400 max-w-2xl mb-6">
-          Know which AI workflow works, prove that it works, and reuse it when the evidence supports doing so.
+          Know which SI (Super Intelligence) workflow works, prove that it works, and reuse it when the evidence supports doing so.
         </p>
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300 space-y-3">

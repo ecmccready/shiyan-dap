@@ -30,7 +30,7 @@ configs:
 
 # founder-z
 
-> **Historical note.** Records dated before 2026-10-27 come from a music vertical and its mint-queue route, both removed from the app. They are kept as published history only; the app no longer writes mint records or music-related events.
+> **Historical note.** Records dated before 2026-10-27 come from a legacy vertical and its mint-queue route (removed from the app). They are kept as published history only and are not part of the current product; the app no longer writes mint records or events of that kind.
 
 > **Dataset Viewer note.** The Hub's Dataset Viewer shows a `CastError` for this repo because the JSON files have mixed schemas (older and newer outcome files, events, mints and `latest-z.json` differ in shape). The data is intact; load files directly instead:
 >
@@ -99,7 +99,7 @@ Current `/api/memory` shape: same fields as an outcome with `kind: "event"`; `y_
 
 ## Example record
 
-`outcome-m_1789334846195.json`:
+A historical published record from the removed legacy vertical, shown as-is for the file format; it is not current product. `outcome-m_1789334846195.json`:
 
 ```json
 {
@@ -117,7 +117,7 @@ Current `/api/memory` shape: same fields as an outcome with `kind: "event"`; `y_
 
 ## Personal and health data
 
-- **No PHI and no diagnosis.** The records describe actions on music catalog assets and binary business-outcome flags. "Sleep Terrors" is the title of a song (`cl_sleep_terrors_001`, "Sleep Terrors — Second Single"), not a medical condition of any person, and "misdiagnosis" elsewhere in the project refers to a wrong next action, not a clinical finding.
+- **No PHI and no diagnosis.** The historical records describe actions on catalog assets from the removed legacy vertical and binary business-outcome flags. "Sleep Terrors" is the title of a published catalog item in that historical record (`cl_sleep_terrors_001`, "Sleep Terrors — Second Single"), not a medical condition of any person, and "misdiagnosis" elsewhere in the project refers to a wrong next action, not a clinical finding.
 - **No customer personal data** was found in the files reviewed: no names of customers, emails, addresses or payment-card data. Counterparties appear only as role labels (`potential customer`, `This session`).
 - **Disclosed identifiers:** the founder's public handle `ECMcCready` appears in `agent`, `from` and `latest-z.json`, and `events/cl_shiyan_yishu_001.json` contains a Stripe test-mode PaymentIntent id (`stripePayment`).
 

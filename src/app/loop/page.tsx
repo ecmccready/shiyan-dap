@@ -52,7 +52,7 @@ export default function LoopPage() {
         <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
           Collapse it to one loop
         </p>
-        <h1 className="text-3xl font-bold mb-3">The loop is the AI</h1>
+        <h1 className="text-3xl font-bold mb-3">The loop is the SI (Super Intelligence)</h1>
         <p className="text-zinc-400 max-w-3xl mb-8">
           A acts, B transitions, z is the measured state. Grok / Hy4 / Grok
           Bot are interchangeable orchestrators inside A. Models do not sit

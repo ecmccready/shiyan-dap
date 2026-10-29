@@ -31,7 +31,7 @@ export default function SaasPricingPage() {
 
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-400">
           <p className="text-emerald-400 text-xs mb-2">What is not priced here</p>
-          <p>Number of AI conversations. An unsettled Stripe receipt. A B2 identity with no printed z and e. A tie on final e.</p>
+          <p>Number of SI (Super Intelligence) conversations. An unsettled Stripe receipt. A B2 identity with no printed z and e. A tie on final e.</p>
         </section>
 
         <nav className="flex flex-wrap gap-4 text-sm">

@@ -16,7 +16,7 @@ export default function OfferPage() {
         </p>
         <h1 className="text-3xl font-bold mb-3">Aethel Node · workbench offer</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
-          Aethel Node proves that the next action is no longer a misdiagnosis. Know which AI workflow works, prove that it works, and reuse it only when the measured evidence supports doing so.
+          Aethel Node proves that the next action is no longer a misdiagnosis. Know which SI (Super Intelligence) workflow works, prove that it works, and reuse it only when the measured evidence supports doing so.
         </p>
 
         <div className="mb-6"><JourneyNote /></div>

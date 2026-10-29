@@ -48,13 +48,19 @@ export default function GlobalMisdiagnosisPage() {
   }, []);
 
   const eligible = runs?.filter((r) => r.status === "ELIGIBLE_EXPERIENCE").length ?? 0;
+  const rejected = runs?.filter((r) => r.status === "MISDIAGNOSIS_REJECTED").length ?? 0;
+  const inProgress = runs?.filter((r) => r.status === "IN_PROGRESS").length ?? 0;
 
   return (
     <div className="min-h-screen bg-black text-white">
       <SiteHeader section="Global · misdiagnosis" />
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-6">
-        <p className="text-emerald-400 text-xs uppercase tracking-widest">Global view</p>
+        <p className="text-emerald-400 text-xs uppercase tracking-widest">Global diagnostic view</p>
         <h1 className="text-3xl font-bold">Misdiagnosis as a global systemic error</h1>
+        <p className="text-zinc-300 max-w-2xl" data-global-si-lede>
+          The Global diagnostic view of misdiagnosis as the wrong next action in SI (Super Intelligence)-operated workflows:
+          every recorded run, one status per run, measured against its goal threshold.
+        </p>
         <p className="text-zinc-400 max-w-2xl">
           One domain-neutral view of every recorded Level 4 run. Misdiagnosis here means a wrong next action: observed
           variance e stays above the goal threshold, or the tensor check fails. It is not a clinical finding, makes no
@@ -84,9 +90,10 @@ export default function GlobalMisdiagnosisPage() {
             <p className="text-sm text-zinc-500">No recorded runs yet.</p>
           ) : (
             <>
-              <p className="text-sm text-zinc-400 mb-3">
-                {runs.length} runs recorded, {eligible} eligible. Status is derived from the latest recorded step.
+              <p className="text-base text-white mb-1" data-global-counts>
+                {runs.length} runs · {eligible} eligible · {rejected} misdiagnosis rejected · {inProgress} in progress
               </p>
+              <p className="text-sm text-zinc-400 mb-3">Status is derived from the latest recorded step.</p>
               <div className="overflow-auto">
                 <table className="w-full text-xs text-left">
                   <thead className="text-zinc-500">
@@ -110,6 +117,15 @@ export default function GlobalMisdiagnosisPage() {
               </div>
             </>
           )}
+        </section>
+
+        <section data-global-related className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">
+          <p className="text-emerald-400 text-xs">Related surfaces (read-only links)</p>
+          <ul className="text-zinc-300 list-disc pl-5 space-y-1">
+            <li><Link className="underline" href="/workbench/diagnostic">Diagnostics</Link>: the diagnostic plant behind this view.</li>
+            <li><Link className="underline" href="/workbench/safety">Safety</Link>: the buyer-facing Safety proof plant.</li>
+            <li><Link className="underline" href="/workbench/marketplace">Marketplace</Link>: the peer index of verified sequences (Φ &gt; 0) from the same records.</li>
+          </ul>
         </section>
 
         <section data-global-external-confirmation className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">

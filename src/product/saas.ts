@@ -2,7 +2,7 @@ export const SAAS = {
   name: "Aethel Node SaaS",
   unit: "Run",
   metric:
-    "A Run that prints z, e, and Δe. Not a count of AI conversations.",
+    "A Run that prints z, e, and Δe. Not a count of SI (Super Intelligence) conversations.",
   ownsEveryWorkbench: false,
   trajectory: [
     "SaaS product",
