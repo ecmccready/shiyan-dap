@@ -9,6 +9,7 @@ import { parseReuseParam, findHighlighted } from "../src/lib/marketplace/listing
 import { errorSurfaceFor, rankKey, surfaceNote, ERROR_SURFACE_SCHEMA } from "../src/lib/marketplace/error-surface";
 import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/peer";
 import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE } from "../src/lib/marketplace/peers";
+import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -237,4 +238,81 @@ for (const bad of [
 assert.equal(isValidPeerUrl("https://172.32.0.1"), true, "172.32 is public");
 assert.equal(isValidPeerUrl(null), false); assert.equal(isValidPeerUrl(undefined), false); assert.equal(isValidPeerUrl(42), false);
 console.log("peer url gate    -> https public hosts accepted; http, credentials, localhost, private/link-local IPs, IPv6, non-http schemes rejected");
+// 16. Peer listing index shape validator (pure; shape check only, no fetching, no trust).
+type J = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+const goodIdx = (): J => JSON.parse(JSON.stringify(buildIndex(rankedEntries)));
+const mutate = (fn: (d: J) => void): J => { const d = goodIdx(); fn(d); return d; };
+const failsWith = (input: unknown, re: RegExp, label: string) => {
+  const r = validatePeerListingIndex(input);
+  assert.equal(r.ok, false, `${label}: should fail`);
+  if (!r.ok) { assert.ok(r.errors.length > 0 && r.errors.length <= 20, `${label}: error count`); assert.ok(r.errors.some((e) => re.test(e)), `${label}: ${r.errors.join(" | ")}`); }
+};
+assert.match(PEER_INDEX_NOTE, /^Shape check only: well-formed does not mean verified, attested or reusable\./);
+const good = goodIdx();
+const vr = validatePeerListingIndex(good);
+assert.equal(vr.ok, true); assert.equal(good.listings.length, 4);
+if (vr.ok) { assert.deepEqual(vr.warnings, []); assert.deepEqual(JSON.parse(JSON.stringify(vr.index)), good, "sanitized copy deep-equals the input"); assert.notEqual(vr.index.listings[0], good.listings[0], "a copy, not the same object"); }
+const emptyRes = validatePeerListingIndex(JSON.parse(JSON.stringify(buildIndex([]))));
+assert.equal(emptyRes.ok, true); if (emptyRes.ok) assert.equal(emptyRes.index.count, 0);
+for (const [v, label] of [[null, "null"], [[], "array"], ["x", "string"], [{}, "empty object"], [42, "number"], [undefined, "undefined"]] as [unknown, string][]) failsWith(v, /./, label);
+failsWith(mutate((d) => { d.schema = "aethel.marketplace.listings.v2"; }), /schema/, "wrong schema");
+failsWith(mutate((d) => { d.count = 3; }), /count/, "count mismatch");
+failsWith(mutate((d) => { d.peer_ready_count = 1; }), /peer_ready_count/, "peer_ready_count mismatch");
+failsWith(mutate((d) => { d.license_intent_phi_min = null; }), /license_intent_phi_min/, "threshold not a number");
+failsWith(mutate((d) => { d.notice = 1; d.peers_note = null; }), /notice/, "notice not a string");
+failsWith(mutate((d) => { d.listings[0].run_id = "../x"; }), /run_id/, "bad run_id");
+for (const phi of [0, -0.1, null, "0.5"]) failsWith(mutate((d) => { d.listings[0].phi = phi; }), /phi/, `phi ${String(phi)}`);
+failsWith(mutate((d) => { d.listings[0].sequence = []; }), /sequence/, "empty sequence");
+failsWith(mutate((d) => { d.listings[0].sequence = ["a", ""]; }), /sequence/, "blank action");
+failsWith(mutate((d) => { d.listings[0].sequence = Array.from({ length: 201 }, () => "a"); }), /sequence/, "sequence over 200");
+failsWith(mutate((d) => { d.listings[0].reuse_href = "https://evil.example/workbench/autonomous?reuse=run_high"; }), /reuse_href/, "absolute reuse_href");
+failsWith(mutate((d) => { d.listings[0].reuse_href = "/workbench/autonomous?reuse=run_other"; }), /reuse_href/, "mismatched reuse_href");
+failsWith(mutate((d) => { d.listings[0].peer_handoff_path = "/workbench/autonomous?reuse=run_other"; }), /peer_handoff_path/, "peer_handoff_path differs");
+failsWith(mutate((d) => { d.listings[0].peer_status = "not_ready"; }), /peer_status/, "peer_status inconsistent");
+failsWith(mutate((d) => { d.listings[0].verified_at = "not a date"; }), /verified_at/, "bad date");
+failsWith(mutate((d) => { d.listings[0].domain_source = "elsewhere"; }), /domain_source/, "bad domain_source");
+failsWith(mutate((d) => { d.listings[0].e0 = "1"; }), /e0/, "e0 not number or null");
+failsWith(mutate((d) => { d.listings[0].license_intent = { allowed: "yes" }; }), /license_intent/, "license_intent shape");
+failsWith(mutate((d) => { d.listings[0].error_surface.ranking_key = "latency"; }), /ranking_key/, "wrong ranking_key");
+failsWith(mutate((d) => { d.listings[0].error_surface.primary.value = 0.5; }), /primary\.value/, "primary.value != phi");
+failsWith(mutate((d) => { d.listings[0].error_surface.primary.axis = "accuracy"; }), /primary\.axis/, "primary.axis != phi");
+failsWith(mutate((d) => { d.listings[0].error_surface.schema_version = "x"; }), /schema_version/, "surface schema");
+failsWith(mutate((d) => { d.listings[0].error_surface.axes[2].value = 0.3; }), /placeholder axis/, "placeholder axis with value");
+failsWith(mutate((d) => { d.listings[0].error_surface.axes[0].status = "guess"; }), /status/, "axis status");
+failsWith(mutate((d) => { d.listings[0].error_surface.axes[0].axis = "vibes"; }), /axis/, "unknown axis");
+failsWith(mutate((d) => { d.listings[1].run_id = d.listings[0].run_id; d.listings[1].reuse_href = d.listings[0].reuse_href; d.listings[1].peer_handoff_path = d.listings[0].reuse_href; }), /duplicate run_id/, "duplicate run_id");
+const many = mutate((d) => { d.listings = Array.from({ length: 501 }, () => d.listings[0]); d.count = 501; d.peer_ready_count = 501; });
+failsWith(many, /more than 500/, "over 500 listings");
+const manyBad = mutate((d) => { d.listings = Array.from({ length: 100 }, () => ({})); d.count = 100; });
+const mb = validatePeerListingIndex(manyBad); assert.equal(mb.ok, false); if (!mb.ok) assert.equal(mb.errors.length, 20, "errors capped at 20");
+const unsorted = mutate((d) => { d.listings.reverse(); });
+const ur = validatePeerListingIndex(unsorted);
+assert.equal(ur.ok, true, "unsorted is a warning, not an error"); if (ur.ok) { assert.equal(ur.warnings.length, 1); assert.match(ur.warnings[0], /not ranked by phi/); }
+const extra = mutate((d) => { d.surprise = "x"; d.listings[0].future_field = { a: 1 }; d.listings[0].error_surface.future = 1; d.listings[0].error_surface.axes[0].future = 1; d.listings[0].license_intent.future = 1; });
+const er = validatePeerListingIndex(extra);
+assert.equal(er.ok, true);
+if (er.ok) {
+  assert.equal("surprise" in er.index, false); assert.equal("future_field" in er.index.listings[0], false);
+  assert.equal("future" in er.index.listings[0].error_surface, false); assert.equal("future" in er.index.listings[0].license_intent, false);
+  assert.deepEqual(JSON.parse(JSON.stringify(er.index)), good, "unknown fields dropped, rest identical");
+}
+assert.deepEqual(good, goodIdx(), "input not mutated");
+// Deterministic junk: must never throw.
+const cyc: J = {}; cyc.self = cyc;
+const proxy = new Proxy({}, { get() { throw new Error("boom"); }, ownKeys() { throw new Error("boom"); } });
+const junkBase: unknown[] = [null, undefined, true, false, 0, -1, 1.5, NaN, Infinity, -Infinity, "", "x", "{}", "aethel.marketplace.listings.v1", [], [[]], [null], [{}], {}, { listings: null }, { listings: {} },
+  { schema: LISTINGS_SCHEMA }, { schema: LISTINGS_SCHEMA, listings: [] }, { schema: LISTINGS_SCHEMA, listings: [null, 1, "a", [], {}], count: 5 }, { listings: "abc", count: "0" },
+  Symbol("s"), 10n, () => 1, new Date(0), /re/, new Map(), new Set([1]), cyc, proxy, Object.create(null), new Array(1000), { count: NaN, peer_ready_count: -1, listings: [] }];
+const junk: unknown[] = [];
+for (let i = 0; i < 200; i++) junk.push(junkBase[i % junkBase.length]);
+for (const j of junk) { const r = validatePeerListingIndex(j); assert.equal(typeof r.ok, "boolean"); }
+assert.equal(junk.length, 200);
+assert.equal(validatePeerListingIndex({ schema: LISTINGS_SCHEMA, count: 0, license_intent_phi_min: 0.01, peer_ready_count: 0, notice: "n", peers_note: "p", listings: [] }).ok, true);
+// Source gate (future only; reuses isValidPeerUrl).
+for (const ok of ["https://peer.example.org", "https://peer.example.org/", "https://peer.example.org/api/marketplace/listings", "https://a.example.com:8443/api/marketplace/listings", "https://peer.example.org/x/api/marketplace/listings"]) assert.equal(validatePeerIndexSource(ok), true, ok);
+for (const bad of ["http://peer.example.org", "https://localhost/api/marketplace/listings", "https://127.0.0.1", "https://10.0.0.5/api/marketplace/listings", "https://192.168.1.1", "https://user:pw@peer.example.org",
+  "https://peer.example.org/other", "https://peer.example.org/workbench/marketplace", "https://peer.example.org/api/marketplace/listings?x=1", "https://peer.example.org/#f", "", "javascript:alert(1)"]) assert.equal(validatePeerIndexSource(bad), false, bad);
+for (const bad of [null, undefined, 42, {}, [], true]) assert.equal(validatePeerIndexSource(bad), false);
+console.log(`peer index shape -> real index and empty index ok; ${junk.length} junk values never throw; bad shapes rejected with capped errors; unsorted is a warning; unknown fields dropped; source gate reuses isValidPeerUrl`);
+
 console.log("OK");
