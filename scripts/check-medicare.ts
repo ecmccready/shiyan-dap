@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
-import { MEDICARE_CASE, formatInvestigationCaseBrief } from "../src/lib/medicare/case-brief";
+import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary } from "../src/lib/medicare/case-brief";
 import { applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
@@ -152,5 +152,13 @@ assert.deepEqual(live.counts, { items: 3, unreviewed: 1, needs_human_review: 1, 
 assert.notEqual(live.report_hash, inv.report_hash); assert.ok(verifyReportHash(live));
 assert.ok(formatInvestigationCaseBrief(live, ev, FIXTURE_PROVENANCE).includes(live.report_hash));
 console.log(`case        -> ${MEDICARE_CASE.case_id}; brief links dataset/pack/report hashes; applyDisposition pure, rejects invented statuses; report hash updates`);
+
+// 9. Win strip summary (pure).
+const win = buildWinSummary(inv, ev, FIXTURE_BASELINES.rules[0].candidates[0]);
+assert.equal(win.line, "1 ranked anomaly ready for review · 2 data-quality patterns · 3 evidence items · hand-off ready");
+assert.deepEqual(win.top, { provider_id: "SYN-0006", payment: 150, charge: 120, ratio: 1.25, excess: 30 });
+assert.equal(win.hand_off_ready, true); assert.equal(win.domain_label, "medicare");
+assert.equal(buildWinSummary(r3, emptyPack, undefined).hand_off_ready, false);
+console.log("win         -> 1 ranked anomaly · 2 DQ · 3 items · hand-off ready; top SYN-0006 150 vs 120 (+30)");
 
 console.log("OK");

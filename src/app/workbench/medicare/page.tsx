@@ -2,7 +2,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyMedicareJson from "@/components/CopyMedicareJson";
 import MedicareDispositionStub from "@/components/MedicareDispositionStub";
-import { MEDICARE_CASE, formatInvestigationCaseBrief } from "@/lib/medicare/case-brief";
+import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary } from "@/lib/medicare/case-brief";
 import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE, FIXTURE_INVESTIGATION, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
 
 /**
@@ -81,6 +81,25 @@ export default function MedicarePage() {
           <p className="text-amber-300 text-xs uppercase tracking-widest mb-2">Guardrail</p>
           <p className="text-amber-200 text-base font-medium">{GUARDRAIL}</p>
         </section>
+
+        {(() => {
+          const w = buildWinSummary(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_BASELINES.rules[0]?.candidates[0]);
+          return (
+            <section data-medicare-win-strip className="border-2 border-emerald-500/70 bg-emerald-950/30 rounded-2xl p-5 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {w.hand_off_ready && <span data-medicare-handoff-badge className="rounded-full bg-emerald-500 text-black text-xs font-semibold px-3 py-1">Reviewer hand-off ready</span>}
+                <span className="text-xs text-zinc-400">medicare · synthetic fixture</span>
+              </div>
+              <p className="text-white text-lg font-semibold" data-medicare-win-line>{w.line}</p>
+              {w.top && (
+                <p className="text-sm text-zinc-200" data-medicare-top-candidate>
+                  Top candidate <span className="font-mono">{w.top.provider_id}</span>: Medicare paid <span className="text-emerald-300 font-semibold">${w.top.payment}</span> against a submitted charge of <span className="font-semibold">${w.top.charge}</span> (+${w.top.excess}, ratio {w.top.ratio}). Rule payment_vs_charge.v1; a pattern for review, not a finding of wrongdoing.
+                </p>
+              )}
+              <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
+            </section>
+          );
+        })()}
 
         <section data-medicare-know-panel className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">
           <p className="text-emerald-400 text-xs uppercase tracking-widest">Know · provenance and data quality (synthetic fixture)</p>

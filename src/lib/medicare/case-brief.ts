@@ -59,3 +59,18 @@ export function formatInvestigationCaseBrief(report: InvestigationReport, eviden
     return `# Medicare case brief — ${MEDICARE_CASE.case_id}\n\nInput could not be read.\n\n${MEDICARE_CASE.guardrail}\n`;
   }
 }
+
+/** Pure value summary for the Win strip. hand_off_ready when the evidence pack verifies and has at least one item. */
+export function buildWinSummary(report: InvestigationReport, evidence: EvidencePack, top: { provider_id: string | null; payment: number; charge: number; ratio: number | null } | undefined) {
+  const c = evidence.counts;
+  const ready = report.evidence.pack_verified && c.items > 0;
+  return {
+    domain_label: "medicare" as const,
+    ranked_anomalies: c.rule_candidates,
+    data_quality: c.data_quality,
+    evidence_items: c.items,
+    hand_off_ready: ready,
+    line: `${c.rule_candidates} ranked ${c.rule_candidates === 1 ? "anomaly" : "anomalies"} ready for review · ${c.data_quality} data-quality pattern${c.data_quality === 1 ? "" : "s"} · ${c.items} evidence items · ${ready ? "hand-off ready" : "hand-off not ready"}`,
+    top: top ? { provider_id: top.provider_id, payment: top.payment, charge: top.charge, ratio: top.ratio, excess: Number((top.payment - top.charge).toFixed(2)) } : null,
+  };
+}
