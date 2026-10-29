@@ -1,6 +1,8 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyMedicareJson from "@/components/CopyMedicareJson";
+import MedicareReviewProgress from "@/components/MedicareReviewProgress";
+import { reviewProgress } from "@/lib/medicare/investigation";
 import MedicareDispositionStub from "@/components/MedicareDispositionStub";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary, medicareAnchorId } from "@/lib/medicare/case-brief";
 
@@ -95,6 +97,7 @@ export default function MedicarePage() {
                 <span className="text-xs text-zinc-400">medicare · synthetic fixture</span>
               </div>
               <p className="text-white text-lg font-semibold" data-medicare-win-line>{w.line}</p>
+              <MedicareReviewProgress initial={reviewProgress(FIXTURE_INVESTIGATION)} />
               {w.top && (
                 <p className="text-sm text-zinc-200" data-medicare-top-candidate>
                   Top candidate <span className="font-mono">{w.top.provider_id}</span>: Medicare paid <span className="text-emerald-300 font-semibold">${w.top.payment}</span> against a submitted charge of <span className="font-semibold">${w.top.charge}</span> (+${w.top.excess}, ratio {w.top.ratio}). Rule payment_vs_charge.v1; a pattern for review, not a finding of wrongdoing.

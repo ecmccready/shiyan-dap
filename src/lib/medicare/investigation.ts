@@ -107,3 +107,18 @@ export function applyDisposition(current: unknown, item_id: unknown, status: unk
   base[item_id] = r ? { status, reviewer: r } : { status };
   return base;
 }
+
+/** Pure review progress: reviewed = items not "unreviewed"; percent rounded; label "X of N reviewed". */
+export function reviewProgress(report: unknown): { items: number; reviewed: number; percent: number; label: string; by_status: Record<DispositionStatus, number> } {
+  const by_status: Record<DispositionStatus, number> = { unreviewed: 0, needs_human_review: 0, cleared_pattern_only: 0 };
+  try {
+    const entries = (report as InvestigationReport)?.entries;
+    if (Array.isArray(entries)) for (const e of entries) if (e && (DISPOSITION_STATUSES as readonly string[]).includes(e.status)) by_status[e.status]++;
+  } catch { /* empty */ }
+  const items = by_status.unreviewed + by_status.needs_human_review + by_status.cleared_pattern_only;
+  const reviewed = items - by_status.unreviewed;
+  return { items, reviewed, percent: items ? Math.round((reviewed / items) * 100) : 0, label: `${reviewed} of ${items} reviewed`, by_status };
+}
+
+/** Browser event name the disposition stub emits with its current progress (tab-local; nothing leaves the page). */
+export const MEDICARE_PROGRESS_EVENT = "medicare:review-progress";

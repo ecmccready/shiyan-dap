@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -168,4 +168,9 @@ assert.equal(medicareAnchorId("disposition", "rule:payment_vs_charge.v1:5"), "me
 assert.equal(FIXTURE_BASELINES.rules[0].candidates[0].row_index, 5);
 const anchors = ev.items.map((i) => medicareAnchorId("evidence", i.item_id)); assert.equal(new Set(anchors).size, anchors.length, "unique");
 console.log("anchors     -> top candidate row 5 → #medicare-candidate-5, evidence and disposition anchors unique");
+// 11. Review progress (pure).
+assert.deepEqual(reviewProgress(inv), { items: 3, reviewed: 0, percent: 0, label: "0 of 3 reviewed", by_status: { unreviewed: 3, needs_human_review: 0, cleared_pattern_only: 0 } });
+assert.deepEqual(reviewProgress(live), { items: 3, reviewed: 2, percent: 67, label: "2 of 3 reviewed", by_status: { unreviewed: 1, needs_human_review: 1, cleared_pattern_only: 1 } });
+for (const j of [null, "x", {}, [], cyc]) assert.equal(reviewProgress(j).label, "0 of 0 reviewed");
+console.log("progress    -> 0 of 3 reviewed → 2 of 3 (67%) after two dispositions; counts by status");
 console.log("OK");
