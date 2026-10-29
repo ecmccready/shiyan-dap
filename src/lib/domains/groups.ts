@@ -19,6 +19,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "Diagnostic reference fixture", href: "/workbench/diagnostic/reference" },
       { label: "Safety", href: "/workbench/safety", experience: {} },
       { label: "Global · misdiagnosis", href: "/workbench/global", experience: {} },
+      { label: "Medicare · Public Data Intelligence", href: "/workbench/medicare" },
       { label: "Level 4 status", href: "/workbench/status" },
       { label: "Review", href: "/workbench/review" },
     ],

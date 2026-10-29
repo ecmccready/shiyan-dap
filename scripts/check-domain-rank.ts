@@ -116,4 +116,13 @@ assert.equal(hrefFor(find(mk2, "Global · misdiagnosis")), "/workbench/global", 
 assert.deepEqual(mk2[0].items.slice(0, 3).map((i) => i.label), ["Diagnostics", "Safety", "Global · misdiagnosis"], "annotated Know items first, static order on equal Φ");
 assert.equal(find(bad2, "Global · misdiagnosis").phi, null, "ineligible never annotates Global");
 console.log("global         -> Know group, annotated (Φ " + phi + "), href /workbench/global, no ?reuse=");
+// 9. Medicare · Public Data Intelligence: in Know right after Global · misdiagnosis, no experience join (no Φ), plain navigation.
+const know = DOMAIN_GROUPS[0].items.map((i) => i.label);
+assert.equal(know.indexOf("Medicare · Public Data Intelligence"), know.indexOf("Global · misdiagnosis") + 1, "right after Global");
+const med = DOMAIN_GROUPS[0].items.find((i) => i.href === "/workbench/medicare");
+assert.ok(med); assert.equal(med!.experience, undefined, "no experience field");
+assert.equal(find(mk2, "Medicare · Public Data Intelligence").phi, null, "never annotated");
+assert.equal(hrefFor(find(mk2, "Medicare · Public Data Intelligence")), "/workbench/medicare");
+assert.equal(items(empty).filter((i) => i.href === "/workbench/medicare").length, 1, "listed once");
+console.log("medicare       -> Know group after Global, href /workbench/medicare, no Φ");
 console.log("OK");
