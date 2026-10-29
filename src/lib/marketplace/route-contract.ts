@@ -17,7 +17,8 @@
  */
 import { LISTINGS_SCHEMA, LICENSE_INTENT_PHI_MIN } from "@/lib/marketplace/listings";
 import { validatePeerListingIndex } from "@/lib/marketplace/peer-index";
-import { PEERS_SCHEMA, HANDOFF_PATH_TEMPLATE, SELF_ATTESTATION, isValidPeerUrl } from "@/lib/marketplace/peers";
+import { PEERS_SCHEMA, HANDOFF_PATH_TEMPLATE, SELF_ATTESTATION, GLOBAL_SNAPSHOT_PATH, isValidPeerUrl } from "@/lib/marketplace/peers";
+import { GLOBAL_SNAPSHOT_SCHEMA } from "@/lib/diagnostics/global-snapshot";
 
 export type RouteName = "peers" | "listings";
 export type RouteContractResult = { ok: true; warnings: string[] } | { ok: false; errors: string[] };
@@ -52,6 +53,8 @@ function checkCapabilities(c: unknown, at: string, push: (m: string) => void): v
     writes: "none",
     cross_node_trust: "none",
     attestation: SELF_ATTESTATION,
+    global_snapshot_schema: GLOBAL_SNAPSHOT_SCHEMA,
+    global_snapshot_path: GLOBAL_SNAPSHOT_PATH,
   };
   for (const k of Object.keys(want)) if (c[k] !== want[k]) push(`${at}.${k}: must equal ${JSON.stringify(want[k])}`);
   for (const k of Object.keys(c)) if (!(k in want)) push(`${at}.${k}: unknown capability`);

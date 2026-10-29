@@ -9,6 +9,7 @@
  * only, no credentials, no localhost or private/link-local addresses). It is not called on a peer at request time.
  */
 import { LISTINGS_SCHEMA, LICENSE_INTENT_PHI_MIN } from "@/lib/marketplace/listings";
+import { GLOBAL_SNAPSHOT_SCHEMA } from "@/lib/diagnostics/global-snapshot";
 
 export const PEERS_SCHEMA = "aethel.marketplace.peers.v1" as const;
 export const SELF_ID = "self" as const;
@@ -19,6 +20,7 @@ export const PEERS_REGISTRY_NOTE =
   "Static registry for now: this node plus placeholders. No discovery protocol, no cross-node trust, nothing attested. This node never fetches peer endpoints; reuse of any listing still passes the run page's permitted-action check and replay vet.";
 
 export const HANDOFF_PATH_TEMPLATE = "/workbench/autonomous?reuse={run_id}";
+export const GLOBAL_SNAPSHOT_PATH = "/api/diagnostics/global-snapshot";
 export const SELF_ATTESTATION = "none — self-reported, not third-party attested";
 
 /** Self-description of this node (self entry only). Self-reported; it is not verified or attested by anyone. */
@@ -31,6 +33,9 @@ export type PeerCapabilities = {
   writes: "none";
   cross_node_trust: "none";
   attestation: string;
+  /** Additive: read-only Global · misdiagnosis snapshot this node serves. */
+  global_snapshot_schema: typeof GLOBAL_SNAPSHOT_SCHEMA;
+  global_snapshot_path: string;
 };
 
 export type PeerEntry = {
@@ -86,6 +91,8 @@ export function buildPeerRegistry(origin?: string | null): PeerRegistry {
       writes: "none",
       cross_node_trust: "none",
       attestation: SELF_ATTESTATION,
+      global_snapshot_schema: GLOBAL_SNAPSHOT_SCHEMA,
+      global_snapshot_path: GLOBAL_SNAPSHOT_PATH,
     },
   };
   const placeholder = (id: string, name: string): PeerEntry => ({

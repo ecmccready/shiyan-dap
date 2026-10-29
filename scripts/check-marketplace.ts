@@ -222,7 +222,9 @@ assert.deepEqual(caps, {
   listings_schema: LISTINGS_SCHEMA, peers_schema: PEERS_SCHEMA,
   handoff_path_template: "/workbench/autonomous?reuse={run_id}", license_intent_phi_min: LICENSE_INTENT_PHI_MIN,
   read_only: true, writes: "none", cross_node_trust: "none", attestation: "none — self-reported, not third-party attested",
+  global_snapshot_schema: "aethel.global.snapshot.v1", global_snapshot_path: "/api/diagnostics/global-snapshot",
 });
+assert.equal(caps.global_snapshot_schema, GLOBAL_SNAPSHOT_SCHEMA);
 assert.equal(caps.listings_schema, "aethel.marketplace.listings.v1"); assert.equal(caps.peers_schema, "aethel.marketplace.peers.v1");
 assert.equal(caps.license_intent_phi_min, 0.01);
 assert.equal(reg.schema_version, "aethel.marketplace.peers.v1", "schema string unchanged (additive field only)");
@@ -363,6 +365,8 @@ pfail(pm((d) => { d.peers[0].capabilities.cross_node_trust = "full"; }), /cross_
 pfail(pm((d) => { d.peers[0].capabilities.listings_schema = "x"; }), /listings_schema/, "tampered listings_schema");
 pfail(pm((d) => { d.peers[0].capabilities.license_intent_phi_min = 0.5; }), /license_intent_phi_min/, "tampered threshold");
 pfail(pm((d) => { d.peers[0].capabilities.extra = 1; }), /unknown capability/, "extra capability");
+pfail(pm((d) => { d.peers[0].capabilities.global_snapshot_path = "/api/other"; }), /global_snapshot_path/, "tampered snapshot path");
+pfail(pm((d) => { delete d.peers[0].capabilities.global_snapshot_schema; }), /global_snapshot_schema/, "missing snapshot schema");
 pfail(pm((d) => { d.peers[1].index_url = "https://peer.example.org/workbench/marketplace"; }), /null URLs/, "placeholder with URL");
 pfail(pm((d) => { d.peers[1].capabilities = JSON.parse(JSON.stringify(d.peers[0].capabilities)); }), /only the self entry/, "capabilities on a placeholder");
 pfail(pm((d) => { d.peers.reverse(); }), /first entry/, "self not first");
