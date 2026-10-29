@@ -14,6 +14,7 @@ import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report"
 import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE } from "../src/lib/marketplace/route-contract";
 import { parseOperatorOrigin, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, type RouteProbe } from "../src/lib/marketplace/origin-check";
 import { buildGlobalSnapshot, classifyRun, GLOBAL_SNAPSHOT_SCHEMA, SNAPSHOT_NOTE } from "../src/lib/diagnostics/global-snapshot";
+import { validateGlobalSnapshot, formatSnapshotReport, SNAPSHOT_VALIDATE_NOTE } from "../src/lib/diagnostics/global-snapshot-validate";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -459,5 +460,40 @@ assert.deepEqual(JSON.parse(JSON.stringify(gs)), gs, "JSON-safe");
 assert.deepEqual(buildGlobalSnapshot(gRows, GT), gs, "pure and deterministic");
 assert.equal(buildGlobalSnapshot(null as never, GT).counts.total, 0, "non-array input gives an empty snapshot");
 console.log("global snapshot  -> aethel.global.snapshot.v1; eligible / misdiagnosis rejected / in progress counts; latest iteration per run; pure");
+
+// 21. Global snapshot shape validator (pure; well-formed is not verified, attested or a diagnosis).
+const gsJ = (): J => JSON.parse(JSON.stringify(buildGlobalSnapshot(gRows, GT)));
+const vs = validateGlobalSnapshot(gsJ());
+assert.equal(vs.ok, true); if (vs.ok) { assert.deepEqual(vs.snapshot, gsJ(), "sanitized copy equals input"); assert.deepEqual(vs.warnings, []); }
+assert.equal(validateGlobalSnapshot(JSON.parse(JSON.stringify(buildGlobalSnapshot([], GT)))).ok, true, "empty ok");
+const sfail = (d: unknown, re: RegExp, label: string) => {
+  const r = validateGlobalSnapshot(d); assert.equal(r.ok, false, `${label}: should fail`);
+  if (!r.ok) { assert.ok(r.errors.length <= 20); assert.ok(r.errors.some((e) => re.test(e)), `${label}: ${r.errors.join(" | ")}`); }
+};
+const sm = (fn: (d: J) => void): J => { const d = gsJ(); fn(d); return d; };
+for (const [v, label] of [[null, "null"], [[], "array"], ["x", "string"], [{}, "empty object"]] as [unknown, string][]) sfail(v, /./, label);
+sfail(sm((d) => { d.schema_version = "aethel.global.snapshot.v2"; }), /schema_version/, "wrong schema");
+sfail(sm((d) => { d.counts.total = 9; }), /counts\.total/, "total mismatch");
+sfail(sm((d) => { d.counts.eligible = 0; }), /counts\.eligible/, "tally mismatch");
+sfail(sm((d) => { d.counts.in_progress = 1.5; }), /counts\.in_progress/, "non-integer count");
+sfail(sm((d) => { d.runs[0].run_id = "../x"; }), /run_id/, "bad run_id");
+sfail(sm((d) => { d.runs[1].run_id = d.runs[0].run_id; }), /duplicate run_id/, "duplicate");
+sfail(sm((d) => { d.runs[0].status = "VERIFIED"; }), /status/, "bad status");
+sfail(sm((d) => { d.runs[0].phi = "0.1"; }), /phi/, "phi not number or null");
+sfail(sm((d) => { d.runs[0].verified_at = "nope"; }), /verified_at/, "bad verified_at");
+sfail(sm((d) => { d.generated_at = "nope"; }), /generated_at/, "bad generated_at");
+sfail(sm((d) => { d.note = 1; }), /note/, "note not string");
+const sx = validateGlobalSnapshot(sm((d) => { d.extra = 1; d.runs[0].secret = "x"; d.counts.more = 2; }));
+assert.equal(sx.ok, true); if (sx.ok) assert.deepEqual(sx.snapshot, gsJ(), "unknown fields dropped");
+const sn = validateGlobalSnapshot(sm((d) => { d.runs[0].verified_at = null; }));
+assert.equal(sn.ok, true); if (sn.ok) assert.equal(sn.warnings.length, 1, "null verified_at is a warning");
+const sManyBad = sm((d) => { d.runs = Array.from({ length: 100 }, () => ({})); });
+const smb = validateGlobalSnapshot(sManyBad); assert.equal(smb.ok, false); if (!smb.ok) assert.equal(smb.errors.length, 20, "errors capped");
+for (let i = 0; i < 200; i++) assert.equal(typeof validateGlobalSnapshot(junk[i]).ok, "boolean");
+assert.equal(validateGlobalSnapshot(proxy).ok, false); assert.equal(validateGlobalSnapshot(cyc).ok, false);
+assert.deepEqual(formatSnapshotReport(vs), { lines: [SNAPSHOT_VALIDATE_NOTE, "OK: 3 runs, 1 eligible, 1 misdiagnosis rejected, 1 in progress"], exitCode: 0 });
+assert.equal(formatSnapshotReport(validateGlobalSnapshot(null)).exitCode, 1);
+assert.deepEqual(validateGlobalSnapshot(gsJ()), validateGlobalSnapshot(gsJ()), "pure");
+console.log("snapshot shape   -> valid and empty ok; schema, counts, run_id, duplicate, status, dates rejected; unknown fields dropped; junk never throws");
 
 console.log("OK");
