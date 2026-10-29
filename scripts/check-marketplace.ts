@@ -12,6 +12,7 @@ import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
 import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE } from "../src/lib/marketplace/route-contract";
+import { parseOperatorOrigin, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, type RouteProbe } from "../src/lib/marketplace/origin-check";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -389,5 +390,46 @@ const rep3 = formatRouteContractReport("peers", noCaps);
 assert.deepEqual(rep3, { lines: [ROUTE_CONTRACT_NOTE, "OK: peers contract holds", "warning: self has no capabilities object"], exitCode: 0 });
 assert.deepEqual(checkRouteContract("peers", peersHttps), checkRouteContract("peers", peersHttps), "pure and deterministic");
 console.log("route contract   -> peers and listings shapes hold; swapped content fails in both directions; tampered capabilities, placeholder URLs, self-not-first rejected; 400 junk calls never throw");
+
+// 19. Operator origin check helpers (pure, no network). The CLI scripts/check-origin.ts is a thin fetching wrapper, run by hand.
+// Decisions: https is accepted for any host (including https://localhost); plain http only for localhost and 127.0.0.1;
+// origin only (no path other than "/", no query, fragment, credentials); isValidPeerUrl is NOT reused (it rejects localhost on purpose).
+for (const [arg, want] of [
+  ["https://shiyan-dap.vercel.app", "https://shiyan-dap.vercel.app"], ["https://shiyan-dap.vercel.app/", "https://shiyan-dap.vercel.app"],
+  ["HTTPS://Shiyan-Dap.Vercel.App", "https://shiyan-dap.vercel.app"], ["https://shiyan-dap.vercel.app:443", "https://shiyan-dap.vercel.app"],
+  ["http://localhost:3000", "http://localhost:3000"], ["http://localhost:3000/", "http://localhost:3000"], ["http://localhost", "http://localhost"],
+  ["http://127.0.0.1:3000", "http://127.0.0.1:3000"], ["https://localhost", "https://localhost"], ["https://localhost:3443", "https://localhost:3443"],
+] as [string, string][]) assert.equal(parseOperatorOrigin(arg), want, arg);
+for (const bad of [
+  "http://example.com", "http://shiyan-dap.vercel.app", "http://192.168.1.5:3000", "http://[::1]:3000", "http://0.0.0.0:3000", "https://user:pw@example.org", "https://user@example.org",
+  "https://example.org/path", "https://example.org/api/marketplace/peers", "http://localhost:3000/x", "https://example.org?x=1", "https://example.org/?x=1", "https://example.org#f", "https://example.org/#f",
+  "https://example.org?", "https://example.org#", "ftp://example.org", "file:///etc/passwd", "javascript:alert(1)", "data:text/html,x", "", " ", "not a url", "example.org", "//example.org", "https://", "https://exa mple.org", "https://example.org ",
+  "x".repeat(3000),
+]) assert.equal(parseOperatorOrigin(bad), null, bad.slice(0, 40));
+for (const bad of [null, undefined, 42, {}, [], true, ["https://example.org"], Symbol("s"), () => 1]) assert.equal(parseOperatorOrigin(bad), null);
+assert.deepEqual(routeUrls("https://shiyan-dap.vercel.app"), { peers: "https://shiyan-dap.vercel.app/api/marketplace/peers", listings: "https://shiyan-dap.vercel.app/api/marketplace/listings" });
+assert.deepEqual(Object.keys(routeUrls("http://localhost:3000")), ["peers", "listings"], "exactly two URLs");
+assert.equal(safeSnippet("a\u0000b\nc\u001b[31m"), "a b c [31m", "control characters removed"); assert.equal(safeSnippet("x".repeat(300)).length, 201); assert.equal(safeSnippet(5), "");
+const O = "https://shiyan-dap.vercel.app";
+const pOk: RouteProbe = { route: "peers", status: 200, json: peersHttps };
+const lOk: RouteProbe = { route: "listings", status: 200, json: goodIdx() };
+const all = formatOriginReport(O, [pOk, lOk]);
+assert.equal(all.exitCode, 0); assert.equal(all.lines[0], ORIGIN_NOTE);
+assert.deepEqual(all.lines.slice(1), [`Origin: ${O}`, "peers: HTTP 200 — OK: peers contract holds", "listings: HTTP 200 — OK: listings contract holds", `Summary: both route contracts hold at ${O}`]);
+const swapped = formatOriginReport(O, [pOk, { route: "listings", status: 200, json: peersHttps }]);
+assert.equal(swapped.exitCode, 1); assert.ok(swapped.lines.includes("listings: HTTP 200 — contract failed"));
+assert.ok(swapped.lines.includes("  error: this looks like the peers registry, not a listings index (wrong route content)")); assert.ok(swapped.lines.at(-1)!.startsWith("Summary: 1 of 2 routes failed"));
+const r503 = formatOriginReport(O, [pOk, { route: "listings", status: 503, failure: "expected HTTP 200", snippet: '{"error":"Experience store is not configured"}' }]);
+assert.equal(r503.exitCode, 1); assert.ok(r503.lines.includes("listings: HTTP 503 — failed")); assert.ok(r503.lines.includes('  body: {"error":"Experience store is not configured"}'));
+const r301 = formatOriginReport(O, [{ route: "peers", status: 301, failure: "redirect not followed (Location: https://other.example/)" }, lOk]);
+assert.equal(r301.exitCode, 1); assert.ok(r301.lines.includes("peers: HTTP 301 — failed")); assert.ok(r301.lines.some((x) => x.startsWith("  error: redirect not followed")));
+const rNet = formatOriginReport(O, [{ route: "peers", status: null, failure: "timed out after 10s" }, { route: "listings", status: null, failure: "network error: ECONNREFUSED" }]);
+assert.equal(rNet.exitCode, 1); assert.ok(rNet.lines.includes("peers: no HTTP response — failed")); assert.ok(rNet.lines.at(-1)!.startsWith("Summary: 2 of 2 routes failed"));
+const rMissing = formatOriginReport(O, [pOk]); assert.equal(rMissing.exitCode, 1); assert.ok(rMissing.lines.includes("  error: no result recorded"));
+assert.equal(formatOriginReport(O, [pOk, { route: "listings", status: 204 }]).exitCode, 1, "non-200 without a failure text still fails");
+const rInj = formatOriginReport(O, [pOk, { route: "listings", status: 502, failure: "bad\nerror: forged\u001b[2J", snippet: "x\ny" }]);
+assert.ok(rInj.lines.every((x) => !/[\u0000-\u001f]/.test(x)), "remote text cannot add lines or control characters");
+assert.deepEqual(formatOriginReport(O, [pOk, lOk]), formatOriginReport(O, [pOk, lOk]), "pure and deterministic");
+console.log("origin check     -> origin parser (https any host, http localhost/127.0.0.1 only), two fixed URLs, report for ok / contract failure / 503 / 3xx / network failure; deterministic (CLI run by hand)");
 
 console.log("OK");
