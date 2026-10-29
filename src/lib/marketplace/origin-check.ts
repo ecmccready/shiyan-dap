@@ -12,10 +12,13 @@
  */
 import { checkRouteContract, type RouteName } from "@/lib/marketplace/route-contract";
 import { validateGlobalSnapshot } from "@/lib/diagnostics/global-snapshot-validate";
+import { validatePeerCapabilities } from "@/lib/marketplace/route-contract";
 
 /** The optional third path, only with --with-snapshot. */
 export type ProbeRoute = RouteName | "snapshot";
 export const WITH_SNAPSHOT_FLAG = "--with-snapshot";
+/** Optional: also check the self capabilities inside the peers response (no extra request). */
+export const WITH_CAPABILITIES_FLAG = "--with-capabilities";
 
 export const ORIGIN_NOTE =
   "Shape check only: a passing route contract means well-formed and the right route's content, not verified, attested or trusted. GET only, two fixed paths, no redirects followed.";
@@ -44,14 +47,16 @@ export function routeUrls(origin: string, withSnapshot = false): { peers: string
   return withSnapshot ? { ...base, snapshot: `${origin}/api/diagnostics/global-snapshot` } : base;
 }
 
-/** CLI args: exactly one origin, plus an optional --with-snapshot in either position. Null on anything else. */
-export function parseOriginArgs(args: unknown): { origin: string; withSnapshot: boolean } | null {
-  if (!Array.isArray(args) || args.length < 1 || args.length > 2 || !args.every((a) => typeof a === "string")) return null;
-  const flags = args.filter((a) => a === WITH_SNAPSHOT_FLAG);
-  const rest = args.filter((a) => a !== WITH_SNAPSHOT_FLAG);
-  if (rest.length !== 1 || flags.length > 1) return null;
+/** CLI args: exactly one origin, plus optional --with-snapshot and --with-capabilities (each at most once, any order). Null otherwise. */
+export function parseOriginArgs(args: unknown): { origin: string; withSnapshot: boolean; withCapabilities: boolean } | null {
+  if (!Array.isArray(args) || args.length < 1 || args.length > 3 || !args.every((a) => typeof a === "string")) return null;
+  const isFlag = (a: string) => a === WITH_SNAPSHOT_FLAG || a === WITH_CAPABILITIES_FLAG;
+  const snap = args.filter((a) => a === WITH_SNAPSHOT_FLAG).length;
+  const caps = args.filter((a) => a === WITH_CAPABILITIES_FLAG).length;
+  const rest = args.filter((a) => !isFlag(a));
+  if (rest.length !== 1 || snap > 1 || caps > 1) return null;
   const origin = parseOperatorOrigin(rest[0]);
-  return origin ? { origin, withSnapshot: flags.length === 1 } : null;
+  return origin ? { origin, withSnapshot: snap === 1, withCapabilities: caps === 1 } : null;
 }
 
 /** Remote text made safe to print: control characters become spaces, then it is cut to `max` characters. */
@@ -75,7 +80,11 @@ export type RouteProbe = {
  * Plain-text report (pure). Without the snapshot option: the two route blocks, exit 0 only when both hold (unchanged).
  * With `{ withSnapshot: true }`: a third block for the global snapshot, exit 0 only when all three hold.
  */
-export function formatOriginReport(origin: string, probes: RouteProbe[], opts: { withSnapshot?: boolean } = {}): { lines: string[]; exitCode: 0 | 1 } {
+/**
+ * With `{ withCapabilities: true }`: one more block that runs validatePeerCapabilities on the peers JSON already fetched
+ * (no extra request); the summary then counts checks instead of routes.
+ */
+export function formatOriginReport(origin: string, probes: RouteProbe[], opts: { withSnapshot?: boolean; withCapabilities?: boolean } = {}): { lines: string[]; exitCode: 0 | 1 } {
   const ROUTES: ProbeRoute[] = opts.withSnapshot ? ["peers", "listings", "snapshot"] : ["peers", "listings"];
   const lines: string[] = [opts.withSnapshot ? ORIGIN_NOTE_WITH_SNAPSHOT : ORIGIN_NOTE, `Origin: ${origin}`];
   let failed = 0;
@@ -104,6 +113,20 @@ export function formatOriginReport(origin: string, probes: RouteProbe[], opts: {
       lines.push(`${route}: ${http} — contract failed`);
       for (const e of r.errors) lines.push(`  error: ${e}`);
     }
+  }
+  if (opts.withCapabilities) {
+    const p = probes.find((x) => x.route === "peers");
+    if (!p || p.failure || p.status !== 200) {
+      failed++;
+      lines.push("capabilities: not checked — failed", "  error: no usable peers response to read capabilities from");
+    } else {
+      const c = validatePeerCapabilities(p.json);
+      if (c.ok) lines.push("capabilities: from peers — OK: self capabilities match");
+      else { failed++; lines.push("capabilities: from peers — check failed"); for (const e of c.errors) lines.push(`  error: ${e}`); }
+    }
+    const total = ROUTES.length + 1;
+    lines.push(failed === 0 ? `Summary: all ${total} checks hold at ${origin}` : `Summary: ${failed} of ${total} checks failed at ${origin}`);
+    return { lines, exitCode: failed === 0 ? 0 : 1 };
   }
   const allOk = ROUTES.length === 2 ? `Summary: both route contracts hold at ${origin}` : `Summary: all ${ROUTES.length} route contracts hold at ${origin}`;
   lines.push(failed === 0 ? allOk : `Summary: ${failed} of ${ROUTES.length} routes failed at ${origin}`);

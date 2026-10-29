@@ -501,9 +501,9 @@ assert.deepEqual(validateGlobalSnapshot(gsJ()), validateGlobalSnapshot(gsJ()), "
 console.log("snapshot shape   -> valid and empty ok; schema, counts, run_id, duplicate, status, dates rejected; unknown fields dropped; junk never throws");
 
 // 22. Optional third path for the origin check: --with-snapshot (pure helpers; default behavior unchanged).
-assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app"]), { origin: O, withSnapshot: false });
-assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app/", "--with-snapshot"]), { origin: O, withSnapshot: true });
-assert.deepEqual(parseOriginArgs(["--with-snapshot", "http://localhost:3000"]), { origin: "http://localhost:3000", withSnapshot: true });
+assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app"]), { origin: O, withSnapshot: false, withCapabilities: false });
+assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app/", "--with-snapshot"]), { origin: O, withSnapshot: true, withCapabilities: false });
+assert.deepEqual(parseOriginArgs(["--with-snapshot", "http://localhost:3000"]), { origin: "http://localhost:3000", withSnapshot: true, withCapabilities: false });
 for (const bad of [[], ["--with-snapshot"], ["--with-snapshot", "--with-snapshot"], [O, O], [O, "--other"], [O, "--with-snapshot", "x"], ["http://example.com", "--with-snapshot"], [O, 5], null, "x"]) assert.equal(parseOriginArgs(bad), null, JSON.stringify(bad));
 assert.deepEqual(routeUrls(O), { peers: `${O}/api/marketplace/peers`, listings: `${O}/api/marketplace/listings` }, "flag off: two routes");
 assert.deepEqual(routeUrls(O, true), { peers: `${O}/api/marketplace/peers`, listings: `${O}/api/marketplace/listings`, snapshot: `${O}/api/diagnostics/global-snapshot` }, "flag on: three");
@@ -546,5 +546,22 @@ assert.deepEqual(formatCapabilitiesReport(vc2), { lines: [CAPABILITIES_NOTE, "OK
 assert.equal(formatCapabilitiesReport(validatePeerCapabilities({})).exitCode, 1);
 assert.deepEqual(validatePeerCapabilities(peersHttps), validatePeerCapabilities(peersHttps), "pure");
 console.log("capabilities     -> object or registry; exact constants incl. global_snapshot_*; tampered, missing, extra rejected; junk never throws");
+
+// 24. --with-capabilities on the origin check (pure; reads the peers JSON already fetched, no extra request).
+assert.deepEqual(parseOriginArgs([O, "--with-capabilities"]), { origin: O, withSnapshot: false, withCapabilities: true });
+assert.deepEqual(parseOriginArgs(["--with-capabilities", O, "--with-snapshot"]), { origin: O, withSnapshot: true, withCapabilities: true });
+for (const bad of [[O, "--with-capabilities", "--with-capabilities"], [O, "--with-snapshot", "--with-capabilities", "x"], ["--with-capabilities", "--with-snapshot"]]) assert.equal(parseOriginArgs(bad), null, JSON.stringify(bad));
+assert.deepEqual(routeUrls(O, true), { peers: `${O}/api/marketplace/peers`, listings: `${O}/api/marketplace/listings`, snapshot: `${O}/api/diagnostics/global-snapshot` }, "capabilities adds no URL");
+assert.deepEqual(formatOriginReport(O, [pOk, lOk]), all, "default unchanged");
+const both = formatOriginReport(O, [pOk, lOk, snapOk], { withSnapshot: true, withCapabilities: true });
+assert.equal(both.exitCode, 0); assert.equal(both.lines[0], ORIGIN_NOTE_WITH_SNAPSHOT);
+assert.deepEqual(both.lines.slice(-2), ["capabilities: from peers — OK: self capabilities match", `Summary: all 4 checks hold at ${O}`]);
+const capOnly = formatOriginReport(O, [pOk, lOk], { withCapabilities: true });
+assert.equal(capOnly.exitCode, 0); assert.equal(capOnly.lines.at(-1), `Summary: all 3 checks hold at ${O}`);
+const capBad = formatOriginReport(O, [{ route: "peers", status: 200, json: pm((d) => { d.peers[0].capabilities.writes = "some"; }) }, lOk], { withCapabilities: true });
+assert.equal(capBad.exitCode, 1); assert.ok(capBad.lines.includes("capabilities: from peers — check failed")); assert.ok(capBad.lines.at(-1)!.startsWith("Summary: 2 of 3 checks failed"), "contract and capabilities both fail");
+const capNoPeers = formatOriginReport(O, [{ route: "peers", status: 503, failure: "expected HTTP 200" }, lOk], { withCapabilities: true });
+assert.equal(capNoPeers.exitCode, 1); assert.ok(capNoPeers.lines.includes("capabilities: not checked — failed"));
+console.log("origin caps      -> --with-capabilities parsing (combinable); no extra URL; ok / tampered / peers unavailable; default unchanged");
 
 console.log("OK");

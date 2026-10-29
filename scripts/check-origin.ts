@@ -1,8 +1,8 @@
-// Run: npx tsx scripts/check-origin.ts <origin> [--with-snapshot]      e.g. https://shiyan-dap.vercel.app  or  http://localhost:3000
+// Run: npx tsx scripts/check-origin.ts <origin> [--with-snapshot] [--with-capabilities]      e.g. https://shiyan-dap.vercel.app  or  http://localhost:3000
 // OPERATOR-RUN tool, not imported by the app. After a deploy it GETs exactly two fixed URLs on the origin you name
 // (/api/marketplace/peers and /api/marketplace/listings) and checks each has its own route's shape.
 // GET only, no custom auth headers, no cookies, no POST, redirects are NOT followed (a 3xx is a failure), 10 s timeout,
-// 5 MB body cap. With --with-snapshot it also GETs /api/diagnostics/global-snapshot and validates it. Writes no files. A pass is a shape check only, not verification or trust.
+// 5 MB body cap. With --with-snapshot it also GETs /api/diagnostics/global-snapshot and validates it; with --with-capabilities it checks the self capabilities inside the peers response (no extra request). Writes no files. A pass is a shape check only, not verification or trust.
 // Exit codes: 0 both contracts hold, 1 any HTTP or contract failure, 2 usage or origin error.
 import {
   parseOriginArgs, routeUrls, formatOriginReport, safeSnippet,
@@ -10,7 +10,7 @@ import {
 } from "../src/lib/marketplace/origin-check";
 import type { ProbeRoute } from "../src/lib/marketplace/origin-check";
 
-const USAGE = "Usage: npx tsx scripts/check-origin.ts <origin> [--with-snapshot]   (https://host, or http://localhost[:port] / http://127.0.0.1[:port]; no path, query or credentials)";
+const USAGE = "Usage: npx tsx scripts/check-origin.ts <origin> [--with-snapshot] [--with-capabilities]   (https://host, or http://localhost[:port] / http://127.0.0.1[:port]; no path, query or credentials)";
 
 async function readCapped(res: Response): Promise<{ text: string } | { tooLarge: true }> {
   const declared = Number(res.headers.get("content-length"));
@@ -60,11 +60,11 @@ async function probe(route: ProbeRoute, url: string): Promise<RouteProbe> {
 async function main(args: string[]): Promise<number> {
   const parsed = parseOriginArgs(args);
   if (!parsed) { console.error(`error: not an accepted origin or option: ${safeSnippet(args.join(" "), 120)}\n${USAGE}`); return 2; }
-  const { origin, withSnapshot } = parsed;
+  const { origin, withSnapshot, withCapabilities } = parsed;
   const urls = routeUrls(origin, withSnapshot);
   const probes: RouteProbe[] = [await probe("peers", urls.peers), await probe("listings", urls.listings)];
   if (urls.snapshot) probes.push(await probe("snapshot", urls.snapshot));
-  const { lines, exitCode } = formatOriginReport(origin, probes, { withSnapshot });
+  const { lines, exitCode } = formatOriginReport(origin, probes, { withSnapshot, withCapabilities });
   for (const line of lines) console.log(line);
   return exitCode;
 }
