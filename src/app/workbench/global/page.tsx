@@ -95,6 +95,11 @@ export default function GlobalMisdiagnosisPage() {
 
         <section className="border border-zinc-800 rounded-2xl p-5">
           <p className="text-emerald-400 text-xs mb-3">Recorded runs (GET /api/level4/experience)</p>
+          <p className="text-xs text-zinc-500 mb-3" data-global-snapshot-api>
+            Same snapshot as JSON (<code>aethel.global.snapshot.v1</code>):{" "}
+            <a className="underline" href="/api/diagnostics/global-snapshot">/api/diagnostics/global-snapshot</a>. GET only, read from the
+            experience store (503 when it is not configured); a shape and status record, not attestation or a clinical diagnosis.
+          </p>
           {error ? (
             <p className="text-sm text-amber-400">Could not load recorded runs: {error}.</p>
           ) : runs === null ? (
