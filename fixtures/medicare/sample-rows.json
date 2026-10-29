@@ -1,0 +1,15 @@
+{
+  "synthetic": true,
+  "note": "SYNTHETIC fixture shaped like a public provider-utilization file. Invented values: no real providers, beneficiaries, claims or PHI. Two anomalies are seeded on purpose for the data-quality check.",
+  "source_id": "synthetic-provider-utilization",
+  "source_name": "Synthetic provider utilization sample (public-style, not CMS data)",
+  "release_id": "synthetic-2026-10",
+  "retrieved_at": "2026-10-29T00:00:00.000Z",
+  "rows": [
+    { "provider_id": "SYN-0001", "hcpcs_code": "99213", "service_count": 120, "avg_submitted_charge": 145.0, "avg_medicare_payment": 78.5 },
+    { "provider_id": "SYN-0002", "hcpcs_code": "99214", "service_count": 64, "avg_submitted_charge": 210.0, "avg_medicare_payment": 112.25 },
+    { "provider_id": "SYN-0003", "hcpcs_code": "93000", "service_count": 33, "avg_submitted_charge": 60.0, "avg_medicare_payment": -17.4 },
+    { "provider_id": "SYN-0004", "hcpcs_code": "", "service_count": 18, "avg_submitted_charge": 95.0, "avg_medicare_payment": 51.0 },
+    { "provider_id": "SYN-0005", "hcpcs_code": "36415", "service_count": 410, "avg_submitted_charge": 12.0, "avg_medicare_payment": 3.0 }
+  ]
+}

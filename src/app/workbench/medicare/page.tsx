@@ -1,9 +1,10 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import { FIXTURE_PROVENANCE, FIXTURE_DQ, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
 
 /**
  * Medicare · Public Data Intelligence (skeleton). First named vertical under Global · misdiagnosis.
- * Static, read-only page: no CMS fetch, no ingest, no store access, no writes, and no change to the Level 4 loop,
+ * Static, read-only page (the Know panel is computed at build time from the committed synthetic fixture): no CMS fetch, no ingest, no store access, no writes, and no change to the Level 4 loop,
  * ROE, MCP or the Safety plant. Reuse the engine, isolate the domain rules.
  */
 
@@ -72,6 +73,30 @@ export default function MedicarePage() {
         <section data-medicare-guardrail className="border border-amber-500/60 bg-zinc-950 rounded-2xl p-5">
           <p className="text-amber-300 text-xs uppercase tracking-widest mb-2">Guardrail</p>
           <p className="text-amber-200 text-base font-medium">{GUARDRAIL}</p>
+        </section>
+
+        <section data-medicare-know-panel className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest">Know · provenance and data quality (synthetic fixture)</p>
+          <p className="text-xs text-amber-300">{MEDICARE_FIXTURE.note}</p>
+          <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-xs font-mono text-zinc-300" data-medicare-provenance>
+            <dt className="text-zinc-500">schema</dt><dd>{FIXTURE_PROVENANCE.schema_version}</dd>
+            <dt className="text-zinc-500">source</dt><dd>{FIXTURE_PROVENANCE.source_name} ({FIXTURE_PROVENANCE.source_id})</dd>
+            <dt className="text-zinc-500">release</dt><dd>{FIXTURE_PROVENANCE.release_id}</dd>
+            <dt className="text-zinc-500">retrieved</dt><dd>{FIXTURE_PROVENANCE.retrieved_at}</dd>
+            <dt className="text-zinc-500">content sha256</dt><dd className="break-all">{FIXTURE_PROVENANCE.content_hash}</dd>
+            <dt className="text-zinc-500">domain</dt><dd>{FIXTURE_PROVENANCE.domain_label}</dd>
+          </dl>
+          <div data-medicare-dq>
+            <p className="text-zinc-300">
+              Data-quality check <code>{FIXTURE_DQ.check_id}</code>: {FIXTURE_DQ.rows_checked} rows checked, {FIXTURE_DQ.rows_with_issues} with issues.
+            </p>
+            <ul className="text-xs text-zinc-400 list-disc pl-5 font-mono">
+              {FIXTURE_DQ.findings.map((f) => (
+                <li key={`${f.row_index}-${f.field}`}>row {f.row_index} · {f.field ?? "row"} · {f.issue}</li>
+              ))}
+            </ul>
+            <p className="text-xs text-zinc-500 mt-1">Data-quality patterns for human review, not findings of fraud or misconduct. Hash is sha256 of the canonical JSON of the rows.</p>
+          </div>
         </section>
 
         <section aria-label="Four-stage graph" className="grid gap-4 sm:grid-cols-2">
