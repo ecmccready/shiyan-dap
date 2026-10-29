@@ -19,6 +19,9 @@ export const WITH_SNAPSHOT_FLAG = "--with-snapshot";
 
 export const ORIGIN_NOTE =
   "Shape check only: a passing route contract means well-formed and the right route's content, not verified, attested or trusted. GET only, two fixed paths, no redirects followed.";
+/** Same note when --with-snapshot adds the third path. */
+export const ORIGIN_NOTE_WITH_SNAPSHOT =
+  "Shape check only: a passing route contract means well-formed and the right route's content, not verified, attested or trusted. GET only, three fixed paths, no redirects followed.";
 export const FETCH_TIMEOUT_MS = 10_000;
 export const MAX_BODY_BYTES = 5 * 1024 * 1024;
 export const SNIPPET_MAX = 200;
@@ -74,7 +77,7 @@ export type RouteProbe = {
  */
 export function formatOriginReport(origin: string, probes: RouteProbe[], opts: { withSnapshot?: boolean } = {}): { lines: string[]; exitCode: 0 | 1 } {
   const ROUTES: ProbeRoute[] = opts.withSnapshot ? ["peers", "listings", "snapshot"] : ["peers", "listings"];
-  const lines: string[] = [ORIGIN_NOTE, `Origin: ${origin}`];
+  const lines: string[] = [opts.withSnapshot ? ORIGIN_NOTE_WITH_SNAPSHOT : ORIGIN_NOTE, `Origin: ${origin}`];
   let failed = 0;
   for (const route of ROUTES) {
     const p = probes.find((x) => x.route === route);

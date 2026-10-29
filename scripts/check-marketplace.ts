@@ -12,7 +12,7 @@ import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
 import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE } from "../src/lib/marketplace/route-contract";
-import { parseOperatorOrigin, parseOriginArgs, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, type RouteProbe } from "../src/lib/marketplace/origin-check";
+import { parseOperatorOrigin, parseOriginArgs, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, ORIGIN_NOTE_WITH_SNAPSHOT, type RouteProbe } from "../src/lib/marketplace/origin-check";
 import { buildGlobalSnapshot, classifyRun, GLOBAL_SNAPSHOT_SCHEMA, SNAPSHOT_NOTE } from "../src/lib/diagnostics/global-snapshot";
 import { validateGlobalSnapshot, formatSnapshotReport, SNAPSHOT_VALIDATE_NOTE } from "../src/lib/diagnostics/global-snapshot-validate";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
@@ -507,6 +507,7 @@ const snapOk: RouteProbe = { route: "snapshot", status: 200, json: gsJ() };
 assert.deepEqual(formatOriginReport(O, [pOk, lOk, snapOk]), all, "flag off ignores a snapshot probe");
 const three = formatOriginReport(O, [pOk, lOk, snapOk], { withSnapshot: true });
 assert.equal(three.exitCode, 0);
+assert.equal(three.lines[0], ORIGIN_NOTE_WITH_SNAPSHOT); assert.match(three.lines[0], /three fixed paths/); assert.match(all.lines[0], /two fixed paths/);
 assert.deepEqual(three.lines.slice(2), ["peers: HTTP 200 — OK: peers contract holds", "listings: HTTP 200 — OK: listings contract holds", "snapshot: HTTP 200 — OK: snapshot contract holds", `Summary: all 3 route contracts hold at ${O}`]);
 const snapBad = formatOriginReport(O, [pOk, lOk, { route: "snapshot", status: 200, json: sm((d) => { d.counts.total = 9; }) }], { withSnapshot: true });
 assert.equal(snapBad.exitCode, 1); assert.ok(snapBad.lines.includes("snapshot: HTTP 200 — contract failed")); assert.ok(snapBad.lines.some((x) => /counts\.total/.test(x)));
