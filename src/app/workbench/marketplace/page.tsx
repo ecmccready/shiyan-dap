@@ -3,7 +3,23 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import MarketplaceListings from "@/components/MarketplaceListings";
-import { buildPeerRegistry, PEERS_REGISTRY_NOTE } from "@/lib/marketplace/peers";
+import { buildPeerRegistry, PEERS_REGISTRY_NOTE, type PeerCapabilities } from "@/lib/marketplace/peers";
+import { useCopy, copiedRing } from "@/lib/use-copy";
+
+/** Copies this node's self-reported capabilities (same object as /api/marketplace/peers). Clipboard only; nothing is sent. */
+function CopyCapabilities({ capabilities }: { capabilities: PeerCapabilities }) {
+  const copy = useCopy(4000, undefined, "capabilities");
+  return (
+    <button
+      type="button"
+      data-copy-capabilities
+      onClick={() => void copy.copy(JSON.stringify(capabilities, null, 2))}
+      className={`mt-2 inline-flex h-8 items-center rounded-full border border-zinc-600 px-3 text-xs text-zinc-200 hover:border-zinc-400${copiedRing(copy.status)}`}
+    >
+      {copy.status === "copied" ? "Copied ✓" : copy.status === "failed" ? "Copy failed" : "Copy capabilities JSON"}
+    </button>
+  );
+}
 
 const PEERS = buildPeerRegistry(null).peers;
 
@@ -68,6 +84,9 @@ export default function MarketplacePage() {
                     <code>{peer.capabilities.handoff_path_template}</code>; read-only, no cross-node trust, self-reported and not
                     third-party attested. Global snapshot: <code>{peer.capabilities.global_snapshot_path}</code> (snapshot v1).
                   </p>
+                ) : null}
+                {peer.capabilities ? (
+                  <CopyCapabilities capabilities={peer.capabilities} />
                 ) : null}
                 {peer.index_url ? (
                   <p className="text-xs mt-1">
