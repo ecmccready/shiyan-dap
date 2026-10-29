@@ -12,7 +12,7 @@ import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
 import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE } from "../src/lib/marketplace/route-contract";
-import { parseOperatorOrigin, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, type RouteProbe } from "../src/lib/marketplace/origin-check";
+import { parseOperatorOrigin, parseOriginArgs, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, type RouteProbe } from "../src/lib/marketplace/origin-check";
 import { buildGlobalSnapshot, classifyRun, GLOBAL_SNAPSHOT_SCHEMA, SNAPSHOT_NOTE } from "../src/lib/diagnostics/global-snapshot";
 import { validateGlobalSnapshot, formatSnapshotReport, SNAPSHOT_VALIDATE_NOTE } from "../src/lib/diagnostics/global-snapshot-validate";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
@@ -495,5 +495,26 @@ assert.deepEqual(formatSnapshotReport(vs), { lines: [SNAPSHOT_VALIDATE_NOTE, "OK
 assert.equal(formatSnapshotReport(validateGlobalSnapshot(null)).exitCode, 1);
 assert.deepEqual(validateGlobalSnapshot(gsJ()), validateGlobalSnapshot(gsJ()), "pure");
 console.log("snapshot shape   -> valid and empty ok; schema, counts, run_id, duplicate, status, dates rejected; unknown fields dropped; junk never throws");
+
+// 22. Optional third path for the origin check: --with-snapshot (pure helpers; default behavior unchanged).
+assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app"]), { origin: O, withSnapshot: false });
+assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app/", "--with-snapshot"]), { origin: O, withSnapshot: true });
+assert.deepEqual(parseOriginArgs(["--with-snapshot", "http://localhost:3000"]), { origin: "http://localhost:3000", withSnapshot: true });
+for (const bad of [[], ["--with-snapshot"], ["--with-snapshot", "--with-snapshot"], [O, O], [O, "--other"], [O, "--with-snapshot", "x"], ["http://example.com", "--with-snapshot"], [O, 5], null, "x"]) assert.equal(parseOriginArgs(bad), null, JSON.stringify(bad));
+assert.deepEqual(routeUrls(O), { peers: `${O}/api/marketplace/peers`, listings: `${O}/api/marketplace/listings` }, "flag off: two routes");
+assert.deepEqual(routeUrls(O, true), { peers: `${O}/api/marketplace/peers`, listings: `${O}/api/marketplace/listings`, snapshot: `${O}/api/diagnostics/global-snapshot` }, "flag on: three");
+const snapOk: RouteProbe = { route: "snapshot", status: 200, json: gsJ() };
+assert.deepEqual(formatOriginReport(O, [pOk, lOk, snapOk]), all, "flag off ignores a snapshot probe");
+const three = formatOriginReport(O, [pOk, lOk, snapOk], { withSnapshot: true });
+assert.equal(three.exitCode, 0);
+assert.deepEqual(three.lines.slice(2), ["peers: HTTP 200 — OK: peers contract holds", "listings: HTTP 200 — OK: listings contract holds", "snapshot: HTTP 200 — OK: snapshot contract holds", `Summary: all 3 route contracts hold at ${O}`]);
+const snapBad = formatOriginReport(O, [pOk, lOk, { route: "snapshot", status: 200, json: sm((d) => { d.counts.total = 9; }) }], { withSnapshot: true });
+assert.equal(snapBad.exitCode, 1); assert.ok(snapBad.lines.includes("snapshot: HTTP 200 — contract failed")); assert.ok(snapBad.lines.some((x) => /counts\.total/.test(x)));
+const snapSwap = formatOriginReport(O, [pOk, lOk, { route: "snapshot", status: 200, json: goodIdx() }], { withSnapshot: true });
+assert.equal(snapSwap.exitCode, 1, "listings content on the snapshot path fails");
+const snap503 = formatOriginReport(O, [pOk, lOk, { route: "snapshot", status: 503, failure: "expected HTTP 200", snippet: '{"error":"Experience store is not configured"}' }], { withSnapshot: true });
+assert.equal(snap503.exitCode, 1); assert.ok(snap503.lines.includes("snapshot: HTTP 503 — failed")); assert.ok(snap503.lines.at(-1)!.startsWith("Summary: 1 of 3 routes failed"));
+assert.equal(formatOriginReport(O, [pOk, lOk], { withSnapshot: true }).exitCode, 1, "flag on without a snapshot probe fails");
+console.log("origin snapshot  -> --with-snapshot parsing; two URLs by default, three with the flag; snapshot ok / contract failure / swap / 503; default report unchanged");
 
 console.log("OK");

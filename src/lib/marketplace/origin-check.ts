@@ -11,6 +11,11 @@
  * The returned string is the normalised origin without a trailing slash.
  */
 import { checkRouteContract, type RouteName } from "@/lib/marketplace/route-contract";
+import { validateGlobalSnapshot } from "@/lib/diagnostics/global-snapshot-validate";
+
+/** The optional third path, only with --with-snapshot. */
+export type ProbeRoute = RouteName | "snapshot";
+export const WITH_SNAPSHOT_FLAG = "--with-snapshot";
 
 export const ORIGIN_NOTE =
   "Shape check only: a passing route contract means well-formed and the right route's content, not verified, attested or trusted. GET only, two fixed paths, no redirects followed.";
@@ -30,9 +35,20 @@ export function parseOperatorOrigin(arg: unknown): string | null {
   return u.origin;
 }
 
-/** The only two URLs the script ever requests. */
-export function routeUrls(origin: string): { peers: string; listings: string } {
-  return { peers: `${origin}/api/marketplace/peers`, listings: `${origin}/api/marketplace/listings` };
+/** The only URLs the script ever requests: two by default, plus the snapshot path with --with-snapshot. */
+export function routeUrls(origin: string, withSnapshot = false): { peers: string; listings: string; snapshot?: string } {
+  const base = { peers: `${origin}/api/marketplace/peers`, listings: `${origin}/api/marketplace/listings` };
+  return withSnapshot ? { ...base, snapshot: `${origin}/api/diagnostics/global-snapshot` } : base;
+}
+
+/** CLI args: exactly one origin, plus an optional --with-snapshot in either position. Null on anything else. */
+export function parseOriginArgs(args: unknown): { origin: string; withSnapshot: boolean } | null {
+  if (!Array.isArray(args) || args.length < 1 || args.length > 2 || !args.every((a) => typeof a === "string")) return null;
+  const flags = args.filter((a) => a === WITH_SNAPSHOT_FLAG);
+  const rest = args.filter((a) => a !== WITH_SNAPSHOT_FLAG);
+  if (rest.length !== 1 || flags.length > 1) return null;
+  const origin = parseOperatorOrigin(rest[0]);
+  return origin ? { origin, withSnapshot: flags.length === 1 } : null;
 }
 
 /** Remote text made safe to print: control characters become spaces, then it is cut to `max` characters. */
@@ -45,17 +61,19 @@ export function safeSnippet(text: unknown, max: number = SNIPPET_MAX): string {
 
 /** What the script observed for one route. `failure` is set when no usable 200 JSON body was obtained. */
 export type RouteProbe = {
-  route: RouteName;
+  route: ProbeRoute;
   status: number | null;
   json?: unknown;
   failure?: string;
   snippet?: string;
 };
 
-const ROUTES: RouteName[] = ["peers", "listings"];
-
-/** Plain-text report for the two probes (pure). Exit 0 only when both contracts hold, else 1. */
-export function formatOriginReport(origin: string, probes: RouteProbe[]): { lines: string[]; exitCode: 0 | 1 } {
+/**
+ * Plain-text report (pure). Without the snapshot option: the two route blocks, exit 0 only when both hold (unchanged).
+ * With `{ withSnapshot: true }`: a third block for the global snapshot, exit 0 only when all three hold.
+ */
+export function formatOriginReport(origin: string, probes: RouteProbe[], opts: { withSnapshot?: boolean } = {}): { lines: string[]; exitCode: 0 | 1 } {
+  const ROUTES: ProbeRoute[] = opts.withSnapshot ? ["peers", "listings", "snapshot"] : ["peers", "listings"];
   const lines: string[] = [ORIGIN_NOTE, `Origin: ${origin}`];
   let failed = 0;
   for (const route of ROUTES) {
@@ -74,7 +92,7 @@ export function formatOriginReport(origin: string, probes: RouteProbe[]): { line
       if (p.snippet) lines.push(`  body: ${safeSnippet(p.snippet)}`);
       continue;
     }
-    const r = checkRouteContract(route, p.json);
+    const r = route === "snapshot" ? validateGlobalSnapshot(p.json) : checkRouteContract(route, p.json);
     if (r.ok) {
       lines.push(`${route}: ${http} — OK: ${route} contract holds`);
       for (const w of r.warnings) lines.push(`  warning: ${w}`);
@@ -84,6 +102,7 @@ export function formatOriginReport(origin: string, probes: RouteProbe[]): { line
       for (const e of r.errors) lines.push(`  error: ${e}`);
     }
   }
-  lines.push(failed === 0 ? `Summary: both route contracts hold at ${origin}` : `Summary: ${failed} of ${ROUTES.length} routes failed at ${origin}`);
+  const allOk = ROUTES.length === 2 ? `Summary: both route contracts hold at ${origin}` : `Summary: all ${ROUTES.length} route contracts hold at ${origin}`;
+  lines.push(failed === 0 ? allOk : `Summary: ${failed} of ${ROUTES.length} routes failed at ${origin}`);
   return { lines, exitCode: failed === 0 ? 0 : 1 };
 }
