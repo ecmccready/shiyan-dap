@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
+import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE, FIXTURE_INVESTIGATION, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
 
 /**
  * Medicare · Public Data Intelligence (skeleton). First named vertical under Global · misdiagnosis.
@@ -49,7 +49,7 @@ const STAGES = [
     id: "do",
     group: "Do",
     title: "Authorized action",
-    status: "Not built yet.",
+    status: "Partly built: investigation report with a review disposition stub (synthetic fixture).",
     lines: [
       "Generate an investigation report from source-linked findings.",
       "Route it to a qualified human reviewer and record the disposition.",
@@ -141,6 +141,24 @@ export default function MedicarePage() {
             ))}
           </ul>
           <p className="text-xs text-zinc-500">{FIXTURE_EVIDENCE.uncertainty_note} Each item links to dataset hash {FIXTURE_EVIDENCE.source.content_hash.slice(0, 16)}…; patterns for review, not conclusions.</p>
+        </section>
+
+        <section data-medicare-do-panel className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">
+          <h2 className="text-white font-semibold">Do · investigation report (synthetic fixture)</h2>
+          <p className="text-zinc-400">
+            {FIXTURE_INVESTIGATION.schema_version} · domain {FIXTURE_INVESTIGATION.domain_label} · {FIXTURE_INVESTIGATION.counts.items} items ·
+            {" "}{FIXTURE_INVESTIGATION.counts.unreviewed} unreviewed, {FIXTURE_INVESTIGATION.counts.needs_human_review} needs_human_review, {FIXTURE_INVESTIGATION.counts.cleared_pattern_only} cleared_pattern_only
+          </p>
+          <p className="text-xs font-mono text-zinc-400 break-all" data-medicare-report-hash>
+            evidence pack {FIXTURE_INVESTIGATION.evidence.pack_hash?.slice(0, 16)}… ({FIXTURE_INVESTIGATION.evidence.pack_verified ? "verified" : "not verified"}) · report sha256 {FIXTURE_INVESTIGATION.report_hash}
+          </p>
+          <p className="text-xs font-mono text-zinc-500">allowed statuses: {FIXTURE_INVESTIGATION.allowed_statuses.join(" | ")}</p>
+          <ul className="space-y-1 text-xs font-mono text-zinc-300">
+            {FIXTURE_INVESTIGATION.entries.map((e) => (
+              <li key={e.item_id}>{e.item_id} · {e.status}</li>
+            ))}
+          </ul>
+          <p className="text-xs text-zinc-500">{FIXTURE_INVESTIGATION.scope_note} No reviewer has filled this in; nothing is stored or sent.</p>
         </section>
 
         <section aria-label="Four-stage graph" className="grid gap-4 sm:grid-cols-2">

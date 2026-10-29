@@ -4,6 +4,7 @@ import { buildProvenance } from "@/lib/medicare/provenance";
 import { checkRequiredNonNegative } from "@/lib/medicare/dq";
 import { runBaselines } from "@/lib/medicare/baselines";
 import { buildEvidencePack } from "@/lib/medicare/evidence";
+import { buildInvestigationReport } from "@/lib/medicare/investigation";
 
 export const MEDICARE_FIXTURE = sample;
 export const FIXTURE_PROVENANCE = buildProvenance({
@@ -12,3 +13,4 @@ export const FIXTURE_PROVENANCE = buildProvenance({
 export const FIXTURE_DQ = checkRequiredNonNegative(sample.rows);
 export const FIXTURE_BASELINES = runBaselines(sample.rows);
 export const FIXTURE_EVIDENCE = buildEvidencePack({ provenance: FIXTURE_PROVENANCE, dq: FIXTURE_DQ, baselines: FIXTURE_BASELINES, rows: sample.rows });
+export const FIXTURE_INVESTIGATION = buildInvestigationReport({ pack: FIXTURE_EVIDENCE });

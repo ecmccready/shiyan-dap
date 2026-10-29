@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
+import { buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -99,5 +100,37 @@ assert.equal(buildEvidencePack({ provenance: FIXTURE_PROVENANCE, dq: FIXTURE_DQ,
 assert.deepEqual(buildEvidencePack({ provenance: FIXTURE_PROVENANCE, dq: FIXTURE_DQ, baselines: FIXTURE_BASELINES, rows: MEDICARE_FIXTURE.rows }), ev, "deterministic");
 assert.deepEqual(JSON.parse(JSON.stringify(ev)), ev, "JSON-safe");
 console.log(`evidence    -> 3 items (2 data quality, 1 rule), each linked to dataset + row sha256 and its check; pack ${ev.pack_hash.slice(0, 16)}… recomputable, tamper-evident`);
+
+// 7. Do: investigation report links the evidence pack_hash; three review statuses only; no wrongdoing claims.
+const inv = buildInvestigationReport({ pack: FIXTURE_EVIDENCE });
+assert.equal(inv.schema_version, "aethel.medicare.investigation.v1"); assert.equal(MEDICARE_INVESTIGATION_SCHEMA, inv.schema_version);
+assert.equal(inv.domain_label, "medicare"); assert.equal(inv.note, MEDICARE_NOTE);
+assert.deepEqual([...DISPOSITION_STATUSES], ["unreviewed", "needs_human_review", "cleared_pattern_only"]);
+assert.deepEqual(inv.evidence, { schema: "aethel.medicare.evidence.v1", pack_hash: ev.pack_hash, pack_verified: true, source_content_hash: FIXTURE_PROVENANCE.content_hash });
+assert.deepEqual(inv.counts, { items: 3, unreviewed: 3, needs_human_review: 0, cleared_pattern_only: 0, rejected: 0 });
+assert.deepEqual(inv.entries.map((e) => e.item_id), ev.items.map((i) => i.item_id));
+assert.ok(verifyReportHash(inv)); assert.ok(verifyReportHash(JSON.parse(JSON.stringify(inv))));
+for (const j of [null, "x", {}, [], proxy, cyc]) assert.equal(verifyReportHash(j), false);
+const ids = ev.items.map((i) => i.item_id);
+const r2 = buildInvestigationReport({ pack: ev, dispositions: {
+  [ids[0]]: { status: "cleared_pattern_only", reviewer: "reviewer-a", note: "entry error in source" },
+  [ids[1]]: { status: "needs_human_review" },
+  [ids[2]]: { status: "fraud" },
+  "rule:none:9": { status: "needs_human_review" },
+} });
+assert.deepEqual(r2.counts, { items: 3, unreviewed: 1, needs_human_review: 1, cleared_pattern_only: 1, rejected: 2 });
+assert.equal(r2.entries[0].reviewer, "reviewer-a"); assert.equal(r2.entries[2].status, "unreviewed", "unknown status stays unreviewed");
+assert.deepEqual(r2.rejected.map((r) => r.item_id).sort(), [ids[2], "rule:none:9"].sort());
+assert.notEqual(r2.report_hash, inv.report_hash); assert.ok(verifyReportHash(r2));
+const t2 = JSON.parse(JSON.stringify(r2)); t2.entries[1].status = "cleared_pattern_only"; assert.equal(verifyReportHash(t2), false, "tamper breaks the hash");
+const badPack = JSON.parse(JSON.stringify(ev)); badPack.items[0].detail = "edited";
+const r3 = buildInvestigationReport({ pack: badPack, dispositions: { [ids[0]]: { status: "needs_human_review" } } });
+assert.equal(r3.evidence.pack_verified, false); assert.equal(r3.counts.items, 0); assert.equal(r3.counts.rejected, 1);
+for (const j of [null, "x", {}, [], proxy, cyc]) { const r = buildInvestigationReport({ pack: j, dispositions: j }); assert.equal(r.evidence.pack_verified, false); assert.ok(verifyReportHash(r)); }
+const banned = /fraud|misconduct|misdiagnos/i;
+for (const s of DISPOSITION_STATUSES) assert.ok(!banned.test(s));
+assert.deepEqual(buildInvestigationReport({ pack: FIXTURE_EVIDENCE }), inv, "deterministic");
+assert.deepEqual(JSON.parse(JSON.stringify(inv)), inv, "JSON-safe");
+console.log(`investigation -> 3 items unreviewed, linked to pack ${inv.evidence.pack_hash?.slice(0, 16)}…; 3 statuses only, bad status/id/pack rejected; report ${inv.report_hash.slice(0, 16)}… tamper-evident`);
 
 console.log("OK");
