@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import CopyMedicareJson from "@/components/CopyMedicareJson";
 import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE, FIXTURE_INVESTIGATION, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
 
 /**
@@ -158,6 +159,10 @@ export default function MedicarePage() {
               <li key={e.item_id}>{e.item_id} · {e.status}</li>
             ))}
           </ul>
+          <div className="flex flex-wrap gap-2" data-medicare-copy-row>
+            <CopyMedicareJson kind="investigation" label="Copy investigation JSON" json={JSON.stringify(FIXTURE_INVESTIGATION, null, 2)} />
+            <CopyMedicareJson kind="evidence" label="Copy evidence pack JSON" json={JSON.stringify(FIXTURE_EVIDENCE, null, 2)} />
+          </div>
           <p className="text-xs text-zinc-500">{FIXTURE_INVESTIGATION.scope_note} No reviewer has filled this in; nothing is stored or sent.</p>
         </section>
 
