@@ -17,8 +17,8 @@ import {
 } from "@/lib/marketplace/listings";
 import { toLedgerEventShape } from "@/lib/marketplace/ledger-preview";
 import { surfaceNote, SURFACE_CAVEAT } from "@/lib/marketplace/error-surface";
-import { peerHandoffUrl, peerStatus } from "@/lib/marketplace/peer";
-
+import { peerHandoffUrl, peerStatus } from "@/lib/marketplace/peers";
+import { peerStatus, PEERS_NOTE, type PeerStatus } from "@/lib/marketplace/peers";
 const fmt = (n: number | null) => (typeof n === "number" ? n.toFixed(3) : "—");
 
 function IntentPanel({ intent }: { intent: LicenseIntent }) {
