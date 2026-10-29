@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
 /** Client-only disposition stub over the synthetic fixture. State lives in this tab; nothing is stored or sent. */
-export default function MedicareDispositionStub({ pack }: { pack: EvidencePack }) {
+export default function MedicareDispositionStub({ pack, highlight }: { pack: EvidencePack; highlight?: string }) {
   const [disp, setDisp] = useState<DispositionInput>({});
   const report = useMemo(() => buildInvestigationReport({ pack, dispositions: disp }), [pack, disp]);
   return (
@@ -13,7 +14,7 @@ export default function MedicareDispositionStub({ pack }: { pack: EvidencePack }
       <p className="text-emerald-400 text-xs">Reviewer disposition (stub, this tab only)</p>
       <ul className="space-y-1 text-xs font-mono text-zinc-300">
         {report.entries.map((e) => (
-          <li key={e.item_id} className="flex flex-wrap items-center gap-2">
+          <li key={e.item_id} id={medicareAnchorId("disposition", e.item_id)} className={`scroll-mt-24 flex flex-wrap items-center gap-2 ${e.item_id === highlight ? "rounded bg-emerald-500/15 border-l-4 border-emerald-400 px-2 py-1" : ""}`}>
             <span>{e.item_id}</span>
             <select
               aria-label={`Disposition for ${e.item_id}`}

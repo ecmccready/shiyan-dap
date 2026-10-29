@@ -74,3 +74,8 @@ export function buildWinSummary(report: InvestigationReport, evidence: EvidenceP
     top: top ? { provider_id: top.provider_id, payment: top.payment, charge: top.charge, ratio: top.ratio, excess: Number((top.payment - top.charge).toFixed(2)) } : null,
   };
 }
+
+/** Pure: stable DOM id for a medicare anchor ("medicare-<kind>-<slug>"), safe for URL fragments. */
+export function medicareAnchorId(kind: "candidate" | "evidence" | "disposition", key: string | number): string {
+  return `medicare-${kind}-${String(key).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}

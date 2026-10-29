@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
-import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary } from "../src/lib/medicare/case-brief";
+import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
 import { applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
@@ -161,4 +161,11 @@ assert.equal(win.hand_off_ready, true); assert.equal(win.domain_label, "medicare
 assert.equal(buildWinSummary(r3, emptyPack, undefined).hand_off_ready, false);
 console.log("win         -> 1 ranked anomaly · 2 DQ · 3 items · hand-off ready; top SYN-0006 150 vs 120 (+30)");
 
+// 10. Anchors for the top candidate (pure, stable, fragment-safe).
+assert.equal(medicareAnchorId("candidate", 5), "medicare-candidate-5");
+assert.equal(medicareAnchorId("evidence", "rule:payment_vs_charge.v1:5"), "medicare-evidence-rule-payment-vs-charge-v1-5");
+assert.equal(medicareAnchorId("disposition", "rule:payment_vs_charge.v1:5"), "medicare-disposition-rule-payment-vs-charge-v1-5");
+assert.equal(FIXTURE_BASELINES.rules[0].candidates[0].row_index, 5);
+const anchors = ev.items.map((i) => medicareAnchorId("evidence", i.item_id)); assert.equal(new Set(anchors).size, anchors.length, "unique");
+console.log("anchors     -> top candidate row 5 → #medicare-candidate-5, evidence and disposition anchors unique");
 console.log("OK");

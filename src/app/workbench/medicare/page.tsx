@@ -2,7 +2,11 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyMedicareJson from "@/components/CopyMedicareJson";
 import MedicareDispositionStub from "@/components/MedicareDispositionStub";
-import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary } from "@/lib/medicare/case-brief";
+import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary, medicareAnchorId } from "@/lib/medicare/case-brief";
+
+/** Top-ranked payment_vs_charge candidate on the synthetic fixture (row index and evidence item id), for anchors. */
+const TOP_ROW: number | null = FIXTURE_BASELINES.rules[0]?.candidates[0]?.row_index ?? null;
+const TOP_ITEM = TOP_ROW === null ? "" : `rule:${FIXTURE_BASELINES.rules[0].rule_id}:${TOP_ROW}`;
 import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE, FIXTURE_INVESTIGATION, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
 
 /**
@@ -85,7 +89,7 @@ export default function MedicarePage() {
         {(() => {
           const w = buildWinSummary(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_BASELINES.rules[0]?.candidates[0]);
           return (
-            <section data-medicare-win-strip className="border-2 border-emerald-500/70 bg-emerald-950/30 rounded-2xl p-5 space-y-3">
+            <section id="medicare-win" data-medicare-win-strip className="scroll-mt-24 border-2 border-emerald-500/70 bg-emerald-950/30 rounded-2xl p-5 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 {w.hand_off_ready && <span data-medicare-handoff-badge className="rounded-full bg-emerald-500 text-black text-xs font-semibold px-3 py-1">Reviewer hand-off ready</span>}
                 <span className="text-xs text-zinc-400">medicare · synthetic fixture</span>
@@ -96,7 +100,16 @@ export default function MedicarePage() {
                   Top candidate <span className="font-mono">{w.top.provider_id}</span>: Medicare paid <span className="text-emerald-300 font-semibold">${w.top.payment}</span> against a submitted charge of <span className="font-semibold">${w.top.charge}</span> (+${w.top.excess}, ratio {w.top.ratio}). Rule payment_vs_charge.v1; a pattern for review, not a finding of wrongdoing.
                 </p>
               )}
-              <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
+              <div className="flex flex-wrap items-center gap-3">
+                <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
+                {w.top && TOP_ROW !== null && (
+                  <span className="flex flex-wrap gap-3 text-xs">
+                    <a data-medicare-jump-top href={`#${medicareAnchorId("candidate", TOP_ROW)}`} className="text-emerald-300 underline">Jump to top candidate ↓</a>
+                    <a href={`#${medicareAnchorId("evidence", TOP_ITEM)}`} className="text-zinc-300 underline">Evidence item</a>
+                    <a href={`#${medicareAnchorId("disposition", TOP_ITEM)}`} className="text-zinc-300 underline">Set disposition</a>
+                  </span>
+                )}
+              </div>
             </section>
           );
         })()}
@@ -136,7 +149,9 @@ export default function MedicarePage() {
               </p>
               <ul className="text-xs text-zinc-400 list-disc pl-5 font-mono">
                 {r.candidates.map((c) => (
-                  <li key={c.row_index}>row {c.row_index} · {c.provider_id ?? "—"} · payment {c.payment} &gt; charge {c.charge} · ratio {c.ratio ?? "—"}</li>
+                  <li key={c.row_index} id={medicareAnchorId("candidate", c.row_index)} data-medicare-candidate-row={c.row_index}
+                    className={c.row_index === TOP_ROW ? "scroll-mt-24 -mx-2 px-2 py-1 rounded bg-emerald-500/15 border-l-4 border-emerald-400 text-emerald-100" : "scroll-mt-24"}>
+                    {c.row_index === TOP_ROW && <span className="mr-2 rounded bg-emerald-500 text-black px-1.5 text-[10px] font-semibold">TOP</span>}row {c.row_index} · {c.provider_id ?? "—"} · payment {c.payment} &gt; charge {c.charge} · ratio {c.ratio ?? "—"}</li>
                 ))}
               </ul>
             </div>
@@ -154,7 +169,7 @@ export default function MedicarePage() {
           <p className="text-xs font-mono text-zinc-500">transformations: {FIXTURE_EVIDENCE.transformations.map((t) => `${t.id} (${t.schema})`).join(", ")}</p>
           <ul className="space-y-2">
             {FIXTURE_EVIDENCE.items.map((it) => (
-              <li key={it.item_id} className="border border-zinc-800 rounded-xl p-3 text-xs" data-medicare-evidence-item={it.item_id}>
+              <li key={it.item_id} id={medicareAnchorId("evidence", it.item_id)} className={`scroll-mt-24 border rounded-xl p-3 text-xs ${it.item_id === TOP_ITEM ? "border-emerald-400 bg-emerald-500/10" : "border-zinc-800"}`} data-medicare-evidence-item={it.item_id}>
                 <p className="text-zinc-200 font-mono">{it.item_id}</p>
                 <p className="text-zinc-400">{it.provider_id ?? "—"} · {it.detail} · {it.review_status}</p>
                 <p className="text-zinc-500 font-mono break-all">row sha256 {it.row_hash ?? "—"}</p>
@@ -196,7 +211,7 @@ export default function MedicarePage() {
             <CopyMedicareJson kind="evidence" label="Copy evidence pack JSON" json={JSON.stringify(FIXTURE_EVIDENCE, null, 2)} />
             <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
           </div>
-          <MedicareDispositionStub pack={FIXTURE_EVIDENCE} />
+          <MedicareDispositionStub pack={FIXTURE_EVIDENCE} highlight={TOP_ITEM} />
           <p className="text-xs text-zinc-500">{FIXTURE_INVESTIGATION.scope_note} No reviewer has filled this in; nothing is stored or sent.</p>
         </section>
 
@@ -243,6 +258,11 @@ export default function MedicarePage() {
             <li><Link className="underline" href="/workbench/offer">Offer</Link>: the workbench offer.</li>
           </ul>
         </section>
+        {FIXTURE_INVESTIGATION.evidence.pack_verified && FIXTURE_EVIDENCE.counts.items > 0 && (
+          <a href="#medicare-win" data-medicare-handoff-chip className="fixed bottom-4 right-4 z-40 rounded-full bg-emerald-500 text-black text-xs font-semibold px-4 py-2 shadow-lg hover:bg-emerald-400">
+            Hand-off ready · {FIXTURE_EVIDENCE.counts.items} items ↑
+          </a>
+        )}
       </main>
     </div>
   );
