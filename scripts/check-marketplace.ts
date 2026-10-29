@@ -11,6 +11,7 @@ import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/p
 import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE } from "../src/lib/marketplace/peers";
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
+import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE } from "../src/lib/marketplace/route-contract";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -333,5 +334,60 @@ assert.ok(repBad.lines.every((x) => !x.startsWith("OK")), "no OK line on failure
 assert.equal(formatPeerIndexReport(validatePeerListingIndex(null)).exitCode, 1);
 assert.deepEqual(formatPeerIndexReport(validatePeerListingIndex(goodIdx())), formatPeerIndexReport(validatePeerListingIndex(goodIdx())), "pure and deterministic");
 console.log("peer index report-> OK line with counts, warning: lines do not fail, error: lines exit 1, deterministic (CLI run end-to-end by hand)");
+
+// 18. Route contract checker (pure): the right content on the right route, not just a 200.
+const peersHttps = JSON.parse(JSON.stringify(buildPeerRegistry("https://shiyan-dap.vercel.app")));
+const peersLocal = JSON.parse(JSON.stringify(buildPeerRegistry("http://localhost:3000")));
+const peersRel = JSON.parse(JSON.stringify(buildPeerRegistry(null)));
+for (const [d, label] of [[peersHttps, "https"], [peersLocal, "localhost"], [peersRel, "relative"]] as [J, string][]) {
+  const r = checkRouteContract("peers", d);
+  assert.equal(r.ok, true, `peers ${label}: ${JSON.stringify(r)}`);
+}
+assert.equal(checkRouteContract("listings", goodIdx()).ok, true);
+assert.equal(checkRouteContract("listings", JSON.parse(JSON.stringify(buildIndex([])))).ok, true);
+const crossL = checkRouteContract("listings", peersHttps); // the real bug: peers registry served on the listings route
+assert.equal(crossL.ok, false); if (!crossL.ok) { assert.deepEqual(crossL.errors, ["this looks like the peers registry, not a listings index (wrong route content)"]); }
+const crossP = checkRouteContract("peers", goodIdx());
+assert.equal(crossP.ok, false); if (!crossP.ok) { assert.deepEqual(crossP.errors, ["this looks like a listings index, not the peers registry (wrong route content)"]); }
+const pfail = (d: unknown, re: RegExp, label: string) => {
+  const r = checkRouteContract("peers", d);
+  assert.equal(r.ok, false, `${label}: should fail`);
+  if (!r.ok) { assert.ok(r.errors.length <= 20); assert.ok(r.errors.some((e) => re.test(e)), `${label}: ${r.errors.join(" | ")}`); }
+};
+const pm = (fn: (d: J) => void): J => { const d = JSON.parse(JSON.stringify(peersHttps)); fn(d); return d; };
+pfail(pm((d) => { d.peers[0].capabilities.writes = "some"; }), /capabilities\.writes/, "tampered writes");
+pfail(pm((d) => { d.peers[0].capabilities.cross_node_trust = "full"; }), /cross_node_trust/, "tampered trust");
+pfail(pm((d) => { d.peers[0].capabilities.listings_schema = "x"; }), /listings_schema/, "tampered listings_schema");
+pfail(pm((d) => { d.peers[0].capabilities.license_intent_phi_min = 0.5; }), /license_intent_phi_min/, "tampered threshold");
+pfail(pm((d) => { d.peers[0].capabilities.extra = 1; }), /unknown capability/, "extra capability");
+pfail(pm((d) => { d.peers[1].index_url = "https://peer.example.org/workbench/marketplace"; }), /null URLs/, "placeholder with URL");
+pfail(pm((d) => { d.peers[1].capabilities = JSON.parse(JSON.stringify(d.peers[0].capabilities)); }), /only the self entry/, "capabilities on a placeholder");
+pfail(pm((d) => { d.peers.reverse(); }), /first entry/, "self not first");
+pfail(pm((d) => { d.peers[0].role = "placeholder"; }), /role "self"/, "first entry not role self");
+pfail(pm((d) => { d.schema_version = "aethel.marketplace.peers.v2"; }), /schema_version/, "wrong schema_version");
+pfail(pm((d) => { d.peers = []; }), /non-empty/, "empty peers");
+pfail(pm((d) => { d.self_id = 5; }), /self_id/, "self_id not string");
+pfail(pm((d) => { d.peers[0].name = null; }), /name/, "name not string");
+pfail(pm((d) => { d.peers[0].index_url = "https://u:p@x.example/"; }), /index_url/, "self URL with credentials");
+pfail(pm((d) => { d.peers[0].listings_url = "//evil.example/x"; }), /listings_url/, "protocol-relative self URL");
+pfail(pm((d) => { d.peers[2].id = d.peers[1].id; }), /duplicate id/, "duplicate id");
+pfail(pm((d) => { d.peers[2].role = "node"; d.peers[2].status = "listed"; d.peers[2].index_url = "http://127.0.0.1/x"; }), /peer URL gate/, "non-self URL must pass the gate");
+const ok2 = checkRouteContract("peers", pm((d) => { d.peers[2].role = "node"; d.peers[2].status = "listed"; d.peers[2].index_url = "https://peer.example.org/workbench/marketplace"; }));
+assert.equal(ok2.ok, true, "a non-placeholder peer with a gate-valid URL is allowed by shape");
+const noCaps = checkRouteContract("peers", pm((d) => { delete d.peers[0].capabilities; }));
+assert.equal(noCaps.ok, true); if (noCaps.ok) assert.deepEqual(noCaps.warnings, ["self has no capabilities object"]);
+const rjunk: unknown[] = [null, undefined, 0, "", "x", [], [null], {}, { peers: null }, { peers: [null] }, { peers: [1], schema_version: PEERS_SCHEMA, self_id: "self" }, { listings: 5 }, cyc, proxy, Symbol("s"), 10n, () => 1, new Map(), Object.create(null), { schema: LISTINGS_SCHEMA, peers: [] }];
+let rn = 0;
+for (let i = 0; i < 200; i++) for (const route of ["peers", "listings"] as const) { const r = checkRouteContract(route, rjunk[i % rjunk.length]); assert.equal(typeof r.ok, "boolean"); rn++; }
+assert.equal(rn, 400);
+assert.equal(checkRouteContract("other" as never, {}).ok, false, "unknown route name fails");
+const rep1 = formatRouteContractReport("peers", checkRouteContract("peers", peersHttps));
+assert.deepEqual(rep1, { lines: [ROUTE_CONTRACT_NOTE, "OK: peers contract holds"], exitCode: 0 });
+const rep2 = formatRouteContractReport("listings", crossL);
+assert.equal(rep2.exitCode, 1); assert.deepEqual(rep2.lines, [ROUTE_CONTRACT_NOTE, "error: this looks like the peers registry, not a listings index (wrong route content)"]);
+const rep3 = formatRouteContractReport("peers", noCaps);
+assert.deepEqual(rep3, { lines: [ROUTE_CONTRACT_NOTE, "OK: peers contract holds", "warning: self has no capabilities object"], exitCode: 0 });
+assert.deepEqual(checkRouteContract("peers", peersHttps), checkRouteContract("peers", peersHttps), "pure and deterministic");
+console.log("route contract   -> peers and listings shapes hold; swapped content fails in both directions; tampered capabilities, placeholder URLs, self-not-first rejected; 400 junk calls never throw");
 
 console.log("OK");
