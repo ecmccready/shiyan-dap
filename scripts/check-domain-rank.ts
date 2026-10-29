@@ -107,4 +107,13 @@ assert.equal(hrefFor(find(mk2, "Level 4 run")), "/workbench/autonomous?reuse=run
 const bad2 = rankDomainGroups(DOMAIN_GROUPS, run("run_bad", { eligible: false }));
 assert.equal(find(bad2, "Marketplace").phi, null, "ineligible never annotates Marketplace");
 console.log("marketplace    -> Do group, first when annotated (Φ " + phi + "), href /workbench/marketplace?reuse=run_a; plain path with no data");
+// 8. Global · misdiagnosis in Know: annotated with the best eligible Φ like Diagnostics and Safety; plain navigation, no ?reuse=.
+assert.equal(find(empty, "Global · misdiagnosis").phi, null);
+assert.equal(hrefFor(find(empty, "Global · misdiagnosis")), "/workbench/global");
+assert.equal(find(mk2, "Global · misdiagnosis").phi, phi);
+assert.equal(phiSuffix(find(mk2, "Global · misdiagnosis")), ` · Φ ${phi.toFixed(3)}`);
+assert.equal(hrefFor(find(mk2, "Global · misdiagnosis")), "/workbench/global", "no reuse hand-off");
+assert.deepEqual(mk2[0].items.slice(0, 3).map((i) => i.label), ["Diagnostics", "Safety", "Global · misdiagnosis"], "annotated Know items first, static order on equal Φ");
+assert.equal(find(bad2, "Global · misdiagnosis").phi, null, "ineligible never annotates Global");
+console.log("global         -> Know group, annotated (Φ " + phi + "), href /workbench/global, no ?reuse=");
 console.log("OK");
