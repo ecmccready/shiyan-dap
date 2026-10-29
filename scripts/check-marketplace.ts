@@ -210,7 +210,21 @@ for (const bad of [null, undefined, "", "not a url", "javascript:alert(1)", "ftp
 assert.equal(normalizeOrigin("https://a.example///"), null, "path other than / is not an origin");
 assert.deepEqual(JSON.parse(JSON.stringify(reg)), reg, "JSON-safe and pure");
 assert.deepEqual(buildPeerRegistry("https://x.example"), buildPeerRegistry("https://x.example"), "pure");
-console.log("peer registry    -> self first, absolute URLs from origin, relative fallback, placeholders have null URLs, schema v1");
+const caps = reg.peers[0].capabilities;
+assert.ok(caps, "self has capabilities");
+assert.deepEqual(caps, {
+  listings_schema: LISTINGS_SCHEMA, peers_schema: PEERS_SCHEMA,
+  handoff_path_template: "/workbench/autonomous?reuse={run_id}", license_intent_phi_min: LICENSE_INTENT_PHI_MIN,
+  read_only: true, writes: "none", cross_node_trust: "none", attestation: "none — self-reported, not third-party attested",
+});
+assert.equal(caps.listings_schema, "aethel.marketplace.listings.v1"); assert.equal(caps.peers_schema, "aethel.marketplace.peers.v1");
+assert.equal(caps.license_intent_phi_min, 0.01);
+assert.equal(reg.schema_version, "aethel.marketplace.peers.v1", "schema string unchanged (additive field only)");
+for (const ph of reg.peers.slice(1)) assert.equal("capabilities" in ph, false, "placeholders carry no capabilities");
+assert.equal(reg.peers.filter((x) => x.capabilities !== undefined).length, 1, "self only");
+assert.deepEqual(buildPeerRegistry(null).peers[0].capabilities, caps, "capabilities do not depend on origin");
+assert.deepEqual(JSON.parse(JSON.stringify(caps)), caps, "capabilities are JSON-safe");
+console.log("peer registry    -> self first, absolute URLs from origin, relative fallback, placeholders have null URLs, schema v1; self-only capabilities");
 
 // 15. Peer URL validator for future entries (https only, no credentials, no local/private hosts).
 for (const ok of ["https://peer.example.org", "https://peer.example.org/workbench/marketplace", "https://a.b.example.com:8443/api/marketplace/listings", "https://8.8.8.8/x"]) assert.equal(isValidPeerUrl(ok), true, ok);

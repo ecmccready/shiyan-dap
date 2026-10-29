@@ -8,6 +8,7 @@
  * isValidPeerUrl() is the gate any future non-self entry must pass before it can be added to the list (https
  * only, no credentials, no localhost or private/link-local addresses). It is not called on a peer at request time.
  */
+import { LISTINGS_SCHEMA, LICENSE_INTENT_PHI_MIN } from "@/lib/marketplace/listings";
 
 export const PEERS_SCHEMA = "aethel.marketplace.peers.v1" as const;
 export const SELF_ID = "self" as const;
@@ -17,6 +18,21 @@ export const PLACEHOLDER_NOTE = "placeholder — not a live node; no endpoint re
 export const PEERS_REGISTRY_NOTE =
   "Static registry for now: this node plus placeholders. No discovery protocol, no cross-node trust, nothing attested. This node never fetches peer endpoints; reuse of any listing still passes the run page's permitted-action check and replay vet.";
 
+export const HANDOFF_PATH_TEMPLATE = "/workbench/autonomous?reuse={run_id}";
+export const SELF_ATTESTATION = "none — self-reported, not third-party attested";
+
+/** Self-description of this node (self entry only). Self-reported; it is not verified or attested by anyone. */
+export type PeerCapabilities = {
+  listings_schema: typeof LISTINGS_SCHEMA;
+  peers_schema: typeof PEERS_SCHEMA;
+  handoff_path_template: string;
+  license_intent_phi_min: number;
+  read_only: true;
+  writes: "none";
+  cross_node_trust: "none";
+  attestation: string;
+};
+
 export type PeerEntry = {
   id: string;
   name: string;
@@ -25,6 +41,8 @@ export type PeerEntry = {
   index_url: string | null;
   listings_url: string | null;
   note: string;
+  /** Present on the self entry only; placeholders never carry it. Additive, optional. */
+  capabilities?: PeerCapabilities;
 };
 
 export type PeerRegistry = {
@@ -59,6 +77,16 @@ export function buildPeerRegistry(origin?: string | null): PeerRegistry {
     index_url: `${base}${SELF_INDEX_PATH}`,
     listings_url: `${base}${SELF_LISTINGS_PATH}`,
     note: "This node's own index of its verified runs.",
+    capabilities: {
+      listings_schema: LISTINGS_SCHEMA,
+      peers_schema: PEERS_SCHEMA,
+      handoff_path_template: HANDOFF_PATH_TEMPLATE,
+      license_intent_phi_min: LICENSE_INTENT_PHI_MIN,
+      read_only: true,
+      writes: "none",
+      cross_node_trust: "none",
+      attestation: SELF_ATTESTATION,
+    },
   };
   const placeholder = (id: string, name: string): PeerEntry => ({
     id, name, role: "placeholder", status: "placeholder", index_url: null, listings_url: null, note: PLACEHOLDER_NOTE,

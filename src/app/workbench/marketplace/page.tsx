@@ -62,6 +62,13 @@ export default function MarketplacePage() {
                     · {peer.status === "this_node" ? "this node" : "placeholder — not a live node"}
                   </span>
                 </p>
+                {peer.capabilities ? (
+                  <p className="text-xs text-zinc-400 mt-1" data-peer-capabilities>
+                    This node speaks listings v1 and peers v1; hand-off template{" "}
+                    <code>{peer.capabilities.handoff_path_template}</code>; read-only, no cross-node trust, self-reported and not
+                    third-party attested.
+                  </p>
+                ) : null}
                 {peer.index_url ? (
                   <p className="text-xs mt-1">
                     <Link className="underline" href={peer.index_url}>Marketplace index</Link>
