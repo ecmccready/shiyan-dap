@@ -10,6 +10,7 @@ import { errorSurfaceFor, rankKey, surfaceNote, ERROR_SURFACE_SCHEMA } from "../
 import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/peer";
 import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE } from "../src/lib/marketplace/peers";
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
+import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
@@ -314,5 +315,23 @@ for (const bad of ["http://peer.example.org", "https://localhost/api/marketplace
   "https://peer.example.org/other", "https://peer.example.org/workbench/marketplace", "https://peer.example.org/api/marketplace/listings?x=1", "https://peer.example.org/#f", "", "javascript:alert(1)"]) assert.equal(validatePeerIndexSource(bad), false, bad);
 for (const bad of [null, undefined, 42, {}, [], true]) assert.equal(validatePeerIndexSource(bad), false);
 console.log(`peer index shape -> real index and empty index ok; ${junk.length} junk values never throw; bad shapes rejected with capped errors; unsorted is a warning; unknown fields dropped; source gate reuses isValidPeerUrl`);
+
+// 17. Peer index report formatter (pure; the CLI scripts/validate-peer-index.ts is a thin wrapper around it).
+const repOk = formatPeerIndexReport(validatePeerListingIndex(goodIdx()));
+assert.equal(repOk.exitCode, 0); assert.equal(repOk.lines[0], PEER_INDEX_NOTE);
+assert.deepEqual(repOk.lines, [PEER_INDEX_NOTE, "OK: 4 listings, 4 peer_ready"], "valid index: note, OK line with counts, no warnings");
+const notReady = mutate((d) => { d.listings[3].peer_ready = false; d.listings[3].peer_status = "not_ready"; d.peer_ready_count = 3; });
+assert.deepEqual(formatPeerIndexReport(validatePeerListingIndex(notReady)).lines[1], "OK: 4 listings, 3 peer_ready");
+assert.deepEqual(formatPeerIndexReport(validatePeerListingIndex(buildIndex([]))).lines, [PEER_INDEX_NOTE, "OK: 0 listings, 0 peer_ready"]);
+const repWarn = formatPeerIndexReport(validatePeerListingIndex(unsorted));
+assert.equal(repWarn.exitCode, 0, "warnings do not fail");
+assert.equal(repWarn.lines.length, 3); assert.match(repWarn.lines[1], /^OK: 4 listings, 4 peer_ready$/); assert.match(repWarn.lines[2], /^warning: listings are not ranked by phi/);
+const repBad = formatPeerIndexReport(validatePeerListingIndex(mutate((d) => { d.count = 9; d.listings[0].phi = 0; })));
+assert.equal(repBad.exitCode, 1); assert.equal(repBad.lines[0], PEER_INDEX_NOTE);
+assert.ok(repBad.lines.length >= 3 && repBad.lines.slice(1).every((x) => x.startsWith("error: ")), "every error line is prefixed");
+assert.ok(repBad.lines.every((x) => !x.startsWith("OK")), "no OK line on failure");
+assert.equal(formatPeerIndexReport(validatePeerListingIndex(null)).exitCode, 1);
+assert.deepEqual(formatPeerIndexReport(validatePeerListingIndex(goodIdx())), formatPeerIndexReport(validatePeerListingIndex(goodIdx())), "pure and deterministic");
+console.log("peer index report-> OK line with counts, warning: lines do not fail, error: lines exit 1, deterministic (CLI run end-to-end by hand)");
 
 console.log("OK");
