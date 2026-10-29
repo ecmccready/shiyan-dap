@@ -11,7 +11,7 @@ import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/p
 import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE } from "../src/lib/marketplace/peers";
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
-import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE } from "../src/lib/marketplace/route-contract";
+import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE, validatePeerCapabilities, formatCapabilitiesReport, CAPABILITIES_NOTE } from "../src/lib/marketplace/route-contract";
 import { parseOperatorOrigin, parseOriginArgs, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, ORIGIN_NOTE_WITH_SNAPSHOT, type RouteProbe } from "../src/lib/marketplace/origin-check";
 import { buildGlobalSnapshot, classifyRun, GLOBAL_SNAPSHOT_SCHEMA, SNAPSHOT_NOTE } from "../src/lib/diagnostics/global-snapshot";
 import { validateGlobalSnapshot, formatSnapshotReport, SNAPSHOT_VALIDATE_NOTE } from "../src/lib/diagnostics/global-snapshot-validate";
@@ -521,5 +521,30 @@ const snap503 = formatOriginReport(O, [pOk, lOk, { route: "snapshot", status: 50
 assert.equal(snap503.exitCode, 1); assert.ok(snap503.lines.includes("snapshot: HTTP 503 — failed")); assert.ok(snap503.lines.at(-1)!.startsWith("Summary: 1 of 3 routes failed"));
 assert.equal(formatOriginReport(O, [pOk, lOk], { withSnapshot: true }).exitCode, 1, "flag on without a snapshot probe fails");
 console.log("origin snapshot  -> --with-snapshot parsing; two URLs by default, three with the flag; snapshot ok / contract failure / swap / 503; default report unchanged");
+
+// 23. Self capabilities validator (pure): a capabilities object or a full peers registry.
+const capsObj = (): J => JSON.parse(JSON.stringify(peersHttps.peers[0].capabilities));
+const vc1 = validatePeerCapabilities(capsObj());
+assert.equal(vc1.ok, true); if (vc1.ok) { assert.equal(vc1.source, "capabilities"); assert.deepEqual(vc1.capabilities, capsObj()); }
+const vc2 = validatePeerCapabilities(peersHttps);
+assert.equal(vc2.ok, true); if (vc2.ok) { assert.equal(vc2.source, "registry"); assert.equal(vc2.capabilities.global_snapshot_path, "/api/diagnostics/global-snapshot"); }
+assert.equal(validatePeerCapabilities(peersLocal).ok, true, "localhost registry ok");
+const cfail = (d: unknown, re: RegExp, label: string) => { const r = validatePeerCapabilities(d); assert.equal(r.ok, false, label); if (!r.ok) assert.ok(r.errors.some((e) => re.test(e)), `${label}: ${r.errors.join(" | ")}`); };
+const cm = (fn: (d: J) => void): J => { const d = capsObj(); fn(d); return d; };
+cfail(cm((d) => { d.global_snapshot_schema = "aethel.global.snapshot.v2"; }), /global_snapshot_schema/, "snapshot schema");
+cfail(cm((d) => { delete d.global_snapshot_path; }), /global_snapshot_path/, "missing snapshot path");
+cfail(cm((d) => { d.writes = "some"; }), /writes/, "writes");
+cfail(cm((d) => { d.read_only = "true"; }), /read_only/, "read_only string");
+cfail(cm((d) => { d.extra = 1; }), /unknown capability/, "extra field");
+cfail(pm((d) => { delete d.peers[0].capabilities; }), /no capabilities/, "registry without self capabilities");
+cfail(pm((d) => { d.self_id = "nobody"; }), /self_id/, "registry self_id mismatch");
+cfail(pm((d) => { d.schema_version = "x"; }), /schema_version/, "registry wrong schema");
+cfail(goodIdx(), /looks like a listings index/, "listings index is not capabilities");
+for (const v of [null, [], "x", 5, cyc, proxy, Symbol("s")]) assert.equal(validatePeerCapabilities(v).ok, false);
+for (let i = 0; i < 200; i++) assert.equal(typeof validatePeerCapabilities(junk[i]).ok, "boolean");
+assert.deepEqual(formatCapabilitiesReport(vc2), { lines: [CAPABILITIES_NOTE, "OK: capabilities match (from the peers registry self entry; 10 fields)"], exitCode: 0 });
+assert.equal(formatCapabilitiesReport(validatePeerCapabilities({})).exitCode, 1);
+assert.deepEqual(validatePeerCapabilities(peersHttps), validatePeerCapabilities(peersHttps), "pure");
+console.log("capabilities     -> object or registry; exact constants incl. global_snapshot_*; tampered, missing, extra rejected; junk never throws");
 
 console.log("OK");

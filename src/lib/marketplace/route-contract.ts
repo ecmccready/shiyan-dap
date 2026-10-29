@@ -17,7 +17,7 @@
  */
 import { LISTINGS_SCHEMA, LICENSE_INTENT_PHI_MIN } from "@/lib/marketplace/listings";
 import { validatePeerListingIndex } from "@/lib/marketplace/peer-index";
-import { PEERS_SCHEMA, HANDOFF_PATH_TEMPLATE, SELF_ATTESTATION, GLOBAL_SNAPSHOT_PATH, isValidPeerUrl } from "@/lib/marketplace/peers";
+import { PEERS_SCHEMA, HANDOFF_PATH_TEMPLATE, SELF_ATTESTATION, GLOBAL_SNAPSHOT_PATH, isValidPeerUrl, type PeerCapabilities } from "@/lib/marketplace/peers";
 import { GLOBAL_SNAPSHOT_SCHEMA } from "@/lib/diagnostics/global-snapshot";
 
 export type RouteName = "peers" | "listings";
@@ -130,6 +130,59 @@ export function formatRouteContractReport(route: RouteName, result: RouteContrac
   if (result.ok) {
     lines.push(`OK: ${route} contract holds`);
     for (const w of result.warnings) lines.push(`warning: ${w}`);
+    return { lines, exitCode: 0 };
+  }
+  for (const e of result.errors) lines.push(`error: ${e}`);
+  return { lines, exitCode: 1 };
+}
+
+export const CAPABILITIES_NOTE =
+  "Shape check only: matching capabilities are self-reported by the node, not verified, attested or trusted.";
+
+export type CapabilitiesResult = { ok: true; capabilities: PeerCapabilities; source: "capabilities" | "registry" } | { ok: false; errors: string[] };
+
+/**
+ * Check a self capabilities object against this node's exact constants (pure, never throws). Accepts either the
+ * capabilities object itself or a full peers registry, in which case the entry whose id is self_id is used.
+ */
+export function validatePeerCapabilities(input: unknown): CapabilitiesResult {
+  try {
+    if (!isObj(input)) return { ok: false, errors: ["capabilities: must be an object"] };
+    if (input.schema === LISTINGS_SCHEMA || Array.isArray(input.listings)) return { ok: false, errors: ["capabilities: this looks like a listings index, not capabilities or a peers registry"] };
+    let caps: unknown = input;
+    let source: "capabilities" | "registry" = "capabilities";
+    if (Array.isArray(input.peers) || input.schema_version !== undefined) {
+      source = "registry";
+      if (input.schema_version !== PEERS_SCHEMA || !Array.isArray(input.peers)) return { ok: false, errors: [`registry: schema_version must be ${PEERS_SCHEMA} with a peers array`] };
+      const self = input.peers.find((p) => isObj(p) && p.id === input.self_id);
+      if (!isObj(self)) return { ok: false, errors: ["registry: no entry matches self_id"] };
+      if (self.capabilities === undefined) return { ok: false, errors: ["registry: the self entry has no capabilities"] };
+      caps = self.capabilities;
+    }
+    const errors: string[] = [];
+    const push = (m: string) => { if (errors.length < ROUTE_CONTRACT_MAX_ERRORS) errors.push(m); };
+    checkCapabilities(caps, "capabilities", push);
+    if (errors.length > 0) return { ok: false, errors };
+    const c = caps as PeerCapabilities;
+    return {
+      ok: true,
+      source,
+      capabilities: {
+        listings_schema: c.listings_schema, peers_schema: c.peers_schema, handoff_path_template: c.handoff_path_template,
+        license_intent_phi_min: c.license_intent_phi_min, read_only: true, writes: "none", cross_node_trust: "none",
+        attestation: c.attestation, global_snapshot_schema: c.global_snapshot_schema, global_snapshot_path: c.global_snapshot_path,
+      },
+    };
+  } catch {
+    return { ok: false, errors: ["capabilities: could not be read safely"] };
+  }
+}
+
+/** Plain-text report (pure). Exit 0 when the capabilities match, 1 when not. */
+export function formatCapabilitiesReport(result: CapabilitiesResult): { lines: string[]; exitCode: 0 | 1 } {
+  const lines = [CAPABILITIES_NOTE];
+  if (result.ok) {
+    lines.push(`OK: capabilities match (${result.source === "registry" ? "from the peers registry self entry" : "capabilities object"}; ${Object.keys(result.capabilities).length} fields)`);
     return { lines, exitCode: 0 };
   }
   for (const e of result.errors) lines.push(`error: ${e}`);
