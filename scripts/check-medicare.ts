@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -180,4 +180,10 @@ const done = reviewCompletion(reviewProgress(all3));
 assert.equal(done.complete, true); assert.match(done.message, /^Review complete: all 3 items dispositioned \(1 needs_human_review, 2 cleared_pattern_only\)/); assert.match(done.message, /not findings of fraud, misconduct or misdiagnosis/);
 for (const j of [null, undefined, reviewProgress(null)]) assert.equal(reviewCompletion(j as never).complete, false);
 console.log("complete    -> banner only at 3 of 3; message keeps pattern ≠ conclusion");
+// 13. Copy current dispositions JSON (pure).
+const cj = currentDispositionsJson(all3); assert.ok(cj); const back = JSON.parse(cj);
+assert.equal(back.report_hash, all3.report_hash); assert.ok(verifyReportHash(back)); assert.deepEqual(back.entries.map((e: { status: string }) => e.status), ["cleared_pattern_only", "cleared_pattern_only", "needs_human_review"]);
+assert.equal(currentDispositionsJson(t2), "", "tampered report not copied");
+for (const j of [null, "x", {}, cyc]) assert.equal(currentDispositionsJson(j), "");
+console.log("live copy   -> current statuses + verifying report_hash; tampered or unreadable gives nothing");
 console.log("OK");

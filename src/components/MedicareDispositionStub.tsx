@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
-import { MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
+import { MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -11,7 +12,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const [disp, setDisp] = useState<DispositionInput>({});
   const report = useMemo(() => buildInvestigationReport({ pack, dispositions: disp }), [pack, disp]);
   const progress = useMemo(() => reviewProgress(report), [report]);
-  useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); }, [progress]);
+  useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
   return (
     <div data-medicare-disposition-stub className="space-y-2">
       <p className="text-emerald-400 text-xs">Reviewer disposition (stub, this tab only)</p>
@@ -35,7 +36,8 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       <p className="text-xs font-mono text-zinc-400 break-all" data-medicare-live-report-hash>
         report sha256 {report.report_hash} · {report.counts.unreviewed} unreviewed, {report.counts.needs_human_review} needs_human_review, {report.counts.cleared_pattern_only} cleared_pattern_only
       </p>
-      <button type="button" onClick={() => setDisp({})} className="text-xs underline text-zinc-400">Reset</button>
+      <div className="flex flex-wrap items-center gap-3"><CopyLiveInvestigation report={report} />
+      <button type="button" onClick={() => setDisp({})} className="text-xs underline text-zinc-400">Reset</button></div>
     </div>
   );
 }

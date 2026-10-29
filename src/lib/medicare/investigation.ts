@@ -130,3 +130,11 @@ export function reviewCompletion(p: { items: number; reviewed: number; by_status
     return { complete: true, message: `Review complete: all ${p.items} items dispositioned (${p.by_status.needs_human_review} needs_human_review, ${p.by_status.cleared_pattern_only} cleared_pattern_only). Dispositions are review state only, not findings of fraud, misconduct or misdiagnosis.` };
   } catch { return { complete: false, message: "" }; }
 }
+
+/** Browser event carrying the live investigation report from the disposition stub (tab-local). */
+export const MEDICARE_REPORT_EVENT = "medicare:investigation-report";
+
+/** Pure: pretty JSON of the current report; returns "" when the report hash does not verify. */
+export function currentDispositionsJson(report: unknown): string {
+  try { return verifyReportHash(report) ? JSON.stringify(report, null, 2) : ""; } catch { return ""; }
+}

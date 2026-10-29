@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyMedicareJson from "@/components/CopyMedicareJson";
+import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
 import MedicareReviewProgress from "@/components/MedicareReviewProgress";
 import { reviewProgress } from "@/lib/medicare/investigation";
 import MedicareDispositionStub from "@/components/MedicareDispositionStub";
@@ -105,6 +106,7 @@ export default function MedicarePage() {
               )}
               <div className="flex flex-wrap items-center gap-3">
                 <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
+                <CopyLiveInvestigation initial={FIXTURE_INVESTIGATION} />
                 {w.top && TOP_ROW !== null && (
                   <span className="flex flex-wrap gap-3 text-xs">
                     <a data-medicare-jump-top href={`#${medicareAnchorId("candidate", TOP_ROW)}`} className="text-emerald-300 underline">Jump to top candidate ↓</a>
