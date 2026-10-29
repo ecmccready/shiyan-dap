@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -173,4 +173,11 @@ assert.deepEqual(reviewProgress(inv), { items: 3, reviewed: 0, percent: 0, label
 assert.deepEqual(reviewProgress(live), { items: 3, reviewed: 2, percent: 67, label: "2 of 3 reviewed", by_status: { unreviewed: 1, needs_human_review: 1, cleared_pattern_only: 1 } });
 for (const j of [null, "x", {}, [], cyc]) assert.equal(reviewProgress(j).label, "0 of 0 reviewed");
 console.log("progress    -> 0 of 3 reviewed → 2 of 3 (67%) after two dispositions; counts by status");
+// 12. Review complete (pure).
+assert.equal(reviewCompletion(reviewProgress(inv)).complete, false); assert.equal(reviewCompletion(reviewProgress(live)).complete, false);
+const all3 = buildInvestigationReport({ pack: ev, dispositions: applyDisposition(applyDisposition(applyDisposition({}, ids[0], "cleared_pattern_only"), ids[1], "cleared_pattern_only"), ids[2], "needs_human_review") });
+const done = reviewCompletion(reviewProgress(all3));
+assert.equal(done.complete, true); assert.match(done.message, /^Review complete: all 3 items dispositioned \(1 needs_human_review, 2 cleared_pattern_only\)/); assert.match(done.message, /not findings of fraud, misconduct or misdiagnosis/);
+for (const j of [null, undefined, reviewProgress(null)]) assert.equal(reviewCompletion(j as never).complete, false);
+console.log("complete    -> banner only at 3 of 3; message keeps pattern ≠ conclusion");
 console.log("OK");

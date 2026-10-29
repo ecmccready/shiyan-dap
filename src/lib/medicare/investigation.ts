@@ -122,3 +122,11 @@ export function reviewProgress(report: unknown): { items: number; reviewed: numb
 
 /** Browser event name the disposition stub emits with its current progress (tab-local; nothing leaves the page). */
 export const MEDICARE_PROGRESS_EVENT = "medicare:review-progress";
+
+/** Pure: complete when there is at least one item and none is unreviewed. Message keeps pattern ≠ conclusion. */
+export function reviewCompletion(p: { items: number; reviewed: number; by_status: Record<DispositionStatus, number> } | null | undefined): { complete: boolean; message: string } {
+  try {
+    if (!p || !(p.items > 0) || p.reviewed !== p.items) return { complete: false, message: "" };
+    return { complete: true, message: `Review complete: all ${p.items} items dispositioned (${p.by_status.needs_human_review} needs_human_review, ${p.by_status.cleared_pattern_only} cleared_pattern_only). Dispositions are review state only, not findings of fraud, misconduct or misdiagnosis.` };
+  } catch { return { complete: false, message: "" }; }
+}
