@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
+import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
 
 /**
  * Medicare · Public Data Intelligence (skeleton). First named vertical under Global · misdiagnosis.
@@ -38,7 +38,7 @@ const STAGES = [
     id: "show",
     group: "Show",
     title: "Distributed proof",
-    status: "Not built yet.",
+    status: "Partly built: evidence pack linking each item to the source hash, row hash and check (synthetic fixture).",
     lines: [
       "Link each finding to its source records, transformation version and calculation.",
       "State the uncertainty and the review status next to every finding.",
@@ -120,6 +120,27 @@ export default function MedicarePage() {
             </div>
           ))}
           <p className="text-xs text-zinc-500">Ranked by payment / charge, highest first. A candidate is a pattern for human review, not a finding of fraud or misconduct.</p>
+        </section>
+
+        <section data-medicare-show-panel className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest">Show · evidence pack (synthetic fixture)</p>
+          <p className="text-xs font-mono text-zinc-500">
+            {FIXTURE_EVIDENCE.schema_version} · domain {FIXTURE_EVIDENCE.domain_label} · {FIXTURE_EVIDENCE.counts.items} items
+            ({FIXTURE_EVIDENCE.counts.data_quality} data quality, {FIXTURE_EVIDENCE.counts.rule_candidates} rule) · {FIXTURE_EVIDENCE.counts.unreviewed} unreviewed
+          </p>
+          <p className="text-xs font-mono text-zinc-400 break-all" data-medicare-pack-hash>pack sha256 {FIXTURE_EVIDENCE.pack_hash}</p>
+          <p className="text-xs font-mono text-zinc-500">transformations: {FIXTURE_EVIDENCE.transformations.map((t) => `${t.id} (${t.schema})`).join(", ")}</p>
+          <ul className="space-y-2">
+            {FIXTURE_EVIDENCE.items.map((it) => (
+              <li key={it.item_id} className="border border-zinc-800 rounded-xl p-3 text-xs" data-medicare-evidence-item={it.item_id}>
+                <p className="text-zinc-200 font-mono">{it.item_id}</p>
+                <p className="text-zinc-400">{it.provider_id ?? "—"} · {it.detail} · {it.review_status}</p>
+                <p className="text-zinc-500 font-mono break-all">row sha256 {it.row_hash ?? "—"}</p>
+                <p className="text-zinc-500">{it.uncertainty}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-zinc-500">{FIXTURE_EVIDENCE.uncertainty_note} Each item links to dataset hash {FIXTURE_EVIDENCE.source.content_hash.slice(0, 16)}…; patterns for review, not conclusions.</p>
         </section>
 
         <section aria-label="Four-stage graph" className="grid gap-4 sm:grid-cols-2">

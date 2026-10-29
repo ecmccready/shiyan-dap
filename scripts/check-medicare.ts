@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
-import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES } from "../src/lib/medicare/fixture";
+import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
+import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
 // 1. Canonical JSON and hash.
@@ -73,5 +74,30 @@ for (const j of [null, undefined, 0, "x", {}, [], [1, null, []], proxy, [proxy],
 assert.deepEqual(runBaselines(MEDICARE_FIXTURE.rows), FIXTURE_BASELINES, "deterministic");
 assert.deepEqual(JSON.parse(JSON.stringify(FIXTURE_BASELINES)), FIXTURE_BASELINES, "JSON-safe");
 console.log("baselines   -> payment_vs_charge.v1: 5 evaluated, 1 skipped, 1 candidate (SYN-0006, ratio 1.25); ranked; never throws");
+
+// 6. Show: evidence pack links every item to dataset hash, row hash and transformation (pure, medicare-labeled).
+const ev = FIXTURE_EVIDENCE;
+assert.equal(ev.schema_version, "aethel.medicare.evidence.v1"); assert.equal(MEDICARE_EVIDENCE_SCHEMA, "aethel.medicare.evidence.v1");
+assert.equal(ev.domain_label, "medicare"); assert.equal(ev.note, MEDICARE_NOTE); assert.equal(ev.uncertainty_note, UNCERTAINTY_NOTE);
+assert.deepEqual(ev.counts, { items: 3, data_quality: 2, rule_candidates: 1, unreviewed: 3 });
+assert.deepEqual(ev.items.map((i) => i.item_id), ["dq:required_nonnegative.v1:2:avg_medicare_payment", "dq:required_nonnegative.v1:3:hcpcs_code", "rule:payment_vs_charge.v1:5"]);
+assert.deepEqual(ev.transformations, [{ id: "required_nonnegative.v1", schema: "aethel.medicare.dq.v1" }, { id: "payment_vs_charge.v1", schema: "aethel.medicare.baselines.v1" }]);
+assert.equal(ev.source.content_hash, FIXTURE_PROVENANCE.content_hash);
+for (const it of ev.items) {
+  assert.equal(it.source_content_hash, FIXTURE_PROVENANCE.content_hash); assert.equal(it.review_status, "unreviewed");
+  assert.equal(it.row_hash, contentHash(MEDICARE_FIXTURE.rows[it.row_index]), "row hash is sha256 of that exact source row");
+  assert.equal(it.provider_id, MEDICARE_FIXTURE.rows[it.row_index].provider_id);
+}
+assert.equal(ev.items[2].detail, "payment 150 > charge 120 (ratio 1.25)");
+assert.match(ev.pack_hash, /^[0-9a-f]{64}$/); assert.equal(verifyPackHash(ev), true);
+assert.equal(verifyPackHash(JSON.parse(JSON.stringify(ev))), true, "recomputable after a JSON round trip");
+const tampered = JSON.parse(JSON.stringify(ev)); tampered.items[0].review_status = "confirmed"; assert.equal(verifyPackHash(tampered), false, "tamper breaks the hash");
+for (const j of [null, "x", {}, [], proxy, cyc]) assert.equal(verifyPackHash(j), false);
+const emptyPack = buildEvidencePack({ provenance: FIXTURE_PROVENANCE, dq: checkRequiredNonNegative([]), baselines: runBaselines([]), rows: [] });
+assert.equal(emptyPack.counts.items, 0); assert.equal(verifyPackHash(emptyPack), true);
+assert.equal(buildEvidencePack({ provenance: FIXTURE_PROVENANCE, dq: FIXTURE_DQ, baselines: FIXTURE_BASELINES, rows: null }).items[0].row_hash, null, "missing rows give null row hash");
+assert.deepEqual(buildEvidencePack({ provenance: FIXTURE_PROVENANCE, dq: FIXTURE_DQ, baselines: FIXTURE_BASELINES, rows: MEDICARE_FIXTURE.rows }), ev, "deterministic");
+assert.deepEqual(JSON.parse(JSON.stringify(ev)), ev, "JSON-safe");
+console.log(`evidence    -> 3 items (2 data quality, 1 rule), each linked to dataset + row sha256 and its check; pack ${ev.pack_hash.slice(0, 16)}… recomputable, tamper-evident`);
 
 console.log("OK");
