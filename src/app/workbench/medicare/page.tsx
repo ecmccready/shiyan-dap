@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
-import { FIXTURE_PROVENANCE, FIXTURE_DQ, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
+import { FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, MEDICARE_FIXTURE } from "@/lib/medicare/fixture";
 
 /**
  * Medicare · Public Data Intelligence (skeleton). First named vertical under Global · misdiagnosis.
@@ -16,6 +16,7 @@ const STAGES = [
     id: "know",
     group: "Know",
     title: "Recognize",
+    status: "Partly built: provenance and one data-quality check (synthetic fixture).",
     lines: [
       "Ingest an explicitly selected CMS public dataset (claims PUFs, provider utilization).",
       "Validate the schema and preserve provenance: source, release, retrieval time, content hash.",
@@ -26,6 +27,7 @@ const STAGES = [
     id: "know-how",
     group: "Know How",
     title: "Relate and assimilate",
+    status: "Partly built: one documented rule (payment_vs_charge.v1) with ranked candidates (synthetic fixture).",
     lines: [
       "Compare against documented rules and deterministic baselines.",
       "Relate each candidate to related evidence; rank potential anomalies.",
@@ -36,6 +38,7 @@ const STAGES = [
     id: "show",
     group: "Show",
     title: "Distributed proof",
+    status: "Not built yet.",
     lines: [
       "Link each finding to its source records, transformation version and calculation.",
       "State the uncertainty and the review status next to every finding.",
@@ -46,6 +49,7 @@ const STAGES = [
     id: "do",
     group: "Do",
     title: "Authorized action",
+    status: "Not built yet.",
     lines: [
       "Generate an investigation report from source-linked findings.",
       "Route it to a qualified human reviewer and record the disposition.",
@@ -99,6 +103,25 @@ export default function MedicarePage() {
           </div>
         </section>
 
+        <section data-medicare-knowhow-panel className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest">Know How · documented rules (synthetic fixture)</p>
+          <p className="text-xs font-mono text-zinc-500">{FIXTURE_BASELINES.schema_version} · domain {FIXTURE_BASELINES.domain_label}</p>
+          {FIXTURE_BASELINES.rules.map((r) => (
+            <div key={r.rule_id} data-medicare-rule={r.rule_id}>
+              <p className="text-zinc-300">
+                Rule <code>{r.rule_id}</code>: {r.description}. {r.rows_evaluated} rows evaluated, {r.rows_skipped} skipped (missing or
+                invalid amounts, already reported by the data-quality check), {r.candidates.length} candidate{r.candidates.length === 1 ? "" : "s"}.
+              </p>
+              <ul className="text-xs text-zinc-400 list-disc pl-5 font-mono">
+                {r.candidates.map((c) => (
+                  <li key={c.row_index}>row {c.row_index} · {c.provider_id ?? "—"} · payment {c.payment} &gt; charge {c.charge} · ratio {c.ratio ?? "—"}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <p className="text-xs text-zinc-500">Ranked by payment / charge, highest first. A candidate is a pattern for human review, not a finding of fraud or misconduct.</p>
+        </section>
+
         <section aria-label="Four-stage graph" className="grid gap-4 sm:grid-cols-2">
           {STAGES.map((s) => (
             <div key={s.id} data-medicare-stage={s.id} className="border border-zinc-800 rounded-2xl p-5 text-sm">
@@ -107,7 +130,7 @@ export default function MedicarePage() {
               <ul className="text-zinc-400 list-disc pl-5 space-y-1">
                 {s.lines.map((l) => <li key={l}>{l}</li>)}
               </ul>
-              <p className="text-xs text-zinc-600 mt-2">Not built yet.</p>
+              <p className="text-xs text-zinc-500 mt-2" data-medicare-stage-status>{s.status}</p>
             </div>
           ))}
         </section>
