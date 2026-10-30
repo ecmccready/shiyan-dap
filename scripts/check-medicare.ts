@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -388,4 +388,13 @@ assert.equal(dispositionShortcut({ key: "?", targetTag: "INPUT" }), null, "typin
 for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(dispositionShortcut({ key: k }), `sheet key ${k} is live`);
 assert.equal(new Set(MEDICARE_KEYMAP.map((r) => r.key)).size, MEDICARE_KEYMAP.length); assert.ok(!MEDICARE_KEYMAP.some((r) => /fraud|misconduct|misdiagnos/i.test(r.does)));
 console.log("key ?       -> toggles the keyboard cheat sheet (every listed key is live); Esc closes");
+// 38. Keyboard action toast (pure text).
+assert.equal(keyToastText(dispositionShortcut({ key: "1" }), "SYN-0006"), "needs_human_review · SYN-0006");
+assert.equal(keyToastText(dispositionShortcut({ key: "2" }), ""), "cleared_pattern_only");
+assert.equal(keyToastText(dispositionShortcut({ key: "u" }), "x"), "↶ undo"); assert.equal(keyToastText(dispositionShortcut({ key: "k" }), "x"), "↑ target");
+assert.equal(keyToastText(dispositionShortcut({ key: "h" }), null), "📦 copy hand-off pack");
+assert.equal(keyToastText(dispositionShortcut({ key: "?" }), "x"), null, "cheat sheet has no toast"); assert.equal(keyToastText(null, "x"), null);
+for (const k of ["1", "2", "3", "u", "r", "j", "k", "n", "t", "f", "y", "h"]) { const t = keyToastText(dispositionShortcut({ key: k }), "SYN-0006"); assert.ok(t && t.length <= 60 && !/fraud|misconduct|misdiagnos/i.test(t), k); }
+assert.ok(KEY_TOAST_MS > 0 && KEY_TOAST_MS <= 3000);
+console.log("key toast   -> a short amber toast names the last keyboard action and target for ~1.6 s; none for ?");
 console.log("OK");

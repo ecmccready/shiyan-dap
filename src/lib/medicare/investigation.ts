@@ -253,6 +253,27 @@ export function moveDispositionTarget(ids: unknown, current: unknown, dir: unkno
   } catch { return null; }
 }
 
+export const KEY_TOAST_MS = 1600;
+/** Pure: short toast text for a keyboard action on the target label; null for the cheat-sheet keys or bad input. */
+export function keyToastText(a: DispositionShortcut, label: unknown): string | null {
+  try {
+    if (!a) return null;
+    const on = typeof label === "string" && label ? ` · ${label}` : "";
+    switch (a.kind) {
+      case "set": return `${a.status}${on}`;
+      case "undo": return "↶ undo";
+      case "redo": return "↷ redo";
+      case "move": return `${a.dir === 1 ? "↓" : "↑"} target`;
+      case "note": return `✎ note${on}`;
+      case "template": return `✎ quick note${on}`;
+      case "filter": return "filter →";
+      case "dispositions": return "copy dispositions JSON";
+      case "handoff": return "📦 copy hand-off pack";
+      default: return null;
+    }
+  } catch { return null; }
+}
+
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
 export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the target row down / up" },
