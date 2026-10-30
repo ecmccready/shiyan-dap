@@ -91,3 +91,8 @@ export function rankedLookbackRows(c: LookbackCompare | null | undefined): (Look
       .map((p, i) => ({ ...p, rank: i + 1, is_greedy: p.run_id === c.greedy?.run_id, is_lookback: p.run_id === c.lookback?.run_id }));
   } catch { return []; }
 }
+
+/** Pure: row emphasis. Rank 1 gets "top_win" when look-back beats greedy, "top_agree" otherwise; others "plain". */
+export function lookbackRowEmphasis(rank: number, winner: LookbackCompare["winner"] | undefined): "top_win" | "top_agree" | "plain" {
+  return rank === 1 && (winner === "lookback" || winner === "agree") ? (winner === "lookback" ? "top_win" : "top_agree") : "plain";
+}

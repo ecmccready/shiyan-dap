@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
-import { lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -32,8 +32,9 @@ export default function RoeLookbackNote() {
               <thead className="text-zinc-500"><tr><th className="text-left pr-2">#</th><th className="text-left pr-2">run_id</th><th className="text-right pr-2">steps</th><th className="text-right pr-2">best I_t</th><th className="text-right pr-2">Σ Δe</th><th className="text-right pr-2">Φ</th><th className="text-left">pick</th></tr></thead>
               <tbody>
                 {rankedLookbackRows(c).map((r) => (
-                  <tr key={r.run_id} data-roe-lookback-row={r.run_id} className={r.is_lookback ? "text-emerald-200" : ""}>
-                    <td className="pr-2">{r.rank}</td><td className="pr-2 break-all">{r.run_id}</td><td className="text-right pr-2">{r.steps}</td>
+                  <tr key={r.run_id} data-roe-lookback-row={r.run_id} data-roe-lookback-emphasis={lookbackRowEmphasis(r.rank, c.winner)}
+                    className={{ top_win: "bg-emerald-500/30 text-emerald-50 font-semibold outline outline-2 outline-amber-400", top_agree: "bg-emerald-500/10 text-emerald-200", plain: r.is_lookback ? "text-emerald-200" : "" }[lookbackRowEmphasis(r.rank, c.winner)]}>
+                    <td className="pr-2 whitespace-nowrap">{r.rank === 1 && <span data-roe-lookback-top className="mr-1 rounded bg-amber-400 text-black px-1.5 text-[10px] font-bold">TOP</span>}{r.rank}</td><td className="pr-2 break-all">{r.run_id}</td><td className="text-right pr-2">{r.steps}</td>
                     <td className="text-right pr-2">{r.max_step_i}</td><td className="text-right pr-2">{r.cumulative_delta_e}</td><td className="text-right pr-2">{r.final_phi ?? "n/a"}</td>
                     <td className="space-x-1 whitespace-nowrap">
                       {r.is_lookback && <span className="rounded bg-emerald-500 text-black px-1.5 text-[10px] font-semibold">look-back</span>}
