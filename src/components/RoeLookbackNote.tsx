@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { dismissLookbackToast, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -66,6 +66,13 @@ export default function RoeLookbackNote() {
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
   }, []);
+  const toastHoverRef = useRef(false);
+  const deferredRef = useRef<Map<LookbackToastId, () => void>>(new Map());
+  const expireToast = (id: LookbackToastId, clear: () => void) => { if (lookbackToastExpiry(toastHoverRef.current) === "defer") deferredRef.current.set(id, clear); else clear(); };
+  const leaveStack = (showing: readonly { id: LookbackToastId }[]) => {
+    toastHoverRef.current = false;
+    window.setTimeout(() => { if (toastHoverRef.current) return; for (const id of lookbackToastsAfterLeave(deferredRef.current.keys(), showing)) deferredRef.current.get(id)?.(); deferredRef.current.clear(); }, LOOKBACK_TOAST_LEAVE_GRACE_MS);
+  };
   const [winToast, setWinToast] = useState<string | null>(null);
   const [agreeToast, setAgreeToast] = useState<string | null>(null);
   const winShownRef = useRef(false);
@@ -73,16 +80,16 @@ export default function RoeLookbackNote() {
     if (!c || winShownRef.current) return;
     winShownRef.current = true;
     const txt = lookbackWinToast(c);
-    if (txt) { setWinToast(txt); window.setTimeout(() => setWinToast(null), WIN_TOAST_MS); return; }
+    if (txt) { setWinToast(txt); window.setTimeout(() => expireToast("win", () => setWinToast(null)), WIN_TOAST_MS); return; }
     const agree = lookbackAgreeToast(c);
-    if (agree) { setAgreeToast(agree); window.setTimeout(() => setAgreeToast(null), WIN_TOAST_MS); }
+    if (agree) { setAgreeToast(agree); window.setTimeout(() => expireToast("agree", () => setAgreeToast(null)), WIN_TOAST_MS); }
   }, [c]);
   const [emptyToast, setEmptyToast] = useState<string | null>(null);
   useEffect(() => {
     const txt = c ? emptyFilterToast(roleFilter, filterLookbackRows(rankedLookbackRows(c), roleFilter, c.winner).length, rankedLookbackRows(c).length) : null;
     setEmptyToast(txt);
     if (!txt) return;
-    const id = window.setTimeout(() => setEmptyToast(null), EMPTY_FILTER_TOAST_MS);
+    const id = window.setTimeout(() => expireToast("empty_filter", () => setEmptyToast(null)), EMPTY_FILTER_TOAST_MS);
     return () => window.clearTimeout(id);
   }, [roleFilter, c]);
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
@@ -91,8 +98,8 @@ export default function RoeLookbackNote() {
       {(() => { const stack = lookbackToastStack({ win: winToast, agree: agreeToast, empty_filter: emptyToast }); toastCountRef.current = stack.length; return stack.length ? (
         <div data-roe-lookback-toast-stack className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex w-max max-w-[92vw] flex-col items-center gap-2 pointer-events-none">
           {stack.map((t) => (
-            <div key={t.id} {...{ [`data-roe-lookback-${t.id === "empty_filter" ? "empty" : t.id}-toast`]: true }} role="status" aria-live="polite" title="Click to dismiss" data-roe-lookback-toast-dismiss={t.id}
-              onClick={() => { const keep = new Set(dismissLookbackToast(stack, t.id).map((x) => x.id)); if (!keep.has("win")) setWinToast(null); if (!keep.has("agree")) setAgreeToast(null); if (!keep.has("empty_filter")) setEmptyToast(null); }}
+            <div key={t.id} {...{ [`data-roe-lookback-${t.id === "empty_filter" ? "empty" : t.id}-toast`]: true }} role="status" aria-live="polite" title="Click to dismiss · hover to keep" data-roe-lookback-toast-dismiss={t.id} onMouseEnter={() => { toastHoverRef.current = true; }} onMouseLeave={() => leaveStack(stack)}
+              onClick={() => { leaveStack(dismissLookbackToast(stack, t.id)); const keep = new Set(dismissLookbackToast(stack, t.id).map((x) => x.id)); if (!keep.has("win")) setWinToast(null); if (!keep.has("agree")) setAgreeToast(null); if (!keep.has("empty_filter")) setEmptyToast(null); }}
               className={`pointer-events-auto cursor-pointer hover:brightness-110 rounded-2xl border-2 border-white px-6 py-3 text-base font-bold text-black shadow-2xl ${t.tone === "amber" ? "bg-amber-400 shadow-amber-500/40" : t.tone === "blue" ? "bg-sky-400 shadow-sky-500/40" : "bg-emerald-400 shadow-emerald-500/40"}`}>
               {t.tone === "amber" ? "⚠ " : ""}{t.text}<span aria-hidden className="ml-3 text-black/50">✕</span>
             </div>

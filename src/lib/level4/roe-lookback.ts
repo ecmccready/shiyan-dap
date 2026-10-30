@@ -305,6 +305,13 @@ export function lookbackToastStack(t: Partial<Record<LookbackToastId, unknown>> 
 export function dismissLookbackToast<T extends { id: LookbackToastId }>(stack: readonly T[] | null | undefined, id: unknown): T[] {
   return Array.isArray(stack) ? stack.filter((t) => t.id !== id) : [];
 }
+export const LOOKBACK_TOAST_LEAVE_GRACE_MS = 1200;
+/** Pure: on a toast's timer, defer while the pointer is over the stack, else dismiss. */
+export function lookbackToastExpiry(hovered: unknown): "defer" | "dismiss" { return hovered === true ? "defer" : "dismiss"; }
+/** Pure: toasts to dismiss after the pointer leaves — the deferred ones still showing, in stack order. */
+export function lookbackToastsAfterLeave(deferred: Iterable<LookbackToastId> | null | undefined, showing: readonly { id: LookbackToastId }[] | null | undefined): LookbackToastId[] {
+  const d = new Set(deferred ?? []); return (showing ?? []).map((t) => t.id).filter((id) => d.has(id));
+}
 /** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
 export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
   if (helpOpen === true) return "help";
