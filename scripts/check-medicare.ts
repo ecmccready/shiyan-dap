@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -420,4 +420,14 @@ console.log("toast gate  -> ⌨ toast only when the key changes state or copies;
   assert.equal(reviewCompleteToast(false, P(2)), null); assert.equal(reviewCompleteToast(false, null), null);
   assert.ok(!/fraud|misconduct|misdiagnos/i.test(t!)); assert.ok(COMPLETE_TOAST_MS >= 2000 && COMPLETE_TOAST_MS <= 5000); }
 console.log("complete    -> big green toast once when review reaches 3 of 3 (not on load, not again while complete; again after undo + redo)");
+// 41. Toast when the row filter matches 0 items (pure).
+{ const E = [{ status: "unreviewed" }, { status: "needs_human_review", note: "" }, { status: "unreviewed" }];
+  assert.equal(emptyRowFilterToast("cleared_pattern_only", E), "Filter cleared_pattern_only: 0 of 3 items match · press f or click All to show all");
+  assert.ok(emptyRowFilterToast("has_note", E)!.startsWith("Filter has_note: 0 of 3"), "blank note does not count");
+  assert.equal(emptyRowFilterToast("unreviewed", E), null); assert.equal(emptyRowFilterToast("needs_human_review", E), null);
+  assert.equal(emptyRowFilterToast(null, E), null, "All never empties"); assert.equal(emptyRowFilterToast("fraud", E), null); assert.equal(emptyRowFilterToast("has_note", []), null);
+  const fx = buildInvestigationReport({ pack: ev, dispositions: {} }).entries;
+  assert.equal(emptyRowFilterToast("unreviewed", fx), null); assert.ok(emptyRowFilterToast("needs_human_review", fx), "fixture start: needs review is empty → toast");
+  assert.ok(!/fraud|misconduct|misdiagnos/i.test(emptyRowFilterToast("has_note", fx)!)); assert.ok(EMPTY_ROW_FILTER_TOAST_MS >= 2000 && EMPTY_ROW_FILTER_TOAST_MS <= 5000); }
+console.log("empty filter-> big amber toast when a row filter matches 0 of 3 items; points to f or All");
 console.log("OK");

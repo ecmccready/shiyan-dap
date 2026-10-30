@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -74,6 +74,14 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     setDoneToast(txt);
     window.setTimeout(() => setDoneToast((x) => (x === txt ? null : x)), COMPLETE_TOAST_MS);
   }, [progress]);
+  const [emptyToast, setEmptyToast] = useState<string | null>(null);
+  const emptyTxt = emptyRowFilterToast(filter, report.entries);
+  useEffect(() => {
+    setEmptyToast(emptyTxt);
+    if (!emptyTxt) return;
+    const id = window.setTimeout(() => setEmptyToast(null), EMPTY_ROW_FILTER_TOAST_MS);
+    return () => window.clearTimeout(id);
+  }, [emptyTxt]);
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
   const targetEntry = report.entries.find((e) => e.item_id === target);
   idsRef.current = report.entries.map((e) => e.item_id);
@@ -82,6 +90,11 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   targetRef.current = { id: targetEntry ? targetEntry.item_id : null, label: targetEntry ? targetEntry.provider_id ?? targetEntry.item_id : "" };
   return (
     <div data-medicare-disposition-stub className="space-y-2">
+      {emptyToast && (
+        <div data-medicare-empty-filter-toast role="status" aria-live="polite" className="fixed top-24 left-1/2 -translate-x-1/2 z-50 rounded-2xl border-2 border-white bg-amber-400 px-6 py-3 text-base font-bold text-black shadow-2xl shadow-amber-500/40">
+          ⚠ {emptyToast}
+        </div>
+      )}
       {doneToast && (
         <div data-medicare-complete-toast role="status" aria-live="polite" className="fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-2xl border-2 border-white bg-emerald-400 px-6 py-3 text-base font-bold text-black shadow-2xl shadow-emerald-500/40">
           {doneToast}

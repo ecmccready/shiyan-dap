@@ -303,6 +303,16 @@ export function reviewCompleteToast(prevComplete: unknown, p: { items: number; r
   } catch { return null; }
 }
 
+export const EMPTY_ROW_FILTER_TOAST_MS = 3000;
+/** Pure: toast text when an active row filter matches 0 of N items; null otherwise. */
+export function emptyRowFilterToast(filter: unknown, entries: unknown): string | null {
+  try {
+    if (typeof filter !== "string" || !ROW_FILTER_CYCLE.includes(filter as RowFilter) || !Array.isArray(entries) || !entries.length) return null;
+    if (entries.some((e) => rowMatchesFilter(e, filter as RowFilter))) return null;
+    return `Filter ${filter}: 0 of ${entries.length} items match · press f or click All to show all`;
+  } catch { return null; }
+}
+
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
 export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the target row down / up" },
