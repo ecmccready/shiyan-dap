@@ -138,3 +138,14 @@ export const MEDICARE_REPORT_EVENT = "medicare:investigation-report";
 export function currentDispositionsJson(report: unknown): string {
   try { return verifyReportHash(report) ? JSON.stringify(report, null, 2) : ""; } catch { return ""; }
 }
+
+/** Pure: one chip per report entry (item, provider, status, short label). Statuses only from DISPOSITION_STATUSES. */
+export function statusChips(report: unknown): { item_id: string; provider_id: string | null; status: DispositionStatus; label: string }[] {
+  try {
+    const entries = (report as InvestigationReport)?.entries;
+    if (!Array.isArray(entries)) return [];
+    const short: Record<DispositionStatus, string> = { unreviewed: "unreviewed", needs_human_review: "needs review", cleared_pattern_only: "cleared (pattern only)" };
+    return entries.filter((e) => e && (DISPOSITION_STATUSES as readonly string[]).includes(e.status))
+      .map((e) => ({ item_id: e.item_id, provider_id: e.provider_id ?? null, status: e.status, label: `${e.provider_id ?? e.item_id} · ${short[e.status]}` }));
+  } catch { return []; }
+}

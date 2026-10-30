@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -195,4 +195,10 @@ assert.equal(formatReviewedCaseBrief(t2, ev, FIXTURE_PROVENANCE), "", "tampered 
 assert.equal(formatReviewedCaseBrief(r3, ev, FIXTURE_PROVENANCE), "", "unverified pack not exported");
 for (const j of [null, "x", {}, cyc]) assert.equal(formatReviewedCaseBrief(j, ev, FIXTURE_PROVENANCE), "");
 console.log("reviewed    -> brief over live report: review-complete header, live statuses and report_hash; tampered/unlinked gives nothing");
+// 15. Status chips (pure).
+assert.deepEqual(statusChips(inv).map((c) => c.label), ["SYN-0003 · unreviewed", "SYN-0004 · unreviewed", "SYN-0006 · unreviewed"]);
+assert.deepEqual(statusChips(all3).map((c) => c.status), ["cleared_pattern_only", "cleared_pattern_only", "needs_human_review"]);
+assert.equal(statusChips(all3)[2].label, "SYN-0006 · needs review");
+for (const j of [null, "x", {}, cyc]) assert.deepEqual(statusChips(j), []);
+console.log("chips       -> one chip per item, follows dispositions; only the three review statuses");
 console.log("OK");
