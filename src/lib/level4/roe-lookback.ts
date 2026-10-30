@@ -239,3 +239,27 @@ export function toggleRoleFilter(current: unknown, clicked: unknown): LookbackRo
   if (clicked !== "winners" && clicked !== "beaten" && clicked !== "agree") return "all";
   return current === clicked ? "all" : clicked;
 }
+
+export type LookbackKey = "next" | "prev" | "toggle" | "close" | null;
+/** Pure: j next, k prev, Enter toggle, Escape close; ignored with modifiers or while typing. */
+export function lookbackKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): LookbackKey {
+  try {
+    if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (ev.key === "j" || ev.key === "J") return "next";
+    if (ev.key === "k" || ev.key === "K") return "prev";
+    if (ev.key === "Enter") return tag === "BUTTON" || tag === "A" ? null : "toggle";
+    if (ev.key === "Escape") return "close";
+    return null;
+  } catch { return null; }
+}
+/** Pure: move focus through visible row ids (clamped at the ends; starts at the first row). */
+export function moveLookbackFocus(ids: unknown, current: unknown, dir: "next" | "prev"): string | null {
+  if (!Array.isArray(ids) || !ids.length) return null;
+  const list = ids.filter((x): x is string => typeof x === "string");
+  if (!list.length) return null;
+  const i = typeof current === "string" ? list.indexOf(current) : -1;
+  if (i < 0) return list[0];
+  return list[Math.max(0, Math.min(list.length - 1, i + (dir === "next" ? 1 : -1)))];
+}

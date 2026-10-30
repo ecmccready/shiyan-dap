@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -126,4 +126,11 @@ console.log("summary json -> strip copies kind:summary JSON matching lookbackSum
 assert.equal(toggleRoleFilter("all", "winners"), "winners"); assert.equal(toggleRoleFilter("winners", "winners"), "all");
 assert.equal(toggleRoleFilter("winners", "beaten"), "beaten"); assert.equal(toggleRoleFilter("agree", "bogus"), "all"); assert.equal(toggleRoleFilter(null, "agree"), "agree");
 console.log("strip roles -> ★ / beaten / = counts set the Show filter; re-click returns to all");
+assert.equal(lookbackKey({ key: "j" }), "next"); assert.equal(lookbackKey({ key: "ArrowDown" }), null, "arrows left to the page");
+assert.equal(lookbackKey({ key: "K" }), "prev"); assert.equal(lookbackKey({ key: "Enter", targetTag: "TR" }), "toggle"); assert.equal(lookbackKey({ key: "Escape" }), "close");
+for (const j of [{ key: "j", ctrlKey: true }, { key: "j", targetTag: "input" }, { key: "k", targetTag: "SELECT" }, { key: "Enter", targetTag: "BUTTON" }, { key: "j", editable: true }, { key: "x" }, null]) assert.equal(lookbackKey(j as never), null);
+const vis = ["B", "A", "C"];
+assert.equal(moveLookbackFocus(vis, null, "next"), "B"); assert.equal(moveLookbackFocus(vis, "B", "next"), "A"); assert.equal(moveLookbackFocus(vis, "C", "next"), "C");
+assert.equal(moveLookbackFocus(vis, "B", "prev"), "B"); assert.equal(moveLookbackFocus(vis, "gone", "prev"), "B"); assert.equal(moveLookbackFocus([], "A", "next"), null);
+console.log("keys        -> j/k move row focus (clamped), Enter expands, Esc closes; ignored while typing");
 console.log("OK");
