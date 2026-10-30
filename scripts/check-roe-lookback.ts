@@ -138,4 +138,8 @@ assert.equal(lookbackKey({ key: "c" }), "copy"); assert.equal(lookbackKey({ key:
 assert.equal(lookbackKey({ key: "c", metaKey: true }), null, "Cmd+C left to the browser"); assert.equal(lookbackKey({ key: "c", ctrlKey: true }), null);
 assert.equal(lookbackKey({ key: "c", targetTag: "input" }), null); assert.equal(lookbackKey({ key: "c", editable: true }), null);
 console.log("key c       -> copies the focused row's path JSON; Ctrl/Cmd+C and typing untouched");
+// s copies the focused row steps JSON.
+assert.equal(lookbackKey({ key: "s" }), "steps"); assert.equal(lookbackKey({ key: "S" }), "steps");
+assert.equal(lookbackKey({ key: "s", metaKey: true }), null, "Cmd+S left to the browser"); assert.equal(lookbackKey({ key: "s", targetTag: "textarea" }), null);
+console.log("key s       -> expands the focused row and copies its steps JSON; Ctrl/Cmd+S and typing untouched");
 console.log("OK");
