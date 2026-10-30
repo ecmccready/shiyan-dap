@@ -130,3 +130,13 @@ export function lookbackPathJson(row: (LookbackPath & { rank: number; is_greedy:
     }, null, 2);
   } catch { return ""; }
 }
+
+export type LookbackRowRole = "winner_lookback" | "agree_both" | "greedy_beaten" | "other";
+/** Pure: a row's role in the comparison, independent of sort order. */
+export function lookbackRowRole(row: { is_greedy: boolean; is_lookback: boolean } | null | undefined, winner: LookbackCompare["winner"] | undefined): LookbackRowRole {
+  if (!row) return "other";
+  if (row.is_lookback && row.is_greedy) return winner === "none" ? "other" : "agree_both";
+  if (row.is_lookback) return winner === "lookback" ? "winner_lookback" : "other";
+  if (row.is_greedy) return winner === "lookback" ? "greedy_beaten" : "other";
+  return "other";
+}

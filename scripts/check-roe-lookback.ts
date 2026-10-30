@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -69,4 +69,10 @@ assert.deepEqual(JSON.parse(lookbackPathJson(rankedLookbackRows(c)[1], c.winner)
 assert.deepEqual(JSON.parse(lookbackPathJson(rankedLookbackRows(same)[0], same.winner)).badges, ["top", "look-back", "greedy"]);
 for (const j of [null, undefined, {} as never]) assert.equal(lookbackPathJson(j), "");
 console.log("path json   -> per-row JSON with run_id, Φ, ΔΦ vs greedy, badges and winner");
+assert.deepEqual(rankedLookbackRows(c).map((r) => lookbackRowRole(r, c.winner)), ["winner_lookback", "greedy_beaten"]);
+assert.equal(lookbackRowRole(rankedLookbackRows(same)[0], same.winner), "agree_both");
+assert.equal(lookbackRowRole({ is_greedy: false, is_lookback: false }, "lookback"), "other"); assert.equal(lookbackRowRole(null, "lookback"), "other");
+assert.equal(lookbackRowRole({ is_greedy: true, is_lookback: true }, "none"), "other");
+assert.deepEqual(sortLookbackRows(rankedLookbackRows(c), "dphi").map((r) => lookbackRowRole(r, c.winner)).sort(), ["greedy_beaten", "winner_lookback"], "roles survive sorting");
+console.log("roles       -> ★ WINNER on look-back, beaten on greedy, = both agree when same; independent of sort");
 console.log("OK");

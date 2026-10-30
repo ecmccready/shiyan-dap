@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -43,14 +43,17 @@ export default function RoeLookbackNote() {
               <thead className="text-zinc-500"><tr><th className="text-left pr-2">#</th><th className="text-left pr-2">run_id</th><th className="text-right pr-2">steps</th><th className="text-right pr-2">best I_t</th><th className="text-right pr-2">Σ Δe</th><th className="text-right pr-2">Φ</th><th className="text-right pr-2" title="final Φ minus the greedy path's final Φ">ΔΦ vs greedy</th><th className="text-left">pick</th><th className="text-left">path</th></tr></thead>
               <tbody>
                 {sortLookbackRows(rankedLookbackRows(c), sortBy).map((r) => (
-                  <tr key={r.run_id} data-roe-lookback-row={r.run_id} data-roe-lookback-emphasis={lookbackRowEmphasis(r.rank, c.winner)}
-                    className={{ top_win: "bg-emerald-500/30 text-emerald-50 font-semibold outline outline-2 outline-amber-400", top_agree: "bg-emerald-500/10 text-emerald-200", plain: r.is_lookback ? "text-emerald-200" : "" }[lookbackRowEmphasis(r.rank, c.winner)]}>
+                  <tr key={r.run_id} data-roe-lookback-row={r.run_id} data-roe-lookback-emphasis={lookbackRowEmphasis(r.rank, c.winner)} data-roe-lookback-role={lookbackRowRole(r, c.winner)}
+                    className={`${{ top_win: "bg-emerald-500/30 text-emerald-50 font-semibold outline outline-2 outline-amber-400", top_agree: "bg-emerald-500/10 text-emerald-200", plain: r.is_lookback ? "text-emerald-200" : "" }[lookbackRowEmphasis(r.rank, c.winner)]} ${{ winner_lookback: "border-l-4 border-emerald-400", agree_both: "border-l-4 border-sky-400", greedy_beaten: "border-l-4 border-amber-400 bg-amber-500/10", other: "" }[lookbackRowRole(r, c.winner)]}`}>
                     <td className="pr-2 whitespace-nowrap">{r.rank === 1 && <span data-roe-lookback-top className="mr-1 rounded bg-amber-400 text-black px-1.5 text-[10px] font-bold">TOP</span>}{r.rank}</td><td className="pr-2 break-all">{r.run_id}</td><td className="text-right pr-2">{r.steps}</td>
                     <td className="text-right pr-2">{r.max_step_i}</td><td className="text-right pr-2">{r.cumulative_delta_e}</td><td className="text-right pr-2">{r.final_phi ?? "n/a"}</td>
                     <td data-roe-lookback-dphi className={`text-right pr-2 ${(r.delta_phi_vs_greedy ?? 0) > 0 ? "text-emerald-300 font-semibold" : (r.delta_phi_vs_greedy ?? 0) < 0 ? "text-amber-300" : "text-zinc-500"}`}>{r.is_greedy ? "—" : fmtDeltaPhi(r.delta_phi_vs_greedy)}</td>
                     <td className="space-x-1 whitespace-nowrap">
                       {r.is_lookback && <span className="rounded bg-emerald-500 text-black px-1.5 text-[10px] font-semibold">look-back</span>}
                       {r.is_greedy && <span className="rounded bg-amber-400 text-black px-1.5 text-[10px] font-semibold">greedy</span>}
+                      {lookbackRowRole(r, c.winner) === "winner_lookback" && <span data-roe-lookback-badge="winner" className="rounded bg-emerald-300 text-black px-1.5 text-[10px] font-bold">★ WINNER +Δe {c.delta_e_gain}</span>}
+                      {lookbackRowRole(r, c.winner) === "agree_both" && <span data-roe-lookback-badge="agree" className="rounded border border-sky-400 text-sky-200 px-1.5 text-[10px] font-semibold">= both agree</span>}
+                      {lookbackRowRole(r, c.winner) === "greedy_beaten" && <span data-roe-lookback-badge="beaten" className="rounded border border-amber-400 text-amber-200 px-1.5 text-[10px] font-semibold">beaten by look-back</span>}
                     </td>
                     <td><CopyLookbackPath runId={r.run_id} json={lookbackPathJson(r, c.winner)} /></td>
                   </tr>
