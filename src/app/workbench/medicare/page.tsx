@@ -2,6 +2,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyMedicareJson from "@/components/CopyMedicareJson";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
+import MedicareReviewTimer from "@/components/MedicareReviewTimer";
 import MedicareStatusChips from "@/components/MedicareStatusChips";
 import MedicareReviewProgress from "@/components/MedicareReviewProgress";
 import { reviewProgress } from "@/lib/medicare/investigation";
@@ -100,6 +101,7 @@ export default function MedicarePage() {
               </div>
               <p className="text-white text-lg font-semibold" data-medicare-win-line>{w.line}</p>
               <MedicareReviewProgress initial={reviewProgress(FIXTURE_INVESTIGATION)} />
+              <MedicareReviewTimer />
               <MedicareStatusChips initial={FIXTURE_INVESTIGATION} />
               {w.top && (
                 <p className="text-sm text-zinc-200" data-medicare-top-candidate>

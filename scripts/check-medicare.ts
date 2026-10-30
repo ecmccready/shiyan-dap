@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -260,4 +260,16 @@ const { handoff_hash, ...hbody } = hp; assert.equal(handoff_hash, contentHash(hb
 assert.equal(JSON.parse(buildHandoffPack(inv, ev, FIXTURE_PROVENANCE)).progress.complete, false);
 assert.equal(buildHandoffPack(t2, ev, FIXTURE_PROVENANCE), ""); for (const j of [null, "x", {}, cyc]) assert.equal(buildHandoffPack(j, ev, FIXTURE_PROVENANCE), "");
 console.log("hand-off    -> aethel.medicare.handoff.v1: reviewed brief + live report + progress, linked hashes, recomputable handoff_hash");
+// 22. Review timer (pure).
+let tm = { started_at: null as number | null, frozen_at: null as number | null };
+tm = nextReviewTimer(tm, { reviewed: 0, items: 3 }, 1000); assert.deepEqual(tm, { started_at: null, frozen_at: null });
+tm = nextReviewTimer(tm, { reviewed: 1, items: 3 }, 5000); assert.deepEqual(tm, { started_at: 5000, frozen_at: null });
+assert.equal(nextReviewTimer(tm, { reviewed: 2, items: 3 }, 9000), tm, "keeps start");
+tm = nextReviewTimer(tm, { reviewed: 3, items: 3 }, 65000); assert.deepEqual(tm, { started_at: 5000, frozen_at: 65000 });
+assert.equal(reviewElapsedMs(tm, 999999), 60000, "frozen"); assert.equal(formatElapsed(reviewElapsedMs(tm, 0)), "1:00");
+tm = nextReviewTimer(tm, { reviewed: 2, items: 3 }, 70000); assert.equal(tm.frozen_at, null, "undo of completion resumes");
+assert.equal(nextReviewTimer(tm, { reviewed: 0, items: 3 }, 80000).started_at, null, "reset clears");
+assert.equal(formatElapsed(3723000), "1:02:03"); assert.equal(formatElapsed(-5), "0:00"); assert.equal(formatElapsed("x"), "0:00");
+assert.equal(reviewElapsedMs({ started_at: null, frozen_at: null }, 5), 0);
+console.log("timer       -> starts at first disposition, freezes at 3 of 3, resumes on undo, clears on reset");
 console.log("OK");

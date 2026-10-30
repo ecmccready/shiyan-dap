@@ -214,3 +214,27 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
     }
   } catch { return null; }
 }
+
+/** Review-session timer state (tab-local, display only). */
+export type ReviewTimer = { started_at: number | null; frozen_at: number | null };
+/** Pure: starts at the first disposition, freezes at review complete, resumes if completion is undone, clears at 0 reviewed. */
+export function nextReviewTimer(t: ReviewTimer, p: { reviewed: number; items: number } | null | undefined, now: number): ReviewTimer {
+  try {
+    if (!p || !(p.reviewed > 0)) return t.started_at === null && t.frozen_at === null ? t : { started_at: null, frozen_at: null };
+    const started_at = t.started_at ?? now;
+    const complete = p.items > 0 && p.reviewed === p.items;
+    const frozen_at = complete ? (t.frozen_at ?? now) : null;
+    return started_at === t.started_at && frozen_at === t.frozen_at ? t : { started_at, frozen_at };
+  } catch { return t; }
+}
+/** Pure: elapsed ms for a timer at `now` (frozen value when frozen); 0 when not started. */
+export function reviewElapsedMs(t: ReviewTimer, now: number): number {
+  return t.started_at === null ? 0 : Math.max(0, (t.frozen_at ?? now) - t.started_at);
+}
+/** Pure: m:ss under an hour, h:mm:ss above. */
+export function formatElapsed(ms: unknown): string {
+  const n = typeof ms === "number" && Number.isFinite(ms) && ms > 0 ? Math.floor(ms / 1000) : 0;
+  const h = Math.floor(n / 3600), m = Math.floor((n % 3600) / 60), s = n % 60;
+  const ss = String(s).padStart(2, "0");
+  return h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
+}
