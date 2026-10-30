@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -206,4 +206,9 @@ assert.equal(lookbackAgreeToast({ winner: "agree", paths_considered: 4, greedy: 
 assert.equal(lookbackAgreeToast({ winner: "agree", paths_considered: 1 }), "= Look-back and greedy agree · 1 sealed path · greedy was already best"); assert.equal(lookbackAgreeToast(null), null);
 for (const sc of [c, same, scoreSealedPaths([])]) assert.ok(!(lookbackWinToast(sc) && lookbackAgreeToast(sc)), "never both");
 console.log("agree toast -> big blue toast once per load when look-back and greedy agree; never with the win toast");
+// Toast stack: one column, fixed order, never overlapping.
+assert.deepEqual(lookbackToastStack({ empty_filter: "e", agree: "a", win: "w" }).map((x) => [x.id, x.tone]), [["win", "green"], ["agree", "blue"], ["empty_filter", "amber"]]);
+assert.deepEqual(lookbackToastStack({ agree: lookbackAgreeToast(same), empty_filter: emptyFilterToast("winners", 0, 1) }).map((x) => x.id), ["agree", "empty_filter"], "agree on load + empty ★ filter stack");
+assert.deepEqual(lookbackToastStack({ win: "", agree: null }), []); assert.deepEqual(lookbackToastStack(null), []); assert.equal(new Set(LOOKBACK_TOAST_ORDER).size, 3);
+console.log("toast stack -> win / agree / empty Show stack in one top column (fixed order, no overlap); ⌨ toast stays at the bottom");
 console.log("OK");

@@ -292,6 +292,15 @@ export function lookbackAgreeToast(c: { winner?: unknown; paths_considered?: unk
     return `= Look-back and greedy agree · ${n} sealed path${n === 1 ? "" : "s"}${de} · greedy was already best`;
   } catch { return null; }
 }
+export type LookbackToastId = "win" | "agree" | "empty_filter";
+/** Fixed top-to-bottom order of the stacked top toasts (the ⌨ key toast sits at the bottom edge on its own). */
+export const LOOKBACK_TOAST_ORDER: readonly LookbackToastId[] = ["win", "agree", "empty_filter"];
+/** Pure: the visible top toasts in stack order, so they render in one column and never overlap. */
+export function lookbackToastStack(t: Partial<Record<LookbackToastId, unknown>> | null | undefined): { id: LookbackToastId; text: string; tone: "green" | "blue" | "amber" }[] {
+  if (!t) return [];
+  const tone = { win: "green", agree: "blue", empty_filter: "amber" } as const;
+  return LOOKBACK_TOAST_ORDER.flatMap((id) => { const x = t[id]; return typeof x === "string" && x ? [{ id, text: x, tone: tone[id] }] : []; });
+}
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },
