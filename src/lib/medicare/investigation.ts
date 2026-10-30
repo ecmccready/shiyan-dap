@@ -149,3 +149,17 @@ export function statusChips(report: unknown): { item_id: string; provider_id: st
       .map((e) => ({ item_id: e.item_id, provider_id: e.provider_id ?? null, status: e.status, label: `${e.provider_id ?? e.item_id} · ${short[e.status]}` }));
   } catch { return []; }
 }
+
+/** Browser event carrying the Win-strip status filter (a DispositionStatus or null for All); tab-local. */
+export const MEDICARE_FILTER_EVENT = "medicare:status-filter";
+
+/** Pure: clicking the active status (or anything invalid) clears to null; otherwise selects it. */
+export function toggleStatusFilter(current: unknown, clicked: unknown): DispositionStatus | null {
+  if (typeof clicked !== "string" || !(DISPOSITION_STATUSES as readonly string[]).includes(clicked)) return null;
+  return current === clicked ? null : (clicked as DispositionStatus);
+}
+
+/** Pure: row emphasis under a filter: "all" with no filter, "match" or "dim". */
+export function filterEmphasis(status: unknown, filter: DispositionStatus | null): "all" | "match" | "dim" {
+  return filter === null ? "all" : status === filter ? "match" : "dim";
+}

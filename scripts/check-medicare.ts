@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -201,4 +201,12 @@ assert.deepEqual(statusChips(all3).map((c) => c.status), ["cleared_pattern_only"
 assert.equal(statusChips(all3)[2].label, "SYN-0006 · needs review");
 for (const j of [null, "x", {}, cyc]) assert.deepEqual(statusChips(j), []);
 console.log("chips       -> one chip per item, follows dispositions; only the three review statuses");
+// 16. Status filter (pure).
+assert.equal(toggleStatusFilter(null, "needs_human_review"), "needs_human_review");
+assert.equal(toggleStatusFilter("needs_human_review", "needs_human_review"), null, "re-click clears");
+assert.equal(toggleStatusFilter("needs_human_review", "cleared_pattern_only"), "cleared_pattern_only");
+for (const j of ["fraud", null, 1, {}]) assert.equal(toggleStatusFilter("unreviewed", j), null);
+assert.equal(filterEmphasis("unreviewed", null), "all"); assert.equal(filterEmphasis("unreviewed", "unreviewed"), "match"); assert.equal(filterEmphasis("cleared_pattern_only", "unreviewed"), "dim");
+assert.deepEqual(all3.entries.map((e) => filterEmphasis(e.status, "needs_human_review")), ["dim", "dim", "match"]);
+console.log("filter      -> chip toggles status filter, re-click or All clears; matching rows highlighted, others dimmed");
 console.log("OK");

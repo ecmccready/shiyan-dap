@@ -3,13 +3,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
 /** Client-only disposition stub over the synthetic fixture. State lives in this tab; nothing is stored or sent. */
 export default function MedicareDispositionStub({ pack, highlight }: { pack: EvidencePack; highlight?: string }) {
   const [disp, setDisp] = useState<DispositionInput>({});
+  const [filter, setFilter] = useState<DispositionStatus | null>(null);
+  useEffect(() => {
+    const on = (ev: Event) => { const d = (ev as CustomEvent<DispositionStatus | null>).detail; setFilter(typeof d === "string" ? d : null); };
+    window.addEventListener(MEDICARE_FILTER_EVENT, on);
+    return () => window.removeEventListener(MEDICARE_FILTER_EVENT, on);
+  }, []);
   const report = useMemo(() => buildInvestigationReport({ pack, dispositions: disp }), [pack, disp]);
   const progress = useMemo(() => reviewProgress(report), [report]);
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
@@ -17,9 +23,12 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     <div data-medicare-disposition-stub className="space-y-2">
       <p className="text-emerald-400 text-xs">Reviewer disposition (stub, this tab only)</p>
       <ProgressBar p={progress} />
-      <ul className="space-y-1 text-xs font-mono text-zinc-300">
+      {filter && (
+        <p className="text-xs text-zinc-300" data-medicare-filter-note>Filtered: {filter} ({report.entries.filter((e) => e.status === filter).length}) · <button type="button" className="underline" onClick={() => { setFilter(null); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: null })); }}>Show all</button></p>
+      )}
+      <ul id="medicare-disposition-list" className="scroll-mt-24 space-y-1 text-xs font-mono text-zinc-300">
         {report.entries.map((e) => (
-          <li key={e.item_id} id={medicareAnchorId("disposition", e.item_id)} className={`scroll-mt-24 flex flex-wrap items-center gap-2 ${e.item_id === highlight ? "rounded bg-emerald-500/15 border-l-4 border-emerald-400 px-2 py-1" : ""}`}>
+          <li key={e.item_id} id={medicareAnchorId("disposition", e.item_id)} data-medicare-filter-emphasis={filterEmphasis(e.status, filter)} className={`scroll-mt-24 flex flex-wrap items-center gap-2 transition-opacity ${filterEmphasis(e.status, filter) === "dim" ? "opacity-30" : filterEmphasis(e.status, filter) === "match" ? "rounded ring-2 ring-white/70 px-2 py-1" : ""} ${e.item_id === highlight ? "rounded bg-emerald-500/15 border-l-4 border-emerald-400 px-2 py-1" : ""}`}>
             <span>{e.item_id}</span>
             <select
               aria-label={`Disposition for ${e.item_id}`}
