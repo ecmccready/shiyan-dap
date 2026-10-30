@@ -294,6 +294,15 @@ export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | n
   } catch { return false; }
 }
 
+export const COMPLETE_TOAST_MS = 3200;
+/** Pure: toast text when review moves from incomplete to complete (not on load, not when already complete); else null. */
+export function reviewCompleteToast(prevComplete: unknown, p: { items: number; reviewed: number; by_status: Record<DispositionStatus, number> } | null | undefined): string | null {
+  try {
+    if (prevComplete !== false || !reviewCompletion(p).complete || !p) return null;
+    return `✅ Review complete · ${p.reviewed} of ${p.items} · ${p.by_status.needs_human_review} needs review · ${p.by_status.cleared_pattern_only} cleared (pattern only) · press h for 📦 hand-off`;
+  } catch { return null; }
+}
+
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
 export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the target row down / up" },

@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -412,4 +412,12 @@ console.log("key toast   -> a short amber toast names the last keyboard action a
   assert.equal(keyActionChanges(S("f"), base), true); assert.equal(keyActionChanges(S("y"), base), true); assert.equal(keyActionChanges(S("h"), { ...base, button_ready: false }), false);
   assert.equal(keyActionChanges(S("?"), base), false); assert.equal(keyActionChanges(null, base), false); assert.equal(keyActionChanges(S("1"), null), false); }
 console.log("toast gate  -> ⌨ toast only when the key changes state or copies; no-ops (same status, clamped move, empty undo, unreviewed note) stay silent");
+// 40. Review-complete toast (pure transition).
+{ const P = (n: number) => ({ items: 3, reviewed: n, by_status: { unreviewed: 3 - n, needs_human_review: n >= 1 ? 1 : 0, cleared_pattern_only: Math.max(0, n - 1) } as Record<DispositionStatus, number> });
+  const t = reviewCompleteToast(false, P(3)); assert.ok(t && t.startsWith("✅ Review complete · 3 of 3"), String(t));
+  assert.ok(t!.includes("1 needs review") && t!.includes("2 cleared (pattern only)") && t!.includes("press h"));
+  assert.equal(reviewCompleteToast(null, P(3)), null, "not on first load"); assert.equal(reviewCompleteToast(true, P(3)), null, "already complete (note edits)");
+  assert.equal(reviewCompleteToast(false, P(2)), null); assert.equal(reviewCompleteToast(false, null), null);
+  assert.ok(!/fraud|misconduct|misdiagnos/i.test(t!)); assert.ok(COMPLETE_TOAST_MS >= 2000 && COMPLETE_TOAST_MS <= 5000); }
+console.log("complete    -> big green toast once when review reaches 3 of 3 (not on load, not again while complete; again after undo + redo)");
 console.log("OK");
