@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -117,4 +117,10 @@ assert.deepEqual(lookbackSummary(c), { tone: "win", verdict: "Look-back beats gr
 assert.deepEqual(lookbackSummary(same), { tone: "agree", verdict: "Agree", delta_e_gain: 0, delta_phi: 0, paths: 1, winners: 0, beaten: 0, agree: 1, excluded: 0 });
 assert.equal(lookbackSummary(null).tone, "none"); assert.equal(lookbackSummary(scoreSealedPaths([])).paths, 0);
 console.log("summary     -> sticky strip: verdict, +Δe, ΔΦ, path counts by role, domain exclusions");
+const smj = JSON.parse(lookbackSummaryJson(c));
+assert.equal(smj.schema, "aethel.roe.lookback.v1"); assert.equal(smj.kind, "summary"); assert.equal(smj.verdict, "Look-back beats greedy");
+const { schema: _s, kind: _k, note: _n, ...rest } = smj; void _s; void _k; void _n; assert.deepEqual(rest, lookbackSummary(c));
+assert.equal(JSON.parse(lookbackSummaryJson(same)).verdict, "Agree");
+for (const j of [null, undefined, scoreSealedPaths([])]) assert.equal(lookbackSummaryJson(j), "");
+console.log("summary json -> strip copies kind:summary JSON matching lookbackSummary");
 console.log("OK");

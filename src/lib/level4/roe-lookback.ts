@@ -224,3 +224,12 @@ export function lookbackSummary(c: LookbackCompare | null | undefined): { tone: 
     return { tone: v.tone, verdict: v.label, delta_e_gain: c.delta_e_gain, delta_phi: dphi, paths: c.paths_considered, winners: n("winners"), beaten: n("beaten"), agree: n("agree"), excluded: c.excluded_domain_entries };
   } catch { return none; }
 }
+
+/** Pure: the summary strip as JSON (schema, kind "summary", fields of lookbackSummary, note). "" when no sealed paths. */
+export function lookbackSummaryJson(c: LookbackCompare | null | undefined): string {
+  try {
+    const m = lookbackSummary(c);
+    if (m.tone === "none") return "";
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "summary", ...m, note: ROE_LOOKBACK_NOTE }, null, 2);
+  } catch { return ""; }
+}
