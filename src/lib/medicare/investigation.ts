@@ -323,6 +323,15 @@ export function handoffReadyToast(prevReady: unknown, report: unknown): string |
   } catch { return null; }
 }
 
+export type MedicareToastId = "complete" | "handoff_ready" | "empty_filter";
+/** Fixed top-to-bottom order of the stacked top toasts (the ⌨ key toast sits at the bottom edge on its own). */
+export const MEDICARE_TOAST_ORDER: readonly MedicareToastId[] = ["complete", "handoff_ready", "empty_filter"];
+/** Pure: the visible top toasts in stack order, so they render in one column and never overlap. */
+export function medicareToastStack(t: Partial<Record<MedicareToastId, unknown>> | null | undefined): { id: MedicareToastId; text: string; tone: "green" | "amber" }[] {
+  if (!t) return [];
+  return MEDICARE_TOAST_ORDER.flatMap((id) => { const x = t[id]; return typeof x === "string" && x ? [{ id, text: x, tone: id === "empty_filter" ? "amber" as const : "green" as const }] : []; });
+}
+
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
 export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the target row down / up" },
