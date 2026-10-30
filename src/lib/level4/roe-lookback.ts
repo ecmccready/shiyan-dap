@@ -81,3 +81,13 @@ export function lookbackVerdict(c: LookbackCompare | null | undefined): { tone: 
     return { tone: "win", label: "Look-back beats greedy", detail: `+Δe ${c.delta_e_gain}: ${c.lookback.run_id} (Δe ${c.lookback.cumulative_delta_e}) over greedy ${c.greedy.run_id} (Δe ${c.greedy.cumulative_delta_e})` };
   } catch { return { tone: "none", label: "No sealed paths", detail: "" }; }
 }
+
+/** Pure: sealed paths ranked by the look-back order (cumulative Δe, then Φ, steps, run_id), with greedy / look-back flags. */
+export function rankedLookbackRows(c: LookbackCompare | null | undefined): (LookbackPath & { rank: number; is_greedy: boolean; is_lookback: boolean })[] {
+  try {
+    if (!c || !Array.isArray(c.paths)) return [];
+    return [...c.paths]
+      .sort((a, b) => b.cumulative_delta_e - a.cumulative_delta_e || (b.final_phi ?? -Infinity) - (a.final_phi ?? -Infinity) || a.steps - b.steps || (a.run_id < b.run_id ? -1 : 1))
+      .map((p, i) => ({ ...p, rank: i + 1, is_greedy: p.run_id === c.greedy?.run_id, is_lookback: p.run_id === c.lookback?.run_id }));
+  } catch { return []; }
+}

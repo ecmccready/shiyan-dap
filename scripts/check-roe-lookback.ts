@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -42,4 +42,10 @@ assert.deepEqual(lookbackVerdict(c), { tone: "win", label: "Look-back beats gree
 assert.deepEqual(lookbackVerdict(same), { tone: "agree", label: "Agree", detail: "greedy and look-back both pick B" });
 for (const j of [null, undefined, scoreSealedPaths([])]) assert.equal(lookbackVerdict(j).tone, "none");
 console.log("verdict     -> win callout with +Δe and run ids; quiet Agree badge; none when empty");
+const rows = rankedLookbackRows(c);
+assert.deepEqual(rows.map((r) => [r.rank, r.run_id, r.is_lookback, r.is_greedy]), [[1, "B", true, false], [2, "A", false, true]]);
+assert.equal(rows[0].steps, 3); assert.equal(rows[0].max_step_i, 0.7); assert.equal(rows[0].final_phi, 0.02);
+const one = rankedLookbackRows(same); assert.equal(one.length, 1); assert.ok(one[0].is_greedy && one[0].is_lookback);
+for (const j of [null, undefined, {} as never]) assert.deepEqual(rankedLookbackRows(j), []);
+console.log("table       -> ranked by Σ Δe: 1 B (look-back), 2 A (greedy); single path carries both badges");
 console.log("OK");

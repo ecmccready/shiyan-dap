@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
-import { lookbackVerdict, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -25,6 +25,23 @@ export default function RoeLookbackNote() {
           ) : v.tone === "agree" ? (
             <p data-roe-lookback-verdict="agree" className="text-xs text-zinc-400"><span className="mr-2 rounded-full border border-zinc-600 px-2 py-0.5">{v.label}</span>{v.detail}</p>
           ) : null; })()}
+          <div className="overflow-x-auto">
+            <table data-roe-lookback-table className="w-full text-xs font-mono text-zinc-300">
+              <thead className="text-zinc-500"><tr><th className="text-left pr-2">#</th><th className="text-left pr-2">run_id</th><th className="text-right pr-2">steps</th><th className="text-right pr-2">best I_t</th><th className="text-right pr-2">Σ Δe</th><th className="text-right pr-2">Φ</th><th className="text-left">pick</th></tr></thead>
+              <tbody>
+                {rankedLookbackRows(c).map((r) => (
+                  <tr key={r.run_id} data-roe-lookback-row={r.run_id} className={r.is_lookback ? "text-emerald-200" : ""}>
+                    <td className="pr-2">{r.rank}</td><td className="pr-2 break-all">{r.run_id}</td><td className="text-right pr-2">{r.steps}</td>
+                    <td className="text-right pr-2">{r.max_step_i}</td><td className="text-right pr-2">{r.cumulative_delta_e}</td><td className="text-right pr-2">{r.final_phi ?? "n/a"}</td>
+                    <td className="space-x-1 whitespace-nowrap">
+                      {r.is_lookback && <span className="rounded bg-emerald-500 text-black px-1.5 text-[10px] font-semibold">look-back</span>}
+                      {r.is_greedy && <span className="rounded bg-amber-400 text-black px-1.5 text-[10px] font-semibold">greedy</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {c.excluded_domain_entries > 0 && <p className="text-xs text-zinc-500">{c.excluded_domain_entries} domain-labeled entries excluded.</p>}
         </>
       )}
