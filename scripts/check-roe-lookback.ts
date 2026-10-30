@@ -142,4 +142,8 @@ console.log("key c       -> copies the focused row's path JSON; Ctrl/Cmd+C and t
 assert.equal(lookbackKey({ key: "s" }), "steps"); assert.equal(lookbackKey({ key: "S" }), "steps");
 assert.equal(lookbackKey({ key: "s", metaKey: true }), null, "Cmd+S left to the browser"); assert.equal(lookbackKey({ key: "s", targetTag: "textarea" }), null);
 console.log("key s       -> expands the focused row and copies its steps JSON; Ctrl/Cmd+S and typing untouched");
+// m copies the compare pack (presses the existing ⚖ button).
+assert.equal(lookbackKey({ key: "m" }), "compare"); assert.equal(lookbackKey({ key: "M" }), "compare");
+assert.equal(lookbackKey({ key: "m", ctrlKey: true }), null); assert.equal(lookbackKey({ key: "m", targetTag: "input" }), null);
+console.log("key m       -> copies the ⚖ compare pack (same button, same JSON); no row focus needed; typing untouched");
 console.log("OK");

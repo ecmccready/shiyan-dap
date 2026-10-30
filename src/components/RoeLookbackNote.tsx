@@ -27,6 +27,7 @@ export default function RoeLookbackNote() {
       const el = ev.target as HTMLElement | null;
       const k = lookbackKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable });
       if (!k || !visibleRef.current.length) return;
+      if (k === "compare") { const b = document.querySelector<HTMLButtonElement>("[data-copy-roe-compare]"); if (!b || b.disabled) return; ev.preventDefault(); b.scrollIntoView({ block: "nearest" }); b.click(); return; }
       if (k === "next" || k === "prev") {
         ev.preventDefault();
         const id = moveLookbackFocus(visibleRef.current, focusRef.current, k);
@@ -64,7 +65,7 @@ export default function RoeLookbackNote() {
             <p data-roe-lookback-verdict="agree" className="text-xs text-zinc-400"><span className="mr-2 rounded-full border border-zinc-600 px-2 py-0.5">{v.label}</span>{v.detail}</p>
           ) : null; })()}
           <div className="flex items-center gap-2 text-xs" data-roe-lookback-sort={sortBy}>
-            <span className="text-zinc-500">Sort:</span><span className="text-zinc-600">(click a row for its actions · keys j/k move, Enter expand, Esc close, c copy path JSON, s copy steps JSON)</span>{keyCopied ? <span data-roe-lookback-key-copied className="text-emerald-300">Copied {keyCopied} ✓</span> : null}
+            <span className="text-zinc-500">Sort:</span><span className="text-zinc-600">(click a row for its actions · keys j/k move, Enter expand, Esc close, c copy path JSON, s copy steps JSON, m copy ⚖ compare pack)</span>{keyCopied ? <span data-roe-lookback-key-copied className="text-emerald-300">Copied {keyCopied} ✓</span> : null}
             {(["rank", "dphi"] as const).map((k) => (
               <button key={k} type="button" aria-pressed={sortBy === k} onClick={() => setSortBy(k)}
                 className={`rounded-full border px-2 py-0.5 ${sortBy === k ? "border-emerald-400 text-emerald-200" : "border-zinc-600 text-zinc-400"}`}>
