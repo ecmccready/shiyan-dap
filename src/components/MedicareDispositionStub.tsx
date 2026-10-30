@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, dispositionShortcut, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, dispositionShortcut, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -80,6 +80,19 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
             >
               {DISPOSITION_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
+            <input
+              key={`${e.item_id}:${e.note ?? ""}`}
+              type="text"
+              data-medicare-note={e.item_id}
+              aria-label={`Reviewer note for ${e.item_id}`}
+              defaultValue={e.note ?? ""}
+              maxLength={DISPOSITION_NOTE_MAX}
+              disabled={e.status === "unreviewed"}
+              placeholder={e.status === "unreviewed" ? "set a status to add a note" : "reviewer note (optional, Enter to save)"}
+              onKeyDown={(ev) => { if (ev.key === "Enter") (ev.target as HTMLInputElement).blur(); }}
+              onBlur={(ev) => { const v = ev.target.value; if ((e.note ?? "") !== v.trim()) commit((d) => applyDispositionNote(d, e.item_id, v), `${e.provider_id ?? e.item_id} note`); }}
+              className={`min-w-[12rem] flex-1 bg-zinc-900 border rounded px-2 py-0.5 font-sans ${e.note ? "border-sky-500 text-sky-100" : "border-zinc-700 text-zinc-300"} disabled:opacity-40`}
+            />
           </li>
         ))}
       </ul>

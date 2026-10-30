@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -281,4 +281,19 @@ assert.equal(JSON.parse(buildHandoffPack(live, ev, FIXTURE_PROVENANCE, { elapsed
 for (const tj of [null, {}, { elapsed_ms: -1, frozen: true }, { elapsed_ms: "x", frozen: true }]) assert.equal(JSON.parse(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, tj as never)).review_time, undefined);
 assert.equal(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE), buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, null), "no timer = unchanged pack");
 console.log("hand-off t  -> frozen review time (e.g. 2:05) included only at Review complete; hash covers it");
+// 24. Reviewer notes (pure; tab-local; flow into the report, dispositions JSON and hand-off).
+const n0 = applyDisposition({}, ids[2], "needs_human_review");
+const n1 = applyDispositionNote(n0, ids[2], "  payment exceeds charge; check modifier  ");
+assert.deepEqual(n0, { [ids[2]]: { status: "needs_human_review" } }, "input not mutated");
+assert.deepEqual(n1[ids[2]], { status: "needs_human_review", note: "payment exceeds charge; check modifier" });
+assert.deepEqual(applyDisposition(n1, ids[2], "cleared_pattern_only")[ids[2]], { status: "cleared_pattern_only", note: "payment exceeds charge; check modifier" }, "status change keeps note");
+assert.deepEqual(applyDispositionNote(n1, ids[2], "   ")[ids[2]], { status: "needs_human_review" }, "blank clears");
+assert.deepEqual(applyDispositionNote({}, ids[0], "x"), {}, "unreviewed item gets no note");
+assert.equal((applyDispositionNote(n0, ids[2], "y".repeat(500))[ids[2]] as { note: string }).note.length, DISPOSITION_NOTE_MAX);
+const nr = buildInvestigationReport({ pack: ev, dispositions: n1 });
+assert.equal(nr.entries[2].note, "payment exceeds charge; check modifier"); assert.ok(verifyReportHash(nr));
+assert.ok(JSON.parse(currentDispositionsJson(nr)).entries[2].note.startsWith("payment exceeds"));
+const nAll = applyDispositionNote(applyBulkDisposition({}, ids, "cleared_pattern_only"), ids[2], "explained by bundling");
+assert.ok(JSON.parse(buildHandoffPack(buildInvestigationReport({ pack: ev, dispositions: nAll }), ev, FIXTURE_PROVENANCE)).case_brief_markdown.includes("note: explained by bundling"));
+console.log("notes       -> optional per-item reviewer note: kept across status changes, cleared when blank, in report, JSON and hand-off");
 console.log("OK");

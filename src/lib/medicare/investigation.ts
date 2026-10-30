@@ -104,7 +104,24 @@ export function applyDisposition(current: unknown, item_id: unknown, status: unk
   if (typeof item_id !== "string" || !item_id || typeof status !== "string" || !(DISPOSITION_STATUSES as readonly string[]).includes(status)) return base;
   if (status === "unreviewed") { delete base[item_id]; return base; }
   const r = str(reviewer, 80);
-  base[item_id] = r ? { status, reviewer: r } : { status };
+  const keepNote = base[item_id] && typeof base[item_id] === "object" ? str((base[item_id] as { note?: unknown }).note) : null;
+  base[item_id] = { status, ...(r ? { reviewer: r } : {}), ...(keepNote ? { note: keepNote } : {}) };
+  return base;
+}
+
+/** Reviewer note limit (characters); matches the report's note cap. */
+export const DISPOSITION_NOTE_MAX = 200;
+/** Pure: set or clear the note on an item that already has a review status; unreviewed items carry no note. Input never mutated. */
+export function applyDispositionNote(current: unknown, item_id: unknown, note: unknown): DispositionInput {
+  let base: DispositionInput = {};
+  try { if (current && typeof current === "object" && !Array.isArray(current)) base = { ...(current as DispositionInput) }; } catch { base = {}; }
+  if (typeof item_id !== "string" || !item_id) return base;
+  const d = base[item_id];
+  if (!d || typeof d !== "object" || typeof d.status !== "string" || !(DISPOSITION_STATUSES as readonly string[]).includes(d.status) || d.status === "unreviewed") return base;
+  const n = str(note, DISPOSITION_NOTE_MAX);
+  const { note: _old, ...rest } = d as Record<string, unknown>;
+  void _old;
+  base[item_id] = n ? { ...rest, note: n } : rest;
   return base;
 }
 
