@@ -313,6 +313,16 @@ export function emptyRowFilterToast(filter: unknown, entries: unknown): string |
   } catch { return null; }
 }
 
+export const HANDOFF_READY_TOAST_MS = 3500;
+/** Pure: toast text when Hand-off ready flips false → true (not on load, not while already ready); else null. */
+export function handoffReadyToast(prevReady: unknown, report: unknown): string | null {
+  try {
+    if (prevReady !== false) return null;
+    const h = handoffReadyAnnotated(report);
+    return h.ready ? `✅ ${h.label} · press h to copy the 📦 hand-off pack` : null;
+  } catch { return null; }
+}
+
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
 export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the target row down / up" },

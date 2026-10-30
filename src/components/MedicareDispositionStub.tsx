@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -74,6 +74,16 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     setDoneToast(txt);
     window.setTimeout(() => setDoneToast((x) => (x === txt ? null : x)), COMPLETE_TOAST_MS);
   }, [progress]);
+  const prevReadyRef = useRef<boolean | null>(null);
+  const [readyToast, setReadyToast] = useState<string | null>(null);
+  useEffect(() => {
+    const txt = handoffReadyToast(prevReadyRef.current, report);
+    prevReadyRef.current = handoffReadyAnnotated(report).ready;
+    if (!prevReadyRef.current) { setReadyToast(null); return; }
+    if (!txt) return;
+    setReadyToast(txt);
+    window.setTimeout(() => setReadyToast((x) => (x === txt ? null : x)), HANDOFF_READY_TOAST_MS);
+  }, [report]);
   const [emptyToast, setEmptyToast] = useState<string | null>(null);
   const emptyTxt = emptyRowFilterToast(filter, report.entries);
   useEffect(() => {
@@ -90,6 +100,11 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   targetRef.current = { id: targetEntry ? targetEntry.item_id : null, label: targetEntry ? targetEntry.provider_id ?? targetEntry.item_id : "" };
   return (
     <div data-medicare-disposition-stub className="space-y-2">
+      {readyToast && (
+        <div data-medicare-handoff-ready-toast role="status" aria-live="polite" className="fixed top-40 left-1/2 -translate-x-1/2 z-50 rounded-2xl border-2 border-white bg-emerald-500 px-6 py-3 text-base font-bold text-black shadow-2xl shadow-emerald-500/40">
+          {readyToast}
+        </div>
+      )}
       {emptyToast && (
         <div data-medicare-empty-filter-toast role="status" aria-live="polite" className="fixed top-24 left-1/2 -translate-x-1/2 z-50 rounded-2xl border-2 border-white bg-amber-400 px-6 py-3 text-base font-bold text-black shadow-2xl shadow-amber-500/40">
           ⚠ {emptyToast}

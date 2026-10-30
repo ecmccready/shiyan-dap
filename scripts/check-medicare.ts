@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { handoffReadyToast, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -430,4 +430,15 @@ console.log("complete    -> big green toast once when review reaches 3 of 3 (not
   assert.equal(emptyRowFilterToast("unreviewed", fx), null); assert.ok(emptyRowFilterToast("needs_human_review", fx), "fixture start: needs review is empty → toast");
   assert.ok(!/fraud|misconduct|misdiagnos/i.test(emptyRowFilterToast("has_note", fx)!)); assert.ok(EMPTY_ROW_FILTER_TOAST_MS >= 2000 && EMPTY_ROW_FILTER_TOAST_MS <= 5000); }
 console.log("empty filter-> big amber toast when a row filter matches 0 of 3 items; points to f or All");
+// 42. Hand-off ready toast (pure transition).
+{ const ids3 = buildInvestigationReport({ pack: ev, dispositions: {} }).entries.map((e) => e.item_id);
+  let d = {} as DispositionInput; for (const id of ids3) d = applyDisposition(d, id, "needs_human_review");
+  const doneNoNote = buildInvestigationReport({ pack: ev, dispositions: d });
+  const doneNote = buildInvestigationReport({ pack: ev, dispositions: applyDispositionNote(d, ids3[0], "checked") });
+  assert.equal(handoffReadyToast(false, doneNoNote), null, "complete without a note is not ready");
+  assert.equal(handoffReadyToast(false, doneNote), "✅ Hand-off ready · reviewed with 1 note · press h to copy the 📦 hand-off pack");
+  assert.equal(handoffReadyToast(true, doneNote), null, "already ready"); assert.equal(handoffReadyToast(null, doneNote), null, "not on first render");
+  assert.equal(handoffReadyToast(false, null), null); assert.ok(!/fraud|misconduct|misdiagnos/i.test(handoffReadyToast(false, doneNote)!));
+  assert.ok(HANDOFF_READY_TOAST_MS >= 2000 && HANDOFF_READY_TOAST_MS <= 5000); }
+console.log("ready toast -> big green toast once when Hand-off ready turns on (complete + ≥1 note); h hint");
 console.log("OK");
