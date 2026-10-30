@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -62,4 +62,11 @@ assert.deepEqual(sortLookbackRows([...mixed].reverse(), "rank").map((r) => r.ran
 assert.deepEqual(mixed.map((r) => r.rank), [1, 2, 3, 4, 5], "input not mutated");
 assert.deepEqual(sortLookbackRows(null as never, "dphi"), []);
 console.log("sort        -> ΔΦ vs greedy desc (n/a last, ties by rank) or look-back rank; pure");
+const pj = JSON.parse(lookbackPathJson(rankedLookbackRows(c)[0], c.winner));
+assert.equal(pj.schema, "aethel.roe.lookback.v1"); assert.equal(pj.kind, "path"); assert.equal(pj.run_id, "B");
+assert.equal(pj.final_phi, 0.02); assert.equal(pj.delta_phi_vs_greedy, 0.12); assert.deepEqual(pj.badges, ["top", "look-back"]); assert.equal(pj.winner, "lookback");
+assert.deepEqual(JSON.parse(lookbackPathJson(rankedLookbackRows(c)[1], c.winner)).badges, ["greedy"]);
+assert.deepEqual(JSON.parse(lookbackPathJson(rankedLookbackRows(same)[0], same.winner)).badges, ["top", "look-back", "greedy"]);
+for (const j of [null, undefined, {} as never]) assert.equal(lookbackPathJson(j), "");
+console.log("path json   -> per-row JSON with run_id, Φ, ΔΦ vs greedy, badges and winner");
 console.log("OK");

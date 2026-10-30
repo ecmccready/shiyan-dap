@@ -117,3 +117,16 @@ export function sortLookbackRows<T extends { rank: number; delta_phi_vs_greedy: 
     return r.sort((a, b) => v(b) - v(a) || a.rank - b.rank);
   } catch { return []; }
 }
+
+/** Pure: one ranked row as a self-describing JSON object (schema, path fields, ΔΦ vs greedy, badges). */
+export function lookbackPathJson(row: (LookbackPath & { rank: number; is_greedy: boolean; is_lookback: boolean; delta_phi_vs_greedy: number | null }) | null | undefined, winner?: LookbackCompare["winner"]): string {
+  try {
+    if (!row || typeof row.run_id !== "string") return "";
+    const badges = [row.rank === 1 ? "top" : null, row.is_lookback ? "look-back" : null, row.is_greedy ? "greedy" : null].filter(Boolean);
+    return JSON.stringify({
+      schema: ROE_LOOKBACK_SCHEMA, kind: "path", rank: row.rank, run_id: row.run_id, steps: row.steps, e0: row.e0, e_final: row.e_final,
+      best_step_i: row.max_step_i, cumulative_delta_e: row.cumulative_delta_e, final_phi: row.final_phi, delta_phi_vs_greedy: row.delta_phi_vs_greedy,
+      badges, winner: winner ?? null, actions: row.actions, note: ROE_LOOKBACK_NOTE,
+    }, null, 2);
+  } catch { return ""; }
+}
