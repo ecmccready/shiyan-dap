@@ -274,6 +274,15 @@ export function emptyFilterToast(filter: unknown, shown: unknown, total: unknown
   if (typeof filter !== "string" || !(filter in ROLE_LABEL) || shown !== 0 || typeof total !== "number" || !(total > 0)) return null;
   return `Show ${ROLE_LABEL[filter]}: 0 of ${total} paths match · press f or click All to show all`;
 }
+export const WIN_TOAST_MS = 3500;
+/** Pure: toast text when look-back beats greedy (shown once per load); null on agree / none / bad input. */
+export function lookbackWinToast(c: { winner?: unknown; delta_e_gain?: unknown; lookback?: { run_id?: unknown } | null; greedy?: { run_id?: unknown } | null } | null | undefined): string | null {
+  try {
+    if (!c || c.winner !== "lookback" || typeof c.delta_e_gain !== "number" || !(c.delta_e_gain > 0)) return null;
+    const lb = typeof c.lookback?.run_id === "string" ? c.lookback.run_id : "look-back"; const gr = typeof c.greedy?.run_id === "string" ? c.greedy.run_id : "greedy";
+    return `★ Look-back beats greedy · +Δe ${Number(c.delta_e_gain.toFixed(3))} · ${lb} over ${gr} · press m for ⚖ compare pack`;
+  } catch { return null; }
+}
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },
