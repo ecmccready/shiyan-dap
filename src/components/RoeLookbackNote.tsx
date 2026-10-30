@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -41,6 +41,14 @@ export default function RoeLookbackNote() {
               </button>
             ))}
           </div>
+          {(() => { const m = lookbackSummary(c); return (
+            <div data-roe-lookback-summary-strip={m.tone} className={`sticky top-0 z-20 -mx-4 px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs backdrop-blur border-y ${m.tone === "win" ? "bg-emerald-950/90 border-emerald-400 text-emerald-100" : m.tone === "agree" ? "bg-sky-950/90 border-sky-500 text-sky-100" : "bg-zinc-950/90 border-zinc-700 text-zinc-300"}`}>
+              <span className={`rounded-full px-2 py-0.5 font-bold ${m.tone === "win" ? "bg-amber-400 text-black" : m.tone === "agree" ? "bg-sky-400 text-black" : "bg-zinc-700"}`}>{m.verdict}</span>
+              <span>+Δe <b>{m.delta_e_gain}</b></span>
+              <span>ΔΦ <b>{fmtDeltaPhi(m.delta_phi)}</b></span>
+              <span>{m.paths} paths · ★ {m.winners} · beaten {m.beaten} · = {m.agree}{m.excluded ? ` · ${m.excluded} domain excluded` : ""}</span>
+            </div>
+          ); })()}
           {(() => {
             const all = rankedLookbackRows(c);
             const label = { all: "All", winners: "★ Winners", beaten: "Beaten", agree: "= Agree" } as const;

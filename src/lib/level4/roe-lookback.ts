@@ -211,3 +211,16 @@ export function pathStepsJson(row: { run_id?: unknown; rank?: unknown; actions?:
       best_step_i: typeof row.max_step_i === "number" ? row.max_step_i : null, steps: pathStepsDetail(row), note: ROE_LOOKBACK_NOTE }, null, 2);
   } catch { return ""; }
 }
+
+/** Pure summary strip: verdict, Δe gain, ΔΦ (look-back − greedy) and path counts by role. */
+export function lookbackSummary(c: LookbackCompare | null | undefined): { tone: "win" | "agree" | "none"; verdict: string; delta_e_gain: number; delta_phi: number | null; paths: number; winners: number; beaten: number; agree: number; excluded: number } {
+  const none = { tone: "none" as const, verdict: "No sealed paths", delta_e_gain: 0, delta_phi: null, paths: 0, winners: 0, beaten: 0, agree: 0, excluded: 0 };
+  try {
+    if (!c) return none;
+    const v = lookbackVerdict(c); const rows = rankedLookbackRows(c);
+    const lb = rows.find((r) => r.is_lookback), gr = rows.find((r) => r.is_greedy);
+    const dphi = lb && gr && typeof lb.final_phi === "number" && typeof gr.final_phi === "number" ? r4(lb.final_phi - gr.final_phi) : null;
+    const n = (f: LookbackRoleFilter) => filterLookbackRows(rows, f, c.winner).length;
+    return { tone: v.tone, verdict: v.label, delta_e_gain: c.delta_e_gain, delta_phi: dphi, paths: c.paths_considered, winners: n("winners"), beaten: n("beaten"), agree: n("agree"), excluded: c.excluded_domain_entries };
+  } catch { return none; }
+}

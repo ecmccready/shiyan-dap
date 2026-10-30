@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -113,4 +113,8 @@ assert.deepEqual(sj.steps, pathStepsDetail(bRow)); assert.equal(sj.steps[2].best
 assert.equal(JSON.parse(pathStepsJson(live.paths[0])).steps[3].action, "seal_pack");
 for (const j of [null, undefined, {}, { run_id: 3 }]) assert.equal(pathStepsJson(j as never), "");
 console.log("steps json  -> expanded row copies kind:steps JSON (action, e before/after, I_t, best)");
+assert.deepEqual(lookbackSummary(c), { tone: "win", verdict: "Look-back beats greedy", delta_e_gain: 0.65, delta_phi: 0.12, paths: 2, winners: 1, beaten: 1, agree: 0, excluded: 1 });
+assert.deepEqual(lookbackSummary(same), { tone: "agree", verdict: "Agree", delta_e_gain: 0, delta_phi: 0, paths: 1, winners: 0, beaten: 0, agree: 1, excluded: 0 });
+assert.equal(lookbackSummary(null).tone, "none"); assert.equal(lookbackSummary(scoreSealedPaths([])).paths, 0);
+console.log("summary     -> sticky strip: verdict, +Δe, ΔΦ, path counts by role, domain exclusions");
 console.log("OK");
