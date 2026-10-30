@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { dismissLookbackToast, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -91,9 +91,10 @@ export default function RoeLookbackNote() {
       {(() => { const stack = lookbackToastStack({ win: winToast, agree: agreeToast, empty_filter: emptyToast }); toastCountRef.current = stack.length; return stack.length ? (
         <div data-roe-lookback-toast-stack className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex w-max max-w-[92vw] flex-col items-center gap-2 pointer-events-none">
           {stack.map((t) => (
-            <div key={t.id} {...{ [`data-roe-lookback-${t.id === "empty_filter" ? "empty" : t.id}-toast`]: true }} role="status" aria-live="polite"
-              className={`pointer-events-auto rounded-2xl border-2 border-white px-6 py-3 text-base font-bold text-black shadow-2xl ${t.tone === "amber" ? "bg-amber-400 shadow-amber-500/40" : t.tone === "blue" ? "bg-sky-400 shadow-sky-500/40" : "bg-emerald-400 shadow-emerald-500/40"}`}>
-              {t.tone === "amber" ? "⚠ " : ""}{t.text}
+            <div key={t.id} {...{ [`data-roe-lookback-${t.id === "empty_filter" ? "empty" : t.id}-toast`]: true }} role="status" aria-live="polite" title="Click to dismiss" data-roe-lookback-toast-dismiss={t.id}
+              onClick={() => { const keep = new Set(dismissLookbackToast(stack, t.id).map((x) => x.id)); if (!keep.has("win")) setWinToast(null); if (!keep.has("agree")) setAgreeToast(null); if (!keep.has("empty_filter")) setEmptyToast(null); }}
+              className={`pointer-events-auto cursor-pointer hover:brightness-110 rounded-2xl border-2 border-white px-6 py-3 text-base font-bold text-black shadow-2xl ${t.tone === "amber" ? "bg-amber-400 shadow-amber-500/40" : t.tone === "blue" ? "bg-sky-400 shadow-sky-500/40" : "bg-emerald-400 shadow-emerald-500/40"}`}>
+              {t.tone === "amber" ? "⚠ " : ""}{t.text}<span aria-hidden className="ml-3 text-black/50">✕</span>
             </div>
           ))}
         </div>

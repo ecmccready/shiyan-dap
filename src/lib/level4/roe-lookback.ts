@@ -301,6 +301,10 @@ export function lookbackToastStack(t: Partial<Record<LookbackToastId, unknown>> 
   const tone = { win: "green", agree: "blue", empty_filter: "amber" } as const;
   return LOOKBACK_TOAST_ORDER.flatMap((id) => { const x = t[id]; return typeof x === "string" && x ? [{ id, text: x, tone: tone[id] }] : []; });
 }
+/** Pure: the stack after clicking one toast — only that toast goes; the rest keep their order. */
+export function dismissLookbackToast<T extends { id: LookbackToastId }>(stack: readonly T[] | null | undefined, id: unknown): T[] {
+  return Array.isArray(stack) ? stack.filter((t) => t.id !== id) : [];
+}
 /** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
 export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
   if (helpOpen === true) return "help";

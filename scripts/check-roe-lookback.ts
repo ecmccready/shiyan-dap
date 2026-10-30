@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { dismissLookbackToast, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -217,4 +217,11 @@ assert.equal(lookbackEscTarget(false, 0, "a"), "row"); assert.equal(lookbackEscT
 { const seq: unknown[] = []; let h = true, t = 1, o: string | null = "a"; for (let i = 0; i < 4; i++) { const x = lookbackEscTarget(h, t, o); seq.push(x); if (x === "help") h = false; else if (x === "toasts") t = 0; else if (x === "row") o = null; }
   assert.deepEqual(seq, ["help", "toasts", "row", null], "one layer per Esc"); }
 console.log("Esc         -> one layer per press: cheat sheet, then stacked top toasts, then the expanded row");
+// Click one stacked toast to dismiss only that one.
+{ const st = lookbackToastStack({ win: "w", agree: "a", empty_filter: "e" });
+  assert.deepEqual(dismissLookbackToast(st, "agree").map((x) => x.id), ["win", "empty_filter"], "others stay in order");
+  assert.deepEqual(dismissLookbackToast(st, "nope").map((x) => x.id), ["win", "agree", "empty_filter"]);
+  assert.deepEqual(dismissLookbackToast(dismissLookbackToast(st, "win"), "empty_filter").map((x) => x.id), ["agree"]);
+  assert.deepEqual(dismissLookbackToast(null, "win"), []); assert.equal(st.length, 3, "input not mutated"); }
+console.log("click toast -> clicking a stacked look-back toast (✕) dismisses only that one; the rest keep their order");
 console.log("OK");
