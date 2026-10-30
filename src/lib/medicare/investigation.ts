@@ -163,3 +163,11 @@ export function toggleStatusFilter(current: unknown, clicked: unknown): Disposit
 export function filterEmphasis(status: unknown, filter: DispositionStatus | null): "all" | "match" | "dim" {
   return filter === null ? "all" : status === filter ? "match" : "dim";
 }
+
+/** Pure: apply one review status to many items (same rules as applyDisposition); input never mutated. */
+export function applyBulkDisposition(current: unknown, item_ids: unknown, status: unknown): DispositionInput {
+  let out = applyDisposition(current, "", "unreviewed");
+  if (!Array.isArray(item_ids) || typeof status !== "string" || !(DISPOSITION_STATUSES as readonly string[]).includes(status)) return out;
+  for (const id of item_ids) out = applyDisposition(out, id, status);
+  return out;
+}

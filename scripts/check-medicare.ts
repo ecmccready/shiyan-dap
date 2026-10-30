@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -209,4 +209,12 @@ for (const j of ["fraud", null, 1, {}]) assert.equal(toggleStatusFilter("unrevie
 assert.equal(filterEmphasis("unreviewed", null), "all"); assert.equal(filterEmphasis("unreviewed", "unreviewed"), "match"); assert.equal(filterEmphasis("cleared_pattern_only", "unreviewed"), "dim");
 assert.deepEqual(all3.entries.map((e) => filterEmphasis(e.status, "needs_human_review")), ["dim", "dim", "match"]);
 console.log("filter      -> chip toggles status filter, re-click or All clears; matching rows highlighted, others dimmed");
+// 17. Bulk disposition (pure).
+const b0 = {}; const b1 = applyBulkDisposition(b0, ids, "cleared_pattern_only");
+assert.deepEqual(b0, {}); assert.deepEqual(Object.values(b1), [{ status: "cleared_pattern_only" }, { status: "cleared_pattern_only" }, { status: "cleared_pattern_only" }]);
+assert.equal(reviewProgress(buildInvestigationReport({ pack: ev, dispositions: b1 })).label, "3 of 3 reviewed");
+const b2 = applyBulkDisposition(b1, [ids[0], ids[1]], "unreviewed"); assert.deepEqual(Object.keys(b2), [ids[2]]);
+assert.deepEqual(applyBulkDisposition(b1, ids, "fraud"), b1, "invented status ignored");
+assert.deepEqual(applyBulkDisposition(b1, "x", "needs_human_review"), b1);
+console.log("bulk        -> set all shown to one review status or reset; pure; invented statuses ignored");
 console.log("OK");
