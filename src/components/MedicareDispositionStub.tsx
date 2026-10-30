@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, dismissMedicareToast, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -73,6 +73,13 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   }, []);
   const report = useMemo(() => buildInvestigationReport({ pack, dispositions: disp }), [pack, disp]);
   const progress = useMemo(() => reviewProgress(report), [report]);
+  const toastHoverRef = useRef(false);
+  const deferredRef = useRef<Map<MedicareToastId, () => void>>(new Map());
+  const expireToast = (id: MedicareToastId, clear: () => void) => { if (toastExpiry(toastHoverRef.current) === "defer") deferredRef.current.set(id, clear); else clear(); };
+  const leaveStack = (showing: readonly { id: MedicareToastId }[]) => {
+    toastHoverRef.current = false;
+    window.setTimeout(() => { if (toastHoverRef.current) return; for (const id of toastsAfterLeave(deferredRef.current.keys(), showing)) deferredRef.current.get(id)?.(); deferredRef.current.clear(); }, TOAST_LEAVE_GRACE_MS);
+  };
   const prevCompleteRef = useRef<boolean | null>(null);
   const [doneToast, setDoneToast] = useState<string | null>(null);
   useEffect(() => {
@@ -80,7 +87,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     prevCompleteRef.current = reviewCompletion(progress).complete;
     if (!txt) { if (!prevCompleteRef.current) setDoneToast(null); return; }
     setDoneToast(txt);
-    window.setTimeout(() => setDoneToast((x) => (x === txt ? null : x)), COMPLETE_TOAST_MS);
+    window.setTimeout(() => expireToast("complete", () => setDoneToast((x) => (x === txt ? null : x))), COMPLETE_TOAST_MS);
   }, [progress]);
   const prevReadyRef = useRef<boolean | null>(null);
   const [readyToast, setReadyToast] = useState<string | null>(null);
@@ -90,14 +97,14 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     if (!prevReadyRef.current) { setReadyToast(null); return; }
     if (!txt) return;
     setReadyToast(txt);
-    window.setTimeout(() => setReadyToast((x) => (x === txt ? null : x)), HANDOFF_READY_TOAST_MS);
+    window.setTimeout(() => expireToast("handoff_ready", () => setReadyToast((x) => (x === txt ? null : x))), HANDOFF_READY_TOAST_MS);
   }, [report]);
   const [emptyToast, setEmptyToast] = useState<string | null>(null);
   const emptyTxt = emptyRowFilterToast(filter, report.entries);
   useEffect(() => {
     setEmptyToast(emptyTxt);
     if (!emptyTxt) return;
-    const id = window.setTimeout(() => setEmptyToast(null), EMPTY_ROW_FILTER_TOAST_MS);
+    const id = window.setTimeout(() => expireToast("empty_filter", () => setEmptyToast(null)), EMPTY_ROW_FILTER_TOAST_MS);
     return () => window.clearTimeout(id);
   }, [emptyTxt]);
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
@@ -111,8 +118,8 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       {(() => { const stack = medicareToastStack({ complete: doneToast, empty_filter: emptyToast, handoff_ready: readyToast }); toastCountRef.current = stack.length; return stack.length ? (
         <div data-medicare-toast-stack className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex w-max max-w-[92vw] flex-col items-center gap-2 pointer-events-none">
           {stack.map((t) => (
-            <div key={t.id} {...{ [`data-medicare-${t.id === "complete" ? "complete" : t.id === "empty_filter" ? "empty-filter" : "handoff-ready"}-toast`]: true }} role="status" aria-live="polite" title="Click to dismiss" data-medicare-toast-dismiss={t.id}
-              onClick={() => { const keep = new Set(dismissMedicareToast(stack, t.id).map((x) => x.id)); if (!keep.has("complete")) setDoneToast(null); if (!keep.has("handoff_ready")) setReadyToast(null); if (!keep.has("empty_filter")) setEmptyToast(null); }}
+            <div key={t.id} {...{ [`data-medicare-${t.id === "complete" ? "complete" : t.id === "empty_filter" ? "empty-filter" : "handoff-ready"}-toast`]: true }} role="status" aria-live="polite" title="Click to dismiss · hover to keep" data-medicare-toast-dismiss={t.id} onMouseEnter={() => { toastHoverRef.current = true; }} onMouseLeave={() => leaveStack(stack)}
+              onClick={() => { leaveStack(dismissMedicareToast(stack, t.id)); const keep = new Set(dismissMedicareToast(stack, t.id).map((x) => x.id)); if (!keep.has("complete")) setDoneToast(null); if (!keep.has("handoff_ready")) setReadyToast(null); if (!keep.has("empty_filter")) setEmptyToast(null); }}
               className={`pointer-events-auto cursor-pointer hover:brightness-110 rounded-2xl border-2 border-white px-6 py-3 text-base font-bold text-black shadow-2xl ${t.tone === "amber" ? "bg-amber-400 shadow-amber-500/40" : t.id === "handoff_ready" ? "bg-emerald-500 shadow-emerald-500/40" : "bg-emerald-400 shadow-emerald-500/40"}`}>
               {t.tone === "amber" ? "⚠ " : ""}{t.text}<span aria-hidden className="ml-3 text-black/50">✕</span>
             </div>

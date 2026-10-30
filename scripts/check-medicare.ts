@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { dismissMedicareToast, medicareEscTarget, medicareToastStack, MEDICARE_TOAST_ORDER, handoffReadyToast, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, dismissMedicareToast, medicareEscTarget, medicareToastStack, MEDICARE_TOAST_ORDER, handoffReadyToast, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -459,4 +459,12 @@ console.log("Esc         -> closes the cheat sheet first if open, otherwise dism
   assert.deepEqual(dismissMedicareToast(dismissMedicareToast(st, "complete"), "empty_filter").map((x) => x.id), ["handoff_ready"]);
   assert.deepEqual(dismissMedicareToast(null, "complete"), []); assert.equal(st.length, 3, "input not mutated"); }
 console.log("click toast -> clicking a stacked top toast (✕) dismisses only that one; the rest keep their order");
+// 46. Hover pauses auto-dismiss (pure).
+assert.equal(toastExpiry(true), "defer"); assert.equal(toastExpiry(false), "dismiss"); assert.equal(toastExpiry(undefined), "dismiss");
+{ const st = medicareToastStack({ complete: "c", handoff_ready: "h", empty_filter: "e" });
+  assert.deepEqual(toastsAfterLeave(["empty_filter", "complete"], st), ["complete", "empty_filter"], "deferred ones go after leave, in stack order");
+  assert.deepEqual(toastsAfterLeave(["handoff_ready"], dismissMedicareToast(st, "handoff_ready")), [], "already clicked away");
+  assert.deepEqual(toastsAfterLeave([], st), [], "not yet expired: stays until its own timer"); assert.deepEqual(toastsAfterLeave(null, null), []); }
+assert.ok(TOAST_LEAVE_GRACE_MS >= 500 && TOAST_LEAVE_GRACE_MS <= 3000);
+console.log("hover       -> hovering a stacked top toast pauses its auto-dismiss; it goes ~1.2 s after the pointer leaves");
 console.log("OK");

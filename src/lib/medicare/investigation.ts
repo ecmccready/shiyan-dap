@@ -337,6 +337,14 @@ export function dismissMedicareToast<T extends { id: MedicareToastId }>(stack: r
   return Array.isArray(stack) ? stack.filter((t) => t.id !== id) : [];
 }
 
+export const TOAST_LEAVE_GRACE_MS = 1200;
+/** Pure: on a toast's timer, defer while the pointer is over the stack, else dismiss. */
+export function toastExpiry(hovered: unknown): "defer" | "dismiss" { return hovered === true ? "defer" : "dismiss"; }
+/** Pure: toasts to dismiss after the pointer leaves — the deferred ones still showing. */
+export function toastsAfterLeave(deferred: Iterable<MedicareToastId> | null | undefined, showing: readonly { id: MedicareToastId }[] | null | undefined): MedicareToastId[] {
+  const d = new Set(deferred ?? []); return (showing ?? []).map((t) => t.id).filter((id) => d.has(id));
+}
+
 /** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
 export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
   if (helpOpen === true) return "help";
