@@ -312,3 +312,22 @@ export const HANDOFF_PULSE_MS = 2400;
 export function handoffPulseActive(since: unknown, now: unknown): boolean {
   return typeof since === "number" && typeof now === "number" && Number.isFinite(since) && Number.isFinite(now) && now >= since && now - since < HANDOFF_PULSE_MS;
 }
+
+/** Pure: 2–3 neutral quick-note templates for a status and item kind. Review language only; never a finding of wrongdoing. */
+export function noteTemplates(status: unknown, kind: unknown): string[] {
+  if (status === "needs_human_review") return kind === "data_quality"
+    ? ["Confirm the source value with the data steward", "Possible entry or extraction error", "Re-check after the next release"]
+    : ["Request supporting documentation", "Compare with peer providers for this code", "Check billing modifier or bundling"];
+  if (status === "cleared_pattern_only") return kind === "data_quality"
+    ? ["Known source formatting issue", "Value corrected in a later release"]
+    : ["Documented explanation on file", "Pattern explained by payment policy"];
+  return [];
+}
+/** Pure: add a template to an existing note ("; " joined, no duplicates), capped at DISPOSITION_NOTE_MAX. */
+export function appendNoteTemplate(existing: unknown, template: unknown): string {
+  const t = typeof template === "string" ? template.trim() : "";
+  const e = typeof existing === "string" ? existing.trim() : "";
+  if (!t) return e.slice(0, DISPOSITION_NOTE_MAX);
+  if (e.split(";").map((x) => x.trim()).includes(t)) return e.slice(0, DISPOSITION_NOTE_MAX);
+  return (e ? `${e}; ${t}` : t).slice(0, DISPOSITION_NOTE_MAX);
+}

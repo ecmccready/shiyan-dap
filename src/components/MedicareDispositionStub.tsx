@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, dispositionShortcut, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -93,6 +93,17 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
               onBlur={(ev) => { const v = ev.target.value; if ((e.note ?? "") !== v.trim()) commit((d) => applyDispositionNote(d, e.item_id, v), `${e.provider_id ?? e.item_id} note`); }}
               className={`min-w-[12rem] flex-1 bg-zinc-900 border rounded px-2 py-0.5 font-sans ${e.note ? "border-sky-500 text-sky-100" : "border-zinc-700 text-zinc-300"} disabled:opacity-40`}
             />
+            {noteTemplates(e.status, e.kind).length > 0 && (
+              <span data-medicare-note-templates={e.item_id} className="flex flex-wrap gap-1">
+                {noteTemplates(e.status, e.kind).map((t) => (
+                  <button key={t} type="button" data-medicare-note-template={t} title="Add this note"
+                    onClick={(ev) => { ev.stopPropagation(); commit((d) => applyDispositionNote(d, e.item_id, appendNoteTemplate(e.note, t)), `${e.provider_id ?? e.item_id} note`); }}
+                    className={`rounded-full border px-2 py-0.5 font-sans text-[11px] ${(e.note ?? "").includes(t) ? "border-sky-400 bg-sky-500 text-black" : "border-sky-700 text-sky-200 hover:bg-sky-500/20"}`}>
+                    + {t}
+                  </button>
+                ))}
+              </span>
+            )}
           </li>
         ))}
       </ul>

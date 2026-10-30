@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -331,4 +331,16 @@ assert.equal(handoffPulseActive(1000, 1000), true); assert.equal(handoffPulseAct
 assert.equal(handoffPulseActive(1000, 1000 + HANDOFF_PULSE_MS), false); assert.equal(handoffPulseActive(1000, 999), false);
 for (const [a, b] of [[null, 1], [1, null], ["1", 2], [NaN, 1]]) assert.equal(handoffPulseActive(a, b), false);
 console.log("pulse       -> chip click scrolls to the 📦 hand-off button and highlights it for 2.4 s");
+// 30. Quick note templates (pure).
+for (const st of ["needs_human_review", "cleared_pattern_only"]) for (const k of ["data_quality", "rule_candidate"]) {
+  const t = noteTemplates(st, k); assert.ok(t.length >= 2 && t.length <= 3); for (const x of t) { assert.ok(!/fraud|misconduct|misdiagnos/i.test(x)); assert.ok(x.length <= DISPOSITION_NOTE_MAX); }
+}
+assert.deepEqual(noteTemplates("unreviewed", "rule_candidate"), []); assert.deepEqual(noteTemplates("fraud", "x"), []);
+assert.equal(appendNoteTemplate("", "Request supporting documentation"), "Request supporting documentation");
+assert.equal(appendNoteTemplate("checked", "Request supporting documentation"), "checked; Request supporting documentation");
+assert.equal(appendNoteTemplate("a; Request supporting documentation", "Request supporting documentation"), "a; Request supporting documentation", "no duplicate");
+assert.equal(appendNoteTemplate("y".repeat(199), "zz").length, DISPOSITION_NOTE_MAX); assert.equal(appendNoteTemplate(null, null), "");
+const tn = applyDispositionNote(n0, ids[2], appendNoteTemplate(undefined, noteTemplates("needs_human_review", "rule_candidate")[2]));
+assert.equal(buildInvestigationReport({ pack: ev, dispositions: tn }).entries[2].note, "Check billing modifier or bundling");
+console.log("templates   -> 2–3 neutral quick notes per status/kind; append without duplicates; capped; flows into report");
 console.log("OK");
