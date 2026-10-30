@@ -272,4 +272,13 @@ assert.equal(nextReviewTimer(tm, { reviewed: 0, items: 3 }, 80000).started_at, n
 assert.equal(formatElapsed(3723000), "1:02:03"); assert.equal(formatElapsed(-5), "0:00"); assert.equal(formatElapsed("x"), "0:00");
 assert.equal(reviewElapsedMs({ started_at: null, frozen_at: null }, 5), 0);
 console.log("timer       -> starts at first disposition, freezes at 3 of 3, resumes on undo, clears on reset");
+// 23. Hand-off pack carries frozen review time only at complete.
+const ht = JSON.parse(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, { elapsed_ms: 125400, frozen: true }));
+assert.deepEqual(ht.review_time, { elapsed_ms: 125400, elapsed: "2:05", basis: "tab-local timer from first disposition to Review complete" });
+{ const { handoff_hash: hh, ...b } = ht; assert.equal(hh, contentHash(b)); }
+assert.equal(JSON.parse(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, { elapsed_ms: 125400, frozen: false })).review_time, undefined, "running timer not included");
+assert.equal(JSON.parse(buildHandoffPack(live, ev, FIXTURE_PROVENANCE, { elapsed_ms: 5000, frozen: true })).review_time, undefined, "only at complete");
+for (const tj of [null, {}, { elapsed_ms: -1, frozen: true }, { elapsed_ms: "x", frozen: true }]) assert.equal(JSON.parse(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, tj as never)).review_time, undefined);
+assert.equal(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE), buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, null), "no timer = unchanged pack");
+console.log("hand-off t  -> frozen review time (e.g. 2:05) included only at Review complete; hash covers it");
 console.log("OK");

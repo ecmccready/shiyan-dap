@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MEDICARE_PROGRESS_EVENT, formatElapsed, nextReviewTimer, reviewElapsedMs, type ReviewTimer } from "@/lib/medicare/investigation";
+import { MEDICARE_TIMER_EVENT, MEDICARE_PROGRESS_EVENT, formatElapsed, nextReviewTimer, reviewElapsedMs, type ReviewTimer } from "@/lib/medicare/investigation";
 
 /** Review-session elapsed timer: starts at the first disposition, freezes at Review complete. Tab-local, display only. */
 export default function MedicareReviewTimer() {
@@ -18,6 +18,10 @@ export default function MedicareReviewTimer() {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [running]);
+  const frozenMs = t.started_at !== null && t.frozen_at !== null ? t.frozen_at - t.started_at : null;
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(MEDICARE_TIMER_EVENT, { detail: frozenMs === null ? { elapsed_ms: null, frozen: false } : { elapsed_ms: frozenMs, frozen: true } }));
+  }, [frozenMs]);
   const state = t.started_at === null ? "idle" : running ? "running" : "frozen";
   return (
     <div data-medicare-review-timer={state} className="inline-flex items-center gap-2 text-xs">

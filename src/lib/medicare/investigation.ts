@@ -238,3 +238,6 @@ export function formatElapsed(ms: unknown): string {
   const ss = String(s).padStart(2, "0");
   return h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
 }
+
+/** Browser event carrying the review timer ({ elapsed_ms, frozen }) from the Win-strip timer; tab-local. */
+export const MEDICARE_TIMER_EVENT = "medicare:review-timer";

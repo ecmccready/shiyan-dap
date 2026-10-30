@@ -5,7 +5,7 @@ import { useCopy, copiedRing } from "@/lib/use-copy";
 import { buildHandoffPack, formatReviewedCaseBrief } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 import type { MedicareProvenance } from "@/lib/medicare/provenance";
-import { currentDispositionsJson, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_TIMER_EVENT, currentDispositionsJson, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
 
 /** Copies the live investigation report (current statuses + report_hash). With `report` it is controlled; otherwise it follows the stub's tab-local event. */
 export default function CopyLiveInvestigation({ report, initial, brief, handoff }: { report?: InvestigationReport; initial?: InvestigationReport; brief?: { evidence: EvidencePack; provenance: MedicareProvenance }; handoff?: boolean }) {
@@ -16,9 +16,16 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
     window.addEventListener(MEDICARE_REPORT_EVENT, on);
     return () => window.removeEventListener(MEDICARE_REPORT_EVENT, on);
   }, [report]);
+  const [timer, setTimer] = useState<{ elapsed_ms: number | null; frozen: boolean }>({ elapsed_ms: null, frozen: false });
+  useEffect(() => {
+    if (!handoff) return;
+    const on = (ev: Event) => { const d = (ev as CustomEvent<{ elapsed_ms: number | null; frozen: boolean }>).detail; if (d) setTimer(d); };
+    window.addEventListener(MEDICARE_TIMER_EVENT, on);
+    return () => window.removeEventListener(MEDICARE_TIMER_EVENT, on);
+  }, [handoff]);
   const r = report ?? heard;
   const copy = useCopy(4000, undefined, handoff ? "medicare hand-off pack" : brief ? "medicare reviewed brief" : "medicare dispositions");
-  const json = handoff && brief ? buildHandoffPack(r, brief.evidence, brief.provenance) : brief ? formatReviewedCaseBrief(r, brief.evidence, brief.provenance) : currentDispositionsJson(r);
+  const json = handoff && brief ? buildHandoffPack(r, brief.evidence, brief.provenance, timer) : brief ? formatReviewedCaseBrief(r, brief.evidence, brief.provenance) : currentDispositionsJson(r);
   const done = reviewCompletion(reviewProgress(r)).complete;
   const base = handoff ? (done ? "bg-emerald-400 text-black font-bold border-2 border-white shadow-lg shadow-emerald-500/30 h-10 px-5 text-sm" : "border-2 border-emerald-500 text-emerald-200 font-semibold") : done
     ? "bg-emerald-400 text-black font-semibold border-emerald-300 hover:bg-emerald-300"

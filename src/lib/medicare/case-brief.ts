@@ -2,7 +2,7 @@
  * Medicare chosen case and reviewer hand-off (pure; never throws; medicare-labeled only).
  * The case is documented product copy over a SYNTHETIC fixture; nothing is fetched from CMS.
  */
-import { reviewCompletion, reviewProgress, verifyReportHash, type InvestigationReport } from "@/lib/medicare/investigation";
+import { formatElapsed, reviewCompletion, reviewProgress, verifyReportHash, type InvestigationReport } from "@/lib/medicare/investigation";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 import { contentHash, type MedicareProvenance } from "@/lib/medicare/provenance";
 
@@ -99,7 +99,7 @@ export const MEDICARE_HANDOFF_SCHEMA = "aethel.medicare.handoff.v1" as const;
  * Pure reviewer hand-off pack: reviewed case brief + live investigation report (current dispositions) + progress,
  * linked to the evidence pack_hash, with a recomputable handoff_hash. "" unless the report verifies and links this pack.
  */
-export function buildHandoffPack(report: unknown, evidence: EvidencePack, provenance: MedicareProvenance): string {
+export function buildHandoffPack(report: unknown, evidence: EvidencePack, provenance: MedicareProvenance, timer?: { elapsed_ms?: unknown; frozen?: unknown } | null): string {
   try {
     const brief = formatReviewedCaseBrief(report, evidence, provenance);
     if (!brief) return "";
@@ -109,6 +109,9 @@ export function buildHandoffPack(report: unknown, evidence: EvidencePack, proven
       dataset_content_hash: provenance.content_hash, evidence_pack_hash: evidence.pack_hash, report_hash: r.report_hash,
       progress: { label: p.label, reviewed: p.reviewed, items: p.items, percent: p.percent, by_status: p.by_status, complete: done.complete },
       case_brief_markdown: brief, investigation: r, guardrail: MEDICARE_CASE.guardrail,
+      ...(done.complete && timer && timer.frozen === true && typeof timer.elapsed_ms === "number" && Number.isFinite(timer.elapsed_ms) && timer.elapsed_ms >= 0
+        ? { review_time: { elapsed_ms: Math.round(timer.elapsed_ms), elapsed: formatElapsed(timer.elapsed_ms), basis: "tab-local timer from first disposition to Review complete" } }
+        : {}),
     };
     return JSON.stringify({ ...body, handoff_hash: contentHash(body) }, null, 2);
   } catch { return ""; }
