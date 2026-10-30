@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, moveDispositionTarget, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -15,6 +15,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const [focusId, setFocusId] = useState<string | null>(null);
   const target = focusId ?? highlight ?? null;
   const idsRef = useRef<string[]>([]);
+  const filterRef = useRef<RowFilter>(null);
   const targetRef = useRef<{ id: string | null; label: string }>({ id: null, label: "" });
   useEffect(() => {
     const on = (ev: KeyboardEvent) => {
@@ -23,6 +24,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       if (!a) return;
       if (a.kind === "undo") { ev.preventDefault(); setHist(undoDisposition); return; }
       if (a.kind === "redo") { ev.preventDefault(); setHist(redoDisposition); return; }
+      if (a.kind === "filter") { ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: cycleRowFilter(filterRef.current) })); return; }
       if (a.kind === "dispositions") { const b = document.querySelector<HTMLButtonElement>("[data-copy-medicare-dispositions]"); if (!b || b.disabled) return; ev.preventDefault(); b.scrollIntoView({ block: "nearest" }); b.click(); return; }
       if (a.kind === "handoff") { const b = document.querySelector<HTMLButtonElement>("[data-copy-medicare-handoff]"); if (!b || b.disabled) return; ev.preventDefault(); b.scrollIntoView({ block: "nearest" }); b.click(); window.dispatchEvent(new CustomEvent(MEDICARE_HANDOFF_FOCUS_EVENT)); return; }
       if (a.kind === "note") { const id = targetRef.current.id; if (!id) return; const inp = document.querySelector<HTMLInputElement>(`[data-medicare-note="${CSS.escape(id)}"]`); if (!inp || inp.disabled) return; ev.preventDefault(); inp.scrollIntoView({ block: "nearest" }); inp.focus(); return; }
@@ -37,6 +39,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     return () => window.removeEventListener("keydown", on);
   }, []);
   const [filter, setFilter] = useState<RowFilter>(null);
+  filterRef.current = filter;
   useEffect(() => {
     const on = (ev: Event) => { const d = (ev as CustomEvent<RowFilter>).detail; setFilter(typeof d === "string" ? d : null); };
     window.addEventListener(MEDICARE_FILTER_EVENT, on);
@@ -52,7 +55,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     <div data-medicare-disposition-stub className="space-y-2">
       <p className="text-emerald-400 text-xs">Reviewer disposition (stub, this tab only)</p>
       <p data-medicare-shortcut-hint className="text-[11px] text-zinc-500">
-        Keys: <kbd className="rounded border border-zinc-600 px-1">1</kbd> needs_human_review · <kbd className="rounded border border-zinc-600 px-1">2</kbd> cleared_pattern_only · <kbd className="rounded border border-zinc-600 px-1">3</kbd> unreviewed · <kbd className="rounded border border-zinc-600 px-1">u</kbd> undo · <kbd className="rounded border border-zinc-600 px-1">r</kbd> redo · <kbd className="rounded border border-zinc-600 px-1">j</kbd>/<kbd className="rounded border border-zinc-600 px-1">k</kbd> move target · <kbd className="rounded border border-zinc-600 px-1">n</kbd> note (after a status) · <kbd className="rounded border border-zinc-600 px-1">h</kbd> copy 📦 hand-off pack · <kbd className="rounded border border-zinc-600 px-1">y</kbd> copy dispositions JSON — on {targetEntry ? <span className="text-sky-300 font-mono">{targetRef.current.label}</span> : "no row"} (click a row or press j/k to target it)
+        Keys: <kbd className="rounded border border-zinc-600 px-1">1</kbd> needs_human_review · <kbd className="rounded border border-zinc-600 px-1">2</kbd> cleared_pattern_only · <kbd className="rounded border border-zinc-600 px-1">3</kbd> unreviewed · <kbd className="rounded border border-zinc-600 px-1">u</kbd> undo · <kbd className="rounded border border-zinc-600 px-1">r</kbd> redo · <kbd className="rounded border border-zinc-600 px-1">j</kbd>/<kbd className="rounded border border-zinc-600 px-1">k</kbd> move target · <kbd className="rounded border border-zinc-600 px-1">n</kbd> note (after a status) · <kbd className="rounded border border-zinc-600 px-1">h</kbd> copy 📦 hand-off pack · <kbd className="rounded border border-zinc-600 px-1">y</kbd> copy dispositions JSON · <kbd className="rounded border border-zinc-600 px-1">f</kbd> cycle filter{filter ? <span data-medicare-key-filter className="ml-1 text-white">({filter})</span> : null} — on {targetEntry ? <span className="text-sky-300 font-mono">{targetRef.current.label}</span> : "no row"} (click a row or press j/k to target it)
       </p>
       <ProgressBar p={progress} />
       {filter && (

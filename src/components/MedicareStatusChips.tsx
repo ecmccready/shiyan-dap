@@ -23,6 +23,11 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
     window.addEventListener(MEDICARE_REPORT_EVENT, on);
     return () => window.removeEventListener(MEDICARE_REPORT_EVENT, on);
   }, []);
+  useEffect(() => {
+    const on = (ev: Event) => { const d = (ev as CustomEvent<RowFilter>).detail; setFilter(typeof d === "string" ? d : null); };
+    window.addEventListener(MEDICARE_FILTER_EVENT, on);
+    return () => window.removeEventListener(MEDICARE_FILTER_EVENT, on);
+  }, []);
   const chips = statusChips(r);
   return (
     <div data-medicare-status-chips className="space-y-2">

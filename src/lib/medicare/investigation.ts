@@ -214,8 +214,8 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | null;
-/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON. Modifiers or typing targets → null. */
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | null;
+/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
     if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
@@ -232,6 +232,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "n": case "N": return { kind: "note" };
       case "h": case "H": return { kind: "handoff" };
       case "y": case "Y": return { kind: "dispositions" };
+      case "f": case "F": return { kind: "filter" };
       default: return null;
     }
   } catch { return null; }
@@ -288,6 +289,13 @@ export function notesCount(report: unknown): { count: number; label: string } {
 /** Row filter: a review status, "has_note" (rows with a reviewer note), or null for All. */
 export type RowFilter = DispositionStatus | "has_note" | null;
 /** Pure: toggle a row filter (statuses or "has_note"); re-click or anything invalid clears to null. */
+/** Order for key f: All → unreviewed → needs_human_review → cleared_pattern_only → has_note → All. */
+export const ROW_FILTER_CYCLE: readonly RowFilter[] = [null, "unreviewed", "needs_human_review", "cleared_pattern_only", "has_note"];
+/** Pure: next filter in ROW_FILTER_CYCLE; unknown input restarts at All → unreviewed. */
+export function cycleRowFilter(current: unknown): RowFilter {
+  const i = ROW_FILTER_CYCLE.indexOf((typeof current === "string" ? current : null) as RowFilter);
+  return ROW_FILTER_CYCLE[(Math.max(0, i) + 1) % ROW_FILTER_CYCLE.length];
+}
 export function toggleRowFilter(current: unknown, clicked: unknown): RowFilter {
   if (clicked === "has_note") return current === "has_note" ? null : "has_note";
   return toggleStatusFilter(current, clicked);

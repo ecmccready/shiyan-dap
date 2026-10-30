@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -247,7 +247,7 @@ assert.deepEqual(dispositionShortcut({ key: "1" }), { kind: "set", status: "need
 assert.deepEqual(dispositionShortcut({ key: "2", targetTag: "select" }), { kind: "set", status: "cleared_pattern_only" });
 assert.deepEqual(dispositionShortcut({ key: "3" }), { kind: "set", status: "unreviewed" });
 assert.deepEqual(dispositionShortcut({ key: "u" }), { kind: "undo" }); assert.deepEqual(dispositionShortcut({ key: "R" }), { kind: "redo" });
-for (const j of [{ key: "1", ctrlKey: true }, { key: "1", metaKey: true }, { key: "u", targetTag: "INPUT" }, { key: "2", targetTag: "textarea" }, { key: "1", editable: true }, { key: "4" }, { key: "f" }, null, {}])
+for (const j of [{ key: "1", ctrlKey: true }, { key: "1", metaKey: true }, { key: "u", targetTag: "INPUT" }, { key: "2", targetTag: "textarea" }, { key: "1", editable: true }, { key: "4" }, { key: "x" }, null, {}])
   assert.equal(dispositionShortcut(j as never), null);
 console.log("keys        -> 1/2/3 set the targeted row, u undo, r redo; ignored with modifiers or while typing");
 // 21. Reviewer hand-off pack (pure).
@@ -365,4 +365,10 @@ console.log("key h       -> copies the 📦 hand-off pack (same button, same has
 assert.deepEqual(dispositionShortcut({ key: "y" }), { kind: "dispositions" }); assert.deepEqual(dispositionShortcut({ key: "Y" }), { kind: "dispositions" });
 assert.equal(dispositionShortcut({ key: "y", targetTag: "INPUT" }), null, "typing y in a note stays text"); assert.equal(dispositionShortcut({ key: "y", metaKey: true }), null);
 console.log("key y       -> copies the current dispositions JSON (same button, same report_hash); typing untouched");
+// 35. f cycles the row filter (pure).
+assert.deepEqual(dispositionShortcut({ key: "f" }), { kind: "filter" }); assert.equal(dispositionShortcut({ key: "f", targetTag: "INPUT" }), null); assert.equal(dispositionShortcut({ key: "f", ctrlKey: true }), null);
+{ const seen: unknown[] = []; let f: unknown = null; for (let i = 0; i < 5; i++) { f = cycleRowFilter(f); seen.push(f); }
+  assert.deepEqual(seen, ["unreviewed", "needs_human_review", "cleared_pattern_only", "has_note", null], "All → … → has_note → All"); }
+assert.equal(ROW_FILTER_CYCLE.length, 5); assert.equal(cycleRowFilter("fraud"), "unreviewed"); assert.equal(cycleRowFilter(42), "unreviewed");
+console.log("key f       -> cycles All → unreviewed → needs_human_review → cleared_pattern_only → has_note → All; chips stay in sync");
 console.log("OK");
