@@ -133,4 +133,9 @@ const vis = ["B", "A", "C"];
 assert.equal(moveLookbackFocus(vis, null, "next"), "B"); assert.equal(moveLookbackFocus(vis, "B", "next"), "A"); assert.equal(moveLookbackFocus(vis, "C", "next"), "C");
 assert.equal(moveLookbackFocus(vis, "B", "prev"), "B"); assert.equal(moveLookbackFocus(vis, "gone", "prev"), "B"); assert.equal(moveLookbackFocus([], "A", "next"), null);
 console.log("keys        -> j/k move row focus (clamped), Enter expands, Esc closes; ignored while typing");
+// c copies the focused row path JSON.
+assert.equal(lookbackKey({ key: "c" }), "copy"); assert.equal(lookbackKey({ key: "C" }), "copy");
+assert.equal(lookbackKey({ key: "c", metaKey: true }), null, "Cmd+C left to the browser"); assert.equal(lookbackKey({ key: "c", ctrlKey: true }), null);
+assert.equal(lookbackKey({ key: "c", targetTag: "input" }), null); assert.equal(lookbackKey({ key: "c", editable: true }), null);
+console.log("key c       -> copies the focused row's path JSON; Ctrl/Cmd+C and typing untouched");
 console.log("OK");

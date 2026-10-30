@@ -240,8 +240,8 @@ export function toggleRoleFilter(current: unknown, clicked: unknown): LookbackRo
   return current === clicked ? "all" : clicked;
 }
 
-export type LookbackKey = "next" | "prev" | "toggle" | "close" | null;
-/** Pure: j next, k prev, Enter toggle, Escape close; ignored with modifiers or while typing. */
+export type LookbackKey = "next" | "prev" | "toggle" | "close" | "copy" | null;
+/** Pure: j next, k prev, Enter toggle, Escape close, c copy focused path JSON; ignored with modifiers or while typing. */
 export function lookbackKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): LookbackKey {
   try {
     if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
@@ -251,6 +251,7 @@ export function lookbackKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: un
     if (ev.key === "k" || ev.key === "K") return "prev";
     if (ev.key === "Enter") return tag === "BUTTON" || tag === "A" ? null : "toggle";
     if (ev.key === "Escape") return "close";
+    if (ev.key === "c" || ev.key === "C") return "copy";
     return null;
   } catch { return null; }
 }

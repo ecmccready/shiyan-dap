@@ -18,6 +18,8 @@ export default function RoeLookbackNote() {
   const [focusRow, setFocusRow] = useState<string | null>(null);
   const visibleRef = useRef<string[]>([]);
   const focusRef = useRef<string | null>(null);
+  const jsonRef = useRef<Record<string, string>>({});
+  const [keyCopied, setKeyCopied] = useState<string | null>(null);
   focusRef.current = focusRow;
   useEffect(() => {
     const on = (ev: KeyboardEvent) => {
@@ -31,6 +33,11 @@ export default function RoeLookbackNote() {
         if (id) document.querySelector(`[data-roe-lookback-row="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "nearest" });
       } else if (k === "toggle" && focusRef.current) { ev.preventDefault(); const id = focusRef.current; setOpen((o) => (o === id ? null : id)); }
       else if (k === "close") setOpen(null);
+      else if (k === "copy" && focusRef.current) {
+        const id = focusRef.current; const j = jsonRef.current[id]; if (!j) return;
+        ev.preventDefault();
+        void navigator.clipboard?.writeText(j).then(() => { setKeyCopied(id); window.setTimeout(() => setKeyCopied((x) => (x === id ? null : x)), 1600); }, () => {});
+      }
     };
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
@@ -54,7 +61,7 @@ export default function RoeLookbackNote() {
             <p data-roe-lookback-verdict="agree" className="text-xs text-zinc-400"><span className="mr-2 rounded-full border border-zinc-600 px-2 py-0.5">{v.label}</span>{v.detail}</p>
           ) : null; })()}
           <div className="flex items-center gap-2 text-xs" data-roe-lookback-sort={sortBy}>
-            <span className="text-zinc-500">Sort:</span><span className="text-zinc-600">(click a row for its actions · keys j/k move, Enter expand, Esc close)</span>
+            <span className="text-zinc-500">Sort:</span><span className="text-zinc-600">(click a row for its actions · keys j/k move, Enter expand, Esc close, c copy path JSON)</span>{keyCopied ? <span data-roe-lookback-key-copied className="text-emerald-300">Copied {keyCopied} ✓</span> : null}
             {(["rank", "dphi"] as const).map((k) => (
               <button key={k} type="button" aria-pressed={sortBy === k} onClick={() => setSortBy(k)}
                 className={`rounded-full border px-2 py-0.5 ${sortBy === k ? "border-emerald-400 text-emerald-200" : "border-zinc-600 text-zinc-400"}`}>
@@ -102,7 +109,7 @@ export default function RoeLookbackNote() {
             <table data-roe-lookback-table className="w-full text-xs font-mono text-zinc-300">
               <thead className="text-zinc-500"><tr><th className="text-left pr-2">#</th><th className="text-left pr-2">run_id</th><th className="text-left pr-2" title="e from e0 to e_final; bars = per-step gain I_t">e path</th><th className="text-right pr-2">steps</th><th className="text-right pr-2">best I_t</th><th className="text-right pr-2">Σ Δe</th><th className="text-right pr-2">Φ</th><th className="text-right pr-2" title="final Φ minus the greedy path's final Φ">ΔΦ vs greedy</th><th className="text-left">pick</th><th className="text-left">path</th></tr></thead>
               <tbody>
-                {(() => { const vis = sortLookbackRows(filterLookbackRows(rankedLookbackRows(c), roleFilter, c.winner), sortBy); visibleRef.current = vis.map((x) => x.run_id); return vis; })().map((r) => (
+                {(() => { const vis = sortLookbackRows(filterLookbackRows(rankedLookbackRows(c), roleFilter, c.winner), sortBy); visibleRef.current = vis.map((x) => x.run_id); jsonRef.current = Object.fromEntries(vis.map((x) => [x.run_id, lookbackPathJson(x, c.winner)])); return vis; })().map((r) => (
                   <Fragment key={r.run_id}>
                   <tr onClick={() => { setFocusRow(r.run_id); setOpen((o) => (o === r.run_id ? null : r.run_id)); }} data-roe-lookback-focus={focusRow === r.run_id ? "true" : undefined} aria-expanded={open === r.run_id} title="Click to show the full action list" style={{ cursor: "pointer" }} data-roe-lookback-row={r.run_id} data-roe-lookback-emphasis={lookbackRowEmphasis(r.rank, c.winner)} data-roe-lookback-role={lookbackRowRole(r, c.winner)}
                     className={`${{ top_win: "bg-emerald-500/30 text-emerald-50 font-semibold outline outline-2 outline-amber-400", top_agree: "bg-emerald-500/10 text-emerald-200", plain: r.is_lookback ? "text-emerald-200" : "" }[lookbackRowEmphasis(r.rank, c.winner)]} ${{ winner_lookback: "border-l-4 border-emerald-400", agree_both: "border-l-4 border-sky-400", greedy_beaten: "border-l-4 border-amber-400 bg-amber-500/10", other: "" }[lookbackRowRole(r, c.winner)]} ${focusRow === r.run_id ? "ring-2 ring-sky-300 ring-inset" : ""}`}>
