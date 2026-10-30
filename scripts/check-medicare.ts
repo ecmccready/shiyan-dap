@@ -357,4 +357,8 @@ console.log("j/k move    -> j/k move the key target through disposition rows, cl
 assert.deepEqual(dispositionShortcut({ key: "n" }), { kind: "note" }); assert.deepEqual(dispositionShortcut({ key: "N" }), { kind: "note" });
 assert.equal(dispositionShortcut({ key: "n", targetTag: "INPUT" }), null, "typing n in a note stays text"); assert.equal(dispositionShortcut({ key: "n", metaKey: true }), null);
 console.log("key n       -> focuses the target row's note field (only once it has a status); typing untouched");
+// 33. h copies the hand-off pack (pure key map; the key presses the existing 📦 button).
+assert.deepEqual(dispositionShortcut({ key: "h" }), { kind: "handoff" }); assert.deepEqual(dispositionShortcut({ key: "H" }), { kind: "handoff" });
+assert.equal(dispositionShortcut({ key: "h", targetTag: "INPUT" }), null, "typing h in a note stays text"); assert.equal(dispositionShortcut({ key: "h", ctrlKey: true }), null);
+console.log("key h       -> copies the 📦 hand-off pack (same button, same hash), pulses it; typing untouched");
 console.log("OK");
