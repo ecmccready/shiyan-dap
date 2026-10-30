@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, dispositionShortcut, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, dispositionShortcut, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -31,9 +31,9 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
   }, []);
-  const [filter, setFilter] = useState<DispositionStatus | null>(null);
+  const [filter, setFilter] = useState<RowFilter>(null);
   useEffect(() => {
-    const on = (ev: Event) => { const d = (ev as CustomEvent<DispositionStatus | null>).detail; setFilter(typeof d === "string" ? d : null); };
+    const on = (ev: Event) => { const d = (ev as CustomEvent<RowFilter>).detail; setFilter(typeof d === "string" ? d : null); };
     window.addEventListener(MEDICARE_FILTER_EVENT, on);
     return () => window.removeEventListener(MEDICARE_FILTER_EVENT, on);
   }, []);
@@ -50,13 +50,13 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       </p>
       <ProgressBar p={progress} />
       {filter && (
-        <p className="text-xs text-zinc-300" data-medicare-filter-note>Filtered: {filter} ({report.entries.filter((e) => e.status === filter).length}) · <button type="button" className="underline" onClick={() => { setFilter(null); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: null })); }}>Show all</button></p>
+        <p className="text-xs text-zinc-300" data-medicare-filter-note>Filtered: {filter === "has_note" ? "rows with notes" : filter} ({report.entries.filter((e) => rowMatchesFilter(e, filter)).length}) · <button type="button" className="underline" onClick={() => { setFilter(null); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: null })); }}>Show all</button></p>
       )}
       {filter && (() => {
-        const visible = report.entries.filter((e) => e.status === filter).map((e) => e.item_id);
+        const visible = report.entries.filter((e) => rowMatchesFilter(e, filter)).map((e) => e.item_id);
         const bulk = (to: DispositionStatus) => {
           commit((d) => applyBulkDisposition(d, visible, to), `set ${visible.length} to ${to}`);
-          setFilter(to); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: to }));
+          const nf: RowFilter = filter === "has_note" && to !== "unreviewed" ? "has_note" : to; setFilter(nf); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: nf }));
         };
         return visible.length > 0 ? (
           <div data-medicare-bulk className="flex flex-wrap items-center gap-2 text-xs">
@@ -69,7 +69,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       })()}
       <ul id="medicare-disposition-list" className="scroll-mt-24 space-y-1 text-xs font-mono text-zinc-300">
         {report.entries.map((e) => (
-          <li key={e.item_id} id={medicareAnchorId("disposition", e.item_id)} onClick={() => setFocusId(e.item_id)} onFocus={() => setFocusId(e.item_id)} data-medicare-key-target={e.item_id === target ? "true" : undefined} data-medicare-filter-emphasis={filterEmphasis(e.status, filter)} className={`scroll-mt-24 flex flex-wrap items-center gap-2 transition-opacity ${filterEmphasis(e.status, filter) === "dim" ? "opacity-30" : filterEmphasis(e.status, filter) === "match" ? "rounded ring-2 ring-white/70 px-2 py-1" : ""} ${e.item_id === highlight ? "rounded bg-emerald-500/15 border-l-4 border-emerald-400 px-2 py-1" : ""} ${e.item_id === target ? "outline outline-1 outline-sky-400 rounded" : ""}`}>
+          <li key={e.item_id} id={medicareAnchorId("disposition", e.item_id)} onClick={() => setFocusId(e.item_id)} onFocus={() => setFocusId(e.item_id)} data-medicare-key-target={e.item_id === target ? "true" : undefined} data-medicare-filter-emphasis={rowFilterEmphasis(e, filter)} className={`scroll-mt-24 flex flex-wrap items-center gap-2 transition-opacity ${rowFilterEmphasis(e, filter) === "dim" ? "opacity-30" : rowFilterEmphasis(e, filter) === "match" ? "rounded ring-2 ring-white/70 px-2 py-1" : ""} ${e.item_id === highlight ? "rounded bg-emerald-500/15 border-l-4 border-emerald-400 px-2 py-1" : ""} ${e.item_id === target ? "outline outline-1 outline-sky-400 rounded" : ""}`}>
             <span>{e.item_id}</span>
             <select
               aria-label={`Disposition for ${e.item_id}`}

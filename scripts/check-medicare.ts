@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -303,4 +303,13 @@ const two = buildInvestigationReport({ pack: ev, dispositions: applyDispositionN
 assert.deepEqual(notesCount(two), { count: 2, label: "2 notes" });
 for (const j of [null, "x", {}, cyc]) assert.equal(notesCount(j).count, 0);
 console.log("notes chip  -> ✎ N notes on the Win strip, follows dispositions");
+// 26. Notes filter (pure).
+assert.equal(toggleRowFilter(null, "has_note"), "has_note"); assert.equal(toggleRowFilter("has_note", "has_note"), null);
+assert.equal(toggleRowFilter("has_note", "needs_human_review"), "needs_human_review"); assert.equal(toggleRowFilter("unreviewed", "fraud"), null);
+assert.deepEqual(two.entries.map((e) => rowMatchesFilter(e, "has_note")), [true, false, true]);
+assert.deepEqual(two.entries.map((e) => rowFilterEmphasis(e, "has_note")), ["match", "dim", "match"]);
+assert.deepEqual(two.entries.map((e) => rowFilterEmphasis(e, null)), ["all", "all", "all"]);
+assert.equal(rowMatchesFilter({ status: "needs_human_review", note: "  " }, "has_note"), false); assert.equal(rowMatchesFilter(null, "has_note"), false);
+assert.equal(rowMatchesFilter(two.entries[2], "cleared_pattern_only"), true, "status filters unchanged");
+console.log("notes filter -> ✎ chip toggles rows-with-notes filter; re-click or All clears; status filters unchanged");
 console.log("OK");

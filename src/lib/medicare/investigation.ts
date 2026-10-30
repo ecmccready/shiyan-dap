@@ -267,3 +267,22 @@ export function notesCount(report: unknown): { count: number; label: string } {
     return { count: n, label: `${n} note${n === 1 ? "" : "s"}` };
   } catch { return { count: 0, label: "0 notes" }; }
 }
+
+/** Row filter: a review status, "has_note" (rows with a reviewer note), or null for All. */
+export type RowFilter = DispositionStatus | "has_note" | null;
+/** Pure: toggle a row filter (statuses or "has_note"); re-click or anything invalid clears to null. */
+export function toggleRowFilter(current: unknown, clicked: unknown): RowFilter {
+  if (clicked === "has_note") return current === "has_note" ? null : "has_note";
+  return toggleStatusFilter(current, clicked);
+}
+/** Pure: does an entry match a row filter? */
+export function rowMatchesFilter(entry: { status?: unknown; note?: unknown } | null | undefined, filter: RowFilter): boolean {
+  if (filter === null) return true;
+  if (!entry) return false;
+  if (filter === "has_note") return typeof entry.note === "string" && entry.note.trim() !== "";
+  return entry.status === filter;
+}
+/** Pure: row emphasis under a row filter: "all", "match" or "dim". */
+export function rowFilterEmphasis(entry: { status?: unknown; note?: unknown } | null | undefined, filter: RowFilter): "all" | "match" | "dim" {
+  return filter === null ? "all" : rowMatchesFilter(entry, filter) ? "match" : "dim";
+}
