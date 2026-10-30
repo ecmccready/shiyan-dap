@@ -151,3 +151,19 @@ export function filterLookbackRows<T extends { is_greedy: boolean; is_lookback: 
     return rows.filter((r) => lookbackRowRole(r, winner) === ROLE_FOR[f as Exclude<LookbackRoleFilter, "all">]);
   } catch { return []; }
 }
+
+/** Pure compare pack: look-back pick vs greedy pick (full path rows), verdict, Δe gain and ΔΦ. "" when nothing to compare. */
+export function lookbackComparePack(c: LookbackCompare | null | undefined): string {
+  try {
+    if (!c || !c.greedy || !c.lookback) return "";
+    const rows = rankedLookbackRows(c);
+    const pick = (id: string) => { const r = rows.find((x) => x.run_id === id); return r ? { rank: r.rank, run_id: r.run_id, steps: r.steps, e0: r.e0, e_final: r.e_final, best_step_i: r.max_step_i, cumulative_delta_e: r.cumulative_delta_e, final_phi: r.final_phi, actions: r.actions } : null; };
+    const lb = pick(c.lookback.run_id), gr = pick(c.greedy.run_id);
+    if (!lb || !gr) return "";
+    const v = lookbackVerdict(c);
+    const dphi = typeof lb.final_phi === "number" && typeof gr.final_phi === "number" ? Number((lb.final_phi - gr.final_phi).toFixed(4)) : null;
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "compare", winner: c.winner, verdict: v.label, verdict_detail: v.detail,
+      delta_e_gain: c.delta_e_gain, delta_phi_lookback_vs_greedy: dphi, same_path: lb.run_id === gr.run_id, paths_considered: c.paths_considered,
+      lookback: lb, greedy: gr, note: c.note }, null, 2);
+  } catch { return ""; }
+}

@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
   const [c, setC] = useState<LookbackCompare | null>(null);
   const copy = useCopy(4000, undefined, "roe look-back");
+  const copyCmp = useCopy(4000, undefined, "roe compare pack");
   const [sortBy, setSortBy] = useState<LookbackSort>("rank");
   const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
@@ -79,6 +80,12 @@ export default function RoeLookbackNote() {
           </div>
           {c.excluded_domain_entries > 0 && <p className="text-xs text-zinc-500">{c.excluded_domain_entries} domain-labeled entries excluded.</p>}
         </>
+      )}
+      {c && lookbackComparePack(c) && (
+        <button type="button" data-copy-roe-compare data-winner={c.winner} onClick={() => void copyCmp.copy(lookbackComparePack(c))}
+          className={`mr-2 inline-flex h-9 items-center rounded-full px-4 text-xs font-bold ${c.winner === "lookback" ? "bg-emerald-400 text-black border-2 border-amber-300 shadow-lg shadow-emerald-500/30" : "border-2 border-sky-400 text-sky-100"}${copiedRing(copyCmp.status)}`}>
+          {copyCmp.status === "copied" ? "Copied ✓" : copyCmp.status === "failed" ? "Copy failed" : c.winner === "lookback" ? `⚖ Copy compare pack · look-back +Δe ${c.delta_e_gain}` : "⚖ Copy compare pack · agree"}
+        </button>
       )}
       {c && (
         <button type="button" data-copy-roe-lookback onClick={() => void copy.copy(JSON.stringify(c, null, 2))}
