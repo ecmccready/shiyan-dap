@@ -233,3 +233,9 @@ export function lookbackSummaryJson(c: LookbackCompare | null | undefined): stri
     return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "summary", ...m, note: ROE_LOOKBACK_NOTE }, null, 2);
   } catch { return ""; }
 }
+
+/** Pure: clicking a role count sets that Show filter; clicking the active one (or anything invalid) returns "all". */
+export function toggleRoleFilter(current: unknown, clicked: unknown): LookbackRoleFilter {
+  if (clicked !== "winners" && clicked !== "beaten" && clicked !== "agree") return "all";
+  return current === clicked ? "all" : clicked;
+}

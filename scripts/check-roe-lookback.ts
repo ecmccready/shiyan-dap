@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -123,4 +123,7 @@ const { schema: _s, kind: _k, note: _n, ...rest } = smj; void _s; void _k; void 
 assert.equal(JSON.parse(lookbackSummaryJson(same)).verdict, "Agree");
 for (const j of [null, undefined, scoreSealedPaths([])]) assert.equal(lookbackSummaryJson(j), "");
 console.log("summary json -> strip copies kind:summary JSON matching lookbackSummary");
+assert.equal(toggleRoleFilter("all", "winners"), "winners"); assert.equal(toggleRoleFilter("winners", "winners"), "all");
+assert.equal(toggleRoleFilter("winners", "beaten"), "beaten"); assert.equal(toggleRoleFilter("agree", "bogus"), "all"); assert.equal(toggleRoleFilter(null, "agree"), "agree");
+console.log("strip roles -> ★ / beaten / = counts set the Show filter; re-click returns to all");
 console.log("OK");

@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -47,7 +47,14 @@ export default function RoeLookbackNote() {
               <span className={`rounded-full px-2 py-0.5 font-bold ${m.tone === "win" ? "bg-amber-400 text-black" : m.tone === "agree" ? "bg-sky-400 text-black" : "bg-zinc-700"}`}>{m.verdict}</span>
               <span>+Δe <b>{m.delta_e_gain}</b></span>
               <span>ΔΦ <b>{fmtDeltaPhi(m.delta_phi)}</b></span>
-              <span>{m.paths} paths · ★ {m.winners} · beaten {m.beaten} · = {m.agree}{m.excluded ? ` · ${m.excluded} domain excluded` : ""}</span>
+              <span className="inline-flex flex-wrap items-center gap-1">
+                <button type="button" data-roe-summary-role="all" aria-pressed={roleFilter === "all"} onClick={() => setRoleFilter("all")} className={`rounded px-1 ${roleFilter === "all" ? "bg-white/20" : "hover:bg-white/10"}`}>{m.paths} paths</button>·
+                {([["winners", `★ ${m.winners}`], ["beaten", `beaten ${m.beaten}`], ["agree", `= ${m.agree}`]] as const).map(([k, t]) => (
+                  <button key={k} type="button" data-roe-summary-role={k} aria-pressed={roleFilter === k} title={`Show only ${k} (click again for all)`} onClick={() => setRoleFilter((f) => toggleRoleFilter(f, k))}
+                    className={`rounded px-1 underline decoration-dotted ${roleFilter === k ? "bg-white/25 font-bold no-underline" : "hover:bg-white/10"}`}>{t}</button>
+                ))}
+                {m.excluded ? <span>· {m.excluded} domain excluded</span> : null}
+              </span>
               {lookbackSummaryJson(c) && (
                 <button type="button" data-copy-roe-summary onClick={() => void copySum.copy(lookbackSummaryJson(c))}
                   className={`ml-auto rounded-full border px-2 py-0.5 font-semibold ${m.tone === "win" ? "border-amber-300 text-amber-100" : "border-sky-300 text-sky-100"} hover:bg-white/10${copiedRing(copySum.status)}`}>
