@@ -312,6 +312,10 @@ export function lookbackToastExpiry(hovered: unknown): "defer" | "dismiss" { ret
 export function lookbackToastsAfterLeave(deferred: Iterable<LookbackToastId> | null | undefined, showing: readonly { id: LookbackToastId }[] | null | undefined): LookbackToastId[] {
   const d = new Set(deferred ?? []); return (showing ?? []).map((t) => t.id).filter((id) => d.has(id));
 }
+/** Pure: each stacked top toast's auto-dismiss time, for its time-left bar. */
+export function lookbackToastDurationMs(id: unknown): number {
+  return id === "win" || id === "agree" ? WIN_TOAST_MS : id === "empty_filter" ? EMPTY_FILTER_TOAST_MS : 0;
+}
 /** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
 export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
   if (helpOpen === true) return "help";

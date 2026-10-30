@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -232,4 +232,8 @@ assert.equal(lookbackToastExpiry(true), "defer"); assert.equal(lookbackToastExpi
   assert.deepEqual(lookbackToastsAfterLeave([], st), []); assert.deepEqual(lookbackToastsAfterLeave(null, null), []); }
 assert.ok(LOOKBACK_TOAST_LEAVE_GRACE_MS >= 500 && LOOKBACK_TOAST_LEAVE_GRACE_MS <= 3000);
 console.log("hover       -> hovering a stacked look-back toast pauses its auto-dismiss; it goes ~1.2 s after the pointer leaves");
+// Time-left bar duration per stacked toast.
+assert.equal(lookbackToastDurationMs("win"), WIN_TOAST_MS); assert.equal(lookbackToastDurationMs("agree"), WIN_TOAST_MS); assert.equal(lookbackToastDurationMs("empty_filter"), EMPTY_FILTER_TOAST_MS);
+assert.equal(lookbackToastDurationMs("nope"), 0); for (const id of LOOKBACK_TOAST_ORDER) assert.ok(lookbackToastDurationMs(id) >= 2000 && lookbackToastDurationMs(id) <= 5000, id);
+console.log("time bar    -> each stacked look-back toast shows a thin bar shrinking over its own time; it pauses while the stack is hovered");
 console.log("OK");
