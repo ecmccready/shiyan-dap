@@ -105,3 +105,15 @@ export function fmtDeltaPhi(d: number | null | undefined): string {
   if (typeof d !== "number" || !Number.isFinite(d)) return "n/a";
   return d === 0 ? "0" : d > 0 ? `+${d}` : `−${Math.abs(d)}`;
 }
+
+export type LookbackSort = "rank" | "dphi";
+/** Pure: reorder ranked rows. "rank" keeps look-back rank; "dphi" sorts by ΔΦ vs greedy desc (n/a last, then rank). Ranks are kept. */
+export function sortLookbackRows<T extends { rank: number; delta_phi_vs_greedy: number | null }>(rows: T[], by: LookbackSort): T[] {
+  try {
+    if (!Array.isArray(rows)) return [];
+    const r = [...rows];
+    if (by !== "dphi") return r.sort((a, b) => a.rank - b.rank);
+    const v = (x: T) => (typeof x.delta_phi_vs_greedy === "number" ? x.delta_phi_vs_greedy : -Infinity);
+    return r.sort((a, b) => v(b) - v(a) || a.rank - b.rank);
+  } catch { return []; }
+}

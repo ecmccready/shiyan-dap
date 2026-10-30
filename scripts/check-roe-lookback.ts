@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -55,4 +55,11 @@ assert.deepEqual(rankedLookbackRows(c).map((r) => [r.run_id, r.delta_phi_vs_gree
 const noPhi = scoreSealedPaths([row("N", 1, 0.2, { eligible: true, state: "COMPLETE" })]); assert.equal(rankedLookbackRows(noPhi)[0].delta_phi_vs_greedy, null);
 assert.equal(fmtDeltaPhi(0.12), "+0.12"); assert.equal(fmtDeltaPhi(-0.05), "−0.05"); assert.equal(fmtDeltaPhi(0), "0"); assert.equal(fmtDeltaPhi(null), "n/a"); assert.equal(fmtDeltaPhi(NaN), "n/a");
 console.log("ΔΦ          -> B +0.12 vs greedy A; missing Φ gives n/a");
+const mk = (rank: number, d: number | null) => ({ rank, run_id: `r${rank}`, delta_phi_vs_greedy: d });
+const mixed = [mk(1, 0.1), mk(2, null), mk(3, 0.3), mk(4, -0.2), mk(5, 0.1)];
+assert.deepEqual(sortLookbackRows(mixed, "dphi").map((r) => r.rank), [3, 1, 5, 4, 2], "ΔΦ desc, n/a last, ties by rank");
+assert.deepEqual(sortLookbackRows([...mixed].reverse(), "rank").map((r) => r.rank), [1, 2, 3, 4, 5]);
+assert.deepEqual(mixed.map((r) => r.rank), [1, 2, 3, 4, 5], "input not mutated");
+assert.deepEqual(sortLookbackRows(null as never, "dphi"), []);
+console.log("sort        -> ΔΦ vs greedy desc (n/a last, ties by rank) or look-back rank; pure");
 console.log("OK");
