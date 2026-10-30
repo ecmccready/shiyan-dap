@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { medicareEscTarget, medicareToastStack, MEDICARE_TOAST_ORDER, handoffReadyToast, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { dismissMedicareToast, medicareEscTarget, medicareToastStack, MEDICARE_TOAST_ORDER, handoffReadyToast, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -452,4 +452,11 @@ console.log("toast stack -> complete / hand-off ready / empty filter stack in on
 assert.equal(medicareEscTarget(true, 2), "help", "sheet open: Esc closes it, toasts stay"); assert.equal(medicareEscTarget(false, 2), "toasts");
 assert.equal(medicareEscTarget(false, 0), null); assert.equal(medicareEscTarget(true, 0), "help"); assert.equal(medicareEscTarget("yes", 1), "toasts"); assert.equal(medicareEscTarget(false, "2"), null);
 console.log("Esc         -> closes the cheat sheet first if open, otherwise dismisses all stacked top toasts");
+// 45. Click one stacked toast to dismiss only that one (pure).
+{ const st = medicareToastStack({ complete: "c", handoff_ready: "h", empty_filter: "e" });
+  assert.deepEqual(dismissMedicareToast(st, "handoff_ready").map((x) => x.id), ["complete", "empty_filter"], "others stay in order");
+  assert.deepEqual(dismissMedicareToast(st, "nope").map((x) => x.id), ["complete", "handoff_ready", "empty_filter"]);
+  assert.deepEqual(dismissMedicareToast(dismissMedicareToast(st, "complete"), "empty_filter").map((x) => x.id), ["handoff_ready"]);
+  assert.deepEqual(dismissMedicareToast(null, "complete"), []); assert.equal(st.length, 3, "input not mutated"); }
+console.log("click toast -> clicking a stacked top toast (✕) dismisses only that one; the rest keep their order");
 console.log("OK");

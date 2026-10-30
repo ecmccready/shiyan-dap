@@ -332,6 +332,11 @@ export function medicareToastStack(t: Partial<Record<MedicareToastId, unknown>> 
   return MEDICARE_TOAST_ORDER.flatMap((id) => { const x = t[id]; return typeof x === "string" && x ? [{ id, text: x, tone: id === "empty_filter" ? "amber" as const : "green" as const }] : []; });
 }
 
+/** Pure: the stack after clicking one toast — only that toast goes; the rest keep their order. */
+export function dismissMedicareToast<T extends { id: MedicareToastId }>(stack: readonly T[] | null | undefined, id: unknown): T[] {
+  return Array.isArray(stack) ? stack.filter((t) => t.id !== id) : [];
+}
+
 /** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
 export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
   if (helpOpen === true) return "help";
