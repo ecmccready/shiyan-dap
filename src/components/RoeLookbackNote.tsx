@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -12,6 +12,7 @@ export default function RoeLookbackNote() {
   const copy = useCopy(4000, undefined, "roe look-back");
   const copyCmp = useCopy(4000, undefined, "roe compare pack");
   const [sortBy, setSortBy] = useState<LookbackSort>("rank");
+  const [open, setOpen] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
   return (
@@ -32,7 +33,7 @@ export default function RoeLookbackNote() {
             <p data-roe-lookback-verdict="agree" className="text-xs text-zinc-400"><span className="mr-2 rounded-full border border-zinc-600 px-2 py-0.5">{v.label}</span>{v.detail}</p>
           ) : null; })()}
           <div className="flex items-center gap-2 text-xs" data-roe-lookback-sort={sortBy}>
-            <span className="text-zinc-500">Sort:</span>
+            <span className="text-zinc-500">Sort:</span><span className="text-zinc-600">(click a row for its actions)</span>
             {(["rank", "dphi"] as const).map((k) => (
               <button key={k} type="button" aria-pressed={sortBy === k} onClick={() => setSortBy(k)}
                 className={`rounded-full border px-2 py-0.5 ${sortBy === k ? "border-emerald-400 text-emerald-200" : "border-zinc-600 text-zinc-400"}`}>
@@ -60,7 +61,8 @@ export default function RoeLookbackNote() {
               <thead className="text-zinc-500"><tr><th className="text-left pr-2">#</th><th className="text-left pr-2">run_id</th><th className="text-left pr-2" title="e from e0 to e_final; bars = per-step gain I_t">e path</th><th className="text-right pr-2">steps</th><th className="text-right pr-2">best I_t</th><th className="text-right pr-2">Σ Δe</th><th className="text-right pr-2">Φ</th><th className="text-right pr-2" title="final Φ minus the greedy path's final Φ">ΔΦ vs greedy</th><th className="text-left">pick</th><th className="text-left">path</th></tr></thead>
               <tbody>
                 {sortLookbackRows(filterLookbackRows(rankedLookbackRows(c), roleFilter, c.winner), sortBy).map((r) => (
-                  <tr key={r.run_id} data-roe-lookback-row={r.run_id} data-roe-lookback-emphasis={lookbackRowEmphasis(r.rank, c.winner)} data-roe-lookback-role={lookbackRowRole(r, c.winner)}
+                  <Fragment key={r.run_id}>
+                  <tr onClick={() => setOpen((o) => (o === r.run_id ? null : r.run_id))} aria-expanded={open === r.run_id} title="Click to show the full action list" style={{ cursor: "pointer" }} data-roe-lookback-row={r.run_id} data-roe-lookback-emphasis={lookbackRowEmphasis(r.rank, c.winner)} data-roe-lookback-role={lookbackRowRole(r, c.winner)}
                     className={`${{ top_win: "bg-emerald-500/30 text-emerald-50 font-semibold outline outline-2 outline-amber-400", top_agree: "bg-emerald-500/10 text-emerald-200", plain: r.is_lookback ? "text-emerald-200" : "" }[lookbackRowEmphasis(r.rank, c.winner)]} ${{ winner_lookback: "border-l-4 border-emerald-400", agree_both: "border-l-4 border-sky-400", greedy_beaten: "border-l-4 border-amber-400 bg-amber-500/10", other: "" }[lookbackRowRole(r, c.winner)]}`}>
                     <td className="pr-2 whitespace-nowrap">{r.rank === 1 && <span data-roe-lookback-top className="mr-1 rounded bg-amber-400 text-black px-1.5 text-[10px] font-bold">TOP</span>}{r.rank}</td><td className="pr-2 break-all">{r.run_id}</td><td className="pr-2" data-roe-lookback-spark={r.run_id}>{(() => {
                       const pts = sparklinePoints(r.e_series, 64, 16);
@@ -81,8 +83,22 @@ export default function RoeLookbackNote() {
                       {lookbackRowRole(r, c.winner) === "agree_both" && <span data-roe-lookback-badge="agree" className="rounded border border-sky-400 text-sky-200 px-1.5 text-[10px] font-semibold">= both agree</span>}
                       {lookbackRowRole(r, c.winner) === "greedy_beaten" && <span data-roe-lookback-badge="beaten" className="rounded border border-amber-400 text-amber-200 px-1.5 text-[10px] font-semibold">beaten by look-back</span>}
                     </td>
-                    <td><CopyLookbackPath runId={r.run_id} json={lookbackPathJson(r, c.winner)} /></td>
+                    <td><span onClick={(ev) => ev.stopPropagation()}><CopyLookbackPath runId={r.run_id} json={lookbackPathJson(r, c.winner)} /></span></td>
                   </tr>
+                  {open === r.run_id && (
+                    <tr data-roe-lookback-detail={r.run_id} className="bg-zinc-900/70">
+                      <td colSpan={11} className="px-2 py-2">
+                        <ol className="space-y-0.5 text-[11px]">
+                          {pathStepsDetail(r).map((d) => (
+                            <li key={d.step} className={d.best ? "text-amber-200 font-semibold" : "text-zinc-300"}>
+                              {d.step}. <span className="text-white">{d.action}</span> · e {d.e_before ?? "?"} → {d.e_after ?? "?"} · I_t {d.gain ?? "n/a"}{d.best ? " ★ best step" : ""}
+                            </li>
+                          ))}
+                        </ol>
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

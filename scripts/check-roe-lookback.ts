@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -98,4 +98,13 @@ assert.equal(sparklinePoints([2, 1], 10, 10, 4), "0,5 10,7.5", "shared scale");
 assert.deepEqual(stepGains([1, 1.2, 0.5]), [0, 0.7]); assert.deepEqual(stepGains("x"), []);
 assert.deepEqual(live.paths[0].e_series, [1.561, 1.561, 1.413, 0.844, 0.151]);
 console.log("sparkline   -> e path per row (e0 … e_final) with per-step I_t bars; best step highlighted");
+assert.deepEqual(pathStepsDetail(bRow), [
+  { step: 1, action: "a1", e_before: 1.6, e_after: 1.3, gain: 0.3, best: false },
+  { step: 2, action: "a2", e_before: 1.3, e_after: 0.9, gain: 0.4, best: false },
+  { step: 3, action: "a3", e_before: 0.9, e_after: 0.2, gain: 0.7, best: true },
+]);
+assert.deepEqual(pathStepsDetail(live.paths[0]).map((d) => [d.action, d.gain, d.best]), [["mark_boundary", 0, false], ["complete_field", 0.148, false], ["request_independent_check", 0.569, false], ["seal_pack", 0.693, true]]);
+assert.deepEqual(pathStepsDetail({ actions: ["x"] }), [{ step: 1, action: "x", e_before: null, e_after: null, gain: null, best: false }]);
+for (const j of [null, undefined, {}, { actions: "x" }]) assert.deepEqual(pathStepsDetail(j as never), []);
+console.log("expand      -> full action list per path with e before/after, I_t and ★ best step");
 console.log("OK");

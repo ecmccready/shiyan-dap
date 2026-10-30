@@ -188,3 +188,17 @@ export function stepGains(series: unknown): number[] {
   const v = series.filter((x): x is number => typeof x === "number" && Number.isFinite(x));
   return v.slice(1).map((y, i) => r4(Math.max(0, v[i] - y)));
 }
+
+/** Pure: per-step detail for one path (action, e before/after, gain I_t, best-step flag). Uses e_series when present. */
+export function pathStepsDetail(row: { actions?: unknown; e_series?: unknown; max_step_i?: unknown } | null | undefined): { step: number; action: string; e_before: number | null; e_after: number | null; gain: number | null; best: boolean }[] {
+  try {
+    if (!row || !Array.isArray(row.actions)) return [];
+    const es = Array.isArray(row.e_series) ? row.e_series : [];
+    const ok = (x: unknown): x is number => typeof x === "number" && Number.isFinite(x);
+    return row.actions.map((a, i) => {
+      const b = ok(es[i]) ? es[i] : null, f = ok(es[i + 1]) ? es[i + 1] : null;
+      const gain = b !== null && f !== null ? r4(Math.max(0, b - f)) : null;
+      return { step: i + 1, action: typeof a === "string" ? a : "?", e_before: b, e_after: f, gain, best: gain !== null && ok(row.max_step_i) && gain === row.max_step_i && gain > 0 };
+    });
+  } catch { return []; }
+}
