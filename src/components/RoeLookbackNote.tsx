@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -17,6 +17,7 @@ export default function RoeLookbackNote() {
   const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
   const [focusRow, setFocusRow] = useState<string | null>(null);
   const [help, setHelp] = useState(false);
+  const [toast, setToast] = useState<{ txt: string; at: number } | null>(null);
   const visibleRef = useRef<string[]>([]);
   const focusRef = useRef<string | null>(null);
   const jsonRef = useRef<Record<string, string>>({});
@@ -27,6 +28,7 @@ export default function RoeLookbackNote() {
     const on = (ev: KeyboardEvent) => {
       const el = ev.target as HTMLElement | null;
       const k = lookbackKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable });
+      { const txt = lookbackToastText(k, focusRef.current); if (txt) { const at = Date.now(); setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); } }
       if (k === "help") { ev.preventDefault(); setHelp((x) => !x); return; }
       if (k === "close") setHelp(false);
       if (k === "sort") { ev.preventDefault(); setSortBy(toggleLookbackSort); return; }
@@ -54,6 +56,11 @@ export default function RoeLookbackNote() {
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
   return (
     <section data-roe-lookback className="rounded-xl border border-zinc-800 p-4 text-sm space-y-1">
+      {toast && (
+        <div data-roe-lookback-key-toast role="status" aria-live="polite" className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 rounded-full border-2 border-amber-300 bg-zinc-950 px-5 py-2 text-sm font-semibold text-amber-200 shadow-lg shadow-amber-500/30">
+          ⌨ {toast.txt}
+        </div>
+      )}
       {help && (
         <div data-roe-lookback-cheatsheet role="dialog" aria-label="Keyboard shortcuts" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setHelp(false)}>
           <div className="max-w-md w-full rounded-2xl border-2 border-amber-300 bg-zinc-950 p-5 shadow-2xl shadow-amber-500/20" onClick={(ev) => ev.stopPropagation()}>

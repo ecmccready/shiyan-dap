@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -165,4 +165,11 @@ assert.equal(lookbackKey({ key: "?" }), "help"); assert.equal(lookbackKey({ key:
 for (const row of LOOKBACK_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(lookbackKey({ key: k, targetTag: "TR" }), `sheet key ${k} is live`);
 assert.equal(new Set(LOOKBACK_KEYMAP.map((r) => r.key)).size, LOOKBACK_KEYMAP.length);
 console.log("key ?       -> toggles the look-back keyboard cheat sheet (every listed key is live); Esc closes");
+// ⌨ toast after look-back keys.
+assert.equal(lookbackToastText(lookbackKey({ key: "c" }), "run-a"), "copy path JSON · run-a");
+assert.equal(lookbackToastText(lookbackKey({ key: "j" }), "run-a"), "↓ row"); assert.equal(lookbackToastText(lookbackKey({ key: "m" }), null), "⚖ copy compare pack");
+assert.equal(lookbackToastText(lookbackKey({ key: "?" }), "x"), null, "cheat sheet has no toast"); assert.equal(lookbackToastText(null, "x"), null);
+for (const k of ["j", "k", "Enter", "Escape", "c", "s", "m", "g", "f", "o"]) { const t = lookbackToastText(lookbackKey({ key: k, targetTag: "TR" }), "run-a"); assert.ok(t && t.length <= 60, k); }
+assert.ok(LOOKBACK_TOAST_MS > 0 && LOOKBACK_TOAST_MS <= 3000);
+console.log("key toast   -> amber ⌨ toast names the last look-back key action for ~1.6 s; none for ?");
 console.log("OK");

@@ -235,6 +235,19 @@ export function lookbackSummaryJson(c: LookbackCompare | null | undefined): stri
 }
 
 /** Pure: clicking a role count sets that Show filter; clicking the active one (or anything invalid) returns "all". */
+export const LOOKBACK_TOAST_MS = 1600;
+/** Pure: short toast text for a look-back key on the focused run id; null for ? / bad input. */
+export function lookbackToastText(k: LookbackKey, runId: unknown): string | null {
+  const on = typeof runId === "string" && runId ? ` · ${runId}` : "";
+  switch (k) {
+    case "next": return "↓ row"; case "prev": return "↑ row";
+    case "toggle": return `expand / collapse${on}`; case "close": return "close";
+    case "copy": return `copy path JSON${on}`; case "steps": return `copy steps JSON${on}`;
+    case "compare": return "⚖ copy compare pack"; case "summary": return "copy summary JSON";
+    case "filter": return "Show →"; case "sort": return "Sort ↔";
+    default: return null;
+  }
+}
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },
