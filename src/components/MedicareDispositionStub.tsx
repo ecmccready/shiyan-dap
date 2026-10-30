@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, moveDispositionTarget, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -14,6 +14,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const commit = (fn: (d: DispositionInput) => DispositionInput, action: string) => setHist((h) => commitDisposition(h, fn(h.present), action));
   const [focusId, setFocusId] = useState<string | null>(null);
   const target = focusId ?? highlight ?? null;
+  const idsRef = useRef<string[]>([]);
   const targetRef = useRef<{ id: string | null; label: string }>({ id: null, label: "" });
   useEffect(() => {
     const on = (ev: KeyboardEvent) => {
@@ -22,6 +23,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       if (!a) return;
       if (a.kind === "undo") { ev.preventDefault(); setHist(undoDisposition); return; }
       if (a.kind === "redo") { ev.preventDefault(); setHist(redoDisposition); return; }
+      if (a.kind === "move") { const nx = moveDispositionTarget(idsRef.current, targetRef.current.id, a.dir); if (!nx) return; ev.preventDefault(); setFocusId(nx); document.getElementById(medicareAnchorId("disposition", nx))?.scrollIntoView({ block: "nearest" }); return; }
       const t = targetRef.current;
       if (!t.id) return;
       ev.preventDefault();
@@ -41,12 +43,13 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const progress = useMemo(() => reviewProgress(report), [report]);
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
   const targetEntry = report.entries.find((e) => e.item_id === target);
+  idsRef.current = report.entries.map((e) => e.item_id);
   targetRef.current = { id: targetEntry ? targetEntry.item_id : null, label: targetEntry ? targetEntry.provider_id ?? targetEntry.item_id : "" };
   return (
     <div data-medicare-disposition-stub className="space-y-2">
       <p className="text-emerald-400 text-xs">Reviewer disposition (stub, this tab only)</p>
       <p data-medicare-shortcut-hint className="text-[11px] text-zinc-500">
-        Keys: <kbd className="rounded border border-zinc-600 px-1">1</kbd> needs_human_review · <kbd className="rounded border border-zinc-600 px-1">2</kbd> cleared_pattern_only · <kbd className="rounded border border-zinc-600 px-1">3</kbd> unreviewed · <kbd className="rounded border border-zinc-600 px-1">u</kbd> undo · <kbd className="rounded border border-zinc-600 px-1">r</kbd> redo — on {targetEntry ? <span className="text-sky-300 font-mono">{targetRef.current.label}</span> : "no row"} (click a row to target it)
+        Keys: <kbd className="rounded border border-zinc-600 px-1">1</kbd> needs_human_review · <kbd className="rounded border border-zinc-600 px-1">2</kbd> cleared_pattern_only · <kbd className="rounded border border-zinc-600 px-1">3</kbd> unreviewed · <kbd className="rounded border border-zinc-600 px-1">u</kbd> undo · <kbd className="rounded border border-zinc-600 px-1">r</kbd> redo · <kbd className="rounded border border-zinc-600 px-1">j</kbd>/<kbd className="rounded border border-zinc-600 px-1">k</kbd> move target — on {targetEntry ? <span className="text-sky-300 font-mono">{targetRef.current.label}</span> : "no row"} (click a row or press j/k to target it)
       </p>
       <ProgressBar p={progress} />
       {filter && (

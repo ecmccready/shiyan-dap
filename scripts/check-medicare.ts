@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -343,4 +343,14 @@ assert.equal(appendNoteTemplate("y".repeat(199), "zz").length, DISPOSITION_NOTE_
 const tn = applyDispositionNote(n0, ids[2], appendNoteTemplate(undefined, noteTemplates("needs_human_review", "rule_candidate")[2]));
 assert.equal(buildInvestigationReport({ pack: ev, dispositions: tn }).entries[2].note, "Check billing modifier or bundling");
 console.log("templates   -> 2–3 neutral quick notes per status/kind; append without duplicates; capped; flows into report");
+// 31. j/k move disposition target (pure).
+assert.deepEqual(dispositionShortcut({ key: "j" }), { kind: "move", dir: 1 }); assert.deepEqual(dispositionShortcut({ key: "k" }), { kind: "move", dir: -1 });
+assert.equal(dispositionShortcut({ key: "j", ctrlKey: true }), null); assert.equal(dispositionShortcut({ key: "j", targetTag: "input" }), null);
+const mv = ["a", "b", "c"];
+assert.equal(moveDispositionTarget(mv, "a", 1), "b"); assert.equal(moveDispositionTarget(mv, "b", -1), "a");
+assert.equal(moveDispositionTarget(mv, "c", 1), "c", "clamp end"); assert.equal(moveDispositionTarget(mv, "a", -1), "a", "clamp start");
+assert.equal(moveDispositionTarget(mv, null, 1), "a"); assert.equal(moveDispositionTarget(mv, "zz", -1), "c");
+assert.equal(moveDispositionTarget([], "a", 1), null); assert.equal(moveDispositionTarget(mv, "a", 2), null); assert.equal(moveDispositionTarget(null, "a", 1), null);
+assert.equal(moveDispositionTarget(ids, ids[2], -1), ids[1]);
+console.log("j/k move    -> j/k move the key target through disposition rows, clamped; 1/2/3/u/r unchanged");
 console.log("OK");

@@ -214,8 +214,8 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | null;
-/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo. Modifiers or typing targets → null. */
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | null;
+/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
     if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
@@ -227,8 +227,22 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "3": return { kind: "set", status: "unreviewed" };
       case "u": case "U": return { kind: "undo" };
       case "r": case "R": return { kind: "redo" };
+      case "j": case "J": return { kind: "move", dir: 1 };
+      case "k": case "K": return { kind: "move", dir: -1 };
       default: return null;
     }
+  } catch { return null; }
+}
+
+/** Pure: next disposition target for j (+1) / k (-1); clamps at the ends, starts at the first (j) or last (k) row when none is targeted. */
+export function moveDispositionTarget(ids: unknown, current: unknown, dir: unknown): string | null {
+  try {
+    if (!Array.isArray(ids)) return null;
+    const list = ids.filter((x): x is string => typeof x === "string");
+    if (!list.length || (dir !== 1 && dir !== -1)) return null;
+    const i = typeof current === "string" ? list.indexOf(current) : -1;
+    if (i < 0) return dir === 1 ? list[0] : list[list.length - 1];
+    return list[Math.min(list.length - 1, Math.max(0, i + dir))];
   } catch { return null; }
 }
 
