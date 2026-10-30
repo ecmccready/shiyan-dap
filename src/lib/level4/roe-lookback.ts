@@ -267,6 +267,13 @@ export function lookbackKeyChanges(k: LookbackKey, c: LookbackKeyContext | null 
     }
   } catch { return false; }
 }
+export const EMPTY_FILTER_TOAST_MS = 3000;
+const ROLE_LABEL: Record<string, string> = { winners: "★ Winners", beaten: "Beaten", agree: "= Agree" };
+/** Pure: toast text when a non-All Show filter leaves 0 of N paths visible; null otherwise. */
+export function emptyFilterToast(filter: unknown, shown: unknown, total: unknown): string | null {
+  if (typeof filter !== "string" || !(filter in ROLE_LABEL) || shown !== 0 || typeof total !== "number" || !(total > 0)) return null;
+  return `Show ${ROLE_LABEL[filter]}: 0 of ${total} paths match · press f or click All to show all`;
+}
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },

@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -183,4 +183,13 @@ console.log("key toast   -> amber ⌨ toast names the last look-back key action 
   assert.equal(lookbackKeyChanges(K("f"), { ...b, visible: [] }), true); assert.equal(lookbackKeyChanges(K("o"), b), true);
   assert.equal(lookbackKeyChanges(K("?"), b), false); assert.equal(lookbackKeyChanges(null, b), false); assert.equal(lookbackKeyChanges(K("j"), null), false); }
 console.log("toast gate  -> look-back ⌨ toast only when the key changes state or copies; clamped j/k, nothing open, hidden focus stay silent");
+// Toast when the Show filter hides every row.
+assert.equal(emptyFilterToast("winners", 0, 4), "Show ★ Winners: 0 of 4 paths match · press f or click All to show all");
+assert.ok(emptyFilterToast("beaten", 0, 4)!.startsWith("Show Beaten: 0 of 4"));
+assert.equal(emptyFilterToast("agree", 4, 4), null); assert.equal(emptyFilterToast("all", 0, 4), null, "All never empties by filter");
+assert.equal(emptyFilterToast("winners", 0, 0), null, "no sealed paths is its own message"); assert.equal(emptyFilterToast("bogus", 0, 4), null); assert.equal(emptyFilterToast(null, 0, 4), null);
+for (const sc of [c, same]) { const rows = rankedLookbackRows(sc); for (const f of ["winners", "beaten", "agree"] as const) { const n = filterLookbackRows(rows, f, sc.winner).length; assert.equal(emptyFilterToast(f, n, rows.length) !== null, n === 0, f); } }
+{ const rows = rankedLookbackRows(same); assert.equal(filterLookbackRows(rows, "winners", same.winner).length, 0, "agree data: ★ Winners is empty → toast"); }
+assert.ok(EMPTY_FILTER_TOAST_MS >= 2000 && EMPTY_FILTER_TOAST_MS <= 5000);
+console.log("empty Show  -> big amber toast when ★ / Beaten / = leaves 0 of N paths; points to f or All");
 console.log("OK");
