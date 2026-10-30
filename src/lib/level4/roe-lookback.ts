@@ -283,6 +283,15 @@ export function lookbackWinToast(c: { winner?: unknown; delta_e_gain?: unknown; 
     return `★ Look-back beats greedy · +Δe ${Number(c.delta_e_gain.toFixed(3))} · ${lb} over ${gr} · press m for ⚖ compare pack`;
   } catch { return null; }
 }
+/** Pure: toast text when look-back and greedy agree (shown once per load); null otherwise. */
+export function lookbackAgreeToast(c: { winner?: unknown; paths_considered?: unknown; greedy?: { run_id?: unknown; cumulative_delta_e?: unknown } | null } | null | undefined): string | null {
+  try {
+    if (!c || c.winner !== "agree") return null;
+    const n = typeof c.paths_considered === "number" ? c.paths_considered : 0; if (!(n > 0)) return null;
+    const de = typeof c.greedy?.cumulative_delta_e === "number" ? ` · Δe ${Number(c.greedy.cumulative_delta_e.toFixed(3))}` : "";
+    return `= Look-back and greedy agree · ${n} sealed path${n === 1 ? "" : "s"}${de} · greedy was already best`;
+  } catch { return null; }
+}
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },

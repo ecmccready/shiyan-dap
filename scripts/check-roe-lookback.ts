@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -199,4 +199,11 @@ assert.equal(lookbackWinToast({ winner: "lookback", delta_e_gain: 0 }), null); a
 assert.ok(lookbackWinToast({ winner: "lookback", delta_e_gain: 0.12345 })!.includes("+Δe 0.123 · look-back over greedy"));
 assert.ok(WIN_TOAST_MS >= 2000 && WIN_TOAST_MS <= 5000);
 console.log("win toast   -> big green toast once per load when look-back beats greedy (+Δe, run ids, m hint); none on agree");
+// Blue toast once when look-back and greedy agree.
+assert.equal(same.winner, "agree"); { const t = lookbackAgreeToast(same); assert.ok(t && t.startsWith("= Look-back and greedy agree · ") && t.endsWith("greedy was already best"), String(t)); }
+assert.equal(lookbackAgreeToast(c), null, "win: green toast instead"); assert.equal(lookbackAgreeToast(scoreSealedPaths([])), null, "no paths");
+assert.equal(lookbackAgreeToast({ winner: "agree", paths_considered: 4, greedy: { cumulative_delta_e: 1.4104 } }), "= Look-back and greedy agree · 4 sealed paths · Δe 1.41 · greedy was already best");
+assert.equal(lookbackAgreeToast({ winner: "agree", paths_considered: 1 }), "= Look-back and greedy agree · 1 sealed path · greedy was already best"); assert.equal(lookbackAgreeToast(null), null);
+for (const sc of [c, same, scoreSealedPaths([])]) assert.ok(!(lookbackWinToast(sc) && lookbackAgreeToast(sc)), "never both");
+console.log("agree toast -> big blue toast once per load when look-back and greedy agree; never with the win toast");
 console.log("OK");
