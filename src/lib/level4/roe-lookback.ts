@@ -301,11 +301,17 @@ export function lookbackToastStack(t: Partial<Record<LookbackToastId, unknown>> 
   const tone = { win: "green", agree: "blue", empty_filter: "amber" } as const;
   return LOOKBACK_TOAST_ORDER.flatMap((id) => { const x = t[id]; return typeof x === "string" && x ? [{ id, text: x, tone: tone[id] }] : []; });
 }
+/** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
+export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
+  if (helpOpen === true) return "help";
+  if (typeof toastCount === "number" && toastCount > 0) return "toasts";
+  return typeof openRow === "string" && openRow ? "row" : null;
+}
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },
   { key: "Enter", does: "expand / collapse the focused row's steps" },
-  { key: "Escape", does: "close the expanded row and this sheet" },
+  { key: "Escape", does: "close this sheet, then the top toasts, then the expanded row" },
   { key: "c", does: "copy the focused row's path JSON" },
   { key: "s", does: "expand and copy the focused row's steps JSON" },
   { key: "m", does: "copy ⚖ compare pack" },
