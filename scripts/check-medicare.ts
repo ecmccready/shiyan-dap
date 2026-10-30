@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -296,4 +296,11 @@ assert.ok(JSON.parse(currentDispositionsJson(nr)).entries[2].note.startsWith("pa
 const nAll = applyDispositionNote(applyBulkDisposition({}, ids, "cleared_pattern_only"), ids[2], "explained by bundling");
 assert.ok(JSON.parse(buildHandoffPack(buildInvestigationReport({ pack: ev, dispositions: nAll }), ev, FIXTURE_PROVENANCE)).case_brief_markdown.includes("note: explained by bundling"));
 console.log("notes       -> optional per-item reviewer note: kept across status changes, cleared when blank, in report, JSON and hand-off");
+// 25. Notes count (pure).
+assert.deepEqual(notesCount(inv), { count: 0, label: "0 notes" });
+assert.deepEqual(notesCount(nr), { count: 1, label: "1 note" });
+const two = buildInvestigationReport({ pack: ev, dispositions: applyDispositionNote(nAll, ids[0], "entry error") });
+assert.deepEqual(notesCount(two), { count: 2, label: "2 notes" });
+for (const j of [null, "x", {}, cyc]) assert.equal(notesCount(j).count, 0);
+console.log("notes chip  -> ✎ N notes on the Win strip, follows dispositions");
 console.log("OK");

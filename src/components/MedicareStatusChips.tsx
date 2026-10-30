@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, toggleStatusFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, toggleStatusFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -27,6 +27,10 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
   return (
     <div data-medicare-status-chips className="space-y-2">
       <div className="flex flex-wrap gap-2" data-medicare-status-filter={filter ?? "all"}>
+        {(() => { const nc = notesCount(r); return (
+          <a href="#medicare-disposition-list" data-medicare-notes-count={nc.count} title="Reviewer notes on dispositioned items"
+            className={`rounded-full border px-3 py-1 text-xs font-semibold ${nc.count ? "border-sky-300 bg-sky-500 text-black" : "border-zinc-600 text-zinc-400"}`}>✎ {nc.label}</a>
+        ); })()}
         <button type="button" onClick={() => pick(null)} aria-pressed={filter === null}
           className={`rounded-full border px-3 py-1 text-xs ${filter === null ? "border-white text-white" : "border-zinc-600 text-zinc-400"}`}>All ({chips.length})</button>
         {DISPOSITION_STATUSES.map((s) => {

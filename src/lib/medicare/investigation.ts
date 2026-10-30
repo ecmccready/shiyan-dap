@@ -258,3 +258,12 @@ export function formatElapsed(ms: unknown): string {
 
 /** Browser event carrying the review timer ({ elapsed_ms, frozen }) from the Win-strip timer; tab-local. */
 export const MEDICARE_TIMER_EVENT = "medicare:review-timer";
+
+/** Pure: how many report entries carry a non-empty reviewer note, and the label for the Win-strip chip. */
+export function notesCount(report: unknown): { count: number; label: string } {
+  try {
+    const entries = (report as InvestigationReport)?.entries;
+    const n = Array.isArray(entries) ? entries.filter((e) => e && typeof e.note === "string" && e.note.trim() !== "").length : 0;
+    return { count: n, label: `${n} note${n === 1 ? "" : "s"}` };
+  } catch { return { count: 0, label: "0 notes" }; }
+}
