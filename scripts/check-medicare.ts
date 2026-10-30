@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -371,4 +371,15 @@ assert.deepEqual(dispositionShortcut({ key: "f" }), { kind: "filter" }); assert.
   assert.deepEqual(seen, ["unreviewed", "needs_human_review", "cleared_pattern_only", "has_note", null], "All → … → has_note → All"); }
 assert.equal(ROW_FILTER_CYCLE.length, 5); assert.equal(cycleRowFilter("fraud"), "unreviewed"); assert.equal(cycleRowFilter(42), "unreviewed");
 console.log("key f       -> cycles All → unreviewed → needs_human_review → cleared_pattern_only → has_note → All; chips stay in sync");
+// 36. t applies the first unused note template on the target (pure).
+assert.deepEqual(dispositionShortcut({ key: "t" }), { kind: "template" }); assert.equal(dispositionShortcut({ key: "t", targetTag: "INPUT" }), null); assert.equal(dispositionShortcut({ key: "t", metaKey: true }), null);
+{ const T = noteTemplates("needs_human_review", "rule_candidate");
+  assert.equal(firstAvailableTemplate("needs_human_review", "rule_candidate", ""), T[0]);
+  assert.equal(firstAvailableTemplate("needs_human_review", "rule_candidate", T[0]), T[1]);
+  assert.equal(firstAvailableTemplate("needs_human_review", "rule_candidate", `mine; ${T[0]}; ${T[1]}`), T[2]);
+  assert.equal(firstAvailableTemplate("needs_human_review", "rule_candidate", T.join("; ")), null, "all used");
+  assert.equal(firstAvailableTemplate("unreviewed", "rule_candidate", ""), null, "no note while unreviewed");
+  let n = ""; for (let i = 0; i < 4; i++) { const t = firstAvailableTemplate("needs_human_review", "rule_candidate", n); if (t) n = appendNoteTemplate(n, t); }
+  assert.equal(n, T.join("; ")); assert.ok(n.length <= DISPOSITION_NOTE_MAX); }
+console.log("key t       -> adds the next unused quick note to the target row (undoable); nothing while unreviewed or all used");
 console.log("OK");

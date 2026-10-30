@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -16,6 +16,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const target = focusId ?? highlight ?? null;
   const idsRef = useRef<string[]>([]);
   const filterRef = useRef<RowFilter>(null);
+  const entryRef = useRef<{ item_id: string; status: string; kind: string; note?: string | null; provider_id?: string | null } | null>(null);
   const targetRef = useRef<{ id: string | null; label: string }>({ id: null, label: "" });
   useEffect(() => {
     const on = (ev: KeyboardEvent) => {
@@ -24,6 +25,14 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       if (!a) return;
       if (a.kind === "undo") { ev.preventDefault(); setHist(undoDisposition); return; }
       if (a.kind === "redo") { ev.preventDefault(); setHist(redoDisposition); return; }
+      if (a.kind === "template") {
+        const e = entryRef.current; if (!e) return;
+        const tpl = firstAvailableTemplate(e.status, e.kind, e.note); if (!tpl) return;
+        ev.preventDefault();
+        const id = e.item_id; const next = appendNoteTemplate(e.note, tpl);
+        setHist((h) => commitDisposition(h, applyDispositionNote(h.present, id, next), `${e.provider_id ?? id} note (key t)`));
+        return;
+      }
       if (a.kind === "filter") { ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: cycleRowFilter(filterRef.current) })); return; }
       if (a.kind === "dispositions") { const b = document.querySelector<HTMLButtonElement>("[data-copy-medicare-dispositions]"); if (!b || b.disabled) return; ev.preventDefault(); b.scrollIntoView({ block: "nearest" }); b.click(); return; }
       if (a.kind === "handoff") { const b = document.querySelector<HTMLButtonElement>("[data-copy-medicare-handoff]"); if (!b || b.disabled) return; ev.preventDefault(); b.scrollIntoView({ block: "nearest" }); b.click(); window.dispatchEvent(new CustomEvent(MEDICARE_HANDOFF_FOCUS_EVENT)); return; }
@@ -50,12 +59,13 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
   const targetEntry = report.entries.find((e) => e.item_id === target);
   idsRef.current = report.entries.map((e) => e.item_id);
+  entryRef.current = targetEntry ?? null;
   targetRef.current = { id: targetEntry ? targetEntry.item_id : null, label: targetEntry ? targetEntry.provider_id ?? targetEntry.item_id : "" };
   return (
     <div data-medicare-disposition-stub className="space-y-2">
       <p className="text-emerald-400 text-xs">Reviewer disposition (stub, this tab only)</p>
       <p data-medicare-shortcut-hint className="text-[11px] text-zinc-500">
-        Keys: <kbd className="rounded border border-zinc-600 px-1">1</kbd> needs_human_review · <kbd className="rounded border border-zinc-600 px-1">2</kbd> cleared_pattern_only · <kbd className="rounded border border-zinc-600 px-1">3</kbd> unreviewed · <kbd className="rounded border border-zinc-600 px-1">u</kbd> undo · <kbd className="rounded border border-zinc-600 px-1">r</kbd> redo · <kbd className="rounded border border-zinc-600 px-1">j</kbd>/<kbd className="rounded border border-zinc-600 px-1">k</kbd> move target · <kbd className="rounded border border-zinc-600 px-1">n</kbd> note (after a status) · <kbd className="rounded border border-zinc-600 px-1">h</kbd> copy 📦 hand-off pack · <kbd className="rounded border border-zinc-600 px-1">y</kbd> copy dispositions JSON · <kbd className="rounded border border-zinc-600 px-1">f</kbd> cycle filter{filter ? <span data-medicare-key-filter className="ml-1 text-white">({filter})</span> : null} — on {targetEntry ? <span className="text-sky-300 font-mono">{targetRef.current.label}</span> : "no row"} (click a row or press j/k to target it)
+        Keys: <kbd className="rounded border border-zinc-600 px-1">1</kbd> needs_human_review · <kbd className="rounded border border-zinc-600 px-1">2</kbd> cleared_pattern_only · <kbd className="rounded border border-zinc-600 px-1">3</kbd> unreviewed · <kbd className="rounded border border-zinc-600 px-1">u</kbd> undo · <kbd className="rounded border border-zinc-600 px-1">r</kbd> redo · <kbd className="rounded border border-zinc-600 px-1">j</kbd>/<kbd className="rounded border border-zinc-600 px-1">k</kbd> move target · <kbd className="rounded border border-zinc-600 px-1">n</kbd> note (after a status) · <kbd className="rounded border border-zinc-600 px-1">h</kbd> copy 📦 hand-off pack · <kbd className="rounded border border-zinc-600 px-1">y</kbd> copy dispositions JSON · <kbd className="rounded border border-zinc-600 px-1">f</kbd> cycle filter · <kbd className="rounded border border-zinc-600 px-1">t</kbd> quick note{filter ? <span data-medicare-key-filter className="ml-1 text-white">({filter})</span> : null} — on {targetEntry ? <span className="text-sky-300 font-mono">{targetRef.current.label}</span> : "no row"} (click a row or press j/k to target it)
       </p>
       <ProgressBar p={progress} />
       {filter && (

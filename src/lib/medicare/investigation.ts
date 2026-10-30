@@ -214,8 +214,8 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | null;
-/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter. Modifiers or typing targets → null. */
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | null;
+/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
     if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
@@ -233,6 +233,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "h": case "H": return { kind: "handoff" };
       case "y": case "Y": return { kind: "dispositions" };
       case "f": case "F": return { kind: "filter" };
+      case "t": case "T": return { kind: "template" };
       default: return null;
     }
   } catch { return null; }
@@ -349,6 +350,11 @@ export function noteTemplates(status: unknown, kind: unknown): string[] {
   return [];
 }
 /** Pure: add a template to an existing note ("; " joined, no duplicates), capped at DISPOSITION_NOTE_MAX. */
+/** Pure: first template for this status/kind not already in the note; null when none apply or all are used. */
+export function firstAvailableTemplate(status: unknown, kind: unknown, note: unknown): string | null {
+  const used = typeof note === "string" ? note.split(";").map((x) => x.trim()) : [];
+  return noteTemplates(status, kind).find((t) => !used.includes(t)) ?? null;
+}
 export function appendNoteTemplate(existing: unknown, template: unknown): string {
   const t = typeof template === "string" ? template.trim() : "";
   const e = typeof existing === "string" ? existing.trim() : "";
