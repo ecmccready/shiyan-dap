@@ -361,4 +361,8 @@ console.log("key n       -> focuses the target row's note field (only once it ha
 assert.deepEqual(dispositionShortcut({ key: "h" }), { kind: "handoff" }); assert.deepEqual(dispositionShortcut({ key: "H" }), { kind: "handoff" });
 assert.equal(dispositionShortcut({ key: "h", targetTag: "INPUT" }), null, "typing h in a note stays text"); assert.equal(dispositionShortcut({ key: "h", ctrlKey: true }), null);
 console.log("key h       -> copies the 📦 hand-off pack (same button, same hash), pulses it; typing untouched");
+// 34. y copies the current dispositions JSON (pure key map; the key presses the existing button).
+assert.deepEqual(dispositionShortcut({ key: "y" }), { kind: "dispositions" }); assert.deepEqual(dispositionShortcut({ key: "Y" }), { kind: "dispositions" });
+assert.equal(dispositionShortcut({ key: "y", targetTag: "INPUT" }), null, "typing y in a note stays text"); assert.equal(dispositionShortcut({ key: "y", metaKey: true }), null);
+console.log("key y       -> copies the current dispositions JSON (same button, same report_hash); typing untouched");
 console.log("OK");
