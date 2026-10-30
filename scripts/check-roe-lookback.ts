@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -90,4 +90,12 @@ assert.equal(cp.lookback.run_id, "B"); assert.equal(cp.greedy.run_id, "A"); asse
 const ca = JSON.parse(lookbackComparePack(same)); assert.equal(ca.verdict, "Agree"); assert.equal(ca.same_path, true); assert.equal(ca.delta_phi_lookback_vs_greedy, 0);
 for (const j of [null, undefined, scoreSealedPaths([])]) assert.equal(lookbackComparePack(j), "");
 console.log("compare     -> look-back vs greedy paths, verdict, +Δe 0.65, ΔΦ +0.12; agree case same_path");
+const bRow = c.paths.find((p) => p.run_id === "B")!;
+assert.deepEqual(bRow.e_series, [1.6, 1.3, 0.9, 0.2]); assert.deepEqual(stepGains(bRow.e_series), [0.3, 0.4, 0.7]);
+assert.equal(Math.max(...stepGains(bRow.e_series)), bRow.max_step_i, "tallest bar is best I_t");
+assert.equal(sparklinePoints([1, 0.5, 0], 64, 16), "0,0 32,8 64,16"); assert.equal(sparklinePoints([1], 64, 16), ""); assert.equal(sparklinePoints(null), "");
+assert.equal(sparklinePoints([2, 1], 10, 10, 4), "0,5 10,7.5", "shared scale");
+assert.deepEqual(stepGains([1, 1.2, 0.5]), [0, 0.7]); assert.deepEqual(stepGains("x"), []);
+assert.deepEqual(live.paths[0].e_series, [1.561, 1.561, 1.413, 0.844, 0.151]);
+console.log("sparkline   -> e path per row (e0 … e_final) with per-step I_t bars; best step highlighted");
 console.log("OK");

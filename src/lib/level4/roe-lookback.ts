@@ -18,6 +18,8 @@ export const ROE_LOOKBACK_NOTE =
 export type LookbackPath = {
   run_id: string; steps: number; e0: number; e_final: number;
   cumulative_delta_e: number; max_step_i: number; final_phi: number | null; actions: string[];
+  /** e at start then after each step (e0, e_1 … e_final); additive, display only. */
+  e_series?: number[];
 };
 export type LookbackCompare = {
   schema: typeof ROE_LOOKBACK_SCHEMA;
@@ -57,7 +59,8 @@ export function scoreSealedPaths(entries: unknown): LookbackCompare {
       for (const x of s) { maxI = Math.max(maxI, prev - (x.e as number)); prev = x.e as number; }
       const last = s[s.length - 1];
       paths.push({ run_id, steps: s.length, e0: r4(e0), e_final: r4(last.e as number), cumulative_delta_e: r4(e0 - (last.e as number)),
-        max_step_i: r4(Math.max(0, maxI)), final_phi: fin(last.phi) ? r4(last.phi) : null, actions: s.map((x) => (typeof x.y === "string" ? x.y : "?")) });
+        max_step_i: r4(Math.max(0, maxI)), final_phi: fin(last.phi) ? r4(last.phi) : null, actions: s.map((x) => (typeof x.y === "string" ? x.y : "?")),
+        e_series: [r4(e0), ...s.map((x) => r4(x.e as number))] });
     }
     if (!paths.length) return empty(excluded);
     paths.sort((a, b) => a.run_id < b.run_id ? -1 : a.run_id > b.run_id ? 1 : 0);
@@ -166,4 +169,22 @@ export function lookbackComparePack(c: LookbackCompare | null | undefined): stri
       delta_e_gain: c.delta_e_gain, delta_phi_lookback_vs_greedy: dphi, same_path: lb.run_id === gr.run_id, paths_considered: c.paths_considered,
       lookback: lb, greedy: gr, note: c.note }, null, 2);
   } catch { return ""; }
+}
+
+/** Pure: SVG polyline points for an e series in a w×h box (higher e at top; shared scale via max). "" when fewer than 2 points. */
+export function sparklinePoints(series: unknown, w = 64, h = 16, max?: number): string {
+  try {
+    if (!Array.isArray(series)) return "";
+    const v = series.filter((x): x is number => typeof x === "number" && Number.isFinite(x));
+    if (v.length < 2) return "";
+    const top = typeof max === "number" && Number.isFinite(max) && max > 0 ? max : Math.max(...v, 1e-9);
+    const dx = w / (v.length - 1);
+    return v.map((y, i) => `${Number((i * dx).toFixed(2))},${Number((h - (Math.max(0, Math.min(y, top)) / top) * h).toFixed(2))}`).join(" ");
+  } catch { return ""; }
+}
+/** Pure: per-step gains I_t = max(0, e_{t-1} − e_t) from an e series. */
+export function stepGains(series: unknown): number[] {
+  if (!Array.isArray(series)) return [];
+  const v = series.filter((x): x is number => typeof x === "number" && Number.isFinite(x));
+  return v.slice(1).map((y, i) => r4(Math.max(0, v[i] - y)));
 }
