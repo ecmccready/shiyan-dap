@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -312,4 +312,10 @@ assert.deepEqual(two.entries.map((e) => rowFilterEmphasis(e, null)), ["all", "al
 assert.equal(rowMatchesFilter({ status: "needs_human_review", note: "  " }, "has_note"), false); assert.equal(rowMatchesFilter(null, "has_note"), false);
 assert.equal(rowMatchesFilter(two.entries[2], "cleared_pattern_only"), true, "status filters unchanged");
 console.log("notes filter -> ✎ chip toggles rows-with-notes filter; re-click or All clears; status filters unchanged");
+// 27. Notes nudge (pure).
+assert.equal(notesNudge(inv).show, false, "not before complete"); assert.equal(notesNudge(live).show, false);
+assert.equal(notesNudge(all3).show, true, "complete, no notes"); assert.match(notesNudge(all3).message, /^Review complete with no reviewer notes\. Optional/);
+assert.equal(notesNudge(buildInvestigationReport({ pack: ev, dispositions: nAll })).show, false, "hidden once a note exists");
+for (const j of [null, "x", {}, cyc]) assert.equal(notesNudge(j).show, false);
+console.log("nudge       -> optional 'Add notes?' banner only at Review complete with 0 notes");
 console.log("OK");

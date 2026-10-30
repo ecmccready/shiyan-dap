@@ -286,3 +286,11 @@ export function rowMatchesFilter(entry: { status?: unknown; note?: unknown } | n
 export function rowFilterEmphasis(entry: { status?: unknown; note?: unknown } | null | undefined, filter: RowFilter): "all" | "match" | "dim" {
   return filter === null ? "all" : rowMatchesFilter(entry, filter) ? "match" : "dim";
 }
+
+/** Pure: nudge to add optional notes when review is complete and no item has a note. Never blocks hand-off. */
+export function notesNudge(report: unknown): { show: boolean; message: string } {
+  try {
+    if (!reviewCompletion(reviewProgress(report)).complete || notesCount(report).count > 0) return { show: false, message: "" };
+    return { show: true, message: "Review complete with no reviewer notes. Optional: add a short note on any item (why it needs review or why the pattern is explained) before copying the hand-off pack." };
+  } catch { return { show: false, message: "" }; }
+}
