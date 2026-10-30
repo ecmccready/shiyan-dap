@@ -214,14 +214,16 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | null;
-/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template. Modifiers or typing targets → null. */
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | null;
+/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
     if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
     const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
     if (tag === "INPUT" || tag === "TEXTAREA") return null;
     switch (ev.key) {
+      case "?": return { kind: "help" };
+      case "Escape": return { kind: "help_close" };
       case "1": return { kind: "set", status: "needs_human_review" };
       case "2": return { kind: "set", status: "cleared_pattern_only" };
       case "3": return { kind: "set", status: "unreviewed" };
@@ -250,6 +252,21 @@ export function moveDispositionTarget(ids: unknown, current: unknown, dir: unkno
     return list[Math.min(list.length - 1, Math.max(0, i + dir))];
   } catch { return null; }
 }
+
+/** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
+export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
+  { key: "j / k", does: "move the target row down / up" },
+  { key: "1", does: "needs_human_review on the target" },
+  { key: "2", does: "cleared_pattern_only on the target" },
+  { key: "3", does: "back to unreviewed" },
+  { key: "u / r", does: "undo / redo" },
+  { key: "n", does: "type a note on the target (after a status)" },
+  { key: "t", does: "add the next quick note on the target" },
+  { key: "f", does: "cycle filter: All → unreviewed → needs review → cleared → has note" },
+  { key: "y", does: "copy current dispositions JSON" },
+  { key: "h", does: "copy 📦 hand-off pack" },
+  { key: "?", does: "show / hide this sheet (Esc closes)" },
+];
 
 /** Review-session timer state (tab-local, display only). */
 export type ReviewTimer = { started_at: number | null; frozen_at: number | null };
