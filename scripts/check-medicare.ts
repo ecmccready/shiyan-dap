@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -326,4 +326,9 @@ assert.equal(handoffReadyAnnotated(two).label, "Hand-off ready · reviewed with 
 for (const j of [null, "x", {}, cyc]) assert.equal(handoffReadyAnnotated(j).ready, false);
 assert.ok(handoffReadyAnnotated(two).ready !== notesNudge(two).show, "chip and nudge never both show");
 console.log("ready chip  -> ✅ Hand-off ready only at Review complete with ≥1 note; never alongside the nudge");
+// 29. Hand-off chip → button pulse (pure timing).
+assert.equal(handoffPulseActive(1000, 1000), true); assert.equal(handoffPulseActive(1000, 1000 + HANDOFF_PULSE_MS - 1), true);
+assert.equal(handoffPulseActive(1000, 1000 + HANDOFF_PULSE_MS), false); assert.equal(handoffPulseActive(1000, 999), false);
+for (const [a, b] of [[null, 1], [1, null], ["1", 2], [NaN, 1]]) assert.equal(handoffPulseActive(a, b), false);
+console.log("pulse       -> chip click scrolls to the 📦 hand-off button and highlights it for 2.4 s");
 console.log("OK");

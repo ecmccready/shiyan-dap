@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesNudge, handoffReadyAnnotated, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesNudge, handoffReadyAnnotated, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -27,7 +27,14 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
   return (
     <div data-medicare-status-chips className="space-y-2">
       {(() => { const h = handoffReadyAnnotated(r); return h.ready ? (
-        <a href="#medicare-win" data-medicare-handoff-ready-annotated className="inline-flex items-center gap-2 rounded-full border-2 border-white bg-emerald-400 px-4 py-1.5 text-sm font-bold text-black shadow-lg shadow-emerald-500/40">
+        <a href="#medicare-win" data-medicare-handoff-ready-annotated onClick={(ev) => {
+            const btn = document.querySelector<HTMLElement>("[data-copy-medicare-handoff]");
+            if (!btn) return;
+            ev.preventDefault();
+            btn.scrollIntoView({ behavior: "smooth", block: "center" });
+            window.dispatchEvent(new CustomEvent(MEDICARE_HANDOFF_FOCUS_EVENT, { detail: Date.now() }));
+            window.setTimeout(() => btn.focus({ preventScroll: true }), 400);
+          }} className="inline-flex items-center gap-2 rounded-full border-2 border-white bg-emerald-400 px-4 py-1.5 text-sm font-bold text-black shadow-lg shadow-emerald-500/40">
           ✅ {h.label} <span className="text-xs font-semibold opacity-80">— copy the 📦 hand-off pack</span>
         </a>
       ) : null; })()}

@@ -5,7 +5,7 @@ import { useCopy, copiedRing } from "@/lib/use-copy";
 import { buildHandoffPack, formatReviewedCaseBrief } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 import type { MedicareProvenance } from "@/lib/medicare/provenance";
-import { MEDICARE_TIMER_EVENT, currentDispositionsJson, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_HANDOFF_FOCUS_EVENT, HANDOFF_PULSE_MS, handoffPulseActive, MEDICARE_TIMER_EVENT, currentDispositionsJson, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
 
 /** Copies the live investigation report (current statuses + report_hash). With `report` it is controlled; otherwise it follows the stub's tab-local event. */
 export default function CopyLiveInvestigation({ report, initial, brief, handoff }: { report?: InvestigationReport; initial?: InvestigationReport; brief?: { evidence: EvidencePack; provenance: MedicareProvenance }; handoff?: boolean }) {
@@ -23,6 +23,15 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
     window.addEventListener(MEDICARE_TIMER_EVENT, on);
     return () => window.removeEventListener(MEDICARE_TIMER_EVENT, on);
   }, [handoff]);
+  const [pulseAt, setPulseAt] = useState<number | null>(null);
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!handoff) return;
+    const on = () => { const t = Date.now(); setPulseAt(t); setTick(t); window.setTimeout(() => setTick(Date.now()), HANDOFF_PULSE_MS + 50); };
+    window.addEventListener(MEDICARE_HANDOFF_FOCUS_EVENT, on);
+    return () => window.removeEventListener(MEDICARE_HANDOFF_FOCUS_EVENT, on);
+  }, [handoff]);
+  const pulsing = handoff && handoffPulseActive(pulseAt, tick);
   const r = report ?? heard;
   const copy = useCopy(4000, undefined, handoff ? "medicare hand-off pack" : brief ? "medicare reviewed brief" : "medicare dispositions");
   const json = handoff && brief ? buildHandoffPack(r, brief.evidence, brief.provenance, timer) : brief ? formatReviewedCaseBrief(r, brief.evidence, brief.provenance) : currentDispositionsJson(r);
@@ -37,7 +46,8 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
       data-review-complete={done ? "true" : "false"}
       disabled={!json}
       onClick={() => void copy.copy(json)}
-      className={`inline-flex h-9 items-center rounded-full border px-4 text-xs ${base}${copiedRing(copy.status)}`}
+      data-pulse={pulsing ? "true" : undefined}
+      className={`inline-flex h-9 items-center rounded-full border px-4 text-xs ${base}${pulsing ? " ring-4 ring-amber-300 animate-pulse scale-105" : ""} transition-transform${copiedRing(copy.status)}`}
     >
       {copy.status === "copied" ? "Copied ✓" : copy.status === "failed" ? "Copy failed" : handoff ? (done ? "📦 Copy reviewed hand-off pack" : "📦 Copy hand-off pack (in progress)") : brief ? (done ? "✓ Copy reviewed case brief" : "Copy case brief (in progress)") : done ? "✓ Copy reviewed dispositions JSON" : "Copy current dispositions JSON"}
       {r && <span className="ml-2 font-mono opacity-70">{r.report_hash.slice(0, 8)}…</span>}

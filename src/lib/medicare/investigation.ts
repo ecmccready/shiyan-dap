@@ -303,3 +303,12 @@ export function handoffReadyAnnotated(report: unknown): { ready: boolean; label:
     return { ready: true, label: `Hand-off ready · reviewed with ${n} note${n === 1 ? "" : "s"}` };
   } catch { return { ready: false, label: "" }; }
 }
+
+/** Browser event asking the hand-off pack button(s) to pulse; tab-local. */
+export const MEDICARE_HANDOFF_FOCUS_EVENT = "medicare:handoff-focus";
+/** How long the hand-off button stays highlighted after the chip is clicked. */
+export const HANDOFF_PULSE_MS = 2400;
+/** Pure: is the pulse still active at `now` for a pulse that started at `since`? */
+export function handoffPulseActive(since: unknown, now: unknown): boolean {
+  return typeof since === "number" && typeof now === "number" && Number.isFinite(since) && Number.isFinite(now) && now >= since && now - since < HANDOFF_PULSE_MS;
+}
