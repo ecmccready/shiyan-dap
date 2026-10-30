@@ -353,4 +353,8 @@ assert.equal(moveDispositionTarget(mv, null, 1), "a"); assert.equal(moveDisposit
 assert.equal(moveDispositionTarget([], "a", 1), null); assert.equal(moveDispositionTarget(mv, "a", 2), null); assert.equal(moveDispositionTarget(null, "a", 1), null);
 assert.equal(moveDispositionTarget(ids, ids[2], -1), ids[1]);
 console.log("j/k move    -> j/k move the key target through disposition rows, clamped; 1/2/3/u/r unchanged");
+// 32. n focuses the target's note field (pure key map).
+assert.deepEqual(dispositionShortcut({ key: "n" }), { kind: "note" }); assert.deepEqual(dispositionShortcut({ key: "N" }), { kind: "note" });
+assert.equal(dispositionShortcut({ key: "n", targetTag: "INPUT" }), null, "typing n in a note stays text"); assert.equal(dispositionShortcut({ key: "n", metaKey: true }), null);
+console.log("key n       -> focuses the target row's note field (only once it has a status); typing untouched");
 console.log("OK");
