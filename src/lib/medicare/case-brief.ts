@@ -4,7 +4,7 @@
  */
 import { reviewCompletion, reviewProgress, verifyReportHash, type InvestigationReport } from "@/lib/medicare/investigation";
 import type { EvidencePack } from "@/lib/medicare/evidence";
-import type { MedicareProvenance } from "@/lib/medicare/provenance";
+import { contentHash, type MedicareProvenance } from "@/lib/medicare/provenance";
 
 export const MEDICARE_CASE = {
   case_id: "medicare.case.payment_vs_charge.v1",
@@ -91,5 +91,25 @@ export function formatReviewedCaseBrief(report: unknown, evidence: EvidencePack,
     const p = reviewProgress(r); const done = reviewCompletion(p);
     const head = done.complete ? `> ${done.message}` : `> Review in progress: ${p.label}. Unreviewed items remain patterns awaiting a reviewer.`;
     return formatInvestigationCaseBrief(r, evidence, provenance).replace(/\n\n/, `\n\n${head}\n\n`);
+  } catch { return ""; }
+}
+
+export const MEDICARE_HANDOFF_SCHEMA = "aethel.medicare.handoff.v1" as const;
+/**
+ * Pure reviewer hand-off pack: reviewed case brief + live investigation report (current dispositions) + progress,
+ * linked to the evidence pack_hash, with a recomputable handoff_hash. "" unless the report verifies and links this pack.
+ */
+export function buildHandoffPack(report: unknown, evidence: EvidencePack, provenance: MedicareProvenance): string {
+  try {
+    const brief = formatReviewedCaseBrief(report, evidence, provenance);
+    if (!brief) return "";
+    const r = report as InvestigationReport; const p = reviewProgress(r); const done = reviewCompletion(p);
+    const body = {
+      schema_version: MEDICARE_HANDOFF_SCHEMA, domain_label: "medicare" as const, case_id: MEDICARE_CASE.case_id,
+      dataset_content_hash: provenance.content_hash, evidence_pack_hash: evidence.pack_hash, report_hash: r.report_hash,
+      progress: { label: p.label, reviewed: p.reviewed, items: p.items, percent: p.percent, by_status: p.by_status, complete: done.complete },
+      case_brief_markdown: brief, investigation: r, guardrail: MEDICARE_CASE.guardrail,
+    };
+    return JSON.stringify({ ...body, handoff_hash: contentHash(body) }, null, 2);
   } catch { return ""; }
 }

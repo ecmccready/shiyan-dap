@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
-import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
+import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
 import { dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
@@ -250,4 +250,14 @@ assert.deepEqual(dispositionShortcut({ key: "u" }), { kind: "undo" }); assert.de
 for (const j of [{ key: "1", ctrlKey: true }, { key: "1", metaKey: true }, { key: "u", targetTag: "INPUT" }, { key: "2", targetTag: "textarea" }, { key: "1", editable: true }, { key: "4" }, { key: "f" }, null, {}])
   assert.equal(dispositionShortcut(j as never), null);
 console.log("keys        -> 1/2/3 set the targeted row, u undo, r redo; ignored with modifiers or while typing");
+// 21. Reviewer hand-off pack (pure).
+const hp = JSON.parse(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE));
+assert.equal(hp.schema_version, "aethel.medicare.handoff.v1"); assert.equal(hp.domain_label, "medicare");
+assert.equal(hp.evidence_pack_hash, ev.pack_hash); assert.equal(hp.report_hash, all3.report_hash); assert.equal(hp.dataset_content_hash, FIXTURE_PROVENANCE.content_hash);
+assert.deepEqual(hp.progress, { label: "3 of 3 reviewed", reviewed: 3, items: 3, percent: 100, by_status: { unreviewed: 0, needs_human_review: 1, cleared_pattern_only: 2 }, complete: true });
+assert.ok(hp.case_brief_markdown.includes("> Review complete")); assert.ok(verifyReportHash(hp.investigation));
+const { handoff_hash, ...hbody } = hp; assert.equal(handoff_hash, contentHash(hbody), "handoff hash recomputes");
+assert.equal(JSON.parse(buildHandoffPack(inv, ev, FIXTURE_PROVENANCE)).progress.complete, false);
+assert.equal(buildHandoffPack(t2, ev, FIXTURE_PROVENANCE), ""); for (const j of [null, "x", {}, cyc]) assert.equal(buildHandoffPack(j, ev, FIXTURE_PROVENANCE), "");
+console.log("hand-off    -> aethel.medicare.handoff.v1: reviewed brief + live report + progress, linked hashes, recomputable handoff_hash");
 console.log("OK");

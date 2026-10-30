@@ -110,6 +110,7 @@ export default function MedicarePage() {
                 <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
                 <CopyLiveInvestigation initial={FIXTURE_INVESTIGATION} />
                 <CopyLiveInvestigation initial={FIXTURE_INVESTIGATION} brief={{ evidence: FIXTURE_EVIDENCE, provenance: FIXTURE_PROVENANCE }} />
+                <CopyLiveInvestigation initial={FIXTURE_INVESTIGATION} brief={{ evidence: FIXTURE_EVIDENCE, provenance: FIXTURE_PROVENANCE }} handoff />
                 {w.top && TOP_ROW !== null && (
                   <span className="flex flex-wrap gap-3 text-xs">
                     <a data-medicare-jump-top href={`#${medicareAnchorId("candidate", TOP_ROW)}`} className="text-emerald-300 underline">Jump to top candidate ↓</a>
@@ -215,6 +216,7 @@ export default function MedicarePage() {
             ))}
           </ul>
           <div className="flex flex-wrap gap-2" data-medicare-copy-row>
+            <CopyLiveInvestigation initial={FIXTURE_INVESTIGATION} brief={{ evidence: FIXTURE_EVIDENCE, provenance: FIXTURE_PROVENANCE }} handoff />
             <CopyMedicareJson kind="investigation" label="Copy investigation JSON" json={JSON.stringify(FIXTURE_INVESTIGATION, null, 2)} />
             <CopyMedicareJson kind="evidence" label="Copy evidence pack JSON" json={JSON.stringify(FIXTURE_EVIDENCE, null, 2)} />
             <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
