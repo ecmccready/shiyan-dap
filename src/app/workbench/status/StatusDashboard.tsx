@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import RoeLookbackNote from "@/components/RoeLookbackNote";
 import Link from "next/link";
 import { loadAcquisitionServer } from "@/lib/level4/acquisition";
 import Level4Shell from "@/components/Level4Shell";
@@ -152,6 +153,8 @@ export default function StatusPage() {
           </ul>
         </section>
       )}
+
+      <RoeLookbackNote />
 
       <section data-status-external-confirmation className="rounded-xl border border-zinc-800 p-4 text-sm text-zinc-300">
         <p className="text-xs text-emerald-400">External confirmation</p>
