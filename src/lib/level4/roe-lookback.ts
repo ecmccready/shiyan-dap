@@ -83,16 +83,25 @@ export function lookbackVerdict(c: LookbackCompare | null | undefined): { tone: 
 }
 
 /** Pure: sealed paths ranked by the look-back order (cumulative Δe, then Φ, steps, run_id), with greedy / look-back flags. */
-export function rankedLookbackRows(c: LookbackCompare | null | undefined): (LookbackPath & { rank: number; is_greedy: boolean; is_lookback: boolean })[] {
+export function rankedLookbackRows(c: LookbackCompare | null | undefined): (LookbackPath & { rank: number; is_greedy: boolean; is_lookback: boolean; delta_phi_vs_greedy: number | null })[] {
   try {
     if (!c || !Array.isArray(c.paths)) return [];
+    const gp = c.paths.find((p) => p.run_id === c.greedy?.run_id);
+    const gphi = gp && typeof gp.final_phi === "number" ? gp.final_phi : null;
     return [...c.paths]
       .sort((a, b) => b.cumulative_delta_e - a.cumulative_delta_e || (b.final_phi ?? -Infinity) - (a.final_phi ?? -Infinity) || a.steps - b.steps || (a.run_id < b.run_id ? -1 : 1))
-      .map((p, i) => ({ ...p, rank: i + 1, is_greedy: p.run_id === c.greedy?.run_id, is_lookback: p.run_id === c.lookback?.run_id }));
+      .map((p, i) => ({ ...p, rank: i + 1, is_greedy: p.run_id === c.greedy?.run_id, is_lookback: p.run_id === c.lookback?.run_id,
+        delta_phi_vs_greedy: gphi !== null && typeof p.final_phi === "number" ? r4(p.final_phi - gphi) : null }));
   } catch { return []; }
 }
 
 /** Pure: row emphasis. Rank 1 gets "top_win" when look-back beats greedy, "top_agree" otherwise; others "plain". */
 export function lookbackRowEmphasis(rank: number, winner: LookbackCompare["winner"] | undefined): "top_win" | "top_agree" | "plain" {
   return rank === 1 && (winner === "lookback" || winner === "agree") ? (winner === "lookback" ? "top_win" : "top_agree") : "plain";
+}
+
+/** Pure: display text for ΔΦ vs greedy ("+0.12", "−0.05", "0", "n/a"). */
+export function fmtDeltaPhi(d: number | null | undefined): string {
+  if (typeof d !== "number" || !Number.isFinite(d)) return "n/a";
+  return d === 0 ? "0" : d > 0 ? `+${d}` : `−${Math.abs(d)}`;
 }

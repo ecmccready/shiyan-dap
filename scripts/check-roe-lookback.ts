@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -51,4 +51,8 @@ console.log("table       -> ranked by Σ Δe: 1 B (look-back), 2 A (greedy); sin
 assert.equal(lookbackRowEmphasis(1, c.winner), "top_win"); assert.equal(lookbackRowEmphasis(1, same.winner), "top_agree");
 assert.equal(lookbackRowEmphasis(2, c.winner), "plain"); assert.equal(lookbackRowEmphasis(1, "none"), "plain"); assert.equal(lookbackRowEmphasis(1, undefined), "plain");
 console.log("emphasis    -> TOP row strong when look-back wins, soft when agree, plain otherwise");
+assert.deepEqual(rankedLookbackRows(c).map((r) => [r.run_id, r.delta_phi_vs_greedy]), [["B", 0.12], ["A", 0]]);
+const noPhi = scoreSealedPaths([row("N", 1, 0.2, { eligible: true, state: "COMPLETE" })]); assert.equal(rankedLookbackRows(noPhi)[0].delta_phi_vs_greedy, null);
+assert.equal(fmtDeltaPhi(0.12), "+0.12"); assert.equal(fmtDeltaPhi(-0.05), "−0.05"); assert.equal(fmtDeltaPhi(0), "0"); assert.equal(fmtDeltaPhi(null), "n/a"); assert.equal(fmtDeltaPhi(NaN), "n/a");
+console.log("ΔΦ          -> B +0.12 vs greedy A; missing Φ gives n/a");
 console.log("OK");
