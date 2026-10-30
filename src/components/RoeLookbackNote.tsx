@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
-import { scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackVerdict, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -18,6 +18,13 @@ export default function RoeLookbackNote() {
             look-back (best cumulative Δe) {c.lookback?.run_id}: Δe {c.lookback?.cumulative_delta_e}, Φ {c.lookback?.final_phi ?? "n/a"} ·
             {" "}{c.winner === "agree" ? "both pick the same path" : `look-back gains Δe ${c.delta_e_gain}`}
           </p>
+          {(() => { const v = lookbackVerdict(c); return v.tone === "win" ? (
+            <div role="status" data-roe-lookback-verdict="win" className="rounded-lg border-2 border-amber-400 bg-emerald-500/15 px-3 py-2 text-emerald-100">
+              <span className="mr-2 rounded-full bg-amber-400 text-black px-2 py-0.5 text-xs font-bold">{v.label}</span>{v.detail}
+            </div>
+          ) : v.tone === "agree" ? (
+            <p data-roe-lookback-verdict="agree" className="text-xs text-zinc-400"><span className="mr-2 rounded-full border border-zinc-600 px-2 py-0.5">{v.label}</span>{v.detail}</p>
+          ) : null; })()}
           {c.excluded_domain_entries > 0 && <p className="text-xs text-zinc-500">{c.excluded_domain_entries} domain-labeled entries excluded.</p>}
         </>
       )}

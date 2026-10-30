@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -38,4 +38,8 @@ const input = [...A, ...B]; const snap = JSON.stringify(input); scoreSealedPaths
 assert.deepEqual(scoreSealedPaths([...A, ...B]), scoreSealedPaths([...B, ...A]), "order independent");
 assert.deepEqual(JSON.parse(JSON.stringify(c)), c, "JSON-safe");
 console.log("robust      -> never throws on junk, proxy or cycles; pure, order independent, JSON-safe");
+assert.deepEqual(lookbackVerdict(c), { tone: "win", label: "Look-back beats greedy", detail: "+Δe 0.65: B (Δe 1.4) over greedy A (Δe 0.75)" });
+assert.deepEqual(lookbackVerdict(same), { tone: "agree", label: "Agree", detail: "greedy and look-back both pick B" });
+for (const j of [null, undefined, scoreSealedPaths([])]) assert.equal(lookbackVerdict(j).tone, "none");
+console.log("verdict     -> win callout with +Δe and run ids; quiet Agree badge; none when empty");
 console.log("OK");

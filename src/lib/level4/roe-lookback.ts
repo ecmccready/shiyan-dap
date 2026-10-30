@@ -72,3 +72,12 @@ export function scoreSealedPaths(entries: unknown): LookbackCompare {
     };
   } catch { return empty(); }
 }
+
+/** Pure display verdict for the look-back note. */
+export function lookbackVerdict(c: LookbackCompare | null | undefined): { tone: "win" | "agree" | "none"; label: string; detail: string } {
+  try {
+    if (!c || c.winner === "none" || !c.greedy || !c.lookback) return { tone: "none", label: "No sealed paths", detail: "" };
+    if (c.winner === "agree") return { tone: "agree", label: "Agree", detail: `greedy and look-back both pick ${c.lookback.run_id}` };
+    return { tone: "win", label: "Look-back beats greedy", detail: `+Δe ${c.delta_e_gain}: ${c.lookback.run_id} (Δe ${c.lookback.cumulative_delta_e}) over greedy ${c.greedy.run_id} (Δe ${c.greedy.cumulative_delta_e})` };
+  } catch { return { tone: "none", label: "No sealed paths", detail: "" }; }
+}
