@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -75,4 +75,12 @@ assert.equal(lookbackRowRole({ is_greedy: false, is_lookback: false }, "lookback
 assert.equal(lookbackRowRole({ is_greedy: true, is_lookback: true }, "none"), "other");
 assert.deepEqual(sortLookbackRows(rankedLookbackRows(c), "dphi").map((r) => lookbackRowRole(r, c.winner)).sort(), ["greedy_beaten", "winner_lookback"], "roles survive sorting");
 console.log("roles       -> ★ WINNER on look-back, beaten on greedy, = both agree when same; independent of sort");
+const rc = rankedLookbackRows(c);
+assert.deepEqual(filterLookbackRows(rc, "all", c.winner).map((r) => r.run_id), ["B", "A"]);
+assert.deepEqual(filterLookbackRows(rc, "winners", c.winner).map((r) => r.run_id), ["B"]);
+assert.deepEqual(filterLookbackRows(rc, "beaten", c.winner).map((r) => r.run_id), ["A"]);
+assert.deepEqual(filterLookbackRows(rc, "agree", c.winner), []);
+assert.deepEqual(filterLookbackRows(rankedLookbackRows(same), "agree", same.winner).map((r) => r.run_id), ["B"]);
+assert.deepEqual(filterLookbackRows(rc, "bogus" as never, c.winner).length, 2); assert.deepEqual(filterLookbackRows(null as never, "all", c.winner), []);
+console.log("role filter -> All / ★ Winners / Beaten / = Agree from lookbackRowRole, with counts");
 console.log("OK");

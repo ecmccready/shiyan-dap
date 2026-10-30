@@ -140,3 +140,14 @@ export function lookbackRowRole(row: { is_greedy: boolean; is_lookback: boolean 
   if (row.is_greedy) return winner === "lookback" ? "greedy_beaten" : "other";
   return "other";
 }
+
+export type LookbackRoleFilter = "all" | "winners" | "beaten" | "agree";
+const ROLE_FOR: Record<Exclude<LookbackRoleFilter, "all">, LookbackRowRole> = { winners: "winner_lookback", beaten: "greedy_beaten", agree: "agree_both" };
+/** Pure: keep rows whose lookbackRowRole matches the filter ("all" keeps every row); order preserved. */
+export function filterLookbackRows<T extends { is_greedy: boolean; is_lookback: boolean }>(rows: T[], f: LookbackRoleFilter, winner: LookbackCompare["winner"] | undefined): T[] {
+  try {
+    if (!Array.isArray(rows)) return [];
+    if (f === "all" || !(f in ROLE_FOR)) return [...rows];
+    return rows.filter((r) => lookbackRowRole(r, winner) === ROLE_FOR[f as Exclude<LookbackRoleFilter, "all">]);
+  } catch { return []; }
+}

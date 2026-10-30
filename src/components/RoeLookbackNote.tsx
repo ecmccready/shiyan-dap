@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
   const [c, setC] = useState<LookbackCompare | null>(null);
   const copy = useCopy(4000, undefined, "roe look-back");
   const [sortBy, setSortBy] = useState<LookbackSort>("rank");
+  const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
   return (
     <section data-roe-lookback className="rounded-xl border border-zinc-800 p-4 text-sm space-y-1">
@@ -38,11 +39,26 @@ export default function RoeLookbackNote() {
               </button>
             ))}
           </div>
+          {(() => {
+            const all = rankedLookbackRows(c);
+            const label = { all: "All", winners: "★ Winners", beaten: "Beaten", agree: "= Agree" } as const;
+            return (
+              <div className="flex flex-wrap items-center gap-2 text-xs" data-roe-lookback-role-filter={roleFilter}>
+                <span className="text-zinc-500">Show:</span>
+                {(["all", "winners", "beaten", "agree"] as const).map((k) => (
+                  <button key={k} type="button" aria-pressed={roleFilter === k} data-roe-lookback-filter-pill={k} onClick={() => setRoleFilter(k)}
+                    className={`rounded-full border px-2 py-0.5 ${roleFilter === k ? (k === "winners" ? "border-emerald-400 bg-emerald-500/20 text-emerald-100" : k === "beaten" ? "border-amber-400 bg-amber-500/20 text-amber-100" : k === "agree" ? "border-sky-400 bg-sky-500/20 text-sky-100" : "border-white text-white") : "border-zinc-600 text-zinc-400"}`}>
+                    {label[k]} ({filterLookbackRows(all, k, c.winner).length})
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
           <div className="overflow-x-auto">
             <table data-roe-lookback-table className="w-full text-xs font-mono text-zinc-300">
               <thead className="text-zinc-500"><tr><th className="text-left pr-2">#</th><th className="text-left pr-2">run_id</th><th className="text-right pr-2">steps</th><th className="text-right pr-2">best I_t</th><th className="text-right pr-2">Σ Δe</th><th className="text-right pr-2">Φ</th><th className="text-right pr-2" title="final Φ minus the greedy path's final Φ">ΔΦ vs greedy</th><th className="text-left">pick</th><th className="text-left">path</th></tr></thead>
               <tbody>
-                {sortLookbackRows(rankedLookbackRows(c), sortBy).map((r) => (
+                {sortLookbackRows(filterLookbackRows(rankedLookbackRows(c), roleFilter, c.winner), sortBy).map((r) => (
                   <tr key={r.run_id} data-roe-lookback-row={r.run_id} data-roe-lookback-emphasis={lookbackRowEmphasis(r.rank, c.winner)} data-roe-lookback-role={lookbackRowRole(r, c.winner)}
                     className={`${{ top_win: "bg-emerald-500/30 text-emerald-50 font-semibold outline outline-2 outline-amber-400", top_agree: "bg-emerald-500/10 text-emerald-200", plain: r.is_lookback ? "text-emerald-200" : "" }[lookbackRowEmphasis(r.rank, c.winner)]} ${{ winner_lookback: "border-l-4 border-emerald-400", agree_both: "border-l-4 border-sky-400", greedy_beaten: "border-l-4 border-amber-400 bg-amber-500/10", other: "" }[lookbackRowRole(r, c.winner)]}`}>
                     <td className="pr-2 whitespace-nowrap">{r.rank === 1 && <span data-roe-lookback-top className="mr-1 rounded bg-amber-400 text-black px-1.5 text-[10px] font-bold">TOP</span>}{r.rank}</td><td className="pr-2 break-all">{r.run_id}</td><td className="text-right pr-2">{r.steps}</td>
