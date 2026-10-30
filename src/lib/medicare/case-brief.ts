@@ -2,7 +2,7 @@
  * Medicare chosen case and reviewer hand-off (pure; never throws; medicare-labeled only).
  * The case is documented product copy over a SYNTHETIC fixture; nothing is fetched from CMS.
  */
-import type { InvestigationReport } from "@/lib/medicare/investigation";
+import { reviewCompletion, reviewProgress, verifyReportHash, type InvestigationReport } from "@/lib/medicare/investigation";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 import type { MedicareProvenance } from "@/lib/medicare/provenance";
 
@@ -78,4 +78,18 @@ export function buildWinSummary(report: InvestigationReport, evidence: EvidenceP
 /** Pure: stable DOM id for a medicare anchor ("medicare-<kind>-<slug>"), safe for URL fragments. */
 export function medicareAnchorId(kind: "candidate" | "evidence" | "disposition", key: string | number): string {
   return `medicare-${kind}-${String(key).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
+
+/**
+ * Pure reviewed hand-off: the case brief over the LIVE report, headed with review status. Returns "" unless the
+ * report hash verifies and the report links this evidence pack, so a stale or edited report is never exported.
+ */
+export function formatReviewedCaseBrief(report: unknown, evidence: EvidencePack, provenance: MedicareProvenance): string {
+  try {
+    const r = report as InvestigationReport;
+    if (!verifyReportHash(r) || r.evidence?.pack_hash !== evidence.pack_hash || !r.evidence.pack_verified) return "";
+    const p = reviewProgress(r); const done = reviewCompletion(p);
+    const head = done.complete ? `> ${done.message}` : `> Review in progress: ${p.label}. Unreviewed items remain patterns awaiting a reviewer.`;
+    return formatInvestigationCaseBrief(r, evidence, provenance).replace(/\n\n/, `\n\n${head}\n\n`);
+  } catch { return ""; }
 }

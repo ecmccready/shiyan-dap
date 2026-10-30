@@ -107,6 +107,7 @@ export default function MedicarePage() {
               <div className="flex flex-wrap items-center gap-3">
                 <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
                 <CopyLiveInvestigation initial={FIXTURE_INVESTIGATION} />
+                <CopyLiveInvestigation initial={FIXTURE_INVESTIGATION} brief={{ evidence: FIXTURE_EVIDENCE, provenance: FIXTURE_PROVENANCE }} />
                 {w.top && TOP_ROW !== null && (
                   <span className="flex flex-wrap gap-3 text-xs">
                     <a data-medicare-jump-top href={`#${medicareAnchorId("candidate", TOP_ROW)}`} className="text-emerald-300 underline">Jump to top candidate ↓</a>

@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
-import { MEDICARE_CASE, formatInvestigationCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
+import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
 import { currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
@@ -186,4 +186,13 @@ assert.equal(back.report_hash, all3.report_hash); assert.ok(verifyReportHash(bac
 assert.equal(currentDispositionsJson(t2), "", "tampered report not copied");
 for (const j of [null, "x", {}, cyc]) assert.equal(currentDispositionsJson(j), "");
 console.log("live copy   -> current statuses + verifying report_hash; tampered or unreadable gives nothing");
+// 14. Reviewed case brief over the live report (pure).
+const rb = formatReviewedCaseBrief(all3, ev, FIXTURE_PROVENANCE);
+assert.ok(rb.includes("> Review complete: all 3 items dispositioned (1 needs_human_review, 2 cleared_pattern_only)"));
+assert.ok(rb.includes(all3.report_hash)); assert.ok(rb.includes("[needs_human_review] rule:payment_vs_charge.v1:5")); assert.ok(rb.includes("Detected pattern ≠ verified conclusion"));
+assert.ok(formatReviewedCaseBrief(live, ev, FIXTURE_PROVENANCE).includes("> Review in progress: 2 of 3 reviewed."));
+assert.equal(formatReviewedCaseBrief(t2, ev, FIXTURE_PROVENANCE), "", "tampered report not exported");
+assert.equal(formatReviewedCaseBrief(r3, ev, FIXTURE_PROVENANCE), "", "unverified pack not exported");
+for (const j of [null, "x", {}, cyc]) assert.equal(formatReviewedCaseBrief(j, ev, FIXTURE_PROVENANCE), "");
+console.log("reviewed    -> brief over live report: review-complete header, live statuses and report_hash; tampered/unlinked gives nothing");
 console.log("OK");
