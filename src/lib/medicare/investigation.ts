@@ -345,6 +345,11 @@ export function toastsAfterLeave(deferred: Iterable<MedicareToastId> | null | un
   const d = new Set(deferred ?? []); return (showing ?? []).map((t) => t.id).filter((id) => d.has(id));
 }
 
+/** Pure: each stacked top toast's auto-dismiss time, for its time-left bar. */
+export function medicareToastDurationMs(id: unknown): number {
+  return id === "complete" ? COMPLETE_TOAST_MS : id === "handoff_ready" ? HANDOFF_READY_TOAST_MS : id === "empty_filter" ? EMPTY_ROW_FILTER_TOAST_MS : 0;
+}
+
 /** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
 export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
   if (helpOpen === true) return "help";
