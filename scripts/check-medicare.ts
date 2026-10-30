@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -318,4 +318,12 @@ assert.equal(notesNudge(all3).show, true, "complete, no notes"); assert.match(no
 assert.equal(notesNudge(buildInvestigationReport({ pack: ev, dispositions: nAll })).show, false, "hidden once a note exists");
 for (const j of [null, "x", {}, cyc]) assert.equal(notesNudge(j).show, false);
 console.log("nudge       -> optional 'Add notes?' banner only at Review complete with 0 notes");
+// 28. Annotated hand-off ready chip (pure).
+assert.equal(handoffReadyAnnotated(inv).ready, false); assert.equal(handoffReadyAnnotated(all3).ready, false, "complete but no notes");
+assert.equal(handoffReadyAnnotated(nr).ready, false, "notes but not complete");
+assert.deepEqual(handoffReadyAnnotated(buildInvestigationReport({ pack: ev, dispositions: nAll })), { ready: true, label: "Hand-off ready · reviewed with 1 note" });
+assert.equal(handoffReadyAnnotated(two).label, "Hand-off ready · reviewed with 2 notes");
+for (const j of [null, "x", {}, cyc]) assert.equal(handoffReadyAnnotated(j).ready, false);
+assert.ok(handoffReadyAnnotated(two).ready !== notesNudge(two).show, "chip and nudge never both show");
+console.log("ready chip  -> ✅ Hand-off ready only at Review complete with ≥1 note; never alongside the nudge");
 console.log("OK");

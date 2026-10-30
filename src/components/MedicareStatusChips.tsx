@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesNudge, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesNudge, handoffReadyAnnotated, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -26,6 +26,11 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
   const chips = statusChips(r);
   return (
     <div data-medicare-status-chips className="space-y-2">
+      {(() => { const h = handoffReadyAnnotated(r); return h.ready ? (
+        <a href="#medicare-win" data-medicare-handoff-ready-annotated className="inline-flex items-center gap-2 rounded-full border-2 border-white bg-emerald-400 px-4 py-1.5 text-sm font-bold text-black shadow-lg shadow-emerald-500/40">
+          ✅ {h.label} <span className="text-xs font-semibold opacity-80">— copy the 📦 hand-off pack</span>
+        </a>
+      ) : null; })()}
       {(() => { const n = notesNudge(r); return n.show ? (
         <div role="status" data-medicare-notes-nudge className="rounded-xl border-2 border-sky-400 bg-sky-500/15 px-3 py-2 text-sm text-sky-100">
           <span className="mr-2 rounded-full bg-sky-400 text-black px-2 py-0.5 text-xs font-bold">✎ Add notes?</span>

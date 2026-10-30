@@ -294,3 +294,12 @@ export function notesNudge(report: unknown): { show: boolean; message: string } 
     return { show: true, message: "Review complete with no reviewer notes. Optional: add a short note on any item (why it needs review or why the pattern is explained) before copying the hand-off pack." };
   } catch { return { show: false, message: "" }; }
 }
+
+/** Pure: annotated hand-off ready = review complete and at least one reviewer note. */
+export function handoffReadyAnnotated(report: unknown): { ready: boolean; label: string } {
+  try {
+    const n = notesCount(report).count;
+    if (!reviewCompletion(reviewProgress(report)).complete || n < 1) return { ready: false, label: "" };
+    return { ready: true, label: `Hand-off ready · reviewed with ${n} note${n === 1 ? "" : "s"}` };
+  } catch { return { ready: false, label: "" }; }
+}
