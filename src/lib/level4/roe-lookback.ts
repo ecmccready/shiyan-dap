@@ -248,6 +248,25 @@ export function lookbackToastText(k: LookbackKey, runId: unknown): string | null
     default: return null;
   }
 }
+/** What the look-back key handler knows when a shortcut fires (display only). */
+export type LookbackKeyContext = { visible?: unknown; focus?: string | null; open?: string | null; button_ready?: boolean };
+/** Pure: true only when the look-back key will change state or copy; gates the ⌨ toast. */
+export function lookbackKeyChanges(k: LookbackKey, c: LookbackKeyContext | null | undefined): boolean {
+  try {
+    if (!k || !c) return false;
+    const vis = Array.isArray(c.visible) ? c.visible.filter((x): x is string => typeof x === "string") : [];
+    const focused = !!c.focus && vis.includes(c.focus);
+    switch (k) {
+      case "next": case "prev": { const nx = moveLookbackFocus(vis, c.focus ?? null, k); return !!nx && nx !== c.focus; }
+      case "toggle": return focused;
+      case "close": return !!c.open;
+      case "copy": case "steps": return focused;
+      case "compare": case "summary": return !!c.button_ready;
+      case "filter": case "sort": return true;
+      default: return false;
+    }
+  } catch { return false; }
+}
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },

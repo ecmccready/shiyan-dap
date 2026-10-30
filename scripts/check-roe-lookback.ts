@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -172,4 +172,15 @@ assert.equal(lookbackToastText(lookbackKey({ key: "?" }), "x"), null, "cheat she
 for (const k of ["j", "k", "Enter", "Escape", "c", "s", "m", "g", "f", "o"]) { const t = lookbackToastText(lookbackKey({ key: k, targetTag: "TR" }), "run-a"); assert.ok(t && t.length <= 60, k); }
 assert.ok(LOOKBACK_TOAST_MS > 0 && LOOKBACK_TOAST_MS <= 3000);
 console.log("key toast   -> amber ⌨ toast names the last look-back key action for ~1.6 s; none for ?");
+// Toast only when the look-back key changes state or copies.
+{ const K = (key: string) => lookbackKey({ key, targetTag: "TR" }); const b = { visible: ["a", "b"], focus: null as string | null, open: null as string | null, button_ready: true };
+  assert.equal(lookbackKeyChanges(K("j"), b), true, "first j focuses row 1"); assert.equal(lookbackKeyChanges(K("k"), { ...b, focus: "a" }), false, "clamped at top");
+  assert.equal(lookbackKeyChanges(K("j"), { ...b, focus: "b" }), false, "clamped at bottom"); assert.equal(lookbackKeyChanges(K("j"), { ...b, visible: [] }), false, "nothing shown");
+  assert.equal(lookbackKeyChanges(K("Enter"), b), false); assert.equal(lookbackKeyChanges(K("Enter"), { ...b, focus: "a" }), true);
+  assert.equal(lookbackKeyChanges(K("c"), { ...b, focus: "zz" }), false, "focused row hidden by filter"); assert.equal(lookbackKeyChanges(K("s"), { ...b, focus: "b" }), true);
+  assert.equal(lookbackKeyChanges(K("Escape"), b), false, "nothing open"); assert.equal(lookbackKeyChanges(K("Escape"), { ...b, open: "a" }), true);
+  assert.equal(lookbackKeyChanges(K("m"), { ...b, button_ready: false }), false); assert.equal(lookbackKeyChanges(K("g"), b), true);
+  assert.equal(lookbackKeyChanges(K("f"), { ...b, visible: [] }), true); assert.equal(lookbackKeyChanges(K("o"), b), true);
+  assert.equal(lookbackKeyChanges(K("?"), b), false); assert.equal(lookbackKeyChanges(null, b), false); assert.equal(lookbackKeyChanges(K("j"), null), false); }
+console.log("toast gate  -> look-back ⌨ toast only when the key changes state or copies; clamped j/k, nothing open, hidden focus stay silent");
 console.log("OK");
