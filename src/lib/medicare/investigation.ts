@@ -332,6 +332,12 @@ export function medicareToastStack(t: Partial<Record<MedicareToastId, unknown>> 
   return MEDICARE_TOAST_ORDER.flatMap((id) => { const x = t[id]; return typeof x === "string" && x ? [{ id, text: x, tone: id === "empty_filter" ? "amber" as const : "green" as const }] : []; });
 }
 
+/** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
+export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
+  if (helpOpen === true) return "help";
+  return typeof toastCount === "number" && toastCount > 0 ? "toasts" : null;
+}
+
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
 export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the target row down / up" },
