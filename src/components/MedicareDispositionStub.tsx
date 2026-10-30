@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
 /** Client-only disposition stub over the synthetic fixture. State lives in this tab; nothing is stored or sent. */
 export default function MedicareDispositionStub({ pack, highlight }: { pack: EvidencePack; highlight?: string }) {
-  const [hist, setHist] = useState<DispositionHistory>({ past: [], present: {}, last_action: null });
+  const [hist, setHist] = useState<DispositionHistory>({ past: [], present: {}, last_action: null, future: [] });
   const disp = hist.present;
   const commit = (fn: (d: DispositionInput) => DispositionInput, action: string) => setHist((h) => commitDisposition(h, fn(h.present), action));
   const [filter, setFilter] = useState<DispositionStatus | null>(null);
@@ -66,6 +66,10 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       <button type="button" data-medicare-undo disabled={!hist.past.length} onClick={() => setHist(undoDisposition)}
         className={`rounded-full border px-3 py-1 text-xs ${hist.past.length ? "border-sky-400 text-sky-200 hover:bg-sky-500/10" : "border-zinc-700 text-zinc-600"}`}>
         ↶ Undo{hist.last_action ? `: ${hist.last_action}` : ""}{hist.past.length ? ` (${hist.past.length})` : ""}
+      </button>
+      <button type="button" data-medicare-redo disabled={!(hist.future ?? []).length} onClick={() => setHist(redoDisposition)}
+        className={`rounded-full border px-3 py-1 text-xs ${(hist.future ?? []).length ? "border-sky-400 text-sky-200 hover:bg-sky-500/10" : "border-zinc-700 text-zinc-600"}`}>
+        ↷ Redo{(hist.future ?? []).length ? ` (${(hist.future ?? []).length})` : ""}
       </button>
       <button type="button" onClick={() => commit(() => ({}), "reset all")} className="text-xs underline text-zinc-400">Reset</button></div>
     </div>

@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -230,4 +230,16 @@ let cap = { past: [] as object[], present: {}, last_action: null as string | nul
 for (let i = 0; i < 30; i++) cap = commitDisposition(cap as never, { [`k${i}`]: { status: "needs_human_review" } }, `s${i}`) as never;
 assert.equal(cap.past.length, DISPOSITION_HISTORY_LIMIT);
 console.log("undo        -> single and bulk changes undo one step at a time; no-ops skipped; history capped at 20");
+// 19. Redo (pure).
+let rh = { past: [] as object[], present: {}, last_action: null as string | null, future: [] as object[] } as never as Parameters<typeof redoDisposition>[0];
+rh = commitDisposition(rh, applyDisposition(rh.present, ids[0], "needs_human_review"), "a");
+rh = commitDisposition(rh, applyBulkDisposition(rh.present, ids, "cleared_pattern_only"), "bulk");
+const afterBulk = rh.present;
+rh = undoDisposition(rh); rh = undoDisposition(rh); assert.deepEqual(rh.present, {}); assert.equal(rh.future?.length, 2);
+rh = redoDisposition(rh); assert.deepEqual(rh.present, { [ids[0]]: { status: "needs_human_review" } });
+rh = redoDisposition(rh); assert.deepEqual(rh.present, afterBulk, "bulk redone in one step"); assert.equal(redoDisposition(rh), rh, "nothing to redo");
+rh = undoDisposition(rh); rh = commitDisposition(rh, applyDisposition(rh.present, ids[2], "unreviewed"), "x");
+rh = commitDisposition(rh, applyDisposition(rh.present, ids[1], "needs_human_review"), "y"); assert.deepEqual(rh.future, [], "new change clears redo");
+assert.equal(redoDisposition({ past: [], present: {}, last_action: null }).future, undefined, "older history without future is safe");
+console.log("redo        -> undo/redo walk both ways; bulk redone in one step; a new change clears redo");
 console.log("OK");

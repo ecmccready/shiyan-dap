@@ -174,18 +174,25 @@ export function applyBulkDisposition(current: unknown, item_ids: unknown, status
 
 /** Undo history for tab-local dispositions: snapshots of prior states, newest last, capped. */
 export const DISPOSITION_HISTORY_LIMIT = 20;
-export type DispositionHistory = { past: DispositionInput[]; present: DispositionInput; last_action: string | null };
+export type DispositionHistory = { past: DispositionInput[]; present: DispositionInput; last_action: string | null; future?: DispositionInput[] };
 
 /** Pure: record a change. No-op (same object back) when next equals present. */
 export function commitDisposition(h: DispositionHistory, next: DispositionInput, action: string): DispositionHistory {
   try {
     if (JSON.stringify(next) === JSON.stringify(h.present)) return h;
-    return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: next, last_action: action };
+    return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: next, last_action: action, future: [] };
   } catch { return h; }
 }
 
 /** Pure: step back one change; unchanged when there is nothing to undo. */
 export function undoDisposition(h: DispositionHistory): DispositionHistory {
   if (!h.past.length) return h;
-  return { past: h.past.slice(0, -1), present: h.past[h.past.length - 1], last_action: null };
+  return { past: h.past.slice(0, -1), present: h.past[h.past.length - 1], last_action: null, future: [...(h.future ?? []), h.present].slice(-DISPOSITION_HISTORY_LIMIT) };
+}
+
+/** Pure: re-apply the most recently undone change; unchanged when there is nothing to redo. A new commit clears redo. */
+export function redoDisposition(h: DispositionHistory): DispositionHistory {
+  const f = h.future ?? [];
+  if (!f.length) return h;
+  return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
