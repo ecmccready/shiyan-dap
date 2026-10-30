@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, dispositionShortcut, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -12,6 +12,25 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const [hist, setHist] = useState<DispositionHistory>({ past: [], present: {}, last_action: null, future: [] });
   const disp = hist.present;
   const commit = (fn: (d: DispositionInput) => DispositionInput, action: string) => setHist((h) => commitDisposition(h, fn(h.present), action));
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const target = focusId ?? highlight ?? null;
+  const targetRef = useRef<{ id: string | null; label: string }>({ id: null, label: "" });
+  useEffect(() => {
+    const on = (ev: KeyboardEvent) => {
+      const el = ev.target as HTMLElement | null;
+      const a = dispositionShortcut({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable });
+      if (!a) return;
+      if (a.kind === "undo") { ev.preventDefault(); setHist(undoDisposition); return; }
+      if (a.kind === "redo") { ev.preventDefault(); setHist(redoDisposition); return; }
+      const t = targetRef.current;
+      if (!t.id) return;
+      ev.preventDefault();
+      const id = t.id;
+      setHist((h) => commitDisposition(h, applyDisposition(h.present, id, a.status), `${t.label} → ${a.status} (key)`));
+    };
+    window.addEventListener("keydown", on);
+    return () => window.removeEventListener("keydown", on);
+  }, []);
   const [filter, setFilter] = useState<DispositionStatus | null>(null);
   useEffect(() => {
     const on = (ev: Event) => { const d = (ev as CustomEvent<DispositionStatus | null>).detail; setFilter(typeof d === "string" ? d : null); };
@@ -21,9 +40,14 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const report = useMemo(() => buildInvestigationReport({ pack, dispositions: disp }), [pack, disp]);
   const progress = useMemo(() => reviewProgress(report), [report]);
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
+  const targetEntry = report.entries.find((e) => e.item_id === target);
+  targetRef.current = { id: targetEntry ? targetEntry.item_id : null, label: targetEntry ? targetEntry.provider_id ?? targetEntry.item_id : "" };
   return (
     <div data-medicare-disposition-stub className="space-y-2">
       <p className="text-emerald-400 text-xs">Reviewer disposition (stub, this tab only)</p>
+      <p data-medicare-shortcut-hint className="text-[11px] text-zinc-500">
+        Keys: <kbd className="rounded border border-zinc-600 px-1">1</kbd> needs_human_review · <kbd className="rounded border border-zinc-600 px-1">2</kbd> cleared_pattern_only · <kbd className="rounded border border-zinc-600 px-1">3</kbd> unreviewed · <kbd className="rounded border border-zinc-600 px-1">u</kbd> undo · <kbd className="rounded border border-zinc-600 px-1">r</kbd> redo — on {targetEntry ? <span className="text-sky-300 font-mono">{targetRef.current.label}</span> : "no row"} (click a row to target it)
+      </p>
       <ProgressBar p={progress} />
       {filter && (
         <p className="text-xs text-zinc-300" data-medicare-filter-note>Filtered: {filter} ({report.entries.filter((e) => e.status === filter).length}) · <button type="button" className="underline" onClick={() => { setFilter(null); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: null })); }}>Show all</button></p>
@@ -45,7 +69,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       })()}
       <ul id="medicare-disposition-list" className="scroll-mt-24 space-y-1 text-xs font-mono text-zinc-300">
         {report.entries.map((e) => (
-          <li key={e.item_id} id={medicareAnchorId("disposition", e.item_id)} data-medicare-filter-emphasis={filterEmphasis(e.status, filter)} className={`scroll-mt-24 flex flex-wrap items-center gap-2 transition-opacity ${filterEmphasis(e.status, filter) === "dim" ? "opacity-30" : filterEmphasis(e.status, filter) === "match" ? "rounded ring-2 ring-white/70 px-2 py-1" : ""} ${e.item_id === highlight ? "rounded bg-emerald-500/15 border-l-4 border-emerald-400 px-2 py-1" : ""}`}>
+          <li key={e.item_id} id={medicareAnchorId("disposition", e.item_id)} onClick={() => setFocusId(e.item_id)} onFocus={() => setFocusId(e.item_id)} data-medicare-key-target={e.item_id === target ? "true" : undefined} data-medicare-filter-emphasis={filterEmphasis(e.status, filter)} className={`scroll-mt-24 flex flex-wrap items-center gap-2 transition-opacity ${filterEmphasis(e.status, filter) === "dim" ? "opacity-30" : filterEmphasis(e.status, filter) === "match" ? "rounded ring-2 ring-white/70 px-2 py-1" : ""} ${e.item_id === highlight ? "rounded bg-emerald-500/15 border-l-4 border-emerald-400 px-2 py-1" : ""} ${e.item_id === target ? "outline outline-1 outline-sky-400 rounded" : ""}`}>
             <span>{e.item_id}</span>
             <select
               aria-label={`Disposition for ${e.item_id}`}

@@ -196,3 +196,21 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   if (!f.length) return h;
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
+
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | null;
+/** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo. Modifiers or typing targets → null. */
+export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
+  try {
+    if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA") return null;
+    switch (ev.key) {
+      case "1": return { kind: "set", status: "needs_human_review" };
+      case "2": return { kind: "set", status: "cleared_pattern_only" };
+      case "3": return { kind: "set", status: "unreviewed" };
+      case "u": case "U": return { kind: "undo" };
+      case "r": case "R": return { kind: "redo" };
+      default: return null;
+    }
+  } catch { return null; }
+}

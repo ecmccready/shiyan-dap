@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -242,4 +242,12 @@ rh = undoDisposition(rh); rh = commitDisposition(rh, applyDisposition(rh.present
 rh = commitDisposition(rh, applyDisposition(rh.present, ids[1], "needs_human_review"), "y"); assert.deepEqual(rh.future, [], "new change clears redo");
 assert.equal(redoDisposition({ past: [], present: {}, last_action: null }).future, undefined, "older history without future is safe");
 console.log("redo        -> undo/redo walk both ways; bulk redone in one step; a new change clears redo");
+// 20. Keyboard shortcuts (pure map).
+assert.deepEqual(dispositionShortcut({ key: "1" }), { kind: "set", status: "needs_human_review" });
+assert.deepEqual(dispositionShortcut({ key: "2", targetTag: "select" }), { kind: "set", status: "cleared_pattern_only" });
+assert.deepEqual(dispositionShortcut({ key: "3" }), { kind: "set", status: "unreviewed" });
+assert.deepEqual(dispositionShortcut({ key: "u" }), { kind: "undo" }); assert.deepEqual(dispositionShortcut({ key: "R" }), { kind: "redo" });
+for (const j of [{ key: "1", ctrlKey: true }, { key: "1", metaKey: true }, { key: "u", targetTag: "INPUT" }, { key: "2", targetTag: "textarea" }, { key: "1", editable: true }, { key: "4" }, { key: "f" }, null, {}])
+  assert.equal(dispositionShortcut(j as never), null);
+console.log("keys        -> 1/2/3 set the targeted row, u undo, r redo; ignored with modifiers or while typing");
 console.log("OK");
