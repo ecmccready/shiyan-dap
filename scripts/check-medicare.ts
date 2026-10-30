@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -397,4 +397,19 @@ assert.equal(keyToastText(dispositionShortcut({ key: "?" }), "x"), null, "cheat 
 for (const k of ["1", "2", "3", "u", "r", "j", "k", "n", "t", "f", "y", "h"]) { const t = keyToastText(dispositionShortcut({ key: k }), "SYN-0006"); assert.ok(t && t.length <= 60 && !/fraud|misconduct|misdiagnos/i.test(t), k); }
 assert.ok(KEY_TOAST_MS > 0 && KEY_TOAST_MS <= 3000);
 console.log("key toast   -> a short amber toast names the last keyboard action and target for ~1.6 s; none for ?");
+// 39. Toast only when the shortcut changes state (pure gate).
+{ const S = (k: string) => dispositionShortcut({ key: k }); const base = { target_id: "a", target_status: "unreviewed", target_kind: "rule_candidate", target_note: "", ids: ["a", "b"], can_undo: false, can_redo: false, button_ready: true };
+  assert.equal(keyActionChanges(S("1"), base), true); assert.equal(keyActionChanges(S("3"), base), false, "already unreviewed");
+  assert.equal(keyActionChanges(S("1"), { ...base, target_status: "needs_human_review" }), false, "same status");
+  assert.equal(keyActionChanges(S("1"), { ...base, target_id: null }), false, "no target");
+  assert.equal(keyActionChanges(S("u"), base), false); assert.equal(keyActionChanges(S("u"), { ...base, can_undo: true }), true);
+  assert.equal(keyActionChanges(S("r"), base), false); assert.equal(keyActionChanges(S("r"), { ...base, can_redo: true }), true);
+  assert.equal(keyActionChanges(S("j"), base), true); assert.equal(keyActionChanges(S("k"), base), false, "clamped at top");
+  assert.equal(keyActionChanges(S("j"), { ...base, target_id: "b" }), false, "clamped at bottom");
+  assert.equal(keyActionChanges(S("n"), base), false, "note disabled while unreviewed"); assert.equal(keyActionChanges(S("n"), { ...base, target_status: "needs_human_review" }), true);
+  assert.equal(keyActionChanges(S("t"), base), false); assert.equal(keyActionChanges(S("t"), { ...base, target_status: "needs_human_review" }), true);
+  assert.equal(keyActionChanges(S("t"), { ...base, target_status: "needs_human_review", target_note: noteTemplates("needs_human_review", "rule_candidate").join("; ") }), false, "all templates used");
+  assert.equal(keyActionChanges(S("f"), base), true); assert.equal(keyActionChanges(S("y"), base), true); assert.equal(keyActionChanges(S("h"), { ...base, button_ready: false }), false);
+  assert.equal(keyActionChanges(S("?"), base), false); assert.equal(keyActionChanges(null, base), false); assert.equal(keyActionChanges(S("1"), null), false); }
+console.log("toast gate  -> ⌨ toast only when the key changes state or copies; no-ops (same status, clamped move, empty undo, unreviewed note) stay silent");
 console.log("OK");

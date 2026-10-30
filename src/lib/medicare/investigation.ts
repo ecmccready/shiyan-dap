@@ -274,6 +274,26 @@ export function keyToastText(a: DispositionShortcut, label: unknown): string | n
   } catch { return null; }
 }
 
+/** What the key handler knows when a shortcut fires (display only). */
+export type KeyActionContext = { target_id?: string | null; target_status?: unknown; target_kind?: unknown; target_note?: unknown; can_undo?: boolean; can_redo?: boolean; ids?: unknown; button_ready?: boolean };
+/** Pure: true only when the shortcut will actually change state (or copy); gates the ⌨ toast. */
+export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | null | undefined): boolean {
+  try {
+    if (!a || !c) return false;
+    switch (a.kind) {
+      case "set": return !!c.target_id && c.target_status !== a.status;
+      case "undo": return !!c.can_undo;
+      case "redo": return !!c.can_redo;
+      case "move": { const nx = moveDispositionTarget(c.ids, c.target_id ?? null, a.dir); return !!nx && nx !== c.target_id; }
+      case "note": return !!c.target_id && c.target_status !== "unreviewed" && DISPOSITION_STATUSES.includes(c.target_status as DispositionStatus);
+      case "template": return !!c.target_id && firstAvailableTemplate(c.target_status, c.target_kind, c.target_note) !== null;
+      case "filter": return true;
+      case "dispositions": case "handoff": return !!c.button_ready;
+      default: return false;
+    }
+  } catch { return false; }
+}
+
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
 export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the target row down / up" },

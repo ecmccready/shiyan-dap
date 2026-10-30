@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -17,6 +17,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const [help, setHelp] = useState(false);
   const [toast, setToast] = useState<{ txt: string; at: number } | null>(null);
   const idsRef = useRef<string[]>([]);
+  const histRef = useRef<DispositionHistory>({ past: [], present: {}, last_action: null, future: [] });
   const filterRef = useRef<RowFilter>(null);
   const entryRef = useRef<{ item_id: string; status: string; kind: string; note?: string | null; provider_id?: string | null } | null>(null);
   const targetRef = useRef<{ id: string | null; label: string }>({ id: null, label: "" });
@@ -25,7 +26,10 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       const el = ev.target as HTMLElement | null;
       const a = dispositionShortcut({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable });
       if (!a) return;
-      { const txt = keyToastText(a, a.kind === "move" || a.kind === "filter" ? "" : targetRef.current.label); if (txt) { const at = Date.now(); setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); } }
+      const btn = a.kind === "dispositions" || a.kind === "handoff" ? document.querySelector<HTMLButtonElement>(a.kind === "handoff" ? "[data-copy-medicare-handoff]" : "[data-copy-medicare-dispositions]") : null;
+      const en = entryRef.current; const hh = histRef.current;
+      const changes = keyActionChanges(a, { target_id: targetRef.current.id, target_status: en?.status, target_kind: en?.kind, target_note: en?.note, can_undo: hh.past.length > 0, can_redo: (hh.future?.length ?? 0) > 0, ids: idsRef.current, button_ready: !!btn && !btn.disabled });
+      { const txt = changes ? keyToastText(a, a.kind === "move" || a.kind === "filter" ? "" : targetRef.current.label) : null; if (txt) { const at = Date.now(); setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); } }
       if (a.kind === "help") { ev.preventDefault(); setHelp((x) => !x); return; }
       if (a.kind === "help_close") { setHelp(false); return; }
       if (a.kind === "undo") { ev.preventDefault(); setHist(undoDisposition); return; }
@@ -64,6 +68,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
   const targetEntry = report.entries.find((e) => e.item_id === target);
   idsRef.current = report.entries.map((e) => e.item_id);
+  histRef.current = hist;
   entryRef.current = targetEntry ?? null;
   targetRef.current = { id: targetEntry ? targetEntry.item_id : null, label: targetEntry ? targetEntry.provider_id ?? targetEntry.item_id : "" };
   return (
