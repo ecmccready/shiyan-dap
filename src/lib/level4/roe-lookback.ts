@@ -202,3 +202,12 @@ export function pathStepsDetail(row: { actions?: unknown; e_series?: unknown; ma
     });
   } catch { return []; }
 }
+
+/** Pure: one path's step detail as JSON (schema, kind "steps", run_id, rank, steps). "" for unreadable rows. */
+export function pathStepsJson(row: { run_id?: unknown; rank?: unknown; actions?: unknown; e_series?: unknown; max_step_i?: unknown } | null | undefined): string {
+  try {
+    if (!row || typeof row.run_id !== "string") return "";
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "steps", run_id: row.run_id, rank: typeof row.rank === "number" ? row.rank : null,
+      best_step_i: typeof row.max_step_i === "number" ? row.max_step_i : null, steps: pathStepsDetail(row), note: ROE_LOOKBACK_NOTE }, null, 2);
+  } catch { return ""; }
+}

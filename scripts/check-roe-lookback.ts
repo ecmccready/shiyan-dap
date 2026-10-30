@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -107,4 +107,10 @@ assert.deepEqual(pathStepsDetail(live.paths[0]).map((d) => [d.action, d.gain, d.
 assert.deepEqual(pathStepsDetail({ actions: ["x"] }), [{ step: 1, action: "x", e_before: null, e_after: null, gain: null, best: false }]);
 for (const j of [null, undefined, {}, { actions: "x" }]) assert.deepEqual(pathStepsDetail(j as never), []);
 console.log("expand      -> full action list per path with e before/after, I_t and ★ best step");
+const sj = JSON.parse(pathStepsJson(rankedLookbackRows(c)[0]));
+assert.equal(sj.schema, "aethel.roe.lookback.v1"); assert.equal(sj.kind, "steps"); assert.equal(sj.run_id, "B"); assert.equal(sj.rank, 1); assert.equal(sj.best_step_i, 0.7);
+assert.deepEqual(sj.steps, pathStepsDetail(bRow)); assert.equal(sj.steps[2].best, true);
+assert.equal(JSON.parse(pathStepsJson(live.paths[0])).steps[3].action, "seal_pack");
+for (const j of [null, undefined, {}, { run_id: 3 }]) assert.equal(pathStepsJson(j as never), "");
+console.log("steps json  -> expanded row copies kind:steps JSON (action, e before/after, I_t, best)");
 console.log("OK");
