@@ -235,13 +235,20 @@ export function lookbackSummaryJson(c: LookbackCompare | null | undefined): stri
 }
 
 /** Pure: clicking a role count sets that Show filter; clicking the active one (or anything invalid) returns "all". */
+/** Order for key f: All → ★ Winners → Beaten → = Agree → All. */
+export const ROLE_FILTER_CYCLE: readonly LookbackRoleFilter[] = ["all", "winners", "beaten", "agree"];
+/** Pure: next Show filter in ROLE_FILTER_CYCLE; unknown input restarts at All → winners. */
+export function cycleRoleFilter(current: unknown): LookbackRoleFilter {
+  const i = ROLE_FILTER_CYCLE.indexOf(current as LookbackRoleFilter);
+  return ROLE_FILTER_CYCLE[(Math.max(0, i) + 1) % ROLE_FILTER_CYCLE.length];
+}
 export function toggleRoleFilter(current: unknown, clicked: unknown): LookbackRoleFilter {
   if (clicked !== "winners" && clicked !== "beaten" && clicked !== "agree") return "all";
   return current === clicked ? "all" : clicked;
 }
 
-export type LookbackKey = "next" | "prev" | "toggle" | "close" | "copy" | "steps" | "compare" | "summary" | null;
-/** Pure: j next, k prev, Enter toggle, Escape close, c copy focused path JSON, s copy its steps JSON, m copy compare pack, g copy summary JSON; ignored with modifiers or while typing. */
+export type LookbackKey = "next" | "prev" | "toggle" | "close" | "copy" | "steps" | "compare" | "summary" | "filter" | null;
+/** Pure: j next, k prev, Enter toggle, Escape close, c copy focused path JSON, s copy its steps JSON, m copy compare pack, g copy summary JSON, f cycle Show filter; ignored with modifiers or while typing. */
 export function lookbackKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): LookbackKey {
   try {
     if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
@@ -255,6 +262,7 @@ export function lookbackKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: un
     if (ev.key === "s" || ev.key === "S") return "steps";
     if (ev.key === "m" || ev.key === "M") return "compare";
     if (ev.key === "g" || ev.key === "G") return "summary";
+    if (ev.key === "f" || ev.key === "F") return "filter";
     return null;
   } catch { return null; }
 }

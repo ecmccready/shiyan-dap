@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -150,4 +150,10 @@ console.log("key m       -> copies the ⚖ compare pack (same button, same JSON)
 assert.equal(lookbackKey({ key: "g" }), "summary"); assert.equal(lookbackKey({ key: "G" }), "summary");
 assert.equal(lookbackKey({ key: "g", ctrlKey: true }), null); assert.equal(lookbackKey({ key: "g", editable: true }), null);
 console.log("key g       -> copies the sticky summary JSON (same button, same JSON); no row focus needed; typing untouched");
+// f cycles the Show filter.
+assert.equal(lookbackKey({ key: "f" }), "filter"); assert.equal(lookbackKey({ key: "f", ctrlKey: true }), null); assert.equal(lookbackKey({ key: "f", targetTag: "input" }), null);
+{ const seen: string[] = []; let f: unknown = "all"; for (let i = 0; i < 4; i++) { f = cycleRoleFilter(f); seen.push(f as string); }
+  assert.deepEqual(seen, ["winners", "beaten", "agree", "all"], "All → winners → beaten → agree → All"); }
+assert.equal(ROLE_FILTER_CYCLE.length, 4); assert.equal(cycleRoleFilter("bogus"), "winners"); assert.equal(cycleRoleFilter(null), "winners");
+console.log("key f       -> cycles Show All → ★ Winners → Beaten → = Agree → All; works even when the shown list is empty");
 console.log("OK");
