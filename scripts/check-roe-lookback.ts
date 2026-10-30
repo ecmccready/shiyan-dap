@@ -146,4 +146,8 @@ console.log("key s       -> expands the focused row and copies its steps JSON; C
 assert.equal(lookbackKey({ key: "m" }), "compare"); assert.equal(lookbackKey({ key: "M" }), "compare");
 assert.equal(lookbackKey({ key: "m", ctrlKey: true }), null); assert.equal(lookbackKey({ key: "m", targetTag: "input" }), null);
 console.log("key m       -> copies the ⚖ compare pack (same button, same JSON); no row focus needed; typing untouched");
+// g copies the sticky summary JSON (presses the existing strip button).
+assert.equal(lookbackKey({ key: "g" }), "summary"); assert.equal(lookbackKey({ key: "G" }), "summary");
+assert.equal(lookbackKey({ key: "g", ctrlKey: true }), null); assert.equal(lookbackKey({ key: "g", editable: true }), null);
+console.log("key g       -> copies the sticky summary JSON (same button, same JSON); no row focus needed; typing untouched");
 console.log("OK");
