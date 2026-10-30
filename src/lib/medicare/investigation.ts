@@ -171,3 +171,21 @@ export function applyBulkDisposition(current: unknown, item_ids: unknown, status
   for (const id of item_ids) out = applyDisposition(out, id, status);
   return out;
 }
+
+/** Undo history for tab-local dispositions: snapshots of prior states, newest last, capped. */
+export const DISPOSITION_HISTORY_LIMIT = 20;
+export type DispositionHistory = { past: DispositionInput[]; present: DispositionInput; last_action: string | null };
+
+/** Pure: record a change. No-op (same object back) when next equals present. */
+export function commitDisposition(h: DispositionHistory, next: DispositionInput, action: string): DispositionHistory {
+  try {
+    if (JSON.stringify(next) === JSON.stringify(h.present)) return h;
+    return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: next, last_action: action };
+  } catch { return h; }
+}
+
+/** Pure: step back one change; unchanged when there is nothing to undo. */
+export function undoDisposition(h: DispositionHistory): DispositionHistory {
+  if (!h.past.length) return h;
+  return { past: h.past.slice(0, -1), present: h.past[h.past.length - 1], last_action: null };
+}

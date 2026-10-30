@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -217,4 +217,17 @@ const b2 = applyBulkDisposition(b1, [ids[0], ids[1]], "unreviewed"); assert.deep
 assert.deepEqual(applyBulkDisposition(b1, ids, "fraud"), b1, "invented status ignored");
 assert.deepEqual(applyBulkDisposition(b1, "x", "needs_human_review"), b1);
 console.log("bulk        -> set all shown to one review status or reset; pure; invented statuses ignored");
+// 18. Undo history (pure).
+let h = { past: [] as Record<string, never>[], present: {}, last_action: null as string | null };
+h = commitDisposition(h, applyDisposition(h.present, ids[2], "needs_human_review"), "SYN-0006 → needs_human_review");
+h = commitDisposition(h, applyBulkDisposition(h.present, [ids[0], ids[1]], "cleared_pattern_only"), "set 2 to cleared_pattern_only");
+assert.equal(h.past.length, 2); assert.equal(h.last_action, "set 2 to cleared_pattern_only");
+assert.equal(reviewProgress(buildInvestigationReport({ pack: ev, dispositions: h.present })).label, "3 of 3 reviewed");
+assert.equal(commitDisposition(h, { ...h.present }, "noop"), h, "no-op change not recorded");
+h = undoDisposition(h); assert.deepEqual(h.present, { [ids[2]]: { status: "needs_human_review" } }, "bulk undone in one step"); assert.equal(h.last_action, null);
+h = undoDisposition(h); assert.deepEqual(h.present, {}); assert.equal(undoDisposition(h), h, "nothing to undo");
+let cap = { past: [] as object[], present: {}, last_action: null as string | null };
+for (let i = 0; i < 30; i++) cap = commitDisposition(cap as never, { [`k${i}`]: { status: "needs_human_review" } }, `s${i}`) as never;
+assert.equal(cap.past.length, DISPOSITION_HISTORY_LIMIT);
+console.log("undo        -> single and bulk changes undo one step at a time; no-ops skipped; history capped at 20");
 console.log("OK");

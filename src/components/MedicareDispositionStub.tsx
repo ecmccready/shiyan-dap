@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { MEDICARE_FILTER_EVENT, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
 /** Client-only disposition stub over the synthetic fixture. State lives in this tab; nothing is stored or sent. */
 export default function MedicareDispositionStub({ pack, highlight }: { pack: EvidencePack; highlight?: string }) {
-  const [disp, setDisp] = useState<DispositionInput>({});
+  const [hist, setHist] = useState<DispositionHistory>({ past: [], present: {}, last_action: null });
+  const disp = hist.present;
+  const commit = (fn: (d: DispositionInput) => DispositionInput, action: string) => setHist((h) => commitDisposition(h, fn(h.present), action));
   const [filter, setFilter] = useState<DispositionStatus | null>(null);
   useEffect(() => {
     const on = (ev: Event) => { const d = (ev as CustomEvent<DispositionStatus | null>).detail; setFilter(typeof d === "string" ? d : null); };
@@ -29,7 +31,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       {filter && (() => {
         const visible = report.entries.filter((e) => e.status === filter).map((e) => e.item_id);
         const bulk = (to: DispositionStatus) => {
-          setDisp((d) => applyBulkDisposition(d, visible, to));
+          commit((d) => applyBulkDisposition(d, visible, to), `set ${visible.length} to ${to}`);
           setFilter(to); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: to }));
         };
         return visible.length > 0 ? (
@@ -49,7 +51,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
               aria-label={`Disposition for ${e.item_id}`}
               data-medicare-disposition={e.item_id}
               value={e.status}
-              onChange={(ev) => setDisp((d) => applyDisposition(d, e.item_id, ev.target.value))}
+              onChange={(ev) => { const v = ev.target.value; commit((d) => applyDisposition(d, e.item_id, v), `${e.provider_id ?? e.item_id} → ${v}`); }}
               className="bg-zinc-900 border border-zinc-700 rounded px-1 py-0.5"
             >
               {DISPOSITION_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -61,7 +63,11 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
         report sha256 {report.report_hash} · {report.counts.unreviewed} unreviewed, {report.counts.needs_human_review} needs_human_review, {report.counts.cleared_pattern_only} cleared_pattern_only
       </p>
       <div className="flex flex-wrap items-center gap-3"><CopyLiveInvestigation report={report} />
-      <button type="button" onClick={() => setDisp({})} className="text-xs underline text-zinc-400">Reset</button></div>
+      <button type="button" data-medicare-undo disabled={!hist.past.length} onClick={() => setHist(undoDisposition)}
+        className={`rounded-full border px-3 py-1 text-xs ${hist.past.length ? "border-sky-400 text-sky-200 hover:bg-sky-500/10" : "border-zinc-700 text-zinc-600"}`}>
+        ↶ Undo{hist.last_action ? `: ${hist.last_action}` : ""}{hist.past.length ? ` (${hist.past.length})` : ""}
+      </button>
+      <button type="button" onClick={() => commit(() => ({}), "reset all")} className="text-xs underline text-zinc-400">Reset</button></div>
     </div>
   );
 }
