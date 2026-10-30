@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -160,4 +160,9 @@ console.log("key f       -> cycles Show All → ★ Winners → Beaten → = Agr
 assert.equal(lookbackKey({ key: "o" }), "sort"); assert.equal(lookbackKey({ key: "O" }), "sort"); assert.equal(lookbackKey({ key: "o", metaKey: true }), null, "Cmd+O left to the browser"); assert.equal(lookbackKey({ key: "o", targetTag: "input" }), null);
 assert.equal(toggleLookbackSort("rank"), "dphi"); assert.equal(toggleLookbackSort("dphi"), "rank"); assert.equal(toggleLookbackSort(toggleLookbackSort("rank")), "rank"); assert.equal(toggleLookbackSort(undefined), "dphi");
 console.log("key o       -> toggles Sort look-back rank ↔ ΔΦ vs greedy; Ctrl/Cmd+O and typing untouched");
+// ? cheat sheet.
+assert.equal(lookbackKey({ key: "?" }), "help"); assert.equal(lookbackKey({ key: "?", targetTag: "input" }), null); assert.equal(lookbackKey({ key: "?", metaKey: true }), null);
+for (const row of LOOKBACK_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(lookbackKey({ key: k, targetTag: "TR" }), `sheet key ${k} is live`);
+assert.equal(new Set(LOOKBACK_KEYMAP.map((r) => r.key)).size, LOOKBACK_KEYMAP.length);
+console.log("key ?       -> toggles the look-back keyboard cheat sheet (every listed key is live); Esc closes");
 console.log("OK");

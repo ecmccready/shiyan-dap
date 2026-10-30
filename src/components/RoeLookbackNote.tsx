@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -16,6 +16,7 @@ export default function RoeLookbackNote() {
   const [open, setOpen] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
   const [focusRow, setFocusRow] = useState<string | null>(null);
+  const [help, setHelp] = useState(false);
   const visibleRef = useRef<string[]>([]);
   const focusRef = useRef<string | null>(null);
   const jsonRef = useRef<Record<string, string>>({});
@@ -26,6 +27,8 @@ export default function RoeLookbackNote() {
     const on = (ev: KeyboardEvent) => {
       const el = ev.target as HTMLElement | null;
       const k = lookbackKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable });
+      if (k === "help") { ev.preventDefault(); setHelp((x) => !x); return; }
+      if (k === "close") setHelp(false);
       if (k === "sort") { ev.preventDefault(); setSortBy(toggleLookbackSort); return; }
       if (k === "filter") { ev.preventDefault(); setRoleFilter(cycleRoleFilter); return; }
       if (!k || !visibleRef.current.length) return;
@@ -51,6 +54,20 @@ export default function RoeLookbackNote() {
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
   return (
     <section data-roe-lookback className="rounded-xl border border-zinc-800 p-4 text-sm space-y-1">
+      {help && (
+        <div data-roe-lookback-cheatsheet role="dialog" aria-label="Keyboard shortcuts" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setHelp(false)}>
+          <div className="max-w-md w-full rounded-2xl border-2 border-amber-300 bg-zinc-950 p-5 shadow-2xl shadow-amber-500/20" onClick={(ev) => ev.stopPropagation()}>
+            <p className="text-amber-300 text-sm font-bold uppercase tracking-widest mb-3">Keyboard · ROE look-back</p>
+            <table className="w-full text-sm"><tbody>
+              {LOOKBACK_KEYMAP.map((k) => (
+                <tr key={k.key}><td className="pr-3 py-0.5 whitespace-nowrap"><kbd className="rounded border border-amber-300/70 bg-zinc-900 px-1.5 font-mono text-amber-100">{k.key === "Escape" ? "Esc" : k.key}</kbd></td><td className="text-zinc-200">{k.does}</td></tr>
+              ))}
+            </tbody></table>
+            <p className="mt-3 text-xs text-zinc-500">Keys work outside text fields; Ctrl / Alt / Cmd are left to the browser. Inspect only: nothing changes the loop or any record.</p>
+            <button type="button" onClick={() => setHelp(false)} className="mt-3 rounded-full border border-amber-300 px-4 py-1 text-xs text-amber-200">Close (Esc)</button>
+          </div>
+        </div>
+      )}
       <p className="text-xs uppercase tracking-widest text-zinc-500">ROE look-back (aethel.roe.lookback.v1)</p>
       {!c ? <p className="text-zinc-500">Reading sealed paths…</p> : c.paths_considered === 0 ? <p className="text-zinc-400">No sealed paths yet.</p> : (
         <>
@@ -67,7 +84,7 @@ export default function RoeLookbackNote() {
             <p data-roe-lookback-verdict="agree" className="text-xs text-zinc-400"><span className="mr-2 rounded-full border border-zinc-600 px-2 py-0.5">{v.label}</span>{v.detail}</p>
           ) : null; })()}
           <div className="flex items-center gap-2 text-xs" data-roe-lookback-sort={sortBy}>
-            <span className="text-zinc-500">Sort:</span><span className="text-zinc-600">(click a row for its actions · keys j/k move, Enter expand, Esc close, c copy path JSON, s copy steps JSON, m copy ⚖ compare pack, g copy summary JSON, f cycle Show, o toggle Sort)</span>{keyCopied ? <span data-roe-lookback-key-copied className="text-emerald-300">Copied {keyCopied} ✓</span> : null}
+            <span className="text-zinc-500">Sort:</span><span className="text-zinc-600">(click a row for its actions · keys j/k move, Enter expand, Esc close, c copy path JSON, s copy steps JSON, m copy ⚖ compare pack, g copy summary JSON, f cycle Show, o toggle Sort)</span><button type="button" data-roe-lookback-cheatsheet-open onClick={() => setHelp(true)} className="rounded border border-amber-400 px-1 text-amber-300 font-semibold">? all keys</button>{keyCopied ? <span data-roe-lookback-key-copied className="text-emerald-300">Copied {keyCopied} ✓</span> : null}
             {(["rank", "dphi"] as const).map((k) => (
               <button key={k} type="button" aria-pressed={sortBy === k} onClick={() => setSortBy(k)}
                 className={`rounded-full border px-2 py-0.5 ${sortBy === k ? "border-emerald-400 text-emerald-200" : "border-zinc-600 text-zinc-400"}`}>

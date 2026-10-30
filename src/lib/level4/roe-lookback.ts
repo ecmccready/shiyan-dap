@@ -235,6 +235,19 @@ export function lookbackSummaryJson(c: LookbackCompare | null | undefined): stri
 }
 
 /** Pure: clicking a role count sets that Show filter; clicking the active one (or anything invalid) returns "all". */
+/** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
+export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
+  { key: "j / k", does: "move the row focus down / up" },
+  { key: "Enter", does: "expand / collapse the focused row's steps" },
+  { key: "Escape", does: "close the expanded row and this sheet" },
+  { key: "c", does: "copy the focused row's path JSON" },
+  { key: "s", does: "expand and copy the focused row's steps JSON" },
+  { key: "m", does: "copy ⚖ compare pack" },
+  { key: "g", does: "copy summary JSON" },
+  { key: "f", does: "cycle Show: All → ★ Winners → Beaten → = Agree" },
+  { key: "o", does: "toggle Sort: look-back rank ↔ ΔΦ vs greedy" },
+  { key: "?", does: "show / hide this sheet" },
+];
 /** Pure: key o flips Sort between look-back rank and ΔΦ vs greedy; unknown input goes to "dphi". */
 export function toggleLookbackSort(current: unknown): LookbackSort { return current === "dphi" ? "rank" : "dphi"; }
 /** Order for key f: All → ★ Winners → Beaten → = Agree → All. */
@@ -249,8 +262,8 @@ export function toggleRoleFilter(current: unknown, clicked: unknown): LookbackRo
   return current === clicked ? "all" : clicked;
 }
 
-export type LookbackKey = "next" | "prev" | "toggle" | "close" | "copy" | "steps" | "compare" | "summary" | "filter" | "sort" | null;
-/** Pure: j next, k prev, Enter toggle, Escape close, c copy focused path JSON, s copy its steps JSON, m copy compare pack, g copy summary JSON, f cycle Show filter, o toggle Sort; ignored with modifiers or while typing. */
+export type LookbackKey = "next" | "prev" | "toggle" | "close" | "copy" | "steps" | "compare" | "summary" | "filter" | "sort" | "help" | null;
+/** Pure: j next, k prev, Enter toggle, Escape close, c copy focused path JSON, s copy its steps JSON, m copy compare pack, g copy summary JSON, f cycle Show filter, o toggle Sort, ? toggle cheat sheet; ignored with modifiers or while typing. */
 export function lookbackKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): LookbackKey {
   try {
     if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
@@ -266,6 +279,7 @@ export function lookbackKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: un
     if (ev.key === "g" || ev.key === "G") return "summary";
     if (ev.key === "f" || ev.key === "F") return "filter";
     if (ev.key === "o" || ev.key === "O") return "sort";
+    if (ev.key === "?") return "help";
     return null;
   } catch { return null; }
 }
