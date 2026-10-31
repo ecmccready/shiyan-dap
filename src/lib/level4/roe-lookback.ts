@@ -403,6 +403,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
   { key: "z", does: "focus, expand and scroll to the LAST-ranked sealed path (bottom of the table), Show → All — mirrors 1 / 2 / 3; no-op with <2 paths" },
   { key: "x", does: "copy the TOP-ranked (#1) sealed path JSON regardless of focus or Show filter — no-op with no ranked path" },
+  { key: ";", does: "copy the LAST-ranked sealed path JSON without moving focus — pairs with z / Last ↓ and x; no-op with <2 paths" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -1083,5 +1084,20 @@ export function lookbackCopyTopKey(ev: { key?: unknown; ctrlKey?: unknown; metaK
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
     if (typeof json !== "string" || !json) return null;
     return { json, toast: "x → copied TOP path JSON" };
+  } catch { return null; }
+}
+
+/** Pure: LAST-ranked sealed path JSON for key `;` (same target as z / Last ↓), or null with <2 paths. Never throws. */
+export function lookbackLastPathJson(c: LookbackCompare | null | undefined): string | null {
+  try { if (!c) return null; const rows = rankedLookbackRows(c); if (rows.length < 2) return null; const r = rows[rows.length - 1]; return r && typeof r.run_id === "string" && r.run_id ? lookbackPathJson(r, c.winner) : null; } catch { return null; }
+}
+/** Pure: key `;` → copy LAST-ranked path JSON without moving focus. Null when not `;`, modified, typing, or no JSON. Never throws. */
+export function lookbackCopyLastKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, json: unknown): { json: string; toast: string } | null {
+  try {
+    if (!ev || ev.key !== ";" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof json !== "string" || !json) return null;
+    return { json, toast: "; → copied LAST path JSON" };
   } catch { return null; }
 }
