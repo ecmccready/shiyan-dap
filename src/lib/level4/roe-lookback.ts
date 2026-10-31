@@ -407,6 +407,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: ";", does: "copy the LAST-ranked sealed path JSON without moving focus — pairs with z / Last ↓ and x; no-op with <2 paths" },
   { key: "l", does: "copy the LAST-ranked path's steps JSON without expanding or moving focus — same as sticky ⧉ Last steps (shares its first-use pulse); l = Last steps (t is TOP steps); no-op with <2 ranked paths" },
   { key: "t", does: "copy the TOP-ranked path's steps JSON without expanding or moving focus — same as sticky ⧉ TOP steps (shares its first-use pulse); no-op with no ranked path" },
+  { key: "r", does: "copy the greedy-picked path's steps JSON without expanding or moving focus — same as sticky ⧉ Greedy steps (shares its first-use pulse); r = gReedy steps (t = TOP steps, l = Last steps); no-op without a greedy path" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -1238,5 +1239,16 @@ export function lookbackCopyLastStepsKey(ev: { key?: unknown; ctrlKey?: unknown;
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
     if (typeof json !== "string" || !json) return null;
     return { json, toast: "l → copied LAST steps JSON" };
+  } catch { return null; }
+}
+
+/** Pure: key `r` (gReedy steps; r was unused — t = TOP steps, l = Last steps) → copy greedy steps JSON without expanding/focusing, same as ⧉ Greedy steps. Null when not r, modified, typing, or no JSON. Never throws. */
+export function lookbackCopyGreedyStepsKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, json: unknown): { json: string; toast: string } | null {
+  try {
+    if (!ev || ev.key !== "r" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof json !== "string" || !json) return null;
+    return { json, toast: "r → copied greedy steps JSON" };
   } catch { return null; }
 }
