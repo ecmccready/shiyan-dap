@@ -336,6 +336,11 @@ export function dismissedLookbackToastHistory(hist: readonly LookbackToastHistor
   const on = new Set((showing ?? []).map((t) => lookbackToastCopyText(t)));
   return (hist ?? []).filter((h) => !on.has(lookbackToastCopyText(h)));
 }
+/** Pure: Clear on the Recent toasts strip — drops every gone toast; ones still on screen stay so they show up after they go. */
+export function clearLookbackToastHistory(hist: readonly LookbackToastHistoryEntry[] | null | undefined, showing: readonly { text: string; tone: unknown }[] | null | undefined): LookbackToastHistoryEntry[] {
+  const on = new Set((showing ?? []).map((t) => lookbackToastCopyText(t)));
+  return (hist ?? []).filter((h) => on.has(lookbackToastCopyText(h)));
+}
 /** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
 export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
   if (helpOpen === true) return "help";
