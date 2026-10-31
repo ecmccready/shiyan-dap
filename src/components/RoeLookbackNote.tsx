@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { lookbackComparePulse, LOOKBACK_COMPARE_PULSE_MS, lookbackTopPulse, LOOKBACK_TOP_PULSE_MS, lookbackWinPulse, LOOKBACK_WIN_PULSE_MS, restoreLookbackToast, lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, lookbackCopyAllLabel, clearLookbackToastHistory, lookbackToastHistoryJson, removeLookbackToastHistoryEntry, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackSummaryCopyPulse, LOOKBACK_SUMMARY_COPY_PULSE_MS, lookbackComparePulse, LOOKBACK_COMPARE_PULSE_MS, lookbackTopPulse, LOOKBACK_TOP_PULSE_MS, lookbackWinPulse, LOOKBACK_WIN_PULSE_MS, restoreLookbackToast, lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, lookbackCopyAllLabel, clearLookbackToastHistory, lookbackToastHistoryJson, removeLookbackToastHistoryEntry, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -122,6 +122,15 @@ export default function RoeLookbackNote() {
     topPulsedRef.current = true; const t = Date.now(); setTopPulseAt(t); setTopPulseNow(t);
     const id = setTimeout(() => setTopPulseNow(Date.now()), LOOKBACK_TOP_PULSE_MS); return () => clearTimeout(id);
   }, [rankedCount]);
+  const sumPulsedRef = useRef(false);
+  const [sumPulseAt, setSumPulseAt] = useState<number | null>(null);
+  const [sumPulseNow, setSumPulseNow] = useState(0);
+  const sumHasData = !!(c && lookbackSummaryJson(c));
+  useEffect(() => {
+    if (!sumHasData || sumPulsedRef.current) return;
+    sumPulsedRef.current = true; const t = Date.now(); setSumPulseAt(t); setSumPulseNow(t);
+    const id = setTimeout(() => setSumPulseNow(Date.now()), LOOKBACK_SUMMARY_COPY_PULSE_MS); return () => clearTimeout(id);
+  }, [sumHasData]);
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
   const topStack = lookbackToastStack({ win: winToast, agree: agreeToast, empty_filter: emptyToast });
   const topKey = topStack.map((t) => lookbackToastCopyText(t)).join("\n");
@@ -237,8 +246,8 @@ export default function RoeLookbackNote() {
                 {m.excluded ? <span>· {m.excluded} domain excluded</span> : null}
               </span>
               {lookbackSummaryJson(c) && (
-                <button type="button" data-copy-roe-summary onClick={() => void copySum.copy(lookbackSummaryJson(c))}
-                  className={`ml-auto rounded-full border px-2 py-0.5 font-semibold ${m.tone === "win" ? "border-amber-300 text-amber-100" : "border-sky-300 text-sky-100"} hover:bg-white/10${copiedRing(copySum.status)}`}>
+                <button type="button" data-copy-roe-summary data-pulsing={lookbackSummaryCopyPulse(sumPulseAt, sumPulseNow, sumHasData) ? "1" : undefined} onClick={() => void copySum.copy(lookbackSummaryJson(c))}
+                  className={`ml-auto rounded-full border px-2 py-0.5 font-semibold ${m.tone === "win" ? "border-amber-300 text-amber-100" : "border-sky-300 text-sky-100"} hover:bg-white/10${lookbackSummaryCopyPulse(sumPulseAt, sumPulseNow, sumHasData) ? " ring-4 ring-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.8)] motion-safe:animate-pulse" : ""}${copiedRing(copySum.status)}`}>
                   {copySum.status === "copied" ? "Copied ✓" : copySum.status === "failed" ? "Copy failed" : "Copy summary JSON"}
                 </button>
               )}
