@@ -372,6 +372,12 @@ export function dismissedToastHistory(hist: readonly ToastHistoryEntry[] | null 
   return (hist ?? []).filter((h) => !on.has(medicareToastCopyText(h)));
 }
 
+/** Pure: Clear on the Recent toasts strip — drops every gone toast; ones still on screen stay so they show up after they go. */
+export function clearToastHistory(hist: readonly ToastHistoryEntry[] | null | undefined, showing: readonly { text: string; tone: "green" | "amber" }[] | null | undefined): ToastHistoryEntry[] {
+  const on = new Set((showing ?? []).map((t) => medicareToastCopyText(t)));
+  return (hist ?? []).filter((h) => on.has(medicareToastCopyText(h)));
+}
+
 /** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
 export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
   if (helpOpen === true) return "help";
