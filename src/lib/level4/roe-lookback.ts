@@ -1435,6 +1435,29 @@ export function lookbackAgreeJumpPulse(pulseAt: unknown, now: unknown): boolean 
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < LOOKBACK_AGREE_JUMP_PULSE_MS;
 }
+/** Display-only: pulse window for the sticky "ΔΦ ↓" chip (fires only when the jump changes something). */
+export const LOOKBACK_MAX_GAP_JUMP_PULSE_MS = 1200;
+/** Pure: sticky "ΔΦ ↓" chip — target = sealed path with the highest delta_phi_vs_greedy (ties by rank; null deltas last,
+ *  falling back to rank 1 when no delta is numeric). Shown when ≥1 path. Distinct from Sort ΔΦ (re-orders, no focus),
+ *  ⧉ Gaps (copies the leaderboard) and TOP (rank 1 by Φ). Never throws. */
+export function lookbackMaxGapJumpChip(c: LookbackCompare | null | undefined): { target: string; label: string; delta_phi_vs_greedy: number | null; rank: number } | null {
+  try {
+    const rows = rankedLookbackRows(c); if (!rows.length) return null;
+    let best = rows[0];
+    for (const r of rows) { const a = typeof r.delta_phi_vs_greedy === "number" ? r.delta_phi_vs_greedy : -Infinity; const b = typeof best.delta_phi_vs_greedy === "number" ? best.delta_phi_vs_greedy : -Infinity; if (a > b || (a === b && r.rank < best.rank)) best = r; }
+    const t = best?.run_id; if (typeof t !== "string" || !t) return null;
+    return { target: t, label: "ΔΦ ↓", delta_phi_vs_greedy: typeof best.delta_phi_vs_greedy === "number" ? best.delta_phi_vs_greedy : null, rank: best.rank };
+  } catch { return null; }
+}
+/** Pure: would a ΔΦ ↓ click change anything (reveal under Show filter, focus, expand)? Never throws; false without target. */
+export function lookbackMaxGapJumpChanged(target: unknown, state: { visible?: unknown; focus?: unknown; open?: unknown } | null | undefined): boolean {
+  try { if (typeof target !== "string" || !target) return false; const st = state ?? {}; return !(st.visible !== false && st.focus === target && st.open === target); } catch { return false; }
+}
+/** Pure: ΔΦ ↓ chip is pulsing within the window after a changing click. Never throws. */
+export function lookbackMaxGapJumpPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LOOKBACK_MAX_GAP_JUMP_PULSE_MS;
+}
 /** Pure: all ranked sealed paths as one JSON pack (rank order; each entry = lookbackPathJson payload). Null when no paths. Never throws. */
 export function lookbackAllPathsJson(c: LookbackCompare | null | undefined): string | null {
   try {
