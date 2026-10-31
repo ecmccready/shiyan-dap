@@ -410,6 +410,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "r", does: "copy the greedy-picked path's steps JSON without expanding or moving focus — same as sticky ⧉ Greedy steps (shares its first-use pulse); r = gReedy steps (t = TOP steps, l = Last steps); no-op without a greedy path" },
   { key: "i", does: "copy the focused row's steps JSON without expanding or moving focus — same as sticky ⧉ Focus steps (shares its first-use pulse); i = Inspect focus steps (s still expands + copies); no-op without a focused row" },
   { key: "n", does: "copy the runner-up (#2) sealed path JSON without moving focus — same as sticky ⧉ #2 (shares its first-use pulse); pairs with 2 / x / ;; no-op with <2 paths" },
+  { key: "h", does: "copy the #3-ranked sealed path JSON without moving focus — same as sticky ⧉ #3 (shares its first-use pulse); h = tHird (n = ruNner-up #2, 3 still jumps); no-op with <3 paths" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -1198,6 +1199,24 @@ export function lookbackCopyRunnerUpKey(ev: { key?: unknown; ctrlKey?: unknown; 
 /** Pure: sticky ⧉ #2 chip — copies runner-up path JSON (same as key n) without moving focus. Null with <2 paths. Never throws. */
 export function lookbackCopyRunnerUpChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ #2", toast: "⧉ #2 → copied #2 path JSON" } : null; } catch { return null; }
+}
+/** Pure: #3-ranked path JSON without moving focus. Null with <3 paths. Never throws. */
+export function lookbackThirdPathJson(c: LookbackCompare | null | undefined): string | null {
+  try { if (!c) return null; const rows = rankedLookbackRows(c); if (rows.length < 3) return null; const r = rows[2]; return r && typeof r.run_id === "string" && r.run_id ? lookbackPathJson(r, c.winner) : null; } catch { return null; }
+}
+/** Pure: key `h` (tHird) → copy #3 path JSON without moving focus. Null when not h, modified, typing, or no JSON. Never throws. */
+export function lookbackCopyThirdKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, json: unknown): { json: string; toast: string } | null {
+  try {
+    if (!ev || ev.key !== "h" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof json !== "string" || !json) return null;
+    return { json, toast: "h → copied #3 path JSON" };
+  } catch { return null; }
+}
+/** Pure: sticky ⧉ #3 chip — copies #3 path JSON (same as key h) without moving focus. Null with <3 paths. Never throws. */
+export function lookbackCopyThirdChip(json: unknown): { json: string; label: string; toast: string } | null {
+  try { return typeof json === "string" && json ? { json, label: "⧉ #3", toast: "⧉ #3 → copied #3 path JSON" } : null; } catch { return null; }
 }
 /** Pure: sticky ⧉ Last chip — copies LAST path JSON (same as key ;) without moving focus. Null with <2 paths. Never throws. */
 export function lookbackCopyLastChip(json: unknown): { json: string; label: string; toast: string } | null {
