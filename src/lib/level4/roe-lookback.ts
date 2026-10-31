@@ -803,3 +803,18 @@ export function lookbackThirdKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey
     return { target: third, changed, toast: changed ? "3 → path #3" : null };
   } catch { return null; }
 }
+
+export const LOOKBACK_THIRD_PULSE_MS = 2400;
+/** Pure: sticky "#3" chip model — null with <3 sealed paths. Never throws. */
+export function lookbackThirdChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
+  try { const t = lookbackThirdFocusTarget(c); return t ? { target: t, label: "#3" } : null; } catch { return null; }
+}
+/** Pure: true while the sticky #3 chip pulses after the first jump (chip or key 3), session once. Never throws. */
+export function lookbackThirdPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_THIRD_PULSE_MS;
+}
+/** Pure: whether a #3 jump should start the once-per-session pulse. */
+export function lookbackThirdShouldPulse(alreadyPulsed: unknown, third: unknown): boolean {
+  return alreadyPulsed !== true && typeof third === "string" && third.length > 0;
+}
