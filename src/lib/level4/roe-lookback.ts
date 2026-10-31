@@ -414,6 +414,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "n", does: "copy the runner-up (#2) sealed path JSON without moving focus — same as sticky ⧉ #2 (shares its first-use pulse); pairs with 2 / x / ;; no-op with <2 paths" },
   { key: "h", does: "copy the #3-ranked sealed path JSON without moving focus — same as sticky ⧉ #3 (shares its first-use pulse); h = tHird (n = ruNner-up #2, 3 still jumps); no-op with <3 paths" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
+  { key: "*", does: "expand all ↔ collapse all sealed-path step lists — same as the sticky ⊞ Expand all / ⊟ Collapse all chip (shares its first-use pulse); no-op with no sealed paths" },
   { key: "?", does: "show / hide this sheet" },
 ];
 /** Pure: key o flips Sort between look-back rank and ΔΦ vs greedy; unknown input goes to "dphi". */
@@ -1348,3 +1349,19 @@ export function lookbackCopyThirdStepsKey(ev: { key?: unknown; ctrlKey?: unknown
     return typeof json === "string" && json ? { json, toast: "# → copied #3 steps JSON" } : null;
   } catch { return null; }
 }
+
+/** Pure: sticky ⊞ Expand all / ⊟ Collapse all toggle for sealed-path rows. Expands all when any row is collapsed; collapses all when all are expanded. */
+export function lookbackExpandAllChip(rows: unknown, allOpen: unknown, open: unknown): { show: boolean; label: string; action: "expand" | "collapse"; toast: string } {
+  const n = Array.isArray(rows) ? rows.filter((r) => !!r && typeof r === "object" && typeof (r as { run_id?: unknown }).run_id === "string").length : 0;
+  if (n === 0) return { show: false, label: "", action: "expand", toast: "" };
+  const all = allOpen === true || (n === 1 && typeof open === "string" && open.length > 0);
+  return all ? { show: true, label: "⊟ Collapse all", action: "collapse", toast: `⊟ Collapsed all ${n} sealed path${n === 1 ? "" : "s"}` } : { show: true, label: "⊞ Expand all", action: "expand", toast: `⊞ Expanded all ${n} sealed path${n === 1 ? "" : "s"}` };
+}
+/** Pure: key * toggles expand-all (same as chip); ignored with ctrl/meta/alt, while typing, or with no rows. */
+export function lookbackExpandAllKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, rowCount: unknown): boolean {
+  if (!ev || ev.key !== "*" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  if (typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase())) return false;
+  return typeof rowCount === "number" && rowCount > 0;
+}
+/** Pure: first-use pulse fires only on the first expand-all of the session. */
+export function lookbackExpandAllShouldPulse(alreadyPulsed: boolean, action: unknown): boolean { return !alreadyPulsed && action === "expand"; }
