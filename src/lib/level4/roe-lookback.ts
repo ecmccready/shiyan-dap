@@ -392,6 +392,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "o", does: "toggle Sort: look-back rank ↔ ΔΦ vs greedy" },
   { key: "1", does: "focus, expand and scroll to the TOP path (#1), Show → All, re-flashes the TOP badge — mirrors 2" },
   { key: "2", does: "focus, expand and scroll to the runner-up (#2), Show → All — same as the sticky lead chip; no-op with <2 paths" },
+  { key: "q", does: "focus, expand and scroll to the greedy-picked sealed path, Show → All — same as the sticky greedy chip; no-op without a greedy path" },
   { key: "3", does: "focus, expand and scroll to sealed path #3 (rank 3), Show → All — mirrors 1 / 2; no-op with <3 paths" },
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
   { key: "?", does: "show / hide this sheet" },
@@ -842,4 +843,17 @@ export function lookbackGreedyChipPulse(startedAt: unknown, now: unknown): boole
 /** Pure: whether a greedy-chip jump should start the once-per-session pulse. */
 export function lookbackGreedyChipShouldPulse(alreadyPulsed: unknown, target: unknown): boolean {
   return alreadyPulsed !== true && typeof target === "string" && target.length > 0;
+}
+
+/** Pure: key `q` → greedy-picked sealed path (same as sticky greedy chip). null when not q / modifiers / typing / no greedy. toast only when effective. Never throws. */
+export function lookbackGreedyKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, greedy: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): { target: string; changed: boolean; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "q" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof greedy !== "string" || !greedy) return null;
+    const st = state ?? {};
+    const changed = !((st.filter ?? "all") === "all" && st.focus === greedy && st.open === greedy);
+    return { target: greedy, changed, toast: changed ? "q → greedy path" : null };
+  } catch { return null; }
 }
