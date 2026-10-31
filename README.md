@@ -523,3 +523,7 @@ The look-back sticky strip now has a **Packs ▾** chip (default collapsed) that
 ### Medicare: sticky Packs ▾ / Packs ▴ toggle (declutter)
 
 The Medicare sticky strip now has a **Packs ▾** chip (default collapsed), mirroring look-back. Collapsed, it hides the secondary copy packs (`MEDICARE_PACKS_HIDDEN`): **⧉ All rows, ⧉ Notes, ⧉ Statuses, ⧉ Progress, ⧉ Provenance, ⧉ Baselines, ⧉ DQ**. Always visible (`MEDICARE_PACKS_ALWAYS`): 📦 Hand-off, ⧉ Dispositions, ⧉ Investigation, ⧉ Case brief, ⧉ Evidence, ⧉ Target / #1 / #2 / #3 / Last, and Evidence packs →. Click **Packs ▴** to collapse. First click pulses the chip once; a toast lists the revealed packs only on the first open. Keyboard shortcuts (e.g. `.` `,` `/`) are unchanged and work while collapsed. Pure helpers: `medicarePacksChip`, `medicarePacksToggle`, `medicarePacksPulse` (checked in `scripts/check-medicare.ts`).
+
+### Look-back: sticky Jumps ▾ / Jumps ▴ toggle
+
+The look-back sticky strip now has a **Jumps ▾** chip (default collapsed) that shows/hides the secondary jump chips: **beaten ↓, winners ↓, agree ↓, ΔΦ ↓, Φ ↑** (`LOOKBACK_JUMPS_HIDDEN`). Primary navigation — First ↑, Last ↓, #1 / #2 / #3, greedy, ⊞ Expand all — stays always visible. Click **Jumps ▴** to collapse again. First click pulses the chip once; a toast lists the revealed jumps only on the first open. Keyboard shortcuts are unchanged. Pure helpers: `lookbackJumpsChip`, `lookbackJumpsToggle`, `lookbackJumpsPulse` (checked in `scripts/check-roe-lookback.ts`).

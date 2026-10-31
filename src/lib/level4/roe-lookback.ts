@@ -1571,3 +1571,22 @@ export function lookbackPacksPulse(at: unknown, now: unknown): boolean {
   if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
   const d = now - at; return d >= 0 && d < LOOKBACK_PACKS_PULSE_MS;
 }
+
+/** Secondary jump chips hidden behind the sticky Jumps ▾ toggle (default collapsed). First ↑, Last ↓, #1/#2/#3, greedy, Expand all stay visible. */
+export const LOOKBACK_JUMPS_HIDDEN = ["beaten \u2193", "winners \u2193", "agree \u2193", "\u0394\u03a6 \u2193", "\u03a6 \u2191"] as const;
+export const LOOKBACK_JUMPS_PULSE_MS = 1200;
+/** Pure: Jumps toggle chip label/title. Never throws. */
+export function lookbackJumpsChip(open: unknown): { open: boolean; label: string; title: string; hidden: readonly string[] } {
+  const o = open === true;
+  return { open: o, label: o ? "Jumps \u25b4" : "Jumps \u25be", title: `${o ? "Hide" : "Show"} secondary jump chips: ${LOOKBACK_JUMPS_HIDDEN.join(", ")}`, hidden: LOOKBACK_JUMPS_HIDDEN };
+}
+/** Pure: toggle result; toast only on the first-ever open. Never throws. */
+export function lookbackJumpsToggle(open: unknown, everOpened: unknown): { next: boolean; toast: string | null; everOpened: boolean } {
+  const next = open !== true; const first = next && everOpened !== true;
+  return { next, toast: first ? `Jumps shown: ${LOOKBACK_JUMPS_HIDDEN.join(", ")}` : null, everOpened: everOpened === true || next };
+}
+/** Pure: Jumps chip pulse window. Never throws. */
+export function lookbackJumpsPulse(at: unknown, now: unknown): boolean {
+  if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
+  const d = now - at; return d >= 0 && d < LOOKBACK_JUMPS_PULSE_MS;
+}
