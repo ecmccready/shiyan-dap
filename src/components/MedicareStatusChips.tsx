@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { medicareCopyRecentPulse, MEDICARE_COPY_RECENT_PULSE_MS, MEDICARE_RECENT_COPY_EVENT, MEDICARE_RECENT_COPIED_EVENT, medicareCopyRecentChip, TOAST_PILL_COPIED_MS, MEDICARE_RECENT_STATE_EVENT, MEDICARE_RECENT_CLEAR_EVENT, medicareRecentChip, MEDICARE_TOASTS_STATE_EVENT, MEDICARE_TOASTS_CLEAR_EVENT, medicareToastsChip, MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, undoDepthChip, MEDICARE_UNDO_DEPTH_EVENT, MEDICARE_UNDO_REQUEST_EVENT, redoDepthChip, MEDICARE_REDO_DEPTH_EVENT, MEDICARE_REDO_REQUEST_EVENT, cheatsheetOpenChip, MEDICARE_HELP_STATE_EVENT, MEDICARE_HELP_CLOSE_EVENT, rowMatchesFilter, reviewDoneNotesChip, reviewCompletion, reviewProgress, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { reviewDoneFilterPulse, reviewDoneFilterShouldPulse, REVIEW_DONE_FILTER_PULSE_MS, MEDICARE_REVIEW_DONE_PULSE_EVENT, medicareCopyRecentPulse, MEDICARE_COPY_RECENT_PULSE_MS, MEDICARE_RECENT_COPY_EVENT, MEDICARE_RECENT_COPIED_EVENT, medicareCopyRecentChip, TOAST_PILL_COPIED_MS, MEDICARE_RECENT_STATE_EVENT, MEDICARE_RECENT_CLEAR_EVENT, medicareRecentChip, MEDICARE_TOASTS_STATE_EVENT, MEDICARE_TOASTS_CLEAR_EVENT, medicareToastsChip, MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, undoDepthChip, MEDICARE_UNDO_DEPTH_EVENT, MEDICARE_UNDO_REQUEST_EVENT, redoDepthChip, MEDICARE_REDO_DEPTH_EVENT, MEDICARE_REDO_REQUEST_EVENT, cheatsheetOpenChip, MEDICARE_HELP_STATE_EVENT, MEDICARE_HELP_CLOSE_EVENT, rowMatchesFilter, reviewDoneNotesChip, reviewCompletion, reviewProgress, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -30,6 +30,12 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
   useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setRedoDepth(typeof d === "number" ? d : 0); }; window.addEventListener(MEDICARE_REDO_DEPTH_EVENT, on); return () => window.removeEventListener(MEDICARE_REDO_DEPTH_EVENT, on); }, []);
   useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setUndoDepth(typeof d === "number" ? d : 0); }; window.addEventListener(MEDICARE_UNDO_DEPTH_EVENT, on); return () => window.removeEventListener(MEDICARE_UNDO_DEPTH_EVENT, on); }, []);
   const [filter, setFilter] = useState<RowFilter>(null);
+  const [rdPulseAt, setRdPulseAt] = useState<number | null>(null);
+  const [rdPulseNow, setRdPulseNow] = useState(0);
+  const rdPulsedRef = useRef(false);
+  const startRdPulse = () => { if (rdPulsedRef.current) return; rdPulsedRef.current = true; const t = Date.now(); setRdPulseAt(t); setRdPulseNow(t); window.setTimeout(() => setRdPulseNow(Date.now()), REVIEW_DONE_FILTER_PULSE_MS); };
+  const startRdPulseRef = useRef(startRdPulse); startRdPulseRef.current = startRdPulse;
+  useEffect(() => { const on = () => startRdPulseRef.current(); window.addEventListener(MEDICARE_REVIEW_DONE_PULSE_EVENT, on); return () => window.removeEventListener(MEDICARE_REVIEW_DONE_PULSE_EVENT, on); }, []);
   const pick = (next: RowFilter) => {
     setFilter(next);
     window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: next }));
@@ -98,8 +104,8 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
       ) : null; })()}
       <div className="flex flex-wrap gap-2" data-medicare-status-filter={filter ?? "all"}>
         {(() => { const rd = reviewDoneNotesChip(reviewCompletion(reviewProgress(r)).complete, filter); return rd.show ? (
-          <button type="button" data-medicare-review-done-filter={rd.active ? "on" : "off"} aria-pressed={rd.active} onClick={() => pick(rd.next)} title={rd.active ? "Review done — click to show All rows" : "Review done — click to show only rows with notes"}
-            className={`rounded-full border-2 px-3 py-1 text-xs font-bold hover:border-white ${rd.active ? "border-white bg-emerald-400 text-black" : "border-emerald-300 bg-emerald-500/20 text-emerald-100"}`}>{rd.label}</button>
+          <button type="button" data-medicare-review-done-filter={rd.active ? "on" : "off"} aria-pressed={rd.active} data-medicare-review-done-pulsing={reviewDoneFilterPulse(rdPulseAt, rdPulseNow) ? "1" : undefined} onClick={() => { if (reviewDoneFilterShouldPulse(rdPulsedRef.current, filter, rd.next)) startRdPulse(); pick(rd.next); }} title={rd.active ? "Review done — click to show All rows" : "Review done — click to show only rows with notes"}
+            className={`rounded-full border-2 px-3 py-1 text-xs font-bold hover:border-white ${rd.active ? "border-white bg-emerald-400 text-black" : "border-emerald-300 bg-emerald-500/20 text-emerald-100"}${reviewDoneFilterPulse(rdPulseAt, rdPulseNow) ? " ring-4 ring-emerald-300 shadow-[0_0_16px_rgba(110,231,183,0.8)] motion-safe:animate-pulse" : ""}`}>{rd.label}</button>
         ) : null; })()}
         {(() => { const nc = notesCount(r); return (
           <button type="button" data-medicare-notes-count={nc.count} data-medicare-notes-pulse={notesPulsing ? "on" : undefined} data-medicare-filter-button="has_note" aria-pressed={filter === "has_note"} disabled={!nc.count && filter !== "has_note"}

@@ -837,3 +837,16 @@ export function reviewDoneNotesKey(complete: unknown, filter: RowFilter): { chan
   try { const d = reviewDoneNotesChip(complete === true, filter); return d.show ? { changes: true, next: d.next } : { changes: false, next: filter }; }
   catch { return { changes: false, next: filter }; }
 }
+
+export const REVIEW_DONE_FILTER_PULSE_MS = 2400;
+/** Browser event: key v changed the filter via review done → ✎ (asks the Win strip chip to start its session-once pulse); tab-local. */
+export const MEDICARE_REVIEW_DONE_PULSE_EVENT = "aethel:medicare:review-done-pulse";
+/** Pure: true while the Win strip review done → ✎ chip glows after the first successful filter change in the tab (chip or v), for REVIEW_DONE_FILTER_PULSE_MS. Display only. Never throws. Mirrors lookbackVerdictFilterPulse. */
+export function reviewDoneFilterPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < REVIEW_DONE_FILTER_PULSE_MS;
+}
+/** Pure: start the session-once pulse only when not yet pulsed and next filter differs from current. */
+export function reviewDoneFilterShouldPulse(alreadyPulsed: unknown, cur: unknown, next: unknown): boolean {
+  return alreadyPulsed !== true && next !== cur && (next === null || typeof next === "string");
+}
