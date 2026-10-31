@@ -1173,3 +1173,13 @@ import { medicareProgressJson, medicareCopyProgressChip, medicareProgressToast }
   const rep = { report_hash: "h", entries: [{ id: "a", status: "unreviewed" }] };
   const j = PJ(rep, PE({ started_at: 0, frozen_at: null }, 42)); if (j) assert.equal(JSON.parse(j).elapsed_ms, 42);
   console.log("ok: progress live elapsed_ms"); }
+
+import { topCandidateStickyChip, topCandidateStickyChanged, topCandidateStickyPulse, topCandidateStickyToast, TOP_CANDIDATE_STICKY_PULSE_MS } from "../src/lib/medicare/investigation";
+{ assert.deepEqual(topCandidateStickyChip({ entries: [{ item_id: "a", status: "cleared_pattern_only" }, { item_id: "b", status: "unreviewed" }] }), { show: true, label: "★ top anomaly ↓", target: "a", status: "cleared_pattern_only" });
+  assert.equal(topCandidateStickyChip({ entries: [{ item_id: "x" }] }).show, true);
+  assert.equal(topCandidateStickyChip({ entries: [] }).show, false); assert.equal(topCandidateStickyChip(null).show, false); assert.equal(topCandidateStickyChip({ entries: [null] }).show, false);
+  assert.equal(topCandidateStickyChanged("a", { target: null, filter: null }), true); assert.equal(topCandidateStickyChanged("a", { target: "a", filter: null }), false);
+  assert.equal(topCandidateStickyChanged("a", { target: "a", filter: "unreviewed" }), true); assert.equal(topCandidateStickyChanged(null, { target: null, filter: null }), false);
+  assert.equal(topCandidateStickyPulse(1, 1), true); assert.equal(topCandidateStickyPulse(1, 1 + TOP_CANDIDATE_STICKY_PULSE_MS), false);
+  assert.equal(topCandidateStickyToast("a"), "★ ↓ top anomaly (rank 1): a"); assert.equal(topCandidateStickyToast(""), "");
+  console.log("topCandidateStickyChip OK (sticky ★ top anomaly ↓ = rank-1 entry, filter All + focus note)"); }

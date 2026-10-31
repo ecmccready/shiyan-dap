@@ -1668,3 +1668,24 @@ export function medicareCopyProgressChip(report: unknown, elapsedMs: unknown = n
   const json = medicareProgressJson(report, elapsedMs); if (!json) return { show: false, label: "", json: "", toast: "" };
   const o = JSON.parse(json); return { show: true, label: `⧉ Progress ${o.reviewed}/${o.total}`, json, toast: medicareProgressToast(json) };
 }
+
+/** Pure: sticky "★ top anomaly ↓" chip — jump to the rank-1 investigation entry (entries[0], the top anomaly) whenever ≥1 row exists: resets filter to All, scrolls to it and focuses its note. Versus First ↑ (≥2 rows, keyboard target only, pairs with Last ↓), #1 ↓ (Win strip, targets only) and ○ unreviewed ↓ (first *unreviewed* row, filter=unreviewed). Never throws. */
+export function topCandidateStickyChip(report: unknown): { show: boolean; label: string; target: string | null; status: string | null } {
+  try {
+    const e = (report as { entries?: unknown } | null)?.entries;
+    const f = Array.isArray(e) ? e[0] : null;
+    if (!f || typeof f !== "object" || typeof (f as { item_id?: unknown }).item_id !== "string" || !(f as { item_id: string }).item_id) return { show: false, label: "", target: null, status: null };
+    const st = (f as { status?: unknown }).status;
+    return { show: true, label: "★ top anomaly ↓", target: (f as { item_id: string }).item_id, status: typeof st === "string" ? st : null };
+  } catch { return { show: false, label: "", target: null, status: null }; }
+}
+export const TOP_CANDIDATE_STICKY_PULSE_MS = 2400;
+/** Pure: pulse/toast only when the jump target changes or the filter is not already All (null). */
+export function topCandidateStickyChanged(target: unknown, last: { target: unknown; filter: unknown }): boolean {
+  return typeof target === "string" && target.length > 0 && (target !== last.target || last.filter != null);
+}
+export function topCandidateStickyPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < TOP_CANDIDATE_STICKY_PULSE_MS;
+}
+export function topCandidateStickyToast(target: unknown): string { return typeof target === "string" && target ? `★ ↓ top anomaly (rank 1): ${target}` : ""; }
