@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { buildHandoffPack, formatReviewedCaseBrief } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 import type { MedicareProvenance } from "@/lib/medicare/provenance";
-import { MEDICARE_HANDOFF_FOCUS_EVENT, HANDOFF_PULSE_MS, handoffPulseActive, MEDICARE_TIMER_EVENT, currentDispositionsJson, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
+import { handoffReadyAnnotated, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, HANDOFF_PULSE_MS, handoffPulseActive, MEDICARE_TIMER_EVENT, currentDispositionsJson, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
 
 /** Copies the live investigation report (current statuses + report_hash). With `report` it is controlled; otherwise it follows the stub's tab-local event. */
 export default function CopyLiveInvestigation({ report, initial, brief, handoff }: { report?: InvestigationReport; initial?: InvestigationReport; brief?: { evidence: EvidencePack; provenance: MedicareProvenance }; handoff?: boolean }) {
@@ -33,6 +33,21 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
   }, [handoff]);
   const pulsing = handoff && handoffPulseActive(pulseAt, tick);
   const r = report ?? heard;
+  const readyNow = handoff ? handoffReadyAnnotated(r).ready : false;
+  const prevReady = useRef<boolean | null>(null);
+  const readyPulsedOnce = useRef(false);
+  const [readyPulseAt, setReadyPulseAt] = useState<number | null>(null);
+  const [readyTick, setReadyTick] = useState(0);
+  useEffect(() => {
+    if (!handoff) return;
+    if (prevReady.current === false && readyNow && !readyPulsedOnce.current) {
+      readyPulsedOnce.current = true; prevReady.current = true;
+      const t = Date.now(); setReadyPulseAt(t); setReadyTick(t);
+      const id = setTimeout(() => setReadyTick(Date.now()), HANDOFF_PACK_READY_PULSE_MS + 50); return () => clearTimeout(id);
+    }
+    prevReady.current = readyNow;
+  }, [handoff, readyNow]);
+  const readyPulsing = handoff && handoffPackReadyPulse(readyPulseAt, readyTick, readyNow);
   const copy = useCopy(4000, undefined, handoff ? "medicare hand-off pack" : brief ? "medicare reviewed brief" : "medicare dispositions");
   const json = handoff && brief ? buildHandoffPack(r, brief.evidence, brief.provenance, timer) : brief ? formatReviewedCaseBrief(r, brief.evidence, brief.provenance) : currentDispositionsJson(r);
   const done = reviewCompletion(reviewProgress(r)).complete;
@@ -47,7 +62,8 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
       disabled={!json}
       onClick={() => void copy.copy(json)}
       data-pulse={pulsing ? "true" : undefined}
-      className={`inline-flex h-9 items-center rounded-full border px-4 text-xs ${base}${pulsing ? " ring-4 ring-amber-300 animate-pulse scale-105" : ""} transition-transform${copiedRing(copy.status)}`}
+      data-medicare-handoff-ready-pulse={readyPulsing ? "1" : undefined}
+      className={`inline-flex h-9 items-center rounded-full border px-4 text-xs ${base}${pulsing ? " ring-4 ring-amber-300 animate-pulse scale-105" : readyPulsing ? " ring-4 ring-emerald-300 shadow-[0_0_24px_rgba(52,211,153,0.7)] motion-safe:animate-pulse" : ""} transition-transform${copiedRing(copy.status)}`}
     >
       {copy.status === "copied" ? "Copied ✓" : copy.status === "failed" ? "Copy failed" : handoff ? (done ? "📦 Copy reviewed hand-off pack" : "📦 Copy hand-off pack (in progress)") : brief ? (done ? "✓ Copy reviewed case brief" : "Copy case brief (in progress)") : done ? "✓ Copy reviewed dispositions JSON" : "Copy current dispositions JSON"}
       {r && <span className="ml-2 font-mono opacity-70">{r.report_hash.slice(0, 8)}…</span>}

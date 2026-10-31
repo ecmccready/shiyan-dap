@@ -2,7 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS } from "../src/lib/medicare/investigation";
+import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
@@ -556,3 +556,8 @@ console.log("OK");
   assert.equal(handoffReadyChipPulse(1000, 1000 + HANDOFF_READY_PULSE_MS, true), false); assert.equal(handoffReadyChipPulse(1000, 1500, false), false, "not ready -> no pulse");
   assert.equal(handoffReadyChipPulse(1000, 999, true), false); assert.equal(handoffReadyChipPulse(NaN, 1, true), false); assert.equal(handoffReadyChipPulse("1", 2, true), false);
   assert.equal(HANDOFF_READY_PULSE_MS, 2400); console.log("handoffReadyChipPulse OK"); }
+{ assert.equal(handoffPackReadyPulse(null, 5, true), false, "no transition -> no pack pulse");
+  assert.equal(handoffPackReadyPulse(1000, 1000, true), true); assert.equal(handoffPackReadyPulse(1000, 1000 + HANDOFF_PACK_READY_PULSE_MS - 1, true), true);
+  assert.equal(handoffPackReadyPulse(1000, 1000 + HANDOFF_PACK_READY_PULSE_MS, true), false); assert.equal(handoffPackReadyPulse(1000, 1500, false), false);
+  assert.equal(handoffPackReadyPulse(1000, 999, true), false); assert.equal(handoffPackReadyPulse(NaN, 1, true), false); assert.equal(handoffPackReadyPulse("1", 2, true), false);
+  assert.equal(HANDOFF_PACK_READY_PULSE_MS, 2400); console.log("handoffPackReadyPulse OK"); }

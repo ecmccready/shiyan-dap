@@ -567,3 +567,10 @@ export function handoffReadyChipPulse(startedAt: unknown, now: unknown, ready: u
   if (ready !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < HANDOFF_READY_PULSE_MS;
 }
+
+export const HANDOFF_PACK_READY_PULSE_MS = 2400;
+/** Pure: true while the 📦 Copy hand-off pack button should pulse after Hand-off ready first turns on in the tab (`startedAt` set on a seen not-ready→ready transition), for HANDOFF_PACK_READY_PULSE_MS. Display only. */
+export function handoffPackReadyPulse(startedAt: unknown, now: unknown, ready: unknown): boolean {
+  if (ready !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < HANDOFF_PACK_READY_PULSE_MS;
+}
