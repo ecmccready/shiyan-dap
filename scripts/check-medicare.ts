@@ -1,6 +1,6 @@
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
-import { filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
+import { needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -809,3 +809,14 @@ console.log("ok review complete banner click action");
   assert.deepEqual(N(2, null), { show: true, label: "2 needs review", active: false, next: "needs_human_review" }); assert.deepEqual(N(1, "needs_human_review"), { show: true, label: "1 needs review ✓", active: true, next: null });
   assert.equal(N(1, "has_note").next, "needs_human_review");
   const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8") as string; assert.ok(src.includes("data-medicare-needs-review-chip") && src.includes("pick(nr.next)")); console.log("needsReviewChip OK"); }
+
+{ const K = needsReviewKey; assert.deepEqual(K(2, null), { changes: true, next: "needs_human_review" }); assert.deepEqual(K(1, "needs_human_review"), { changes: true, next: null }); assert.deepEqual(K(0, null), { changes: false, next: null }); assert.deepEqual(K(0, "needs_human_review"), { changes: true, next: null }); assert.deepEqual(K(2, "has_note"), { changes: true, next: "needs_human_review" }); assert.deepEqual(K(NaN, undefined), { changes: false, next: null });
+  assert.equal(K(1, null).next, needsReviewChip(1, null).next, "key b matches chip"); assert.equal(K(1, "needs_human_review").next, needsReviewChip(1, "needs_human_review").next);
+  assert.equal(needsReviewPulse(1000, 1000), true); assert.equal(needsReviewPulse(1000, 1000 + NEEDS_REVIEW_PULSE_MS), false); assert.equal(needsReviewPulse(null, 1), false); assert.equal(needsReviewPulse(5, 4), false);
+  assert.equal(needsReviewShouldPulse(false, null, "needs_human_review"), true); assert.equal(needsReviewShouldPulse(true, null, "needs_human_review"), false); assert.equal(needsReviewShouldPulse(false, "needs_human_review", "needs_human_review"), false); assert.equal(needsReviewShouldPulse(false, "needs_human_review", null), true);
+  assert.deepEqual(dispositionShortcut({ key: "b" }), { kind: "needs_review" }); assert.equal(dispositionShortcut({ key: "b", targetTag: "INPUT" }), null); assert.equal(dispositionShortcut({ key: "b", metaKey: true }), null);
+  const E = [{ status: "needs_human_review" }, { status: "unreviewed" }];
+  assert.equal(keyActionChanges({ kind: "needs_review" }, { entries: E, row_filter: null }), true); assert.equal(keyActionChanges({ kind: "needs_review" }, { entries: [{ status: "unreviewed" }], row_filter: null }), false, "effective-only toast");
+  assert.equal(keyToastText({ kind: "needs_review" }, ""), "filter → needs review / All"); assert.ok(MEDICARE_KEYMAP.some((k) => k.key === "b"));
+  const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8") as string; assert.ok(src.includes("data-medicare-needs-review-pulsing"));
+  console.log("needsReviewKey/Pulse OK"); }

@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -240,6 +240,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "w": case "W": return { kind: "without_notes" };
       case "a": case "A": return { kind: "filter_all" };
       case "i": case "I": return { kind: "incomplete" };
+      case "b": case "B": return { kind: "needs_review" };
       default: return null;
     }
   } catch { return null; }
@@ -277,6 +278,7 @@ export function keyToastText(a: DispositionShortcut, label: unknown): string | n
       case "without_notes": return "↓ first without note";
       case "filter_all": return "filter → All";
       case "incomplete": return "↓ first unreviewed";
+      case "needs_review": return "filter → needs review / All";
       default: return null;
     }
   } catch { return null; }
@@ -300,6 +302,7 @@ export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | n
       case "without_notes": return withoutNotesKey(c.complete, c.without_notes_target).changes;
       case "filter_all": return filterAllKey(c.row_filter).changes;
       case "incomplete": return incompleteKey(c.entries).changes;
+      case "needs_review": return needsReviewKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "needs_human_review").length : 0, c.row_filter).changes;
       case "dispositions": case "handoff": return !!c.button_ready;
       default: return false;
     }
@@ -447,6 +450,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "h", does: "copy 📦 hand-off pack" },
   { key: "i", does: "jump to the first unreviewed disposition (same as N unreviewed left / review progress)" },
   { key: "a", does: "reset row filter to All (no-op when already All)" },
+  { key: "b", does: "toggle row filter needs_human_review ↔ All (same as N needs review chip)" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
@@ -1039,4 +1043,24 @@ export function needsReviewChip(count: unknown, filter: unknown): { show: boolea
   const active = filter === "needs_human_review";
   if (n < 1) return { show: false, label: "", active: false, next: active ? "needs_human_review" : null };
   return { show: true, label: `${n} needs review${active ? " ✓" : ""}`, active, next: active ? null : "needs_human_review" };
+}
+
+/** Pure: key `b` — toggles row filter needs_human_review ↔ All, same as the N needs review chip. changes only when the chip is shown (≥1) or the filter is already needs_human_review. Never throws. */
+export function needsReviewKey(count: unknown, current: unknown): { changes: boolean; next: "needs_human_review" | null } {
+  try {
+    const c = needsReviewChip(count, current);
+    if (current === "needs_human_review") return { changes: true, next: null };
+    return { changes: c.show, next: c.show ? "needs_human_review" : null };
+  } catch { return { changes: false, next: null }; }
+}
+export const NEEDS_REVIEW_PULSE_MS = 2400;
+export const MEDICARE_NEEDS_REVIEW_PULSE_EVENT = "medicare:needs-review-pulse";
+/** Pure: true while the N needs review chip glows after its first filter change. Never throws. */
+export function needsReviewPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < NEEDS_REVIEW_PULSE_MS;
+}
+/** Pure: pulse once per session, only when the filter actually changes (chip or `b`). */
+export function needsReviewShouldPulse(alreadyPulsed: unknown, current: unknown, next: unknown): boolean {
+  return alreadyPulsed !== true && (current ?? null) !== (next ?? null);
 }
