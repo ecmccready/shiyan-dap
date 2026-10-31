@@ -478,6 +478,13 @@ export function lookbackCompareCopyPulse(startedAt: unknown, now: unknown): bool
   return now >= startedAt && now - startedAt < LOOKBACK_COMPARE_COPY_PULSE_MS;
 }
 
+export const LOOKBACK_SUMMARY_COPIED_PULSE_MS = 2400;
+/** Pure: true while the sticky Copy summary JSON button should pulse after the first successful user-initiated summary copy (g, +Δe click, or button) — once per tab (`startedAt` set on first "copied"), for LOOKBACK_SUMMARY_COPIED_PULSE_MS. Distinct from the first-data mount pulse. Display only. */
+export function lookbackSummaryCopiedPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_SUMMARY_COPIED_PULSE_MS;
+}
+
 export const LOOKBACK_SUMMARY_COPY_PULSE_MS = 2400;
 /** Pure: true while the sticky strip's Copy summary JSON button should pulse — once per tab after the strip first has data (`startedAt` set when lookbackSummaryJson first returns non-empty), for LOOKBACK_SUMMARY_COPY_PULSE_MS. Display only. */
 export function lookbackSummaryCopyPulse(startedAt: unknown, now: unknown, hasData: unknown): boolean {
