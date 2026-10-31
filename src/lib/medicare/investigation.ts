@@ -547,3 +547,9 @@ export function appendNoteTemplate(existing: unknown, template: unknown): string
   if (e.split(";").map((x) => x.trim()).includes(t)) return e.slice(0, DISPOSITION_NOTE_MAX);
   return (e ? `${e}; ${t}` : t).slice(0, DISPOSITION_NOTE_MAX);
 }
+
+/** Pure: ⧉ Copy all button label — "✓ Copied" for ~1.5 s after a successful copy, else "⧉ Copy all". Tab-local, nothing sent. */
+export function medicareCopyAllLabel(copiedAt: number | null | undefined, now: number): string {
+  if (typeof copiedAt !== "number" || !Number.isFinite(copiedAt) || !Number.isFinite(now)) return "⧉ Copy all";
+  const d = now - copiedAt; return d >= 0 && d < TOAST_PILL_COPIED_MS ? "✓ Copied" : "⧉ Copy all";
+}
