@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { pushLookbackToastHistory, dismissedLookbackToastHistory, LOOKBACK_TOAST_HISTORY_MAX, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -242,4 +242,13 @@ console.log("time bar    -> each stacked look-back toast shows a thin bar shrink
   assert.equal(lookbackToastCopyText({ text: "  x  " }), "x"); assert.equal(lookbackToastCopyText({ text: "" }), ""); assert.equal(lookbackToastCopyText(null), "");
   assert.deepEqual(dismissLookbackToast(st, "agree").map((x) => x.id), ["empty_filter"], "still dismissed after copy"); }
 console.log("click copy  -> clicking a stacked look-back toast copies its text (⌨ copied toast text), then dismisses it");
+// Recent-toast history strip.
+{ const a = lookbackToastStack({ agree: "a1" }); const b = lookbackToastStack({ empty_filter: "e1" }); const c2 = lookbackToastStack({ agree: "a1", empty_filter: "e2" });
+  let h = pushLookbackToastHistory([], a); h = pushLookbackToastHistory(h, b); h = pushLookbackToastHistory(h, c2);
+  assert.deepEqual(h.map((x) => x.text), ["a1", "e2", "e1"], "newest first, de-duplicated");
+  assert.deepEqual(dismissedLookbackToastHistory(h, c2).map((x) => x.text), ["e1"], "only gone ones in the strip");
+  assert.deepEqual(dismissedLookbackToastHistory(h, []).map((x) => lookbackToastCopyText(x)), ["a1", "⚠ e2", "⚠ e1"]);
+  let big: ReturnType<typeof pushLookbackToastHistory> = []; for (let i = 0; i < 9; i++) big = pushLookbackToastHistory(big, lookbackToastStack({ empty_filter: `e${i}` }));
+  assert.equal(big.length, LOOKBACK_TOAST_HISTORY_MAX); assert.equal(big[0].text, "e8"); assert.deepEqual(pushLookbackToastHistory(null, null), []); }
+console.log("history     -> last 5 dismissed/expired look-back toasts in an amber strip, newest first; click one to re-copy");
 console.log("OK");

@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -74,6 +74,7 @@ export default function RoeLookbackNote() {
     window.setTimeout(() => { if (toastHoverRef.current) return; for (const id of lookbackToastsAfterLeave(deferredRef.current.keys(), showing)) deferredRef.current.get(id)?.(); deferredRef.current.clear(); }, LOOKBACK_TOAST_LEAVE_GRACE_MS);
   };
   const [winToast, setWinToast] = useState<string | null>(null);
+  const [toastHist, setToastHist] = useState<LookbackToastHistoryEntry[]>([]);
   const [agreeToast, setAgreeToast] = useState<string | null>(null);
   const winShownRef = useRef(false);
   useEffect(() => {
@@ -93,6 +94,10 @@ export default function RoeLookbackNote() {
     return () => window.clearTimeout(id);
   }, [roleFilter, c]);
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
+  const topStack = lookbackToastStack({ win: winToast, agree: agreeToast, empty_filter: emptyToast });
+  const topKey = topStack.map((t) => lookbackToastCopyText(t)).join("\n");
+  useEffect(() => { if (topStack.length) setToastHist((h) => pushLookbackToastHistory(h, topStack)); }, [topKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pastToasts = dismissedLookbackToastHistory(toastHist, topStack);
   return (
     <section data-roe-lookback className="rounded-xl border border-zinc-800 p-4 text-sm space-y-1">
       {(() => { const stack = lookbackToastStack({ win: winToast, agree: agreeToast, empty_filter: emptyToast }); toastCountRef.current = stack.length; return stack.length ? (
@@ -130,6 +135,22 @@ export default function RoeLookbackNote() {
         </div>
       )}
       <p className="text-xs uppercase tracking-widest text-zinc-500">ROE look-back (aethel.roe.lookback.v1)</p>
+      {pastToasts.length > 0 && (
+        <div data-roe-lookback-toast-history className="rounded-xl border-2 border-amber-300/80 bg-zinc-950 px-3 py-2 text-xs space-y-1">
+          <p className="text-amber-300 font-semibold uppercase tracking-widest">Recent toasts · last {pastToasts.length} (click to re-copy)</p>
+          <ul className="flex flex-wrap gap-2">
+            {pastToasts.map((h) => (
+              <li key={lookbackToastCopyText(h)}>
+                <button type="button" data-roe-lookback-toast-history-item={h.id} title="Copy this toast text again"
+                  onClick={() => { const cp = lookbackToastCopyText(h); void navigator.clipboard?.writeText(cp).then(() => { const at = Date.now(); setToast({ txt: "copied toast text", at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); }, () => {}); }}
+                  className={`max-w-[28rem] truncate rounded-full border px-3 py-0.5 text-left font-semibold ${h.tone === "amber" ? "border-amber-400 text-amber-200" : h.tone === "blue" ? "border-sky-400 text-sky-200" : "border-emerald-400 text-emerald-200"}`}>
+                  ⧉ {lookbackToastCopyText(h)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {!c ? <p className="text-zinc-500">Reading sealed paths…</p> : c.paths_considered === 0 ? <p className="text-zinc-400">No sealed paths yet.</p> : (
         <>
           <p className="text-zinc-300" data-roe-lookback-summary>

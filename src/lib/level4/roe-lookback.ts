@@ -321,6 +321,21 @@ export function lookbackToastCopyText(t: { text?: unknown; tone?: unknown } | nu
   if (!t || typeof t.text !== "string" || !t.text.trim()) return "";
   return `${t.tone === "amber" ? "⚠ " : ""}${t.text.trim()}`;
 }
+export const LOOKBACK_TOAST_HISTORY_MAX = 5;
+export type LookbackToastHistoryEntry = { id: LookbackToastId; text: string; tone: "green" | "blue" | "amber" };
+/** Pure: add shown toasts to the tab-local history, newest first, de-duplicated by copy text, capped. */
+export function pushLookbackToastHistory(hist: readonly LookbackToastHistoryEntry[] | null | undefined, shown: readonly LookbackToastHistoryEntry[] | null | undefined, max: number = LOOKBACK_TOAST_HISTORY_MAX): LookbackToastHistoryEntry[] {
+  const out: LookbackToastHistoryEntry[] = [];
+  const add = (t: LookbackToastHistoryEntry) => { const k = lookbackToastCopyText(t); if (k && !out.some((x) => lookbackToastCopyText(x) === k)) out.push({ id: t.id, text: t.text, tone: t.tone }); };
+  for (const t of shown ?? []) add(t);
+  for (const t of hist ?? []) add(t);
+  return out.slice(0, Math.max(0, max));
+}
+/** Pure: history entries not currently on screen (the dismissed / expired ones). */
+export function dismissedLookbackToastHistory(hist: readonly LookbackToastHistoryEntry[] | null | undefined, showing: readonly { text: string; tone: unknown }[] | null | undefined): LookbackToastHistoryEntry[] {
+  const on = new Set((showing ?? []).map((t) => lookbackToastCopyText(t)));
+  return (hist ?? []).filter((h) => !on.has(lookbackToastCopyText(h)));
+}
 /** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
 export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
   if (helpOpen === true) return "help";
