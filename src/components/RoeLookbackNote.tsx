@@ -230,6 +230,7 @@ export default function RoeLookbackNote() {
       )}
       {help && (
         <div data-roe-lookback-cheatsheet role="dialog" aria-label="Keyboard shortcuts" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setHelp(false)}>
+          {(() => { const kc = lookbackCheatsheetChip(help); return kc.show ? <button type="button" data-roe-cheatsheet-keys-open title="Close keyboard cheat sheet (same as Esc / ?)" className="fixed top-3 right-3 z-[70] cursor-pointer rounded-full border-2 border-amber-300 bg-zinc-950 px-3 py-1 text-xs font-semibold text-amber-200 shadow-lg hover:bg-amber-500/20" onClick={(e) => { e.stopPropagation(); setHelp(false); }}>{kc.label}</button> : null; })()}
           <div data-pulsing={lookbackHelpPulse(helpPulseAt, helpPulseNow, help) ? "1" : undefined} className={`max-w-md w-full rounded-2xl border-2 border-amber-300 bg-zinc-950 p-5 shadow-2xl shadow-amber-500/20${lookbackHelpPulse(helpPulseAt, helpPulseNow, help) ? " ring-4 ring-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.8)] motion-safe:animate-pulse" : ""}`} onClick={(ev) => ev.stopPropagation()}>
             <p className="text-amber-300 text-sm font-bold uppercase tracking-widest mb-3">Keyboard · ROE look-back</p>
             <table className="w-full text-sm"><tbody>
