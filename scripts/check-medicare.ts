@@ -1212,3 +1212,13 @@ assert.ok(medicareJumpsPulse(0, 10)); assert.ok(!medicareJumpsPulse(0, MEDICARE_
   for (const f of ["blankNoteStickyChip", "needsReviewStickyChip", "topCandidateStickyChip", "unreviewedStickyChip", "clearedStickyChip"]) assert.ok(new RegExp(`jumpsOpen && \\(\\(\\) => \\{ const c = ${f}`).test(src), f);
   for (const f of ["firstUpRowChip", "lastRowChip", "firstRowChip", "secondRowChip", "thirdRowChip"]) assert.ok(new RegExp(`\\{\\(\\(\\) => \\{ const c = ${f}\\(`).test(src), f); }
 console.log("medicareJumps toggle OK");
+
+// Esc collapses Packs ▴ / Jumps ▴ (cheat sheet → Packs → Jumps → toasts)
+{ const m = require("../src/lib/medicare/investigation");
+  assert.deepEqual([...m.MEDICARE_ESC_ORDER], ["help", "packs", "jumps", "toasts"]);
+  assert.equal(m.medicareEscTarget(true, 2, true, true), "help"); assert.equal(m.medicareEscTarget(false, 2, true, true), "packs"); assert.equal(m.medicareEscTarget(false, 2, false, true), "jumps"); assert.equal(m.medicareEscTarget(false, 2, false, false), "toasts"); assert.equal(m.medicareEscTarget(false, 0, "yes", 1), null);
+  assert.equal(m.medicareEscToast("packs"), "Packs \u25be hidden (Esc)"); assert.equal(m.medicareEscToast("jumps"), "Jumps \u25be hidden (Esc)"); assert.equal(m.medicareEscToast("toasts"), null);
+  assert.ok(m.MEDICARE_KEYMAP.some((r: { key: string; does: string }) => r.key === "Escape" && /Packs/.test(r.does) && /Jumps/.test(r.does)));
+  const fs = require("fs"), path = require("path"); const sc = fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8"); const ds = fs.readFileSync(path.join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8");
+  assert.ok(sc.includes("MEDICARE_STRIP_COLLAPSE_EVENT, on") && sc.includes("medicareEscToast(t)")); assert.ok(ds.includes("stripRef.current.packs, stripRef.current.jumps")); }
+console.log("medicare Esc Packs/Jumps OK");

@@ -517,10 +517,20 @@ export function restoreMedicareToast(entry: { id?: unknown; text?: unknown; tone
 }
 
 /** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
-export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
+export function medicareEscTarget(helpOpen: unknown, toastCount: unknown, packsOpen?: unknown, jumpsOpen?: unknown): "help" | "packs" | "jumps" | "toasts" | null {
   if (helpOpen === true) return "help";
+  if (packsOpen === true) return "packs";
+  if (jumpsOpen === true) return "jumps";
   return typeof toastCount === "number" && toastCount > 0 ? "toasts" : null;
 }
+
+/** Esc priority, one layer per press: cheat sheet → Packs ▴ → Jumps ▴ → top toasts. */
+export const MEDICARE_ESC_ORDER = ["help", "packs", "jumps", "toasts"] as const;
+/** Pure: toast text when Esc collapses Packs/Jumps. Never throws. */
+export function medicareEscToast(t: unknown): string | null { return t === "packs" ? "Packs \u25be hidden (Esc)" : t === "jumps" ? "Jumps \u25be hidden (Esc)" : null; }
+/** Window events: StatusChips broadcasts Packs/Jumps open state; DispositionStub asks it to collapse. */
+export const MEDICARE_STRIP_STATE_EVENT = "medicare:strip-state";
+export const MEDICARE_STRIP_COLLAPSE_EVENT = "medicare:strip-collapse";
 
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in dispositionShortcut). */
 export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
@@ -558,7 +568,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
   { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
-  { key: "Escape", does: "close this sheet first, else clear the top toasts" },
+  { key: "Escape", does: "close this sheet first, else collapse Packs \u25b4, else Jumps \u25b4, else clear the top toasts" },
 ];
 
 /** Review-session timer state (tab-local, display only). */
