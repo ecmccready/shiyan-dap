@@ -717,6 +717,15 @@ export function lookbackVerdictFilterChip(winner: unknown, filter: unknown): { s
   return { show: true, label: winner === "lookback" ? `look-back wins → ★${active ? " ✓" : ""}` : `agree → =${active ? " ✓" : ""}`, target, active, next: active ? "all" : target };
 }
 
+/** Pure: sticky "N beaten" chip. When the compare has ≥1 beaten path, clicking sets Show to beaten; active → re-click returns to all. Hidden when 0/invalid. Mirrors lookbackVerdictFilterChip. Never throws. */
+export function lookbackBeatenChip(beaten: unknown, filter: unknown): { show: boolean; label: string; active: boolean; next: LookbackRoleFilter } {
+  const cur: LookbackRoleFilter = filter === "winners" || filter === "beaten" || filter === "agree" ? filter : "all";
+  const n = typeof beaten === "number" && Number.isFinite(beaten) ? Math.floor(beaten) : 0;
+  if (n < 1) return { show: false, label: "", active: false, next: cur };
+  const active = cur === "beaten";
+  return { show: true, label: `${n} beaten${active ? " ✓" : ""}`, active, next: active ? "all" : "beaten" };
+}
+
 export const LOOKBACK_VERDICT_FILTER_PULSE_MS = 2400;
 /** Pure: true while the sticky verdict→Show chip should glow/pulse after the first click in the tab that actually changed the Show filter (`startedAt` set once per session), for LOOKBACK_VERDICT_FILTER_PULSE_MS. Display only. Never throws. */
 export function lookbackVerdictFilterPulse(startedAt: unknown, now: unknown): boolean {
