@@ -1103,3 +1103,14 @@ import { needsReviewStickyChip, needsReviewStickyChanged, needsReviewStickyPulse
   assert.equal(needsReviewStickyPulse(1, 1), true); assert.equal(needsReviewStickyPulse(1, 1 + NEEDS_REVIEW_STICKY_PULSE_MS), false); assert.equal(needsReviewStickyPulse(null, 1), false);
   assert.equal(needsReviewStickyToast("b"), "⚑ ↓ first needs review: b"); assert.equal(needsReviewStickyToast(null), "");
   console.log("needsReviewStickyChip OK (sticky ⚑ N needs review ↓ = filter + focus first needs_human_review)"); }
+
+import { clearedStickyChip, clearedStickyChanged, clearedStickyPulse, clearedStickyToast, CLEARED_STICKY_PULSE_MS, MEDICARE_STICKY_JUMP_TOAST_EVENT } from "../src/lib/medicare/investigation";
+{ const r = { entries: [{ item_id: "a", status: "needs_human_review" }, { item_id: "b", status: "cleared_pattern_only" }, { item_id: "c", status: "cleared_pattern_only" }] };
+  assert.deepEqual(clearedStickyChip(r), { show: true, count: 2, label: "✓ 2 cleared ↓", target: "b" });
+  assert.equal(clearedStickyChip({ entries: [{ item_id: "a", status: "unreviewed" }] }).show, false); assert.equal(clearedStickyChip(null).show, false); assert.equal(clearedStickyChip({ entries: "x" }).show, false);
+  assert.equal(clearedStickyChanged("b", { target: null, filter: null }), true); assert.equal(clearedStickyChanged("b", { target: "b", filter: "cleared_pattern_only" }), false);
+  assert.equal(clearedStickyChanged("b", { target: "b", filter: null }), true); assert.equal(clearedStickyChanged(null, { target: "b", filter: null }), false);
+  assert.equal(clearedStickyPulse(1, 1), true); assert.equal(clearedStickyPulse(1, 1 + CLEARED_STICKY_PULSE_MS), false); assert.equal(clearedStickyPulse(null, 1), false);
+  assert.equal(clearedStickyToast("b"), "✓ ↓ first cleared: b"); assert.equal(clearedStickyToast(null), "");
+  assert.equal(MEDICARE_STICKY_JUMP_TOAST_EVENT, "medicare:sticky-jump-toast");
+  console.log("clearedStickyChip OK (sticky ✓ N cleared ↓ = filter + focus first cleared_pattern_only; jump toasts wired)"); }
