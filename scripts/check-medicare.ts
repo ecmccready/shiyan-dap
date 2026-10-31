@@ -942,3 +942,10 @@ console.log("ok review complete banner click action");
   assert.equal(medicareDirectBriefCopyKind(true, true, true, true), "", "hand-off not brief"); assert.equal(medicareDirectBriefCopyKind(false, false, true, true), "", "dispositions not brief");
   for (const b of [null, undefined, "x", 1]) assert.equal(medicareDirectBriefCopyKind(b, b, b, b), "");
   console.log("direct 📦 / Copy dispositions button click -> stacked toast after clipboard success (no double toast from chip/key/banner) OK"); }
+
+import { medicareBriefChip, medicareBriefChipCopiedOk, MEDICARE_BRIEF_COPIED_EVENT } from "../src/lib/medicare/investigation";
+{ assert.equal(medicareBriefChip(null).show, false); assert.equal(medicareBriefChip("x").show, false);
+  assert.equal(medicareBriefChipCopiedOk(1000, 2000), true); assert.equal(medicareBriefChipCopiedOk(1000, 5000), false); assert.equal(medicareBriefChipCopiedOk(null, 2000), false); assert.equal(medicareBriefChipCopiedOk(2000, 1000), false);
+  assert.deepEqual(medicareBriefChip(inv), { show: true, label: "⧉ Case brief", toast: "copied case brief" });
+  assert.equal(MEDICARE_BRIEF_COPIED_EVENT, "medicare:brief-copied");
+  console.log("sticky ⧉ Case brief chip OK"); }

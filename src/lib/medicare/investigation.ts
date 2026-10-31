@@ -1283,6 +1283,15 @@ export function medicareDispositionsChipCopiedOk(pendingAt: unknown, now: unknow
   return typeof pendingAt === "number" && typeof now === "number" && now >= pendingAt && now - pendingAt <= MEDICARE_HANDOFF_CHIP_PENDING_MS;
 }
 
+/** Fired by the live case-brief button after ANY successful clipboard copy (trusted or synthetic). */
+export const MEDICARE_BRIEF_COPIED_EVENT = "medicare:brief-copied";
+/** Pure: sticky "⧉ Case brief" chip — presses the live Copy (reviewed) case brief button. Shown when the report has dispositions. Never throws. */
+export function medicareBriefChip(report: unknown): { show: boolean; label: string; toast: string } {
+  try { return currentDispositionsJson(report) ? { show: true, label: "⧉ Case brief", toast: "copied case brief" } : { show: false, label: "", toast: "" }; } catch { return { show: false, label: "", toast: "" }; }
+}
+/** Pure: case-brief chip toast/pulse fires only when its own press is pending and the copy succeeded within 3s. */
+export function medicareBriefChipCopiedOk(pendingAt: unknown, now: unknown): boolean { return medicareDispositionsChipCopiedOk(pendingAt, now); }
+
 /** Keys whose key toast is deferred until clipboard success (x / ; / y / h). Pure. */
 export function medicareKeyToastDeferred(a: DispositionShortcut): boolean {
   return !!a && (a.kind === "copy_first_row" || a.kind === "copy_last_row" || a.kind === "dispositions" || a.kind === "handoff");
