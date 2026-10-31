@@ -396,6 +396,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "a", does: "reset Show filter to All — no-op when already All" },
   { key: "3", does: "focus, expand and scroll to sealed path #3 (rank 3), Show → All — mirrors 1 / 2; no-op with <3 paths" },
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
+  { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
 ];
 /** Pure: key o flips Sort between look-back rank and ΔΦ vs greedy; unknown input goes to "dphi". */
@@ -885,4 +886,15 @@ export function lookbackShowAllShouldPulse(alreadyPulsed: unknown, changed: unkn
 export function lookbackShowAllChip(filter: unknown): { show: boolean; label: string; next: "all" } {
   try { const f = typeof filter === "string" && filter ? filter : "all"; return { show: f !== "all", label: "All ✕", next: "all" }; }
   catch { return { show: false, label: "All ✕", next: "all" }; }
+}
+
+/** Pure: key `d` clears all live top toasts (same as ✕ Clear all / sticky N toasts chip) when ≥1 shows. Recent history untouched. Effective-only ⌨ toast. Never throws. */
+export function lookbackClearToastsKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, count: unknown): { changed: boolean; cleared: number; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "d" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    const n = typeof count === "number" && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
+    return { changed: n > 0, cleared: n, toast: n > 0 ? `d → cleared ${n} toast${n === 1 ? "" : "s"}` : null };
+  } catch { return null; }
 }
