@@ -616,3 +616,10 @@ export function keyTargetPulse(startedAt: unknown, now: unknown, targetId: unkno
   if (typeof targetId !== "string" || targetId === "" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < KEY_TARGET_PULSE_MS;
 }
+
+export const CHEATSHEET_PULSE_MS = 2400;
+/** Pure: true while the keyboard cheat sheet panel should pulse — once per tab after the first ? open (`startedAt` set then), only while open, for CHEATSHEET_PULSE_MS. Display only. */
+export function cheatsheetPulse(startedAt: unknown, now: unknown, open: unknown): boolean {
+  if (open !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < CHEATSHEET_PULSE_MS;
+}

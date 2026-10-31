@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { keyTargetPulse, KEY_TARGET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { cheatsheetPulse, CHEATSHEET_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -88,6 +88,15 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     bulkPulsedRef.current = true; const t = Date.now(); setBulkPulseAt(t); setBulkPulseNow(t);
     setTimeout(() => setBulkPulseNow(Date.now()), BULK_SET_PULSE_MS);
   };
+  const helpPulsedRef = useRef(false);
+  const [helpPulseAt, setHelpPulseAt] = useState<number | null>(null);
+  const [helpPulseNow, setHelpPulseNow] = useState(0);
+  useEffect(() => {
+    if (!help || helpPulsedRef.current) return;
+    helpPulsedRef.current = true; const t = Date.now(); setHelpPulseAt(t); setHelpPulseNow(t);
+    const h = setTimeout(() => setHelpPulseNow(Date.now()), CHEATSHEET_PULSE_MS);
+    return () => clearTimeout(h);
+  }, [help]);
   const keyPulsedRef = useRef(false);
   const [keyPulseAt, setKeyPulseAt] = useState<number | null>(null);
   const [keyPulseNow, setKeyPulseNow] = useState(0);
@@ -183,7 +192,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       )}
       {help && (
         <div data-medicare-cheatsheet role="dialog" aria-label="Keyboard shortcuts" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setHelp(false)}>
-          <div className="max-w-md w-full rounded-2xl border-2 border-amber-300 bg-zinc-950 p-5 shadow-2xl shadow-amber-500/20" onClick={(ev) => ev.stopPropagation()}>
+          <div data-pulsing={cheatsheetPulse(helpPulseAt, helpPulseNow, help) ? "1" : undefined} className={`max-w-md w-full rounded-2xl border-2 border-amber-300 bg-zinc-950 p-5 shadow-2xl shadow-amber-500/20${cheatsheetPulse(helpPulseAt, helpPulseNow, help) ? " ring-4 ring-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.8)] motion-safe:animate-pulse" : ""}`} onClick={(ev) => ev.stopPropagation()}>
             <p className="text-amber-300 text-sm font-bold uppercase tracking-widest mb-3">Keyboard · Medicare review</p>
             <table className="w-full text-sm"><tbody>
               {MEDICARE_KEYMAP.map((k) => (
