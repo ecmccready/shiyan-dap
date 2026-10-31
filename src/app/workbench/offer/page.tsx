@@ -37,6 +37,23 @@ export default function OfferPage() {
           </p>
         </section>
 
+        <section id="evidence-packs" data-offer-evidence-packs className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest mb-2">Evidence packs a reviewer can copy today</p>
+          <div className="grid sm:grid-cols-2 gap-4 mb-3">
+            <div>
+              <p className="text-white mb-1"><Link className="underline" href="/workbench/medicare">Medicare · HITL review →</Link></p>
+              <p>Progress · Statuses · Notes · All rows · Provenance · Baselines · DQ · Hand-off · Case brief</p>
+            </div>
+            <div>
+              <p className="text-white mb-1"><Link className="underline" href="/workbench/status">Look-back · ROE insight →</Link></p>
+              <p>Verdict · Gaps · Roles · All paths · All steps · Compare · Summary</p>
+            </div>
+          </div>
+          <p className="text-zinc-500 text-xs">
+            One click each from the sticky strips; JSON goes to the local clipboard only. Synthetic Medicare fixture, no live CMS fetch. Detected pattern ≠ verified conclusion. Display only; nothing is sent or stored.
+          </p>
+        </section>
+
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300 space-y-3">
           <p><span className="text-white">Buyer:</span> Organization responsible for the quality, cost, or reliability of repeated workflows.</p>
           <p><span className="text-white">Product:</span> Workbench that executes tasks, scores outcomes against a reference, and records reproducible evidence.</p>
