@@ -451,6 +451,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
+  { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else clear the top toasts" },
 ];
@@ -1018,5 +1019,16 @@ export function medicareClearRecentKey(ev: { key?: unknown; ctrlKey?: unknown; m
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
     const n = typeof count === "number" && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
     return { changed: n > 0, cleared: n, toast: n > 0 ? `e → cleared ${n} recent toast${n === 1 ? "" : "s"}` : null };
+  } catch { return null; }
+}
+
+/** Pure: key `p` copies Recent toasts JSON (same as Win strip ⧉ Copy recent) when ≥1 entry. Effective-only ⌨ toast. Mirrors lookbackCopyRecentKey. Never throws. */
+export function medicareCopyRecentKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, count: unknown): { changed: boolean; copied: number; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "p" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    const n = typeof count === "number" && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
+    return { changed: n > 0, copied: n, toast: n > 0 ? `p → copied ${n} recent toast${n === 1 ? "" : "s"} JSON` : null };
   } catch { return null; }
 }
