@@ -983,3 +983,8 @@ import { firstUpRowChip } from "../src/lib/medicare/investigation";
     assert.equal(G("a", { filter: null, target: "b" }), K(["a", "b"], "b").changes); assert.equal(G("a", { filter: null, target: "a" }), K(["a", "b"], "a").changes);
     console.log("ok firstUpChipChanged (matches g changes; filter reset counts)"); }
   console.log("ok firstUpPulse/ShouldPulse (first-use per session, chip or g)"); }
+
+{ const { lastDownChipChanged: L } = require("../src/lib/medicare/investigation");
+  assert.equal(L("c", { filter: null, target: "c" }), false); assert.equal(L("c", { filter: "cleared", target: "c" }), true);
+  assert.equal(L("c", { filter: null, target: "a" }), true); assert.equal(L("", {}), false); assert.equal(L(null, null), false);
+  console.log("ok lastDownChipChanged (quiet when already on last row + All)"); }

@@ -1366,6 +1366,10 @@ export function firstUpShouldPulse(alreadyPulsed: unknown, jump: unknown): boole
 export function firstUpChipChanged(jump: unknown, state: { filter?: unknown; target?: unknown } | null | undefined): boolean {
   try { if (typeof jump !== "string" || !jump) return false; const st = state ?? {}; return !((st.filter ?? null) === null && st.target === jump); } catch { return false; }
 }
+/** Pure: would a Last ↓ chip click change anything (filter → All, key target → last row)? Same rule as firstUpChipChanged. Never throws. */
+export function lastDownChipChanged(jump: unknown, state: { filter?: unknown; target?: unknown } | null | undefined): boolean {
+  return firstUpChipChanged(jump, state);
+}
 /** Pure: chip is pulsing within FIRST_UP_PULSE_MS after the first-use timestamp. Never throws. */
 export function firstUpPulse(pulseAt: unknown, now: unknown): boolean {
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
