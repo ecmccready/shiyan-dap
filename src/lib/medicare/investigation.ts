@@ -1655,6 +1655,14 @@ export function medicareProgressJson(report: unknown, elapsedMs: unknown = null)
 export function medicareProgressToast(json: unknown): string {
   try { const o = typeof json === "string" && json ? JSON.parse(json) : null; return o && o.kind === "progress" ? `⧉ Progress → copied ${o.reviewed}/${o.total} progress JSON` : ""; } catch { return ""; }
 }
+/** Pure: live review-session elapsed ms for ⧉ Progress — frozen timer-event value wins; else the chip's own ReviewTimer at `now`; null when not started. Never throws. */
+export function medicareProgressElapsedMs(t: ReviewTimer | null | undefined, now: number, frozen?: { elapsed_ms?: unknown; frozen?: unknown } | null): number | null {
+  try {
+    if (frozen && frozen.frozen === true && typeof frozen.elapsed_ms === "number" && Number.isFinite(frozen.elapsed_ms) && frozen.elapsed_ms >= 0) return Math.round(frozen.elapsed_ms);
+    if (!t || t.started_at === null || typeof t.started_at !== "number") return null;
+    const ms = reviewElapsedMs(t, now); return Number.isFinite(ms) && ms >= 0 ? Math.round(ms) : null;
+  } catch { return null; }
+}
 /** Pure: sticky "⧉ Progress" chip. Hidden with no rows. Never throws. */
 export function medicareCopyProgressChip(report: unknown, elapsedMs: unknown = null): { show: boolean; label: string; json: string; toast: string } {
   const json = medicareProgressJson(report, elapsedMs); if (!json) return { show: false, label: "", json: "", toast: "" };

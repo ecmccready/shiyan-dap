@@ -3,6 +3,7 @@
 import { blankNoteStickyChip, blankNoteStickyChanged, blankNoteStickyPulse, BLANK_NOTE_STICKY_PULSE_MS } from "../src/lib/medicare/investigation";
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
+import { medicareProgressElapsedMs } from "../src/lib/medicare/investigation";
 import { createHash } from "node:crypto";
 import { medicareDispositionsChip, medicareDispositionsChipShouldPulse, medicareDispositionsChipPulse, medicareDispositionsChipCopiedOk, MEDICARE_DISPOSITIONS_CHIP_PULSE_MS, MEDICARE_DISPOSITIONS_COPIED_EVENT, medicareHandoffChipCopiedOk, MEDICARE_HANDOFF_CHIP_PENDING_MS, MEDICARE_HANDOFF_COPIED_EVENT, medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -1161,3 +1162,14 @@ import { medicareProgressJson, medicareCopyProgressChip, medicareProgressToast }
   assert.equal(o.rows, undefined); assert.equal(o.entries, undefined); assert.ok(medicareProgressJson(rep).length < medicareStatusesJson(rep).length, "smaller than Statuses");
   const ch = medicareCopyProgressChip(rep); assert.equal(medicareCopyRowToast("progress", ch.json), ch.toast); assert.ok(ch.toast.startsWith("⧉ Progress → copied")); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
   console.log("sticky ⧉ Progress chip OK"); }
+
+// ⧉ Progress live elapsed_ms wiring
+{ const PE = medicareProgressElapsedMs, PJ = medicareProgressJson;
+  assert.equal(PE({ started_at: null, frozen_at: null }, 5000), null); assert.equal(PE(null, 1), null);
+  assert.equal(PE({ started_at: 1000, frozen_at: null }, 4000), 3000);
+  assert.equal(PE({ started_at: 1000, frozen_at: 2500 }, 9000), 1500);
+  assert.equal(PE({ started_at: 1000, frozen_at: null }, 4000, { elapsed_ms: 777, frozen: true }), 777);
+  assert.equal(PE({ started_at: 1000, frozen_at: null }, 4000, { elapsed_ms: null, frozen: false }), 3000);
+  const rep = { report_hash: "h", entries: [{ id: "a", status: "unreviewed" }] };
+  const j = PJ(rep, PE({ started_at: 0, frozen_at: null }, 42)); if (j) assert.equal(JSON.parse(j).elapsed_ms, 42);
+  console.log("ok: progress live elapsed_ms"); }

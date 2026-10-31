@@ -7,7 +7,7 @@ import { blankNoteStickyChip, blankNoteStickyChanged, blankNoteStickyPulse, BLAN
 import { needsReviewStickyChip, needsReviewStickyChanged, needsReviewStickyPulse, NEEDS_REVIEW_STICKY_PULSE_MS, needsReviewStickyToast, clearedStickyChip, clearedStickyChanged, clearedStickyPulse, clearedStickyToast, CLEARED_STICKY_PULSE_MS, MEDICARE_STICKY_JUMP_TOAST_EVENT, unreviewedStickyChip, unreviewedStickyChanged, unreviewedStickyPulse, unreviewedStickyToast, UNREVIEWED_STICKY_PULSE_MS } from "@/lib/medicare/investigation";
 import { lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { unreviewedFilterPulse, unreviewedFilterShouldPulse, UNREVIEWED_FILTER_PULSE_MS, MEDICARE_UNREVIEWED_FILTER_PULSE_EVENT, unreviewedFilterChip, clearedChip, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, MEDICARE_CLEARED_PULSE_EVENT, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, MEDICARE_NEEDS_REVIEW_PULSE_EVENT, needsReviewChip, filterAllChip, filterAllPulse, filterAllShouldPulse, FILTER_ALL_PULSE_MS, MEDICARE_FILTER_ALL_PULSE_EVENT } from "@/lib/medicare/investigation";
-import { medicareCopyAllRowsChip, medicareCopyNotesChip, medicareCopyStatusesChip, medicareCopyProgressChip } from "@/lib/medicare/investigation";
+import { medicareCopyAllRowsChip, medicareCopyNotesChip, medicareCopyStatusesChip, medicareCopyProgressChip, medicareProgressElapsedMs, nextReviewTimer, MEDICARE_PROGRESS_EVENT, MEDICARE_TIMER_EVENT, type ReviewTimer } from "@/lib/medicare/investigation";
 import { medicareInvestigationChip, medicareInvestigationChipCopiedOk, medicareInvestigationChipShouldPulse, medicareInvestigationChipPulse, MEDICARE_INVESTIGATION_CHIP_PULSE_MS } from "@/lib/medicare/investigation";
 import { medicareEvidenceChip, medicareEvidenceChipCopiedOk, medicareEvidenceChipShouldPulse, medicareEvidenceChipPulse, MEDICARE_EVIDENCE_CHIP_PULSE_MS } from "@/lib/medicare/investigation";
 import { medicareDqChip, medicareDqChipCopiedOk, medicareDqChipShouldPulse, medicareDqChipPulse, MEDICARE_DQ_CHIP_PULSE_MS } from "@/lib/medicare/investigation";
@@ -27,6 +27,14 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
   const [r, setR] = useState<InvestigationReport>(initial);
   const [keyTarget, setKeyTarget] = useState<string | null>(null);
   useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setKeyTarget(typeof d === "string" ? d : null); }; window.addEventListener(MEDICARE_TARGET_EVENT, on); return () => window.removeEventListener(MEDICARE_TARGET_EVENT, on); }, []);
+  const progTimerRef = useRef<ReviewTimer>({ started_at: null, frozen_at: null });
+  const progFrozenRef = useRef<{ elapsed_ms: number | null; frozen: boolean } | null>(null);
+  useEffect(() => {
+    const onP = (ev: Event) => { const d = (ev as CustomEvent<{ reviewed: number; items: number }>).detail; progTimerRef.current = nextReviewTimer(progTimerRef.current, d, Date.now()); };
+    const onT = (ev: Event) => { const d = (ev as CustomEvent<{ elapsed_ms: number | null; frozen: boolean }>).detail; if (d) progFrozenRef.current = d; };
+    window.addEventListener(MEDICARE_PROGRESS_EVENT, onP); window.addEventListener(MEDICARE_TIMER_EVENT, onT);
+    return () => { window.removeEventListener(MEDICARE_PROGRESS_EVENT, onP); window.removeEventListener(MEDICARE_TIMER_EVENT, onT); };
+  }, []);
   const [undoDepth, setUndoDepth] = useState(0);
   const [redoDepth, setRedoDepth] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -297,7 +305,7 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
         ); })()}
         {(() => { const c = medicareCopyProgressChip(r); if (!c.show) return null; const on = medicareCopyRowChipPulse(cpPulseAt.progress, cpPulseNow); return (
           <button type="button" data-medicare-copy-progress-chip="" data-medicare-row-copied={rowCopied?.txt === c.toast ? "1" : undefined} data-medicare-copy-row-pulsing={on ? "1" : undefined}
-            onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); void navigator.clipboard?.writeText(c.json).then(() => { window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_PULSE_EVENT, { detail: { which: "progress", json: c.json } })); window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which: "progress", json: c.json } })); const at = Date.now(); setRowCopied({ txt: c.toast, at }); window.setTimeout(() => setRowCopied((x) => (x && x.at === at ? null : x)), TOAST_PILL_COPIED_MS); }, () => {}); }}
+            onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); const live = medicareCopyProgressChip(r, medicareProgressElapsedMs(progTimerRef.current, Date.now(), progFrozenRef.current)); const json = live.json || c.json; void navigator.clipboard?.writeText(json).then(() => { window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_PULSE_EVENT, { detail: { which: "progress", json } })); window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which: "progress", json } })); const at = Date.now(); setRowCopied({ txt: c.toast, at }); window.setTimeout(() => setRowCopied((x) => (x && x.at === at ? null : x)), TOAST_PILL_COPIED_MS); }, () => {}); }}
             title="Copy a compact review-progress pack ({kind:'progress', reviewed, total, percent, complete, notes, handoff_ready, counts, elapsed_ms, report_hash}) — no rows; smaller than ⧉ Statuses; unlike 📦 Hand-off (full pack) or the Win strip (display only); target/filter unchanged"
             className={`rounded-full border px-3 py-1 text-xs font-mono hover:border-white ${rowCopied?.txt === c.toast ? "border-green-400 bg-green-500 text-black" : "border-sky-500 text-sky-100"}${on ? " ring-4 ring-emerald-300 shadow-[0_0_16px_rgba(110,231,183,0.8)] motion-safe:animate-pulse" : ""}`}>{rowCopied?.txt === c.toast ? c.toast : c.label}</button>
         ); })()}
