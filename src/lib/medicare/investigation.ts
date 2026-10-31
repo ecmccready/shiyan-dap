@@ -1283,7 +1283,13 @@ export function medicareDispositionsChipCopiedOk(pendingAt: unknown, now: unknow
   return typeof pendingAt === "number" && typeof now === "number" && now >= pendingAt && now - pendingAt <= MEDICARE_HANDOFF_CHIP_PENDING_MS;
 }
 
-/** Keys whose key toast is deferred until clipboard success (x / ;). Pure. */
+/** Keys whose key toast is deferred until clipboard success (x / ; / y / h). Pure. */
 export function medicareKeyToastDeferred(a: DispositionShortcut): boolean {
-  return !!a && (a.kind === "copy_first_row" || a.kind === "copy_last_row");
+  return !!a && (a.kind === "copy_first_row" || a.kind === "copy_last_row" || a.kind === "dispositions" || a.kind === "handoff");
+}
+/** Pure: y / h key toast fires only when the matching button's copied event arrives within 3s of the key press. Never throws. */
+export function medicareKeyCopyPendingOk(pending: unknown, kind: unknown, now: unknown): boolean {
+  if (!pending || typeof pending !== "object") return false;
+  const p = pending as { kind?: unknown; at?: unknown; txt?: unknown };
+  return (kind === "dispositions" || kind === "handoff") && p.kind === kind && typeof p.txt === "string" && p.txt.length > 0 && typeof p.at === "number" && typeof now === "number" && now >= p.at && now - p.at <= MEDICARE_HANDOFF_CHIP_PENDING_MS;
 }
