@@ -529,3 +529,12 @@ export function lookbackGreedySteps(c: LookbackCompare | null | undefined): { ru
     return { run_id: g.run_id, steps: g.steps, label: `${g.steps} step${g.steps === 1 ? "" : "s"}` };
   } catch { return null; }
 }
+
+/** Pure: Δsteps of top vs greedy for the sticky strip; null when either count is missing or they are equal. */
+export function lookbackStepsDelta(c: LookbackCompare | null | undefined): { delta: number; label: string } | null {
+  try {
+    const t = lookbackTopSteps(c), g = lookbackGreedySteps(c); if (!t || !g) return null;
+    const d = t.steps - g.steps; if (!Number.isFinite(d) || d === 0) return null;
+    return { delta: d, label: `${d > 0 ? "+" : "−"}${Math.abs(d)} step${Math.abs(d) === 1 ? "" : "s"} vs greedy` };
+  } catch { return null; }
+}
