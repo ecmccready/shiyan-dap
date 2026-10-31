@@ -440,3 +440,9 @@ export function lookbackToastHistoryJson(hist: readonly ({ id?: unknown; text?: 
   const entries = (hist ?? []).filter((h) => h && typeof h.text === "string" && h.text.trim()).map((h) => ({ kind: String(h!.id ?? ""), text: h!.text as string, tone: h!.tone === "amber" ? "amber" : h!.tone === "blue" ? "blue" : "green" }));
   return JSON.stringify({ schema: LOOKBACK_TOAST_HISTORY_SCHEMA, count: entries.length, entries }, null, 2);
 }
+
+/** Pure: look-back ⧉ Copy all button label — "✓ Copied" for ~1.5 s after a successful copy, else "⧉ Copy all". Tab-local, nothing sent. */
+export function lookbackCopyAllLabel(copiedAt: number | null | undefined, now: number): string {
+  if (typeof copiedAt !== "number" || !Number.isFinite(copiedAt) || !Number.isFinite(now)) return "⧉ Copy all";
+  const d = now - copiedAt; return d >= 0 && d < LOOKBACK_TOAST_PILL_COPIED_MS ? "✓ Copied" : "⧉ Copy all";
+}
