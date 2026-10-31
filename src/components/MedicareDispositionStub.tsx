@@ -262,7 +262,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
             <p className="text-amber-300 text-sm font-bold uppercase tracking-widest mb-3">Keyboard · Medicare review</p>
             <table className="w-full text-sm"><tbody>
               {MEDICARE_KEYMAP.map((k) => (
-                <tr key={k.key}><td className="pr-3 py-0.5 whitespace-nowrap"><kbd className="rounded border border-amber-300/70 bg-zinc-900 px-1.5 font-mono text-amber-100">{k.key}</kbd></td><td className="text-zinc-200">{k.does}</td></tr>
+                <tr key={k.key}><td className="pr-3 py-0.5 whitespace-nowrap"><kbd className="rounded border border-amber-300/70 bg-zinc-900 px-1.5 font-mono text-amber-100">{k.key === "Escape" ? "Esc" : k.key}</kbd></td><td className="text-zinc-200">{k.does}</td></tr>
               ))}
             </tbody></table>
             <p className="mt-3 text-xs text-zinc-500">Keys work outside text fields; Ctrl / Alt / Cmd are left to the browser. Review state only, this tab.</p>

@@ -458,7 +458,7 @@ assert.equal(new Set(MEDICARE_TOAST_ORDER).size, 3);
 console.log("toast stack -> complete / hand-off ready / empty filter stack in one top column (fixed order, no overlap); ⌨ toast stays at the bottom");
 // 44. Esc: cheat sheet first, then the stacked toasts (pure).
 assert.equal(medicareEscTarget(true, 2), "help", "sheet open: Esc closes it, toasts stay"); assert.equal(medicareEscTarget(false, 2), "toasts");
-assert.equal(medicareEscTarget(false, 0), null); assert.equal(medicareEscTarget(true, 0), "help"); assert.equal(medicareEscTarget("yes", 1), "toasts"); assert.equal(medicareEscTarget(false, "2"), null);
+assert.ok(MEDICARE_KEYMAP.some((r) => r.key === "Escape" && /sheet first/.test(r.does)), "cheat sheet documents Esc order"); assert.equal(medicareEscTarget(false, 0), null); assert.equal(medicareEscTarget(true, 0), "help"); assert.equal(medicareEscTarget("yes", 1), "toasts"); assert.equal(medicareEscTarget(false, "2"), null);
 console.log("Esc         -> closes the cheat sheet first if open, otherwise dismisses all stacked top toasts");
 // 45. Click one stacked toast to dismiss only that one (pure).
 { const st = medicareToastStack({ complete: "c", handoff_ready: "h", empty_filter: "e" });

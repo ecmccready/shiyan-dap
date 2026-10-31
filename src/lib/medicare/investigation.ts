@@ -434,6 +434,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "y", does: "copy current dispositions JSON" },
   { key: "h", does: "copy 📦 hand-off pack" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
+  { key: "Escape", does: "close this sheet first, else clear the top toasts" },
 ];
 
 /** Review-session timer state (tab-local, display only). */
