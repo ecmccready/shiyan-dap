@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "first_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | { kind: "copy_target_row" } | { kind: "copy_investigation" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "first_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | { kind: "copy_target_row" } | { kind: "copy_investigation" } | { kind: "copy_evidence" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -250,6 +250,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "o": case "O": return { kind: "copy_brief" };
       case "s": case "S": return { kind: "copy_target_row" };
       case "m": case "M": return { kind: "copy_investigation" };
+      case "q": case "Q": return { kind: "copy_evidence" };
       default: return null;
     }
   } catch { return null; }
@@ -536,6 +537,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "s", does: "copy the targeted (selected) row's JSON — same shape as x / ;; follows j/k / click; key toast only after clipboard success; no-op with no target" },
   { key: "o", does: "copy the reviewed case brief — same as the sticky ⧉ Case brief chip / Copy (reviewed) case brief button; toast only after clipboard success; no-op with no dispositions" },
   { key: "m", does: "copy the full investigation JSON — same as the Copy investigation JSON button (stacked toast only after clipboard success); no-op when the button is absent" },
+  { key: "q", does: "copy the evidence pack JSON — same as ⧉ Evidence / Copy evidence pack JSON (stacked toast only after clipboard success)" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
@@ -1411,3 +1413,15 @@ export const MEDICARE_INVESTIGATION_CHIP_PULSE_MS = 1600;
 /** Pure: first-use pulse once per page view (shared by chip click and m). */
 export function medicareInvestigationChipShouldPulse(alreadyPulsed: unknown, ok: unknown): boolean { return alreadyPulsed !== true && ok === true; }
 export function medicareInvestigationChipPulse(at: unknown, now: unknown): boolean { return typeof at === "number" && typeof now === "number" && now >= at && now - at < MEDICARE_INVESTIGATION_CHIP_PULSE_MS; }
+
+/** q key: free key on Medicare (n = notes, m = investigation, e = clear Recent) — "q" for "quote the evidence". Presses the existing Copy evidence pack JSON button; no new schema. */
+export const MEDICARE_EVIDENCE_KEY = "q";
+/** Pure: sticky "⧉ Evidence" chip — presses the page-level Copy evidence pack JSON button (same as q). Shown when the report has entries. Never throws. */
+export function medicareEvidenceChip(report: unknown): { show: boolean; label: string; toast: string } {
+  try { const e = (report as { entries?: unknown } | null)?.entries; return Array.isArray(e) && e.length > 0 ? { show: true, label: "⧉ Evidence", toast: "copied evidence pack JSON" } : { show: false, label: "", toast: "" }; } catch { return { show: false, label: "", toast: "" }; }
+}
+/** Pure: "Copied ✓" / first-use pulse only for its own (or q's) pending press when the evidence copy succeeded within 3s. */
+export function medicareEvidenceChipCopiedOk(pendingAt: unknown, now: unknown, kind: unknown): boolean { return kind === "evidence" && medicareDispositionsChipCopiedOk(pendingAt, now); }
+export const MEDICARE_EVIDENCE_CHIP_PULSE_MS = 1600;
+export function medicareEvidenceChipShouldPulse(alreadyPulsed: unknown, ok: unknown): boolean { return alreadyPulsed !== true && ok === true; }
+export function medicareEvidenceChipPulse(at: unknown, now: unknown): boolean { return typeof at === "number" && typeof now === "number" && now >= at && now - at < MEDICARE_EVIDENCE_CHIP_PULSE_MS; }

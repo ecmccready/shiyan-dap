@@ -1019,3 +1019,13 @@ import { medicareInvestigationChip, medicareInvestigationChipCopiedOk, medicareI
   assert.equal(medicareInvestigationChipShouldPulse(false, true), true); assert.equal(medicareInvestigationChipShouldPulse(true, true), false); assert.equal(medicareInvestigationChipShouldPulse(false, false), false);
   assert.equal(medicareInvestigationChipPulse(0, MEDICARE_INVESTIGATION_CHIP_PULSE_MS - 1), true); assert.equal(medicareInvestigationChipPulse(0, MEDICARE_INVESTIGATION_CHIP_PULSE_MS), false); assert.equal(medicareInvestigationChipPulse(null, 1), false);
   console.log("sticky ⧉ Investigation chip OK"); }
+
+import { medicareEvidenceChip, medicareEvidenceChipCopiedOk, medicareEvidenceChipShouldPulse, medicareEvidenceChipPulse, MEDICARE_EVIDENCE_KEY } from "../src/lib/medicare/investigation";
+{ if (DSM({ key: "q" })?.kind !== "copy_evidence" || DSM({ key: "Q" })?.kind !== "copy_evidence") throw new Error("q → copy_evidence");
+  if (DSM({ key: "q", targetTag: "INPUT" }) !== null || DSM({ key: "q", metaKey: true }) !== null) throw new Error("q guarded");
+  if (DSM({ key: "n" })?.kind !== "note") throw new Error("n still note");
+  if (MEDICARE_EVIDENCE_KEY !== "q" || !MKM.some((k) => k.key === "q")) throw new Error("q in keymap");
+  if (medicareEvidenceChip({ entries: [1] }).label !== "⧉ Evidence" || medicareEvidenceChip(null).show) throw new Error("evidence chip");
+  if (!medicareEvidenceChipCopiedOk(1000, 2000, "evidence") || medicareEvidenceChipCopiedOk(1000, 2000, "investigation") || medicareEvidenceChipCopiedOk(1000, 5000, "evidence")) throw new Error("evidence copiedOk");
+  if (!medicareEvidenceChipShouldPulse(false, true) || medicareEvidenceChipShouldPulse(true, true) || !medicareEvidenceChipPulse(0, 100) || medicareEvidenceChipPulse(0, 2000)) throw new Error("evidence pulse");
+  console.log("ok q key + ⧉ Evidence chip → copy evidence pack JSON"); }
