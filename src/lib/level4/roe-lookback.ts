@@ -632,3 +632,10 @@ export function lookbackSortChip(sort: unknown): { sort: LookbackSort; label: st
   const s: LookbackSort = sort === "dphi" ? "dphi" : "rank";
   return { sort: s, label: `sort: ${s === "dphi" ? "ΔΦ" : "rank"}`, next: toggleLookbackSort(s) };
 }
+
+/** Pure: sticky current Show-filter chip ("show: All/Winners/Beaten/Agree"); next = cycleRoleFilter (same as f). Unknown → all. */
+export function lookbackShowChip(filter: unknown): { filter: LookbackRoleFilter; label: string; next: LookbackRoleFilter } {
+  const f: LookbackRoleFilter = filter === "winners" || filter === "beaten" || filter === "agree" ? filter : "all";
+  const name = { all: "All", winners: "Winners", beaten: "Beaten", agree: "Agree" }[f];
+  return { filter: f, label: `show: ${name}`, next: cycleRoleFilter(f) };
+}
