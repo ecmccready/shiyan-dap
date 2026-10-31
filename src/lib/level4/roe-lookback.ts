@@ -305,6 +305,13 @@ export function lookbackToastStack(t: Partial<Record<LookbackToastId, unknown>> 
 export function dismissLookbackToast<T extends { id: LookbackToastId }>(stack: readonly T[] | null | undefined, id: unknown): T[] {
   return Array.isArray(stack) ? stack.filter((t) => t.id !== id) : [];
 }
+/** Pure: Clear all — dismiss every live stacked look-back top toast at once; returns ids cleared (stack order) and an empty stack. Recent history untouched. */
+export function clearAllLookbackToasts<T extends { id: LookbackToastId }>(stack: readonly T[] | null | undefined): { cleared: LookbackToastId[]; stack: T[] } {
+  return { cleared: Array.isArray(stack) ? stack.map((t) => t.id) : [], stack: [] };
+}
+/** Pure: the Clear all control shows only when 2+ top toasts are stacked. */
+export function showClearAllLookbackToasts(stack: readonly unknown[] | null | undefined): boolean { return Array.isArray(stack) && stack.length >= 2; }
+
 export const LOOKBACK_TOAST_LEAVE_GRACE_MS = 1200;
 /** Pure: on a toast's timer, defer while the pointer is over the stack, else dismiss. */
 export function lookbackToastExpiry(hovered: unknown): "defer" | "dismiss" { return hovered === true ? "defer" : "dismiss"; }

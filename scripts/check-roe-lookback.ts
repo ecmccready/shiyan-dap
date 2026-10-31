@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, clearLookbackToastHistory, pushLookbackToastHistory, dismissedLookbackToastHistory, LOOKBACK_TOAST_HISTORY_MAX, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, clearLookbackToastHistory, pushLookbackToastHistory, dismissedLookbackToastHistory, LOOKBACK_TOAST_HISTORY_MAX, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -269,4 +269,20 @@ console.log("history     -> last 5 dismissed/expired look-back toasts in an ambe
   assert.equal(lookbackToastPillLabel(g, { key: "agree", at: NaN }, 1000), "⧉ agree");
   assert.equal(lookbackToastPillLabel(null, { key: "", at: 0 }, 0), ""); assert.equal(lookbackToastPillLabel({ text: "" }, null, 0), ""); }
 console.log("clear       -> Clear empties the look-back Recent toasts strip; a toast still on screen shows up after it goes");
+{
+  const st = lookbackToastStack({ win: "A", agree: "B", empty_filter: "C" });
+  const orig = JSON.stringify(st);
+  const r = clearAllLookbackToasts(st);
+  assert.deepEqual(r.cleared, ["win", "agree", "empty_filter"], "clear all lists every live toast in stack order");
+  assert.deepEqual(r.stack, []);
+  assert.equal(JSON.stringify(st), orig, "input untouched");
+  assert.deepEqual(clearAllLookbackToasts(null), { cleared: [], stack: [] });
+  assert.deepEqual(clearAllLookbackToasts("x" as never), { cleared: [], stack: [] });
+  assert.equal(showClearAllLookbackToasts(st), true);
+  assert.equal(showClearAllLookbackToasts(st.slice(0, 1)), false, "single toast: no Clear all");
+  assert.equal(showClearAllLookbackToasts([]), false); assert.equal(showClearAllLookbackToasts(null), false);
+  const hist = pushLookbackToastHistory([], st);
+  assert.equal(dismissedLookbackToastHistory(hist, r.stack).length, 3, "cleared toasts land in Recent toasts");
+}
+console.log("clear all -> with 2+ stacked look-back top toasts a ✕ Clear all N (Esc) control dismisses them at once; Recent toasts kept");
 console.log("OK");
