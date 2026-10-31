@@ -566,3 +566,8 @@ export function lookbackPhiGapChip(deltaPhi: number | null | undefined, sort: Lo
   if (typeof deltaPhi !== "number" || !Number.isFinite(deltaPhi) || deltaPhi === 0) return null;
   return { delta: deltaPhi, label: `Φ ${fmtDeltaPhi(deltaPhi)} vs greedy`, tone: deltaPhi > 0 ? "up" : "down", nextSort: "dphi", changes: sort !== "dphi" };
 }
+
+/** Pure: whether clicking the sticky verdict should copy the ⚖ compare pack (same as m). False when nothing to compare. */
+export function lookbackVerdictCopiesCompare(c: LookbackCompare | null | undefined): boolean {
+  return lookbackComparePack(c) !== "";
+}
