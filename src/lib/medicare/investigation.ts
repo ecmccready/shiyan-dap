@@ -675,3 +675,7 @@ export function firstIncompleteDispositionTarget(entries: unknown): string | nul
 /** Click on a stacked Medicare top toast: the amber empty-filter toast resets the row filter to All (text still copied); others just copy. */
 export type MedicareToastClickAction = "reset_filter" | "copy";
 export function medicareToastClickAction(id: unknown): MedicareToastClickAction { return id === "empty_filter" ? "reset_filter" : "copy"; }
+
+/** ⏱ review timer click: copy the 📦 hand-off pack when Hand-off ready (complete + ≥1 note), else jump like the progress block. Pure. */
+export type ReviewTimerClickAction = "copy_handoff" | "jump_progress";
+export function reviewTimerClickAction(report: unknown): ReviewTimerClickAction { return handoffReadyAnnotated(report).ready ? "copy_handoff" : "jump_progress"; }

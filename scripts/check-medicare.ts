@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { medicareToastClickAction, notesCoverage, statusMix } from "../src/lib/medicare/investigation";
-import { firstIncompleteDispositionTarget } from "../src/lib/medicare/investigation";
+import { firstIncompleteDispositionTarget, reviewTimerClickAction, handoffReadyAnnotated as HRA } from "../src/lib/medicare/investigation";
 import type { DispositionStatus, DispositionInput, DispositionHistory } from "../src/lib/medicare/investigation";
 import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, cheatsheetPulse, CHEATSHEET_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
@@ -622,3 +622,9 @@ console.log("OK");
 
 { assert.equal(medicareToastClickAction("empty_filter"), "reset_filter");
   for (const id of ["complete", "handoff_ready", null, undefined, 3]) assert.equal(medicareToastClickAction(id), "copy"); }
+
+{ for (const x of [null, undefined, 3, {}, { entries: [] }]) assert.equal(reviewTimerClickAction(x), "jump_progress");
+  const mk = (note: string) => ({ entries: ["a", "b", "c"].map((id) => ({ item_id: id, status: "cleared_pattern_only", ...(note ? { note } : {}) })) });
+  assert.equal(reviewTimerClickAction(mk("")), HRA(mk("")).ready ? "copy_handoff" : "jump_progress");
+  assert.equal(reviewTimerClickAction(mk("ok")), HRA(mk("ok")).ready ? "copy_handoff" : "jump_progress");
+  console.log("review timer click -> hand-off copy when ready OK"); }
