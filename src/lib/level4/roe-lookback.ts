@@ -1393,3 +1393,24 @@ export function lookbackBeatenJumpPulse(pulseAt: unknown, now: unknown): boolean
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < LOOKBACK_BEATEN_JUMP_PULSE_MS;
 }
+/** Display-only: pulse window for the sticky "winners ↓" chip (fires only when the jump changes something). */
+export const LOOKBACK_WINNERS_JUMP_PULSE_MS = 1200;
+/** Pure: sticky "winners ↓" chip — focuses the first (rank-order) winner-role (★) sealed path, the same role as Show = ★ Winners / `w`.
+ *  Null when 0 winner paths or invalid. Distinct from the "N winners" chip: that one only toggles the Show filter; this one also
+ *  focuses, expands and scrolls to the first winner path. Never throws. */
+export function lookbackWinnersJumpChip(c: LookbackCompare | null | undefined): { target: string; label: string; count: number } | null {
+  try {
+    const rows = filterLookbackRows(rankedLookbackRows(c), "winners", c?.winner);
+    const t = rows[0]?.run_id;
+    return typeof t === "string" && t ? { target: t, label: "winners ↓", count: rows.length } : null;
+  } catch { return null; }
+}
+/** Pure: would a winners ↓ click change anything (Show → Winners, focus/expand → first beaten)? Never throws; false without target. */
+export function lookbackWinnersJumpChanged(target: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): boolean {
+  try { if (typeof target !== "string" || !target) return false; const st = state ?? {}; return !(st.filter === "winners" && st.focus === target && st.open === target); } catch { return false; }
+}
+/** Pure: winners ↓ chip is pulsing within the window after a changing click. Never throws. */
+export function lookbackWinnersJumpPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LOOKBACK_WINNERS_JUMP_PULSE_MS;
+}
