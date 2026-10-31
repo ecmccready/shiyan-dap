@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { lookbackWinPulse, LOOKBACK_WIN_PULSE_MS, restoreLookbackToast, lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, lookbackCopyAllLabel, clearLookbackToastHistory, lookbackToastHistoryJson, removeLookbackToastHistoryEntry, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackTopPulse, LOOKBACK_TOP_PULSE_MS, lookbackWinPulse, LOOKBACK_WIN_PULSE_MS, restoreLookbackToast, lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, lookbackCopyAllLabel, clearLookbackToastHistory, lookbackToastHistoryJson, removeLookbackToastHistoryEntry, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -104,6 +104,15 @@ export default function RoeLookbackNote() {
     winPulsedRef.current = true; const t = Date.now(); setWinPulseAt(t); setWinPulseNow(t);
     const id = setTimeout(() => setWinPulseNow(Date.now()), LOOKBACK_WIN_PULSE_MS); return () => clearTimeout(id);
   }, [summaryTone]);
+  const topPulsedRef = useRef(false);
+  const [topPulseAt, setTopPulseAt] = useState<number | null>(null);
+  const [topPulseNow, setTopPulseNow] = useState(0);
+  const rankedCount = c ? rankedLookbackRows(c).length : 0;
+  useEffect(() => {
+    if (rankedCount <= 0 || topPulsedRef.current) return;
+    topPulsedRef.current = true; const t = Date.now(); setTopPulseAt(t); setTopPulseNow(t);
+    const id = setTimeout(() => setTopPulseNow(Date.now()), LOOKBACK_TOP_PULSE_MS); return () => clearTimeout(id);
+  }, [rankedCount]);
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
   const topStack = lookbackToastStack({ win: winToast, agree: agreeToast, empty_filter: emptyToast });
   const topKey = topStack.map((t) => lookbackToastCopyText(t)).join("\n");
@@ -249,7 +258,7 @@ export default function RoeLookbackNote() {
                   <Fragment key={r.run_id}>
                   <tr onClick={() => { setFocusRow(r.run_id); setOpen((o) => (o === r.run_id ? null : r.run_id)); }} data-roe-lookback-focus={focusRow === r.run_id ? "true" : undefined} aria-expanded={open === r.run_id} title="Click to show the full action list" style={{ cursor: "pointer" }} data-roe-lookback-row={r.run_id} data-roe-lookback-emphasis={lookbackRowEmphasis(r.rank, c.winner)} data-roe-lookback-role={lookbackRowRole(r, c.winner)}
                     className={`${{ top_win: "bg-emerald-500/30 text-emerald-50 font-semibold outline outline-2 outline-amber-400", top_agree: "bg-emerald-500/10 text-emerald-200", plain: r.is_lookback ? "text-emerald-200" : "" }[lookbackRowEmphasis(r.rank, c.winner)]} ${{ winner_lookback: "border-l-4 border-emerald-400", agree_both: "border-l-4 border-sky-400", greedy_beaten: "border-l-4 border-amber-400 bg-amber-500/10", other: "" }[lookbackRowRole(r, c.winner)]} ${focusRow === r.run_id ? "ring-2 ring-sky-300 ring-inset" : ""}`}>
-                    <td className="pr-2 whitespace-nowrap">{r.rank === 1 && <span data-roe-lookback-top className="mr-1 rounded bg-amber-400 text-black px-1.5 text-[10px] font-bold">TOP</span>}{r.rank}</td><td className="pr-2 break-all">{r.run_id}</td><td className="pr-2" data-roe-lookback-spark={r.run_id}>{(() => {
+                    <td className="pr-2 whitespace-nowrap">{r.rank === 1 && <span data-roe-lookback-top data-pulsing={lookbackTopPulse(topPulseAt, topPulseNow, rankedCount) ? "1" : undefined} className={`${lookbackTopPulse(topPulseAt, topPulseNow, rankedCount) ? "ring-4 ring-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.8)] motion-safe:animate-pulse " : ""}mr-1 rounded bg-amber-400 text-black px-1.5 text-[10px] font-bold`}>TOP</span>}{r.rank}</td><td className="pr-2 break-all">{r.run_id}</td><td className="pr-2" data-roe-lookback-spark={r.run_id}>{(() => {
                       const pts = sparklinePoints(r.e_series, 64, 16);
                       const g = stepGains(r.e_series); const gmax = Math.max(...g, 1e-9);
                       return pts ? (

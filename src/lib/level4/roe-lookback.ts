@@ -453,3 +453,10 @@ export function lookbackWinPulse(startedAt: unknown, now: unknown, tone: unknown
   if (tone !== "win" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_WIN_PULSE_MS;
 }
+
+export const LOOKBACK_TOP_PULSE_MS = 2400;
+/** Pure: true while the TOP badge should pulse — once per tab after look-back data first shows (`startedAt` set when ranked rows first exist), for LOOKBACK_TOP_PULSE_MS. Display only. */
+export function lookbackTopPulse(startedAt: unknown, now: unknown, rowCount: unknown): boolean {
+  if (typeof rowCount !== "number" || !(rowCount > 0) || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_TOP_PULSE_MS;
+}
