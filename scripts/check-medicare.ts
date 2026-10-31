@@ -2,6 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { medicareToastClickAction, notesCoverage, statusMix, unreviewedLeftChip as U, filterShownChip as FS } from "../src/lib/medicare/investigation";
 import { firstIncompleteDispositionTarget, reviewTimerClickAction, reviewCompleteBannerClickAction, handoffReadyAnnotated as HRA } from "../src/lib/medicare/investigation";
@@ -746,3 +747,10 @@ console.log("ok review complete banner click action");
   assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + MS), false); assert.equal(P(null, 1), false);
   assert.equal(S(false, "c"), true); assert.equal(S(true, "c"), false); assert.equal(S(false, null), false);
   console.log("thirdRowChip OK"); }
+{ const C = secondRowChip, P = secondRowPulse, S = secondRowShouldPulse, MS = SECOND_ROW_PULSE_MS;
+  assert.deepEqual(C([{ item_id: "a" }]), { show: false, label: "", jump: null });
+  assert.deepEqual(C([{ item_id: "a" }, { item_id: "b" }, { item_id: "c" }]), { show: true, label: "#2 ↓", jump: "b" });
+  assert.equal(C(null).show, false); assert.equal(C([null, { item_id: "a" }]).show, false);
+  assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + MS), false); assert.equal(P(null, 1), false);
+  assert.equal(S(false, "b"), true); assert.equal(S(true, "b"), false); assert.equal(S(false, null), false);
+  console.log("secondRowChip OK"); }
