@@ -503,6 +503,13 @@ export function cycleRowFilter(current: unknown): RowFilter {
   const i = ROW_FILTER_CYCLE.indexOf((typeof current === "string" ? current : null) as RowFilter);
   return ROW_FILTER_CYCLE[(Math.max(0, i) + 1) % ROW_FILTER_CYCLE.length];
 }
+/** Pure: Win-strip label for the current row filter, plus what clicking (cycle like f) moves to. */
+export function rowFilterLabelChip(current: unknown): { label: string; value: string; next: string } {
+  const name = (f: RowFilter) => f === null ? "All" : f === "has_note" ? "notes" : f === "needs_human_review" ? "needs review" : f === "cleared_pattern_only" ? "cleared" : "unreviewed";
+  const i = ROW_FILTER_CYCLE.indexOf((typeof current === "string" ? current : null) as RowFilter);
+  const cur = i < 0 ? null : ROW_FILTER_CYCLE[i];
+  return { label: `filter: ${name(cur)} ⟳`, value: cur ?? "all", next: name(cycleRowFilter(cur)) };
+}
 export function toggleRowFilter(current: unknown, clicked: unknown): RowFilter {
   if (clicked === "has_note") return current === "has_note" ? null : "has_note";
   return toggleStatusFilter(current, clicked);
