@@ -1139,6 +1139,12 @@ export function lookbackCopyGreedyKey(ev: { key?: unknown; ctrlKey?: unknown; me
   } catch { return null; }
 }
 /** Pure: sticky ⧉ Greedy chip (mirrors y). Null without JSON. Never throws. */
+/** Pure: sticky ⚖ Compare chip — copies the same compare pack as key m / the bottom ⚖ button; null without a pack. Label shows the look-back Δe gain when look-back wins. */
+export function lookbackCopyCompareChip(pack: unknown, winner?: unknown, gain?: unknown): { json: string; label: string; toast: string } | null {
+  if (typeof pack !== "string" || !pack) return null;
+  const label = winner === "lookback" && typeof gain === "number" && Number.isFinite(gain) ? `⚖ Compare +Δe ${gain}` : "⚖ Compare";
+  return { json: pack, label, toast: "⚖ Compare → copied compare pack JSON" };
+}
 export function lookbackCopyGreedyChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ Greedy", toast: "⧉ Greedy → copied greedy path JSON" } : null; } catch { return null; }
 }
