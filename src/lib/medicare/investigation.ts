@@ -744,3 +744,18 @@ export function reviewTimerClickAction(report: unknown): ReviewTimerClickAction 
 /** Review complete banner click: copies current dispositions JSON (same button as y) when complete; otherwise nothing. */
 export type ReviewCompleteBannerAction = "copy_dispositions" | "none";
 export function reviewCompleteBannerClickAction(complete: boolean): ReviewCompleteBannerAction { return complete ? "copy_dispositions" : "none"; }
+
+export const MEDICARE_TARGET_EVENT = "medicare:key-target";
+export const MEDICARE_TARGET_JUMP_EVENT = "medicare:key-target-jump";
+/** Pure: Win-strip chip for the current key target (j/k). Click focuses `jump` (the target, or the first row like j when none). Never throws. */
+export function keyTargetChip(entries: unknown, target: unknown): { show: boolean; label: string; id: string | null; jump: string | null } {
+  try {
+    const list = Array.isArray(entries) ? entries.filter((e): e is { item_id: string; row_index?: unknown; kind?: unknown } => !!e && typeof (e as { item_id?: unknown }).item_id === "string") : [];
+    if (!list.length) return { show: false, label: "", id: null, jump: null };
+    const hit = typeof target === "string" ? list.find((e) => e.item_id === target) : undefined;
+    if (!hit) return { show: true, label: "target: — (j) ↓", id: null, jump: list[0].item_id };
+    const pos = list.indexOf(hit) + 1;
+    const kind = typeof hit.kind === "string" && hit.kind ? ` · ${hit.kind}` : "";
+    return { show: true, label: `target: ${pos}/${list.length} ${hit.item_id}${kind} ↓`, id: hit.item_id, jump: hit.item_id };
+  } catch { return { show: false, label: "", id: null, jump: null }; }
+}

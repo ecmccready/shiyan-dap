@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -12,6 +12,8 @@ const TONE = {
 /** Per-item status chips; follow the disposition stub's tab-local report event. Each links to its disposition row. */
 export default function MedicareStatusChips({ initial }: { initial: InvestigationReport }) {
   const [r, setR] = useState<InvestigationReport>(initial);
+  const [keyTarget, setKeyTarget] = useState<string | null>(null);
+  useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setKeyTarget(typeof d === "string" ? d : null); }; window.addEventListener(MEDICARE_TARGET_EVENT, on); return () => window.removeEventListener(MEDICARE_TARGET_EVENT, on); }, []);
   const [filter, setFilter] = useState<RowFilter>(null);
   const pick = (next: RowFilter) => {
     setFilter(next);
@@ -97,6 +99,10 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
         {(() => { const fs = filterShownChip(r, filter); return fs.show ? (
           <button type="button" data-medicare-filter-shown={`${fs.shown}/${fs.total}`} onClick={() => pick(null)} title="Rows visible under the current filter — click to reset filter to All"
             className="rounded-full border border-amber-300 bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-100 hover:border-white">{fs.label} ✕</button>
+        ) : null; })()}
+        {(() => { const k = keyTargetChip(r.entries, keyTarget); return k.show ? (
+          <button type="button" data-medicare-key-target-chip={k.id ?? "none"} onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_TARGET_JUMP_EVENT, { detail: k.jump }))} title={k.id ? "Current j/k key target — click to scroll/focus that row (filter resets to All)" : "No key target yet — click to target the first row (same as j)"}
+            className={`rounded-full border px-3 py-1 text-xs font-mono hover:border-white ${k.id ? "border-sky-400 text-sky-100" : "border-zinc-600 text-zinc-400"}`}>{k.label}</button>
         ) : null; })()}
         {(() => { const c = rowFilterLabelChip(filter); return (
           <button type="button" data-medicare-filter-label={c.value} onClick={() => pick(cycleRowFilter(filter))} title={`Current row filter — click to cycle (same as f); next: ${c.next}`}
