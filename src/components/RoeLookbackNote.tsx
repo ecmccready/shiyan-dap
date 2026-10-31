@@ -26,6 +26,8 @@ export default function RoeLookbackNote() {
   const expandAllRef = useRef<(() => void) | null>(null);
   const openRef = useRef<string | null>(null);
   openRef.current = open;
+  const allOpenRef = useRef(false);
+  allOpenRef.current = allOpen;
   const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
   const [focusRow, setFocusRow] = useState<string | null>(null);
   const focusPulsedRef = useRef(false);
@@ -170,9 +172,10 @@ export default function RoeLookbackNote() {
       { const txt = changes && !lookbackKeyToastDeferred(k) ? lookbackToastText(k, focusRef.current) : null; if (txt) { const at = Date.now(); setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); } }
       if (k === "help") { ev.preventDefault(); setHelp((x) => !x); return; }
       if (k === "close") {
-        const tgt = lookbackEscTarget(helpRef.current, toastCountRef.current, openRef.current);
+        const tgt = lookbackEscTarget(helpRef.current, toastCountRef.current, openRef.current, allOpenRef.current);
         if (tgt === "help") setHelp(false);
         else if (tgt === "toasts") { setWinToast(null); setAgreeToast(null); setEmptyToast(null); }
+        else if (tgt === "all") { allOpenRef.current = false; setAllOpen(false); setOpen(null); const at = Date.now(); setToast({ txt: "⊟ Collapsed all (Esc)", at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); }
         else if (tgt === "row") setOpen(null);
         return;
       }

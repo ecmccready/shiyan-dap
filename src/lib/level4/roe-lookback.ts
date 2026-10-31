@@ -373,17 +373,18 @@ export function restoreLookbackToast(entry: { id?: unknown; text?: unknown; tone
   if ((showing ?? []).some((t) => t.id === id && t.text === entry.text)) return null;
   return { id, text: entry.text };
 }
-/** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
-export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
+/** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then ⊞ Expand all (same as ⊟ Collapse all), then the expanded row. */
+export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown, allOpen?: unknown): "help" | "toasts" | "all" | "row" | null {
   if (helpOpen === true) return "help";
   if (typeof toastCount === "number" && toastCount > 0) return "toasts";
+  if (allOpen === true) return "all";
   return typeof openRow === "string" && openRow ? "row" : null;
 }
 /** Keyboard cheat sheet for the ? overlay (display only; every key here maps in lookbackKey). */
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },
   { key: "Enter", does: "expand / collapse the focused row's steps" },
-  { key: "Escape", does: "close this sheet, then the top toasts, then the expanded row" },
+  { key: "Escape", does: "close this sheet, then the top toasts, then ⊞ Expand all (collapse all), then the expanded row" },
   { key: "c", does: "copy the focused row's path JSON" },
   { key: "s", does: "expand and copy the focused row's steps JSON" },
   { key: "m", does: "copy ⚖ compare pack" },

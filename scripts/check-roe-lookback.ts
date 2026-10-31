@@ -216,6 +216,9 @@ assert.equal(lookbackEscTarget(true, 2, "a"), "help"); assert.equal(lookbackEscT
 assert.equal(lookbackEscTarget(false, 0, "a"), "row"); assert.equal(lookbackEscTarget(false, 0, null), null); assert.equal(lookbackEscTarget(false, 0, ""), null);
 { const seq: unknown[] = []; let h = true, t = 1, o: string | null = "a"; for (let i = 0; i < 4; i++) { const x = lookbackEscTarget(h, t, o); seq.push(x); if (x === "help") h = false; else if (x === "toasts") t = 0; else if (x === "row") o = null; }
   assert.deepEqual(seq, ["help", "toasts", "row", null], "one layer per Esc"); }
+// Esc collapses ⊞ Expand all after sheet + toasts, before the single row.
+assert.equal(lookbackEscTarget(true, 1, "a", true), "help"); assert.equal(lookbackEscTarget(false, 1, "a", true), "toasts"); assert.equal(lookbackEscTarget(false, 0, "a", true), "all"); assert.equal(lookbackEscTarget(false, 0, null, true), "all"); assert.equal(lookbackEscTarget(false, 0, "a", false), "row"); assert.equal(lookbackEscTarget(false, 0, null, "yes"), null);
+assert.ok(LOOKBACK_KEYMAP.some((r) => r.key === "Escape" && /Expand all/.test(r.does)), "cheat sheet documents Esc collapse-all");
 console.log("Esc         -> one layer per press: cheat sheet, then stacked top toasts, then the expanded row");
 // Click one stacked toast to dismiss only that one.
 { const st = lookbackToastStack({ win: "w", agree: "a", empty_filter: "e" });
