@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_PROGRESS_EVENT, reviewProgress, reviewCompletion, reviewCompletePulse, COMPLETE_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS } from "@/lib/medicare/investigation";
+import { MEDICARE_PROGRESS_EVENT, reviewProgress, reviewCompletion, reviewCompletePulse, COMPLETE_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, MEDICARE_PROGRESS_JUMP_EVENT } from "@/lib/medicare/investigation";
 
 type P = ReturnType<typeof reviewProgress>;
 
@@ -30,7 +30,7 @@ export function ProgressBar({ p }: { p: P }) {
   }, [p.reviewed]);
   const startPulsing = reviewProgressStartPulse(startAt, startNow, p.reviewed);
   return (
-    <div data-medicare-review-progress data-medicare-progress-start-pulse={startPulsing ? "on" : undefined} className={`space-y-1 rounded-lg transition-shadow ${startPulsing ? "ring-4 ring-emerald-300 shadow-[0_0_18px_rgba(52,211,153,0.5)] motion-safe:animate-pulse" : ""}`}>
+    <div data-medicare-review-progress role="button" tabIndex={0} title={done.complete ? "Jump to first disposition row" : "Jump to first unreviewed disposition row"} onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_JUMP_EVENT))} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_JUMP_EVENT)); } }} data-medicare-progress-start-pulse={startPulsing ? "on" : undefined} className={`cursor-pointer space-y-1 rounded-lg transition-shadow hover:ring-1 hover:ring-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${startPulsing ? "ring-4 ring-emerald-300 shadow-[0_0_18px_rgba(52,211,153,0.5)] motion-safe:animate-pulse" : ""}`}>
       {done.complete && (
         <div role="status" data-medicare-review-complete data-pulsing={pulsing ? "1" : undefined} className={`rounded-xl border-2 border-emerald-400 bg-emerald-500/20 px-3 py-2 text-sm text-emerald-100 transition-shadow ${pulsing ? "ring-4 ring-emerald-300 shadow-[0_0_24px_rgba(52,211,153,0.6)] motion-safe:animate-pulse" : ""}`}>
           <span className="mr-2 rounded-full bg-emerald-400 text-black px-2 py-0.5 text-xs font-bold">✓ Review complete</span>

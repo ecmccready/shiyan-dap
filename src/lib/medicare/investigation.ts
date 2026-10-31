@@ -646,3 +646,13 @@ export function statusMix(report: unknown): { counts: Record<DispositionStatus, 
   const label = order.filter((s) => counts[s] > 0).map((s) => `${counts[s]} ${s}`).join(" · ");
   return { counts, label, show: label !== "" };
 }
+
+/** Browser event the review progress block emits on click; the disposition stub jumps its target (tab-local; nothing leaves the page). */
+export const MEDICARE_PROGRESS_JUMP_EVENT = "medicare:progress-jump";
+/** Pure: item_id the progress block click should jump to — the first `unreviewed` entry, else (review complete) the first entry; null when there are none. */
+export function firstIncompleteDispositionTarget(entries: unknown): string | null {
+  if (!Array.isArray(entries)) return null;
+  const ok = entries.filter((e): e is { item_id: string; status?: unknown } => !!e && typeof (e as { item_id?: unknown }).item_id === "string" && (e as { item_id: string }).item_id !== "");
+  const un = ok.find((e) => e.status === "unreviewed");
+  return (un ?? ok[0])?.item_id ?? null;
+}

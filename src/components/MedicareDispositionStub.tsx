@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
+import { MEDICARE_PROGRESS_JUMP_EVENT, firstIncompleteDispositionTarget } from "@/lib/medicare/investigation";
 import { cheatsheetPulse, CHEATSHEET_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
@@ -156,6 +157,13 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_EVENT, { detail: progress })); window.dispatchEvent(new CustomEvent(MEDICARE_REPORT_EVENT, { detail: report })); }, [progress, report]);
   const targetEntry = report.entries.find((e) => e.item_id === target);
   idsRef.current = report.entries.map((e) => e.item_id);
+  const entriesRef = useRef(report.entries); entriesRef.current = report.entries;
+  useEffect(() => {
+    const on = () => { const id = firstIncompleteDispositionTarget(entriesRef.current); if (!id) return; setFilter(null); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: null })); setFocusId(id); startKeyPulse(); setTimeout(() => document.getElementById(medicareAnchorId("disposition", id))?.scrollIntoView({ behavior: "smooth", block: "center" }), 0); };
+    window.addEventListener(MEDICARE_PROGRESS_JUMP_EVENT, on);
+    return () => window.removeEventListener(MEDICARE_PROGRESS_JUMP_EVENT, on);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   histRef.current = hist;
   entryRef.current = targetEntry ?? null;
   targetRef.current = { id: targetEntry ? targetEntry.item_id : null, label: targetEntry ? targetEntry.provider_id ?? targetEntry.item_id : "" };
