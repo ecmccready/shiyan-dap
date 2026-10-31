@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_PROGRESS_EVENT, reviewProgress, reviewCompletion, reviewCompletePulse, COMPLETE_PULSE_MS } from "@/lib/medicare/investigation";
+import { MEDICARE_PROGRESS_EVENT, reviewProgress, reviewCompletion, reviewCompletePulse, COMPLETE_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS } from "@/lib/medicare/investigation";
 
 type P = ReturnType<typeof reviewProgress>;
 
@@ -16,8 +16,21 @@ export function ProgressBar({ p }: { p: P }) {
     prev.current = done.complete;
   }, [done.complete]);
   const pulsing = reviewCompletePulse(pulseAt, now, done.complete);
+  const prevReviewed = useRef<number | null>(null);
+  const startPulsedOnce = useRef(false);
+  const [startAt, setStartAt] = useState<number | null>(null);
+  const [startNow, setStartNow] = useState(0);
+  useEffect(() => {
+    if (prevReviewed.current === 0 && p.reviewed >= 1 && !startPulsedOnce.current) {
+      startPulsedOnce.current = true; prevReviewed.current = p.reviewed;
+      const t = Date.now(); setStartAt(t); setStartNow(t);
+      const id = setTimeout(() => setStartNow(Date.now()), PROGRESS_START_PULSE_MS); return () => clearTimeout(id);
+    }
+    prevReviewed.current = p.reviewed;
+  }, [p.reviewed]);
+  const startPulsing = reviewProgressStartPulse(startAt, startNow, p.reviewed);
   return (
-    <div data-medicare-review-progress className="space-y-1">
+    <div data-medicare-review-progress data-medicare-progress-start-pulse={startPulsing ? "on" : undefined} className={`space-y-1 rounded-lg transition-shadow ${startPulsing ? "ring-4 ring-emerald-300 shadow-[0_0_18px_rgba(52,211,153,0.5)] motion-safe:animate-pulse" : ""}`}>
       {done.complete && (
         <div role="status" data-medicare-review-complete data-pulsing={pulsing ? "1" : undefined} className={`rounded-xl border-2 border-emerald-400 bg-emerald-500/20 px-3 py-2 text-sm text-emerald-100 transition-shadow ${pulsing ? "ring-4 ring-emerald-300 shadow-[0_0_24px_rgba(52,211,153,0.6)] motion-safe:animate-pulse" : ""}`}>
           <span className="mr-2 rounded-full bg-emerald-400 text-black px-2 py-0.5 text-xs font-bold">✓ Review complete</span>
