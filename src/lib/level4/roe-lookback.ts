@@ -518,3 +518,14 @@ export function lookbackTopSteps(c: LookbackCompare | null | undefined): { run_i
     return { run_id: top.run_id, steps: top.steps, label: `${top.steps} step${top.steps === 1 ? "" : "s"}` };
   } catch { return null; }
 }
+
+/** Pure: greedy path step count for the sticky strip; null when no greedy path or it is the same run as the top path. */
+export function lookbackGreedySteps(c: LookbackCompare | null | undefined): { run_id: string; steps: number; label: string } | null {
+  try {
+    const gid = c?.greedy?.run_id; if (!c || !gid) return null;
+    const top = rankedLookbackRows(c)[0]; if (!top || top.run_id === gid) return null;
+    const g = c.paths.find((p) => p.run_id === gid);
+    if (!g || typeof g.steps !== "number" || !Number.isFinite(g.steps)) return null;
+    return { run_id: g.run_id, steps: g.steps, label: `${g.steps} step${g.steps === 1 ? "" : "s"}` };
+  } catch { return null; }
+}
