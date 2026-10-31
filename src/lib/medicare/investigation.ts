@@ -356,6 +356,22 @@ export function medicareToastCopyText(t: { text?: unknown; tone?: unknown } | nu
   return `${t.tone === "amber" ? "⚠ " : ""}${t.text.trim()}`;
 }
 
+export const TOAST_HISTORY_MAX = 5;
+export type ToastHistoryEntry = { id: MedicareToastId; text: string; tone: "green" | "amber" };
+/** Pure: add shown toasts to the tab-local history, newest first, de-duplicated by copy text, capped at TOAST_HISTORY_MAX. */
+export function pushToastHistory(hist: readonly ToastHistoryEntry[] | null | undefined, shown: readonly { id: MedicareToastId; text: string; tone: "green" | "amber" }[] | null | undefined, max: number = TOAST_HISTORY_MAX): ToastHistoryEntry[] {
+  const out: ToastHistoryEntry[] = [];
+  const add = (t: ToastHistoryEntry) => { const k = medicareToastCopyText(t); if (k && !out.some((x) => medicareToastCopyText(x) === k)) out.push({ id: t.id, text: t.text, tone: t.tone }); };
+  for (const t of shown ?? []) add(t);
+  for (const t of hist ?? []) add(t);
+  return out.slice(0, Math.max(0, max));
+}
+/** Pure: history entries that are not currently on screen (those are the dismissed / expired ones). */
+export function dismissedToastHistory(hist: readonly ToastHistoryEntry[] | null | undefined, showing: readonly { text: string; tone: "green" | "amber" }[] | null | undefined): ToastHistoryEntry[] {
+  const on = new Set((showing ?? []).map((t) => medicareToastCopyText(t)));
+  return (hist ?? []).filter((h) => !on.has(medicareToastCopyText(h)));
+}
+
 /** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
 export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
   if (helpOpen === true) return "help";

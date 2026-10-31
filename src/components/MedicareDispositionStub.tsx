@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, medicareToastCopyText, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -100,6 +100,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     window.setTimeout(() => expireToast("handoff_ready", () => setReadyToast((x) => (x === txt ? null : x))), HANDOFF_READY_TOAST_MS);
   }, [report]);
   const [emptyToast, setEmptyToast] = useState<string | null>(null);
+  const [toastHist, setToastHist] = useState<ToastHistoryEntry[]>([]);
   const emptyTxt = emptyRowFilterToast(filter, report.entries);
   useEffect(() => {
     setEmptyToast(emptyTxt);
@@ -113,6 +114,10 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   histRef.current = hist;
   entryRef.current = targetEntry ?? null;
   targetRef.current = { id: targetEntry ? targetEntry.item_id : null, label: targetEntry ? targetEntry.provider_id ?? targetEntry.item_id : "" };
+  const topStack = medicareToastStack({ complete: doneToast, empty_filter: emptyToast, handoff_ready: readyToast });
+  const topKey = topStack.map((t) => medicareToastCopyText(t)).join("\n");
+  useEffect(() => { if (topStack.length) setToastHist((h) => pushToastHistory(h, topStack)); }, [topKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pastToasts = dismissedToastHistory(toastHist, topStack);
   return (
     <div data-medicare-disposition-stub className="space-y-2">
       {(() => { const stack = medicareToastStack({ complete: doneToast, empty_filter: emptyToast, handoff_ready: readyToast }); toastCountRef.current = stack.length; return stack.length ? (
@@ -150,6 +155,22 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
         </div>
       )}
       <p className="text-emerald-400 text-xs">Reviewer disposition (stub, this tab only)</p>
+      {pastToasts.length > 0 && (
+        <div data-medicare-toast-history className="rounded-xl border-2 border-amber-300/80 bg-zinc-950 px-3 py-2 text-xs space-y-1">
+          <p className="text-amber-300 font-semibold uppercase tracking-widest">Recent toasts · last {pastToasts.length} (click to re-copy)</p>
+          <ul className="flex flex-wrap gap-2">
+            {pastToasts.map((h) => (
+              <li key={medicareToastCopyText(h)}>
+                <button type="button" data-medicare-toast-history-item={h.id} title="Copy this toast text again"
+                  onClick={() => { const cp = medicareToastCopyText(h); void navigator.clipboard?.writeText(cp).then(() => { const at = Date.now(); setToast({ txt: "copied toast text", at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); }, () => {}); }}
+                  className={`max-w-[28rem] truncate rounded-full border px-3 py-0.5 text-left font-semibold ${h.tone === "amber" ? "border-amber-400 text-amber-200" : "border-emerald-400 text-emerald-200"}`}>
+                  ⧉ {medicareToastCopyText(h)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <p data-medicare-shortcut-hint className="text-[11px] text-zinc-500">
         Keys: <kbd className="rounded border border-zinc-600 px-1">1</kbd> needs_human_review · <kbd className="rounded border border-zinc-600 px-1">2</kbd> cleared_pattern_only · <kbd className="rounded border border-zinc-600 px-1">3</kbd> unreviewed · <kbd className="rounded border border-zinc-600 px-1">u</kbd> undo · <kbd className="rounded border border-zinc-600 px-1">r</kbd> redo · <kbd className="rounded border border-zinc-600 px-1">j</kbd>/<kbd className="rounded border border-zinc-600 px-1">k</kbd> move target · <kbd className="rounded border border-zinc-600 px-1">n</kbd> note (after a status) · <kbd className="rounded border border-zinc-600 px-1">h</kbd> copy 📦 hand-off pack · <kbd className="rounded border border-zinc-600 px-1">y</kbd> copy dispositions JSON · <kbd className="rounded border border-zinc-600 px-1">f</kbd> cycle filter · <kbd className="rounded border border-zinc-600 px-1">t</kbd> quick note · <button type="button" data-medicare-cheatsheet-open onClick={() => setHelp(true)} className="rounded border border-amber-400 px-1 text-amber-300 font-semibold">?</button> all keys{filter ? <span data-medicare-key-filter className="ml-1 text-white">({filter})</span> : null} — on {targetEntry ? <span className="text-sky-300 font-mono">{targetRef.current.label}</span> : "no row"} (click a row or press j/k to target it)
       </p>
