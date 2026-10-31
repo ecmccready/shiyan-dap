@@ -357,6 +357,12 @@ export function clearLookbackToastHistory(hist: readonly LookbackToastHistoryEnt
   const on = new Set((showing ?? []).map((t) => lookbackToastCopyText(t)));
   return (hist ?? []).filter((h) => on.has(lookbackToastCopyText(h)));
 }
+/** Pure: ✕ on one look-back Recent toasts pill — drops just that entry (matched by copy text); everything else stays in order. Bad input returns a copy unchanged. Tab-local. */
+export function removeLookbackToastHistoryEntry(hist: readonly LookbackToastHistoryEntry[] | null | undefined, entry: { text?: unknown; tone?: unknown } | null | undefined): LookbackToastHistoryEntry[] {
+  const k = entry && typeof entry.text === "string" ? lookbackToastCopyText(entry) : "";
+  return (hist ?? []).filter((h) => !k || lookbackToastCopyText(h) !== k);
+}
+
 /** Pure: 📌 Restore on a look-back Recent toasts pill — the toast to re-show as a live top toast ({ id, text }, same slot and timer), or null for bad input or when that exact toast is already on screen. Tab-local. */
 export function restoreLookbackToast(entry: { id?: unknown; text?: unknown; tone?: unknown } | null | undefined, showing: readonly { id: LookbackToastId; text: string }[] | null | undefined): { id: LookbackToastId; text: string } | null {
   if (!entry || typeof entry.text !== "string" || !entry.text.trim() || !LOOKBACK_TOAST_ORDER.includes(entry.id as LookbackToastId)) return null;
