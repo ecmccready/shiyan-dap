@@ -880,3 +880,9 @@ export function lookbackShowAllPulse(startedAt: unknown, now: unknown): boolean 
 export function lookbackShowAllShouldPulse(alreadyPulsed: unknown, changed: unknown): boolean {
   return alreadyPulsed !== true && changed === true;
 }
+
+/** Pure: sticky "All ✕" chip — shown only when Show ≠ All; click resets Show to All (same as key `a`). Never throws. */
+export function lookbackShowAllChip(filter: unknown): { show: boolean; label: string; next: "all" } {
+  try { const f = typeof filter === "string" && filter ? filter : "all"; return { show: f !== "all", label: "All ✕", next: "all" }; }
+  catch { return { show: false, label: "All ✕", next: "all" }; }
+}
