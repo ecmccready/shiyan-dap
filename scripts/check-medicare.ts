@@ -1125,3 +1125,11 @@ import { unreviewedStickyChip, unreviewedStickyChanged, unreviewedStickyPulse, u
   assert.equal(unreviewedStickyPulse(1, 1), true); assert.equal(unreviewedStickyPulse(1, 1 + UNREVIEWED_STICKY_PULSE_MS), false); assert.equal(unreviewedStickyPulse(null, 1), false);
   assert.equal(unreviewedStickyToast("b"), "○ ↓ first unreviewed: b"); assert.equal(unreviewedStickyToast(null), "");
   console.log("unreviewedStickyChip OK (sticky ○ N unreviewed ↓ = filter + focus first unreviewed; same target as i)"); }
+
+import { medicareAllRowsJson, medicareCopyAllRowsChip, medicareAllRowsToast } from "../src/lib/medicare/investigation";
+{ assert.equal(medicareAllRowsJson(null), ""); assert.equal(medicareCopyAllRowsChip({ entries: [] }).show, false); assert.equal(medicareAllRowsToast(""), "");
+  const rep = buildInvestigationReport({ pack: ev, dispositions: nAll }); const j = medicareAllRowsJson(rep); const o = JSON.parse(j);
+  assert.equal(o.kind, "all_rows"); assert.equal(o.count, rep.entries.length); assert.equal(o.report_hash, rep.report_hash); assert.equal(o.rows[0].rank, 1);
+  assert.deepEqual(o.rows.map((x: { item_id: string }) => x.item_id), rep.entries.map((e) => e.item_id)); assert.equal(o.counts, undefined, "rows only — no report envelope");
+  const ch = medicareCopyAllRowsChip(rep); assert.equal(ch.label, `⧉ All ${rep.entries.length} rows`); assert.equal(medicareCopyRowToast("all_rows", ch.json), ch.toast); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
+  console.log("sticky ⧉ All rows chip OK"); }

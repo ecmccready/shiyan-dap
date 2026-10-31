@@ -1301,7 +1301,7 @@ export const MEDICARE_COPY_ROW_TOAST_EVENT = "medicare:copy-row-toast";
 /** Pure: stacked top-toast text after a successful ⧉ #1 / ⧉ Last copy (same text as the chip flash); "" when nothing was copied. Never throws. */
 export function medicareCopyRowToast(which: unknown, json: unknown): string {
   if (typeof json !== "string" || !json) return "";
-  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "second" ? "⧉ #2 → copied #2 row JSON" : which === "third" ? "⧉ #3 → copied #3 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : "";
+  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "second" ? "⧉ #2 → copied #2 row JSON" : which === "third" ? "⧉ #3 → copied #3 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : which === "all_rows" ? medicareAllRowsToast(json) : "";
 }
 
 /** Display-only: first-use (per session) pulse window for the sticky 📦 Hand-off chip. */
@@ -1579,3 +1579,22 @@ export function unreviewedStickyPulse(startedAt: unknown, now: unknown): boolean
   return now >= startedAt && now - startedAt < UNREVIEWED_STICKY_PULSE_MS;
 }
 export function unreviewedStickyToast(target: unknown): string { return typeof target === "string" && target ? `○ ↓ first unreviewed: ${target}` : ""; }
+
+/** Pure: every disposition row as one JSON pack (mirror of look-back ⧉ All paths). Shape differs from y (dispositions) / m (investigation), which copy the whole hashed report envelope (evidence, counts, rejected, report_hash): this is { schema, kind: "all_rows", count, report_hash (reference only), rows[] } where each row = { rank, ...ReportEntry } — same per-row payload as ⧉ #1 / #2 / #3 / Last. "" when no rows. Never throws. */
+export function medicareAllRowsJson(report: unknown): string {
+  try {
+    const r = report as Partial<InvestigationReport> | null; const es = Array.isArray(r?.entries) ? r!.entries! : [];
+    const rows = es.filter((e) => e && typeof e === "object" && typeof (e as { item_id?: unknown }).item_id === "string").map((e, i) => ({ rank: i + 1, ...e }));
+    if (!rows.length) return "";
+    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "all_rows", count: rows.length, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, rows }, null, 2);
+  } catch { return ""; }
+}
+/** Pure: toast text for ⧉ All rows (count read from the copied JSON). */
+export function medicareAllRowsToast(json: unknown): string {
+  try { const n = typeof json === "string" && json ? JSON.parse(json).count : null; return typeof n === "number" && n > 0 ? `⧉ All rows → copied ${n} rows JSON` : ""; } catch { return ""; }
+}
+/** Pure: sticky "⧉ All N rows" chip. Hidden with no rows. Never throws. */
+export function medicareCopyAllRowsChip(report: unknown): { show: boolean; label: string; json: string; toast: string } {
+  const json = medicareAllRowsJson(report); if (!json) return { show: false, label: "", json: "", toast: "" };
+  const n = JSON.parse(json).count as number; return { show: true, label: `⧉ All ${n} rows`, json, toast: medicareAllRowsToast(json) };
+}
