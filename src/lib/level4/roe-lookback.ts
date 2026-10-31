@@ -1022,3 +1022,14 @@ export function lookbackCopyRecentKey(ev: { key?: unknown; ctrlKey?: unknown; me
     return { changed: n > 0, copied: n, toast: n > 0 ? `p → copied ${n} recent toast${n === 1 ? "" : "s"} JSON` : null };
   } catch { return null; }
 }
+
+/** Display-only: first-visit pulse window for the sticky Pilot proposition chip. */
+export const LOOKBACK_PILOT_PULSE_MS = 6000;
+export const LOOKBACK_PILOT_SEEN_KEY = "aethel.lookback.pilotSeen.v1";
+/** Pure: Pilot chip pulses while not yet clicked (seen=false) and within the window after mount. Never throws. */
+export function lookbackPilotPulse(seen: unknown, mountedAt: unknown, now: unknown): boolean {
+  if (seen === true) return false;
+  if (typeof mountedAt !== "number" || typeof now !== "number" || !Number.isFinite(mountedAt) || !Number.isFinite(now)) return false;
+  const d = now - mountedAt;
+  return d >= 0 && d < LOOKBACK_PILOT_PULSE_MS;
+}
