@@ -811,3 +811,11 @@ export function medicareCopyRecentChip(history: readonly unknown[] | number | nu
   const copied = typeof copiedAt === "number" && Number.isFinite(copiedAt) && Number.isFinite(now) && now >= copiedAt && now - copiedAt < TOAST_PILL_COPIED_MS;
   return { show: true, label: copied ? "✓ Copied" : "⧉ Copy recent", copied };
 }
+
+/** Win strip '⧉ Copy recent' pulse window (ms). */
+export const MEDICARE_COPY_RECENT_PULSE_MS = 2400;
+/** True while the Win strip '⧉ Copy recent' chip should pulse after the first successful copy in the session (`startedAt` set once). Display only. Never throws. */
+export function medicareCopyRecentPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < MEDICARE_COPY_RECENT_PULSE_MS;
+}
