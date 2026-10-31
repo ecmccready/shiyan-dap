@@ -3,7 +3,7 @@
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
+import { medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -904,3 +904,11 @@ console.log("ok review complete banner click action");
   const st = medicareToastStack({ copy_row: medicareCopyRowToast("first", "{}") }); assert.equal(st.length, 1); assert.equal(st[0].tone, "green");
   const es = [{ item_id: "a" }, { item_id: "b" }]; assert.equal(medicareCopyFirstRowChip(es).toast, medicareCopyRowToast("first", "{}")); assert.equal(medicareCopyLastRowChip(es).toast, medicareCopyRowToast("last", "{}"));
   assert.equal(MEDICARE_KEYMAP.find((k) => k.key === "y")?.does, "copy current dispositions JSON"); assert.deepEqual(dispositionShortcut({ key: "y" }), { kind: "dispositions" }); }
+
+{ const ev0 = buildInvestigationReport({ pack: ev, dispositions: nAll }); const c = medicareHandoffChip(ev0);
+  assert.equal(c.show, handoffReadyAnnotated(ev0).ready); assert.equal(c.show, true); assert.equal(c.label, "📦 Hand-off");
+  assert.equal(medicareHandoffChip(inv).show, false); assert.equal(medicareHandoffChip(all3).show, false, "complete no notes"); assert.equal(medicareHandoffChip(null).show, false);
+  assert.equal(medicareCopyRowToast("handoff", "1"), "📦 Hand-off → copied hand-off pack"); assert.equal(medicareCopyRowToast("handoff", ""), "");
+  assert.equal(medicareHandoffChipShouldPulse(false, true), true); assert.equal(medicareHandoffChipShouldPulse(true, true), false); assert.equal(medicareHandoffChipShouldPulse(false, false), false);
+  assert.equal(medicareHandoffChipPulse(1000, 1000), true); assert.equal(medicareHandoffChipPulse(1000, 1000 + MEDICARE_HANDOFF_CHIP_PULSE_MS), false); assert.equal(medicareHandoffChipPulse(null, 1), false);
+  console.log("📦 Hand-off chip -> sticky chip at Hand-off ready (complete + ≥1 note); presses 📦 (same as h); stacked toast; first-use pulse OK"); }

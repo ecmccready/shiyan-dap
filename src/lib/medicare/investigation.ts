@@ -1239,5 +1239,20 @@ export const MEDICARE_COPY_ROW_TOAST_EVENT = "medicare:copy-row-toast";
 /** Pure: stacked top-toast text after a successful ⧉ #1 / ⧉ Last copy (same text as the chip flash); "" when nothing was copied. Never throws. */
 export function medicareCopyRowToast(which: unknown, json: unknown): string {
   if (typeof json !== "string" || !json) return "";
-  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : "";
+  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : "";
+}
+
+/** Display-only: first-use (per session) pulse window for the sticky 📦 Hand-off chip. */
+export const MEDICARE_HANDOFF_CHIP_PULSE_MS = 1200;
+/** Pure: sticky 📦 Hand-off chip — same readiness gate as ✅ Hand-off ready (Review complete + ≥1 note). Click presses the existing 📦 button (same as h). Never throws. */
+export function medicareHandoffChip(report: unknown): { show: boolean; label: string; toast: string } {
+  const ready = handoffReadyAnnotated(report).ready;
+  return ready ? { show: true, label: "📦 Hand-off", toast: "📦 Hand-off → copied hand-off pack" } : { show: false, label: "", toast: "" };
+}
+/** Pure: pulse only on the first successful-looking click this session (chip shown). Never throws. */
+export function medicareHandoffChipShouldPulse(alreadyPulsed: unknown, show: unknown): boolean { return alreadyPulsed !== true && show === true; }
+/** Pure: chip is pulsing within the window after its first-use timestamp. Never throws. */
+export function medicareHandoffChipPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < MEDICARE_HANDOFF_CHIP_PULSE_MS;
 }
