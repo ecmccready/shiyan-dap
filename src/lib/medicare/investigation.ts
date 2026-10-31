@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -246,6 +246,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "z": case "Z": return { kind: "last_row" };
       case "x": case "X": return { kind: "copy_first_row" };
       case ";": return { kind: "copy_last_row" };
+      case "o": case "O": return { kind: "copy_brief" };
       default: return null;
     }
   } catch { return null; }
@@ -505,6 +506,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "z", does: "jump the target to the last disposition row (opposite of i / j from top); no-op when already there" },
   { key: "x", does: "copy the first disposition row's JSON (report.entries[0], same shape as in y / investigation JSON) without moving focus; no-op with no rows" },
   { key: ";", does: "copy the last disposition row's JSON (report.entries[last], same shape as x / y) without moving focus; pairs with z / Last ↓; no-op with no rows" },
+  { key: "o", does: "copy the reviewed case brief — same as the sticky ⧉ Case brief chip / Copy (reviewed) case brief button; toast only after clipboard success; no-op with no dispositions" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
@@ -1291,6 +1293,13 @@ export function medicareBriefChip(report: unknown): { show: boolean; label: stri
 }
 /** Pure: case-brief chip toast/pulse fires only when its own press is pending and the copy succeeded within 3s. */
 export function medicareBriefChipCopiedOk(pendingAt: unknown, now: unknown): boolean { return medicareDispositionsChipCopiedOk(pendingAt, now); }
+/** o key: free key (t = quick note, b = needs-review filter, c = cleared filter) — "o" for brief/"overview". Presses the ⧉ Case brief chip. */
+export const MEDICARE_BRIEF_KEY = "o";
+export const MEDICARE_BRIEF_CHIP_PULSE_MS = 1600;
+/** Pure: pulse the ⧉ Case brief chip only on the first successful chip/o copy per page view. */
+export function medicareBriefChipShouldPulse(alreadyPulsed: unknown, ok: unknown): boolean { return alreadyPulsed !== true && ok === true; }
+/** Pure: chip pulse is on within MEDICARE_BRIEF_CHIP_PULSE_MS of start. Never throws. */
+export function medicareBriefChipPulse(at: unknown, now: unknown): boolean { return typeof at === "number" && typeof now === "number" && now >= at && now - at < MEDICARE_BRIEF_CHIP_PULSE_MS; }
 
 /** Keys whose key toast is deferred until clipboard success (x / ; / y / h). Pure. */
 export function medicareKeyToastDeferred(a: DispositionShortcut): boolean {

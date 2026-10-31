@@ -949,3 +949,13 @@ import { medicareBriefChip, medicareBriefChipCopiedOk, MEDICARE_BRIEF_COPIED_EVE
   assert.deepEqual(medicareBriefChip(inv), { show: true, label: "⧉ Case brief", toast: "copied case brief" });
   assert.equal(MEDICARE_BRIEF_COPIED_EVENT, "medicare:brief-copied");
   console.log("sticky ⧉ Case brief chip OK"); }
+
+import { MEDICARE_BRIEF_KEY, medicareBriefChipShouldPulse, medicareBriefChipPulse, MEDICARE_BRIEF_CHIP_PULSE_MS } from "../src/lib/medicare/investigation";
+{ assert.equal(MEDICARE_BRIEF_KEY, "o"); assert.deepEqual(dispositionShortcut({ key: "o" }), { kind: "copy_brief" }); assert.deepEqual(dispositionShortcut({ key: "O" }), { kind: "copy_brief" });
+  assert.equal(dispositionShortcut({ key: "o", ctrlKey: true }), null); assert.equal(dispositionShortcut({ key: "o", targetTag: "textarea" }), null);
+  assert.deepEqual(dispositionShortcut({ key: "t" }), { kind: "template" }, "t stays quick note");
+  assert.equal(keyToastText({ kind: "copy_brief" }, "x"), null, "no early key toast");
+  assert.ok(MEDICARE_KEYMAP.some((k) => k.key === "o" && /case brief/.test(k.does)));
+  assert.equal(medicareBriefChipShouldPulse(false, true), true); assert.equal(medicareBriefChipShouldPulse(true, true), false); assert.equal(medicareBriefChipShouldPulse(false, false), false);
+  assert.equal(medicareBriefChipPulse(1000, 1000 + MEDICARE_BRIEF_CHIP_PULSE_MS - 1), true); assert.equal(medicareBriefChipPulse(1000, 1000 + MEDICARE_BRIEF_CHIP_PULSE_MS), false); assert.equal(medicareBriefChipPulse(null, 5), false);
+  console.log("o key -> ⧉ Case brief chip + first-use pulse OK"); }
