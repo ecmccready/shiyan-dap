@@ -2,6 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { notesCoverage } from "../src/lib/medicare/investigation";
 import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, cheatsheetPulse, CHEATSHEET_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
@@ -592,3 +593,7 @@ console.log("OK");
 
 { const P = cheatsheetPulse, M = CHEATSHEET_PULSE_MS; assert.equal(M, 2400); assert.equal(P(null, 5, true), false); assert.equal(P(1000, 1000, true), true); assert.equal(P(1000, 1000 + M - 1, true), true);
   assert.equal(P(1000, 1000 + M, true), false); assert.equal(P(1000, 1500, false), false); assert.equal(P(1000, 1500, "true"), false); assert.equal(P(1000, 999, true), false); assert.equal(P(NaN, 1000, true), false); assert.equal(P(1000, Infinity, true), false); console.log("cheatsheetPulse OK"); }
+
+{ const C = notesCoverage; assert.deepEqual(C({ entries: [{ note: "a" }, {}, { note: " " }] }), { noted: 1, total: 3, label: "notes on 1 of 3", show: true });
+  assert.equal(C({ entries: [{ note: "a" }, { note: "b" }, { note: "c" }] }).label, "notes on 3 of 3"); assert.equal(C({ entries: [{}, {}, {}] }).show, false);
+  assert.equal(C(null).show, false); assert.equal(C({ entries: "x" }).total, 0); console.log("notesCoverage OK"); }

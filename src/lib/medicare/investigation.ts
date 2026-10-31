@@ -472,6 +472,17 @@ export function notesCount(report: unknown): { count: number; label: string } {
   } catch { return { count: 0, label: "0 notes" }; }
 }
 
+/** Pure: note coverage over report items, e.g. "notes on 2 of 3"; show only when ≥1 note. */
+export function notesCoverage(report: unknown): { noted: number; total: number; label: string; show: boolean } {
+  try {
+    const entries = (report as InvestigationReport)?.entries;
+    if (!Array.isArray(entries)) return { noted: 0, total: 0, label: "", show: false };
+    const total = entries.length;
+    const noted = entries.filter((e) => e && typeof e.note === "string" && e.note.trim() !== "").length;
+    return { noted, total, label: noted ? `notes on ${noted} of ${total}` : "", show: noted > 0 };
+  } catch { return { noted: 0, total: 0, label: "", show: false }; }
+}
+
 /** Row filter: a review status, "has_note" (rows with a reviewer note), or null for All. */
 export type RowFilter = DispositionStatus | "has_note" | null;
 /** Pure: toggle a row filter (statuses or "has_note"); re-click or anything invalid clears to null. */
