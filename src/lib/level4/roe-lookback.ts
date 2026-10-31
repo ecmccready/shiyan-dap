@@ -1081,6 +1081,18 @@ export function lookbackLastPulse(pulseAt: unknown, now: unknown): boolean {
   const d = now - pulseAt; return d >= 0 && d < LOOKBACK_LAST_PULSE_MS;
 }
 
+/** Display-only: first-use (per session) pulse window for the sticky First ↑ chip. */
+export const LOOKBACK_FIRST_UP_PULSE_MS = 1200;
+/** Pure: start the First ↑ pulse only on first use (chip or key 1) this session, with a target. Never throws. */
+export function lookbackFirstUpShouldPulse(alreadyPulsed: unknown, target: unknown): boolean {
+  return alreadyPulsed !== true && typeof target === "string" && target.length > 0;
+}
+/** Pure: First ↑ chip is pulsing while within the window after the first-use timestamp. Never throws. */
+export function lookbackFirstUpPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LOOKBACK_FIRST_UP_PULSE_MS;
+}
+
 /** Pure: TOP-ranked (#1) sealed path JSON for key x, or null. Never throws. */
 export function lookbackTopPathJson(c: LookbackCompare | null | undefined): string | null {
   try { if (!c) return null; const r = rankedLookbackRows(c)[0]; return r && typeof r.run_id === "string" && r.run_id ? lookbackPathJson(r, c.winner) : null; } catch { return null; }
