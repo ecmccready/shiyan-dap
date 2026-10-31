@@ -634,3 +634,15 @@ export function cheatsheetPulse(startedAt: unknown, now: unknown, open: unknown)
   if (open !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < CHEATSHEET_PULSE_MS;
 }
+
+/** Pure: compact status mix over report items, e.g. "1 needs_human_review · 1 cleared_pattern_only · 1 unreviewed"; zero counts omitted; show only when ≥1 item. */
+export function statusMix(report: unknown): { counts: Record<DispositionStatus, number>; label: string; show: boolean } {
+  const counts = { unreviewed: 0, needs_human_review: 0, cleared_pattern_only: 0 } as Record<DispositionStatus, number>;
+  try {
+    const entries = (report as InvestigationReport)?.entries;
+    if (Array.isArray(entries)) for (const e of entries) { const s = (e as { status?: unknown })?.status; if (typeof s === "string" && s in counts) counts[s as DispositionStatus]++; }
+  } catch { /* fallthrough */ }
+  const order: DispositionStatus[] = ["needs_human_review", "cleared_pattern_only", "unreviewed"];
+  const label = order.filter((s) => counts[s] > 0).map((s) => `${counts[s]} ${s}`).join(" · ");
+  return { counts, label, show: label !== "" };
+}

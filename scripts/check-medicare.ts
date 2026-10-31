@@ -2,7 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { notesCoverage } from "../src/lib/medicare/investigation";
+import { notesCoverage, statusMix } from "../src/lib/medicare/investigation";
 import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, cheatsheetPulse, CHEATSHEET_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
@@ -597,3 +597,8 @@ console.log("OK");
 { const C = notesCoverage; assert.deepEqual(C({ entries: [{ note: "a" }, {}, { note: " " }] }), { noted: 1, total: 3, label: "notes on 1 of 3", show: true });
   assert.equal(C({ entries: [{ note: "a" }, { note: "b" }, { note: "c" }] }).label, "notes on 3 of 3"); assert.equal(C({ entries: [{}, {}, {}] }).show, false);
   assert.equal(C(null).show, false); assert.equal(C({ entries: "x" }).total, 0); console.log("notesCoverage OK"); }
+
+{ const M = statusMix; const m = M({ entries: [{ status: "needs_human_review" }, { status: "cleared_pattern_only" }, { status: "unreviewed" }] });
+  assert.equal(m.label, "1 needs_human_review · 1 cleared_pattern_only · 1 unreviewed"); assert.equal(m.show, true);
+  assert.equal(M({ entries: [{ status: "unreviewed" }, { status: "unreviewed" }, { status: "bogus" }] }).label, "2 unreviewed");
+  assert.equal(M(null).show, false); assert.equal(M({ entries: "x" }).show, false); console.log("statusMix OK"); }

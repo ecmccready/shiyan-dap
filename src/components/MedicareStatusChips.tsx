@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, notesNudge, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, statusMix, notesNudge, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -86,6 +86,10 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
         {(() => { const cv = notesCoverage(r); return cv.show ? (
           <span data-medicare-notes-coverage={`${cv.noted}/${cv.total}`} title="Items with a reviewer note"
             className={`rounded-full border px-3 py-1 text-xs font-semibold ${cv.noted === cv.total ? "border-emerald-300 bg-emerald-500/20 text-emerald-100" : "border-sky-300 bg-sky-500/15 text-sky-100"}`}>{cv.label}</span>
+        ) : null; })()}
+        {(() => { const m = statusMix(r); return m.show ? (
+          <span data-medicare-status-mix={`${m.counts.needs_human_review}/${m.counts.cleared_pattern_only}/${m.counts.unreviewed}`} title="Items per review status (display only)"
+            className="rounded-full border border-zinc-500 bg-zinc-800 px-3 py-1 text-xs font-mono text-zinc-200">{m.label}</span>
         ) : null; })()}
         <button type="button" onClick={() => pick(null)} aria-pressed={filter === null}
           className={`rounded-full border px-3 py-1 text-xs ${filter === null ? "border-white text-white" : "border-zinc-600 text-zinc-400"}`}>All ({chips.length})</button>
