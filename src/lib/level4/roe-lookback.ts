@@ -390,6 +390,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "g", does: "copy summary JSON" },
   { key: "f", does: "cycle Show: All → ★ Winners → Beaten → = Agree" },
   { key: "o", does: "toggle Sort: look-back rank ↔ ΔΦ vs greedy" },
+  { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
   { key: "?", does: "show / hide this sheet" },
 ];
 /** Pure: key o flips Sort between look-back rank and ΔΦ vs greedy; unknown input goes to "dphi". */
@@ -717,4 +718,19 @@ export function lookbackVerdictFilterPulse(startedAt: unknown, now: unknown): bo
 /** Pure: whether a verdict-chip click should start the once-per-session pulse: only when not yet pulsed and next filter differs from current. */
 export function lookbackVerdictFilterShouldPulse(alreadyPulsed: unknown, cur: unknown, next: unknown): boolean {
   return alreadyPulsed !== true && typeof next === "string" && next !== cur;
+}
+
+/** Pure: key v mirrors the sticky verdict→Show chip. Returns null when not v, modified, typing, or no verdict (none/unknown). `changed` false when next equals current; `toast` only when effective. Never throws. */
+export function lookbackVerdictKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, winner: unknown, filter: unknown): { next: LookbackRoleFilter; changed: boolean; toast: string | null } | null {
+  try {
+    if (!ev || (ev.key !== "v" && ev.key !== "V") || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    const vf = lookbackVerdictFilterChip(winner, filter);
+    if (!vf.show) return null;
+    const cur = filter === "winners" || filter === "beaten" || filter === "agree" ? filter : "all";
+    const changed = vf.next !== cur;
+    const toast = !changed ? null : vf.next === "all" ? "v → Show: All" : vf.next === "winners" ? "v → Show: ★ Winners (look-back wins)" : "v → Show: = Agree";
+    return { next: vf.next, changed, toast };
+  } catch { return null; }
 }
