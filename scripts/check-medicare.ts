@@ -2,7 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS } from "../src/lib/medicare/investigation";
+import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
@@ -586,3 +586,6 @@ console.log("OK");
 
 { const P = noteFocusPulse, M = NOTE_FOCUS_PULSE_MS; assert.equal(M, 2400); assert.equal(P(null, 5, "a", "a"), false); assert.equal(P(1000, 1000, "a", "a"), true); assert.equal(P(1000, 1000 + M - 1, "a", "a"), true);
   assert.equal(P(1000, 1000 + M, "a", "a"), false); assert.equal(P(1000, 1500, "a", "b"), false); assert.equal(P(1000, 1500, "", ""), false); assert.equal(P(1000, 1500, null, null), false); assert.equal(P(1000, 999, "a", "a"), false); assert.equal(P(NaN, 1000, "a", "a"), false); assert.equal(P(1000, Infinity, "a", "a"), false); console.log("noteFocusPulse OK"); }
+
+{ const P = keyTargetPulse, M = KEY_TARGET_PULSE_MS; assert.equal(M, 2400); assert.equal(P(null, 5, "a"), false); assert.equal(P(1000, 1000, "a"), true); assert.equal(P(1000, 1000 + M - 1, "b"), true);
+  assert.equal(P(1000, 1000 + M, "a"), false); assert.equal(P(1000, 1500, null), false); assert.equal(P(1000, 1500, ""), false); assert.equal(P(1000, 999, "a"), false); assert.equal(P(NaN, 1000, "a"), false); assert.equal(P(1000, Infinity, "a"), false); console.log("keyTargetPulse OK"); }

@@ -609,3 +609,10 @@ export function noteFocusPulse(startedAt: unknown, now: unknown, pulsedId: unkno
   if (typeof pulsedId !== "string" || pulsedId === "" || pulsedId !== rowId || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < NOTE_FOCUS_PULSE_MS;
 }
+
+export const KEY_TARGET_PULSE_MS = 2400;
+/** Pure: true while the key-target disposition row should pulse — once per tab after the first j/k move (`startedAt` set then), for KEY_TARGET_PULSE_MS. Display only. */
+export function keyTargetPulse(startedAt: unknown, now: unknown, targetId: unknown): boolean {
+  if (typeof targetId !== "string" || targetId === "" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < KEY_TARGET_PULSE_MS;
+}
