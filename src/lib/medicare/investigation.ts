@@ -783,3 +783,13 @@ export function cheatsheetOpenChip(open: unknown): { show: boolean; label: strin
   const show = open === true;
   return { show, label: show ? "keys open ✕" : "" };
 }
+
+export const MEDICARE_TOASTS_STATE_EVENT = "medicare:toasts-state";
+export const MEDICARE_TOASTS_CLEAR_EVENT = "medicare:toasts-clear";
+/** Pure: Win-strip "N toasts" chip while ≥1 top toast shows; clickable (Clear all) only when ≥2. Mirrors lookbackToastsChip. Never throws. */
+export function medicareToastsChip(stack: readonly unknown[] | number | null | undefined): { show: boolean; label: string; clearable: boolean } {
+  const n = Array.isArray(stack) ? stack.length : typeof stack === "number" && Number.isFinite(stack) && stack > 0 ? Math.floor(stack) : 0;
+  if (n < 1) return { show: false, label: "", clearable: false };
+  const clearable = n >= 2;
+  return { show: true, label: `${n} toast${n === 1 ? "" : "s"}${clearable ? " ✕" : ""}`, clearable };
+}

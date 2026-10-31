@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, undoDepthChip, MEDICARE_UNDO_DEPTH_EVENT, MEDICARE_UNDO_REQUEST_EVENT, redoDepthChip, MEDICARE_REDO_DEPTH_EVENT, MEDICARE_REDO_REQUEST_EVENT, cheatsheetOpenChip, MEDICARE_HELP_STATE_EVENT, MEDICARE_HELP_CLOSE_EVENT, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_TOASTS_STATE_EVENT, MEDICARE_TOASTS_CLEAR_EVENT, medicareToastsChip, MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, undoDepthChip, MEDICARE_UNDO_DEPTH_EVENT, MEDICARE_UNDO_REQUEST_EVENT, redoDepthChip, MEDICARE_REDO_DEPTH_EVENT, MEDICARE_REDO_REQUEST_EVENT, cheatsheetOpenChip, MEDICARE_HELP_STATE_EVENT, MEDICARE_HELP_CLOSE_EVENT, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -17,6 +17,8 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
   const [undoDepth, setUndoDepth] = useState(0);
   const [redoDepth, setRedoDepth] = useState(0);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [toastCount, setToastCount] = useState(0);
+  useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setToastCount(typeof d === "number" ? d : 0); }; window.addEventListener(MEDICARE_TOASTS_STATE_EVENT, on); return () => window.removeEventListener(MEDICARE_TOASTS_STATE_EVENT, on); }, []);
   useEffect(() => { const on = (ev: Event) => setHelpOpen((ev as CustomEvent<unknown>).detail === true); window.addEventListener(MEDICARE_HELP_STATE_EVENT, on); return () => window.removeEventListener(MEDICARE_HELP_STATE_EVENT, on); }, []);
   useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setRedoDepth(typeof d === "number" ? d : 0); }; window.addEventListener(MEDICARE_REDO_DEPTH_EVENT, on); return () => window.removeEventListener(MEDICARE_REDO_DEPTH_EVENT, on); }, []);
   useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setUndoDepth(typeof d === "number" ? d : 0); }; window.addEventListener(MEDICARE_UNDO_DEPTH_EVENT, on); return () => window.removeEventListener(MEDICARE_UNDO_DEPTH_EVENT, on); }, []);
@@ -114,6 +116,10 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
           <button type="button" data-medicare-undo-depth={u.depth} disabled={!u.can_undo} onClick={() => { if (u.can_undo) window.dispatchEvent(new CustomEvent(MEDICARE_UNDO_REQUEST_EVENT)); }} title={u.can_undo ? `Undo stack depth ${u.depth} — click to undo (same as u)` : "Nothing to undo"}
             className={`rounded-full border px-3 py-1 text-xs font-mono ${u.can_undo ? "border-sky-400 text-sky-100 hover:border-white" : "border-zinc-700 text-zinc-500"}`}>{u.label}</button>
         ); })()}
+        {(() => { const tc = medicareToastsChip(toastCount); if (!tc.show) return null; return tc.clearable ? (
+          <button type="button" data-medicare-toasts-chip={toastCount} onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_TOASTS_CLEAR_EVENT))} title="Click to Clear all top toasts (same as ✕ Clear all) · Recent toasts kept"
+            className="rounded-full border border-white/60 px-3 py-1 text-xs font-mono text-white hover:border-white hover:bg-white/10">{tc.label}</button>
+        ) : <span data-medicare-toasts-chip={toastCount} className="rounded-full border border-zinc-600 px-3 py-1 text-xs font-mono text-zinc-200">{tc.label}</span>; })()}
         {(() => { const hc = cheatsheetOpenChip(helpOpen); return hc.show ? (
           <button type="button" data-medicare-cheatsheet-chip onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_HELP_CLOSE_EVENT))} title="Keyboard cheat sheet is open — click to close (same as Esc)"
             className="relative z-[60] rounded-full border border-amber-300 px-3 py-1 text-xs font-mono text-amber-100 hover:border-white">{hc.label}</button>
