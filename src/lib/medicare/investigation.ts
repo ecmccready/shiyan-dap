@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "first_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "first_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | { kind: "copy_target_row" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -248,6 +248,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "x": case "X": return { kind: "copy_first_row" };
       case ";": return { kind: "copy_last_row" };
       case "o": case "O": return { kind: "copy_brief" };
+      case "s": case "S": return { kind: "copy_target_row" };
       default: return null;
     }
   } catch { return null; }
@@ -266,6 +267,16 @@ export function medicareFirstRowJson(entries: unknown): string {
 export function medicareCopyFirstRowKey(entries: unknown): { changes: boolean; json: string } {
   const json = medicareFirstRowJson(entries);
   return { changes: json !== "", json };
+}
+
+/** s key: free key (r = redo, m/q unused) — "s" for selected. Pure: copies the targeted (j/k / clicked) row's JSON, same ReportEntry shape as x / ;; never moves focus; no-op with no target or unknown id. */
+export function medicareCopyTargetRowKey(entries: unknown, targetId: string | null | undefined): { changes: boolean; json: string } {
+  try {
+    if (!Array.isArray(entries) || !targetId) return { changes: false, json: "" };
+    const e = entries.find((x) => x && typeof x === "object" && (x as { item_id?: unknown }).item_id === targetId);
+    const json = e ? medicareFirstRowJson([e]) : "";
+    return { changes: json !== "", json };
+  } catch { return { changes: false, json: "" }; }
 }
 
 /** Pure: ; key — the last disposition row as pretty JSON (report.entries[last], same ReportEntry shape as x / y); "" when no rows or bad input. */
@@ -333,6 +344,7 @@ export function keyToastText(a: DispositionShortcut, label: unknown): string | n
       case "first_row": return "⤒ first row";
       case "copy_first_row": return "⧉ copied #1 row JSON";
       case "copy_last_row": return "⧉ copied last row JSON";
+      case "copy_target_row": return "⧉ copied target row JSON";
       case "needs_review": return "filter → needs review / All";
       case "cleared": return "filter → cleared / All";
       case "unreviewed_filter": return "filter → unreviewed / All";
@@ -520,6 +532,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "z", does: "jump the target to the last disposition row (opposite of i / j from top); no-op when already there" },
   { key: "x", does: "copy the first disposition row's JSON (report.entries[0], same shape as in y / investigation JSON) without moving focus; no-op with no rows" },
   { key: ";", does: "copy the last disposition row's JSON (report.entries[last], same shape as x / y) without moving focus; pairs with z / Last ↓; no-op with no rows" },
+  { key: "s", does: "copy the targeted (selected) row's JSON — same shape as x / ;; follows j/k / click; key toast only after clipboard success; no-op with no target" },
   { key: "o", does: "copy the reviewed case brief — same as the sticky ⧉ Case brief chip / Copy (reviewed) case brief button; toast only after clipboard success; no-op with no dispositions" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
