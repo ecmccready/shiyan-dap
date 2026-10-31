@@ -1458,6 +1458,30 @@ export function lookbackMaxGapJumpPulse(pulseAt: unknown, now: unknown): boolean
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < LOOKBACK_MAX_GAP_JUMP_PULSE_MS;
 }
+/** Display-only: pulse window for the sticky "Φ ↑" (lowest Φ) chip (fires only when the jump changes something). */
+export const LOOKBACK_MIN_PHI_JUMP_PULSE_MS = 1200;
+/** Pure: sticky "Φ ↑" chip — target = sealed path with the LOWEST final_phi (ties by rank; null Φ sorts last,
+ *  falling back to rank 1 when no Φ is numeric). Shown when ≥1 path. Distinct from TOP (rank 1), Last ↓ (lowest rank)
+ *  and ΔΦ ↓ (highest margin vs greedy). Never throws. */
+export function lookbackMinPhiJumpChip(c: LookbackCompare | null | undefined): { target: string; label: string; final_phi: number | null; rank: number } | null {
+  try {
+    const rows = rankedLookbackRows(c); if (!rows.length) return null;
+    const v = (r: { final_phi: number | null }) => (typeof r.final_phi === "number" && Number.isFinite(r.final_phi) ? r.final_phi : Infinity);
+    let best = rows[0];
+    for (const r of rows) { const a = v(r), b = v(best); if (a < b || (a === b && r.rank < best.rank)) best = r; }
+    const t = best?.run_id; if (typeof t !== "string" || !t) return null;
+    return { target: t, label: "Φ ↑", final_phi: typeof best.final_phi === "number" ? best.final_phi : null, rank: best.rank };
+  } catch { return null; }
+}
+/** Pure: would a Φ ↑ click change anything (reveal under Show filter, focus, expand)? Never throws; false without target. */
+export function lookbackMinPhiJumpChanged(target: unknown, state: { visible?: unknown; focus?: unknown; open?: unknown } | null | undefined): boolean {
+  try { if (typeof target !== "string" || !target) return false; const st = state ?? {}; return !(st.visible !== false && st.focus === target && st.open === target); } catch { return false; }
+}
+/** Pure: Φ ↑ chip is pulsing within the window after a changing click. Never throws. */
+export function lookbackMinPhiJumpPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LOOKBACK_MIN_PHI_JUMP_PULSE_MS;
+}
 /** Pure: all ranked sealed paths as one JSON pack (rank order; each entry = lookbackPathJson payload). Null when no paths. Never throws. */
 export function lookbackAllPathsJson(c: LookbackCompare | null | undefined): string | null {
   try {
