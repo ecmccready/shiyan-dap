@@ -450,6 +450,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
+  { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else clear the top toasts" },
 ];
@@ -1006,5 +1007,16 @@ export function medicareClearToastsKey(ev: { key?: unknown; ctrlKey?: unknown; m
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
     const n = typeof count === "number" && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
     return { changed: n > 0, cleared: n, toast: n > 0 ? `d → cleared ${n} toast${n === 1 ? "" : "s"}` : null };
+  } catch { return null; }
+}
+
+/** Pure: key `e` clears Recent toasts history (same as Win strip N recent ✕ / Recent strip Clear) when ≥1 entry. Live top toasts untouched. Effective-only ⌨ toast. Never throws. */
+export function medicareClearRecentKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, count: unknown): { changed: boolean; cleared: number; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "e" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    const n = typeof count === "number" && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
+    return { changed: n > 0, cleared: n, toast: n > 0 ? `e → cleared ${n} recent toast${n === 1 ? "" : "s"}` : null };
   } catch { return null; }
 }
