@@ -959,3 +959,8 @@ import { MEDICARE_BRIEF_KEY, medicareBriefChipShouldPulse, medicareBriefChipPuls
   assert.equal(medicareBriefChipShouldPulse(false, true), true); assert.equal(medicareBriefChipShouldPulse(true, true), false); assert.equal(medicareBriefChipShouldPulse(false, false), false);
   assert.equal(medicareBriefChipPulse(1000, 1000 + MEDICARE_BRIEF_CHIP_PULSE_MS - 1), true); assert.equal(medicareBriefChipPulse(1000, 1000 + MEDICARE_BRIEF_CHIP_PULSE_MS), false); assert.equal(medicareBriefChipPulse(null, 5), false);
   console.log("o key -> ⧉ Case brief chip + first-use pulse OK"); }
+
+import { firstRowKey, MEDICARE_FIRST_ROW_KEY } from "../src/lib/medicare/investigation";
+{ assert.equal(MEDICARE_FIRST_ROW_KEY, "g"); assert.deepEqual(dispositionShortcut({ key: "g" }), { kind: "first_row" }); assert.deepEqual(dispositionShortcut({ key: "G" }), { kind: "first_row" }); assert.equal(dispositionShortcut({ key: "g", ctrlKey: true }), null); assert.equal(dispositionShortcut({ key: "g", targetTag: "textarea" }), null);
+  assert.deepEqual(firstRowKey(["a", "b", "c"], "c"), { changes: true, target: "a" }); assert.deepEqual(firstRowKey(["a", "b"], null), { changes: true, target: "a" }); assert.equal(firstRowKey(["a", "b"], "a").changes, false); assert.equal(firstRowKey([], null).changes, false); assert.equal(firstRowKey("x", null).changes, false);
+  assert.equal(keyToastText({ kind: "first_row" }, ""), "⤒ first row"); assert.ok(MEDICARE_KEYMAP.some((k) => k.key === "g")); console.log("firstRowKey OK"); }
