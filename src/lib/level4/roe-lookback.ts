@@ -392,6 +392,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "o", does: "toggle Sort: look-back rank ↔ ΔΦ vs greedy" },
   { key: "1", does: "focus, expand and scroll to the TOP path (#1), Show → All, re-flashes the TOP badge — mirrors 2" },
   { key: "2", does: "focus, expand and scroll to the runner-up (#2), Show → All — same as the sticky lead chip; no-op with <2 paths" },
+  { key: "3", does: "focus, expand and scroll to sealed path #3 (rank 3), Show → All — mirrors 1 / 2; no-op with <3 paths" },
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -782,5 +783,23 @@ export function lookbackTopKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?:
     const st = state ?? {};
     const changed = !((st.filter ?? "all") === "all" && st.focus === top && st.open === top);
     return { target: top, changed, toast: changed ? "1 → TOP (#1)" : null };
+  } catch { return null; }
+}
+
+/** Pure: run id of sealed path rank #3 (rankedLookbackRows order), null with <3 paths. Never throws. */
+export function lookbackThirdFocusTarget(c: LookbackCompare | null | undefined): string | null {
+  try { if (!c) return null; const r = rankedLookbackRows(c)[2] as { run_id?: unknown } | undefined; return r && typeof r.run_id === "string" && r.run_id ? r.run_id : null; } catch { return null; }
+}
+
+/** Pure: key 3 mirrors 1 / 2 for sealed path #3. Null when not 3, modified, typing, or no #3. `toast` only when effective. Never throws. */
+export function lookbackThirdKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, third: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): { target: string; changed: boolean; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "3" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof third !== "string" || !third) return null;
+    const st = state ?? {};
+    const changed = !((st.filter ?? "all") === "all" && st.focus === third && st.open === third);
+    return { target: third, changed, toast: changed ? "3 → path #3" : null };
   } catch { return null; }
 }
