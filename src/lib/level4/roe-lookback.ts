@@ -869,3 +869,14 @@ export function lookbackShowAllKey(ev: { key?: unknown; ctrlKey?: unknown; metaK
     return { next: "all", changed, toast: changed ? "a → Show All" : null };
   } catch { return null; }
 }
+
+export const LOOKBACK_SHOW_ALL_PULSE_MS = 2400;
+/** Pure: true while the sticky Show chip glows after `a` reset Show to All. Never throws. */
+export function lookbackShowAllPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_SHOW_ALL_PULSE_MS;
+}
+/** Pure: pulse once per session, only when `a` actually changed Show (changed === true). */
+export function lookbackShowAllShouldPulse(alreadyPulsed: unknown, changed: unknown): boolean {
+  return alreadyPulsed !== true && changed === true;
+}
