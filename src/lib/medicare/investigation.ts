@@ -1352,3 +1352,17 @@ export function medicareDirectButtonCopyWhich(handoff: unknown, brief: unknown, 
 export function medicareDirectBriefCopyKind(handoff: unknown, brief: unknown, isTrusted: unknown, ok: unknown): "brief" | "" {
   return isTrusted === true && ok === true && handoff !== true && !!brief ? "brief" : "";
 }
+
+/** Display-only: first-use (per session) pulse window for the sticky "First ↑" chip (chip click or key g). */
+export const FIRST_UP_PULSE_MS = 1200;
+/** Window event dispatched when First ↑ is used (chip or g); detail = target item_id. */
+export const MEDICARE_FIRST_UP_PULSE_EVENT = "medicare:first-up-pulse";
+/** Pure: pulse only on first use this session with a real target. Never throws. */
+export function firstUpShouldPulse(alreadyPulsed: unknown, jump: unknown): boolean {
+  return alreadyPulsed !== true && typeof jump === "string" && jump.length > 0;
+}
+/** Pure: chip is pulsing within FIRST_UP_PULSE_MS after the first-use timestamp. Never throws. */
+export function firstUpPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < FIRST_UP_PULSE_MS;
+}

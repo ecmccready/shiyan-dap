@@ -970,3 +970,10 @@ import { firstUpRowChip } from "../src/lib/medicare/investigation";
   assert.deepEqual(firstUpRowChip([{ item_id: "a" }, { item_id: "b" }, { item_id: "c" }]), { show: true, label: "First ↑", jump: "a" });
   assert.equal(firstUpRowChip(null).show, false); assert.equal(firstUpRowChip([null, { item_id: "a" }]).show, false);
   console.log("firstUpRowChip OK"); }
+
+{ const { firstUpPulse: P, firstUpShouldPulse: S, FIRST_UP_PULSE_MS: M, MEDICARE_FIRST_UP_PULSE_EVENT: E } = require("../src/lib/medicare/investigation");
+  assert.equal(M, 1200); assert.equal(E, "medicare:first-up-pulse");
+  assert.equal(S(false, "c"), true); assert.equal(S(true, "c"), false); assert.equal(S(false, ""), false); assert.equal(S(false, null), false);
+  assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + M - 1), true); assert.equal(P(1000, 1000 + M), false);
+  assert.equal(P(null, 1), false); assert.equal(P(5, 1), false); assert.equal(P(NaN, 1), false);
+  console.log("ok firstUpPulse/ShouldPulse (first-use per session, chip or g)"); }
