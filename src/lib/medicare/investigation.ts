@@ -759,3 +759,11 @@ export function keyTargetChip(entries: unknown, target: unknown): { show: boolea
     return { show: true, label: `target: ${pos}/${list.length} ${hit.item_id}${kind} ↓`, id: hit.item_id, jump: hit.item_id };
   } catch { return { show: false, label: "", id: null, jump: null }; }
 }
+
+export const MEDICARE_UNDO_DEPTH_EVENT = "medicare:undo-depth";
+export const MEDICARE_UNDO_REQUEST_EVENT = "medicare:undo-request";
+/** Pure: Win-strip chip for undo stack depth. Click undoes (like u) only when depth > 0. Never throws. */
+export function undoDepthChip(depth: unknown): { depth: number; label: string; can_undo: boolean } {
+  const n = typeof depth === "number" && Number.isFinite(depth) && depth > 0 ? Math.floor(depth) : 0;
+  return { depth: n, label: n > 0 ? `undo ${n} ↶` : "undo 0", can_undo: n > 0 };
+}

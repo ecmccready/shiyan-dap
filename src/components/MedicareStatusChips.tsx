@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, undoDepthChip, MEDICARE_UNDO_DEPTH_EVENT, MEDICARE_UNDO_REQUEST_EVENT, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -14,6 +14,8 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
   const [r, setR] = useState<InvestigationReport>(initial);
   const [keyTarget, setKeyTarget] = useState<string | null>(null);
   useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setKeyTarget(typeof d === "string" ? d : null); }; window.addEventListener(MEDICARE_TARGET_EVENT, on); return () => window.removeEventListener(MEDICARE_TARGET_EVENT, on); }, []);
+  const [undoDepth, setUndoDepth] = useState(0);
+  useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setUndoDepth(typeof d === "number" ? d : 0); }; window.addEventListener(MEDICARE_UNDO_DEPTH_EVENT, on); return () => window.removeEventListener(MEDICARE_UNDO_DEPTH_EVENT, on); }, []);
   const [filter, setFilter] = useState<RowFilter>(null);
   const pick = (next: RowFilter) => {
     setFilter(next);
@@ -104,6 +106,10 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
           <button type="button" data-medicare-key-target-chip={k.id ?? "none"} onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_TARGET_JUMP_EVENT, { detail: k.jump }))} title={k.id ? "Current j/k key target — click to scroll/focus that row (filter resets to All)" : "No key target yet — click to target the first row (same as j)"}
             className={`rounded-full border px-3 py-1 text-xs font-mono hover:border-white ${k.id ? "border-sky-400 text-sky-100" : "border-zinc-600 text-zinc-400"}`}>{k.label}</button>
         ) : null; })()}
+        {(() => { const u = undoDepthChip(undoDepth); return (
+          <button type="button" data-medicare-undo-depth={u.depth} disabled={!u.can_undo} onClick={() => { if (u.can_undo) window.dispatchEvent(new CustomEvent(MEDICARE_UNDO_REQUEST_EVENT)); }} title={u.can_undo ? `Undo stack depth ${u.depth} — click to undo (same as u)` : "Nothing to undo"}
+            className={`rounded-full border px-3 py-1 text-xs font-mono ${u.can_undo ? "border-sky-400 text-sky-100 hover:border-white" : "border-zinc-700 text-zinc-500"}`}>{u.label}</button>
+        ); })()}
         {(() => { const c = rowFilterLabelChip(filter); return (
           <button type="button" data-medicare-filter-label={c.value} onClick={() => pick(cycleRowFilter(filter))} title={`Current row filter — click to cycle (same as f); next: ${c.next}`}
             className={`rounded-full border px-3 py-1 text-xs font-mono hover:border-white ${filter ? "border-amber-300 text-amber-100" : "border-zinc-600 text-zinc-300"}`}>{c.label}</button>
