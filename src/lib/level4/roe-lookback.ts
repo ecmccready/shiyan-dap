@@ -460,3 +460,10 @@ export function lookbackTopPulse(startedAt: unknown, now: unknown, rowCount: unk
   if (typeof rowCount !== "number" || !(rowCount > 0) || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_TOP_PULSE_MS;
 }
+
+export const LOOKBACK_COMPARE_PULSE_MS = 2400;
+/** Pure: true while the ⚖ Copy compare pack button should pulse — once per tab after look-back first beats greedy (`startedAt` set when winner first becomes "lookback"), for LOOKBACK_COMPARE_PULSE_MS. Display only. */
+export function lookbackComparePulse(startedAt: unknown, now: unknown, winner: unknown): boolean {
+  if (winner !== "lookback" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_COMPARE_PULSE_MS;
+}
