@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
 import { MEDICARE_PROGRESS_JUMP_EVENT, firstIncompleteDispositionTarget } from "@/lib/medicare/investigation";
-import { medicareToastClickAction, cheatsheetPulse, CHEATSHEET_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { medicareToastClickAction, cheatsheetPulse, CHEATSHEET_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, undoPulse, UNDO_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -26,6 +26,15 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const filterRef = useRef<RowFilter>(null);
   const entryRef = useRef<{ item_id: string; status: string; kind: string; note?: string | null; provider_id?: string | null } | null>(null);
   const targetRef = useRef<{ id: string | null; label: string }>({ id: null, label: "" });
+  const undoPulsedRef = useRef(false);
+  const [undoPulseAt, setUndoPulseAt] = useState<number | null>(null);
+  const [undoPulseNow, setUndoPulseNow] = useState(0);
+  const startUndoPulse = () => {
+    if (undoPulsedRef.current) return;
+    undoPulsedRef.current = true; const t = Date.now(); setUndoPulseAt(t); setUndoPulseNow(t);
+    setTimeout(() => setUndoPulseNow(Date.now()), UNDO_PULSE_MS);
+  };
+  const startUndoPulseRef = useRef(startUndoPulse);
   useEffect(() => {
     const on = (ev: KeyboardEvent) => {
       const el = ev.target as HTMLElement | null;
@@ -42,7 +51,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
         else if (tgt === "toasts") { setDoneToast(null); setEmptyToast(null); setReadyToast(null); }
         return;
       }
-      if (a.kind === "undo") { ev.preventDefault(); setHist(undoDisposition); return; }
+      if (a.kind === "undo") { ev.preventDefault(); if (hh.past.length > 0) startUndoPulseRef.current(); setHist(undoDisposition); return; }
       if (a.kind === "redo") { ev.preventDefault(); setHist(redoDisposition); return; }
       if (a.kind === "template") {
         const e = entryRef.current; if (!e) return;
@@ -114,6 +123,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     notePulsedRef.current = true; const t = Date.now(); setNotePulse({ id, at: t }); setNotePulseNow(t);
     setTimeout(() => setNotePulseNow(Date.now()), NOTE_FOCUS_PULSE_MS);
   };
+  const undoPulsing = undoPulse(undoPulseAt, undoPulseNow, undoPulsedRef.current);
   const bulkPulsing = bulkSetPulse(bulkPulseAt, bulkPulseNow, bulkPulsedRef.current);
   const rowFilterPulsing = rowFilterPulse(rowFilterPulseAt, rowFilterPulseNow, filter);
   const report = useMemo(() => buildInvestigationReport({ pack, dispositions: disp }), [pack, disp]);
@@ -312,8 +322,8 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
         report sha256 {report.report_hash} · {report.counts.unreviewed} unreviewed, {report.counts.needs_human_review} needs_human_review, {report.counts.cleared_pattern_only} cleared_pattern_only
       </p>
       <div className="flex flex-wrap items-center gap-3"><CopyLiveInvestigation report={report} />
-      <button type="button" data-medicare-undo disabled={!hist.past.length} onClick={() => setHist(undoDisposition)}
-        className={`rounded-full border px-3 py-1 text-xs ${hist.past.length ? "border-sky-400 text-sky-200 hover:bg-sky-500/10" : "border-zinc-700 text-zinc-600"}`}>
+      <button type="button" data-medicare-undo data-pulsing={undoPulsing ? "1" : undefined} disabled={!hist.past.length} onClick={() => { if (hist.past.length) startUndoPulse(); setHist(undoDisposition); }}
+        className={`rounded-full border px-3 py-1 text-xs ${hist.past.length ? "border-sky-400 text-sky-200 hover:bg-sky-500/10" : "border-zinc-700 text-zinc-600"}${undoPulsing ? " ring-4 ring-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.8)] motion-safe:animate-pulse" : ""}`}>
         ↶ Undo{hist.last_action ? `: ${hist.last_action}` : ""}{hist.past.length ? ` (${hist.past.length})` : ""}
       </button>
       <button type="button" data-medicare-redo disabled={!(hist.future ?? []).length} onClick={() => setHist(redoDisposition)}
