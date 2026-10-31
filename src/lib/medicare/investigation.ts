@@ -1239,7 +1239,7 @@ export const MEDICARE_COPY_ROW_TOAST_EVENT = "medicare:copy-row-toast";
 /** Pure: stacked top-toast text after a successful ⧉ #1 / ⧉ Last copy (same text as the chip flash); "" when nothing was copied. Never throws. */
 export function medicareCopyRowToast(which: unknown, json: unknown): string {
   if (typeof json !== "string" || !json) return "";
-  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : "";
+  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : "";
 }
 
 /** Display-only: first-use (per session) pulse window for the sticky 📦 Hand-off chip. */
@@ -1263,4 +1263,22 @@ export const MEDICARE_HANDOFF_COPIED_EVENT = "medicare:handoff-copied";
 export const MEDICARE_HANDOFF_CHIP_PENDING_MS = 3000;
 export function medicareHandoffChipCopiedOk(pendingAt: number | null, now: number): boolean {
   return typeof pendingAt === "number" && now >= pendingAt && now - pendingAt <= MEDICARE_HANDOFF_CHIP_PENDING_MS;
+}
+
+/** Fired by the dispositions CopyLiveInvestigation button only after clipboard write succeeds. */
+export const MEDICARE_DISPOSITIONS_COPIED_EVENT = "medicare:dispositions-copied";
+/** Display-only: first-use (per session) pulse window for the sticky ⧉ Dispositions chip. */
+export const MEDICARE_DISPOSITIONS_CHIP_PULSE_MS = 1200;
+/** Pure: sticky ⧉ Dispositions chip shows whenever the live report hash-verifies (same JSON as y). Never throws. */
+export function medicareDispositionsChip(report: unknown): { show: boolean; label: string; toast: string } {
+  return currentDispositionsJson(report) ? { show: true, label: "⧉ Dispositions", toast: "⧉ Dispositions → copied dispositions JSON" } : { show: false, label: "", toast: "" };
+}
+export function medicareDispositionsChipShouldPulse(alreadyPulsed: unknown, ok: unknown): boolean { return alreadyPulsed !== true && ok === true; }
+export function medicareDispositionsChipPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < MEDICARE_DISPOSITIONS_CHIP_PULSE_MS;
+}
+/** Pure: chip toasts/pulses only when its own click is pending and copy succeeded within the window (3s). */
+export function medicareDispositionsChipCopiedOk(pendingAt: unknown, now: unknown): boolean {
+  return typeof pendingAt === "number" && typeof now === "number" && now >= pendingAt && now - pendingAt <= MEDICARE_HANDOFF_CHIP_PENDING_MS;
 }

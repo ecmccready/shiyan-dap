@@ -3,7 +3,7 @@
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { medicareHandoffChipCopiedOk, MEDICARE_HANDOFF_CHIP_PENDING_MS, MEDICARE_HANDOFF_COPIED_EVENT, medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
+import { medicareDispositionsChip, medicareDispositionsChipShouldPulse, medicareDispositionsChipPulse, medicareDispositionsChipCopiedOk, MEDICARE_DISPOSITIONS_CHIP_PULSE_MS, MEDICARE_DISPOSITIONS_COPIED_EVENT, medicareHandoffChipCopiedOk, MEDICARE_HANDOFF_CHIP_PENDING_MS, MEDICARE_HANDOFF_COPIED_EVENT, medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -913,3 +913,13 @@ console.log("ok review complete banner click action");
   assert.equal(medicareHandoffChipCopiedOk(1000, 1500), true); assert.equal(medicareHandoffChipCopiedOk(null, 1500), false, "no pending click → no toast"); assert.equal(medicareHandoffChipCopiedOk(1000, 1001 + MEDICARE_HANDOFF_CHIP_PENDING_MS), false, "stale"); assert.equal(medicareHandoffChipCopiedOk(1000, 999), false); assert.equal(MEDICARE_HANDOFF_COPIED_EVENT, "medicare:handoff-copied");
   assert.equal(medicareHandoffChipPulse(1000, 1000), true); assert.equal(medicareHandoffChipPulse(1000, 1000 + MEDICARE_HANDOFF_CHIP_PULSE_MS), false); assert.equal(medicareHandoffChipPulse(null, 1), false);
   console.log("📦 Hand-off chip -> sticky chip at Hand-off ready (complete + ≥1 note); presses 📦 (same as h); stacked toast; first-use pulse OK"); }
+
+{ const ev0 = buildInvestigationReport({ pack: ev, dispositions: nAll }); const c = medicareDispositionsChip(ev0);
+  assert.equal(c.show, true); assert.equal(c.label, "⧉ Dispositions"); assert.equal(c.show, currentDispositionsJson(ev0) !== "");
+  assert.equal(medicareDispositionsChip(null).show, false); assert.equal(medicareDispositionsChip({ ...ev0, report_hash: "x" }).show, false, "tampered hash");
+  assert.equal(medicareCopyRowToast("dispositions", "1"), "⧉ Dispositions → copied dispositions JSON"); assert.equal(medicareCopyRowToast("dispositions", ""), "");
+  assert.equal(medicareDispositionsChipCopiedOk(1000, 1500), true); assert.equal(medicareDispositionsChipCopiedOk(null, 1500), false); assert.equal(medicareDispositionsChipCopiedOk(1000, 99999), false); assert.equal(medicareDispositionsChipCopiedOk(2000, 1000), false);
+  assert.equal(medicareDispositionsChipShouldPulse(false, true), true); assert.equal(medicareDispositionsChipShouldPulse(true, true), false); assert.equal(medicareDispositionsChipShouldPulse(false, false), false);
+  assert.equal(medicareDispositionsChipPulse(1000, 1000), true); assert.equal(medicareDispositionsChipPulse(1000, 1000 + MEDICARE_DISPOSITIONS_CHIP_PULSE_MS), false); assert.equal(medicareDispositionsChipPulse(null, 1), false);
+  assert.equal(MEDICARE_DISPOSITIONS_COPIED_EVENT, "medicare:dispositions-copied");
+  console.log("⧉ Dispositions chip -> sticky chip (hash-verified report) presses dispositions copy (same as y); toast only after clipboard success; first-use pulse OK"); }
