@@ -626,3 +626,9 @@ export function lookbackShownChip(filter: unknown, shown: unknown, total: unknow
   const k = typeof shown === "number" && Number.isFinite(shown) ? Math.max(0, Math.min(n, Math.floor(shown))) : 0;
   return { shown: k, total: n, label: `${k} of ${n} shown` };
 }
+
+/** Pure: sticky current-sort chip ("sort: rank" / "sort: ΔΦ"); next = toggleLookbackSort (same as o). Unknown → rank. */
+export function lookbackSortChip(sort: unknown): { sort: LookbackSort; label: string; next: LookbackSort } {
+  const s: LookbackSort = sort === "dphi" ? "dphi" : "rank";
+  return { sort: s, label: `sort: ${s === "dphi" ? "ΔΦ" : "rank"}`, next: toggleLookbackSort(s) };
+}
