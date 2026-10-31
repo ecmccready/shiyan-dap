@@ -395,6 +395,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "q", does: "focus, expand and scroll to the greedy-picked sealed path, Show → All — same as the sticky greedy chip; no-op without a greedy path" },
   { key: "a", does: "reset Show filter to All — no-op when already All" },
   { key: "3", does: "focus, expand and scroll to sealed path #3 (rank 3), Show → All — mirrors 1 / 2; no-op with <3 paths" },
+  { key: "b", does: "toggle Show to Beaten rows ↔ All — same as the sticky N beaten chip; only when ≥1 beaten" },
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
   { key: "p", does: "copy Recent toasts JSON — same as sticky ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
@@ -724,6 +725,30 @@ export function lookbackBeatenChip(beaten: unknown, filter: unknown): { show: bo
   if (n < 1) return { show: false, label: "", active: false, next: cur };
   const active = cur === "beaten";
   return { show: true, label: `${n} beaten${active ? " ✓" : ""}`, active, next: active ? "all" : "beaten" };
+}
+
+export const LOOKBACK_BEATEN_PULSE_MS = 2400;
+/** Pure: true while the sticky "N beaten" chip glows/pulses after the first chip click or b in the tab that actually changed Show (session once), for LOOKBACK_BEATEN_PULSE_MS. Display only. Never throws. */
+export function lookbackBeatenPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_BEATEN_PULSE_MS;
+}
+/** Pure: whether a beaten chip click / b should start the once-per-session pulse (not yet pulsed and next differs from current). */
+export function lookbackBeatenShouldPulse(alreadyPulsed: unknown, cur: unknown, next: unknown): boolean {
+  return alreadyPulsed !== true && typeof next === "string" && next !== cur;
+}
+/** Pure: key b mirrors the sticky "N beaten" chip (Show beaten ↔ All). Null when not b, modified, typing, or 0 beaten. `toast` only when effective. Never throws. */
+export function lookbackBeatenKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, beaten: unknown, filter: unknown): { next: LookbackRoleFilter; changed: boolean; toast: string | null } | null {
+  try {
+    if (!ev || (ev.key !== "b" && ev.key !== "B") || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    const bc = lookbackBeatenChip(beaten, filter);
+    if (!bc.show) return null;
+    const cur = filter === "winners" || filter === "beaten" || filter === "agree" ? filter : "all";
+    const changed = bc.next !== cur;
+    return { next: bc.next, changed, toast: !changed ? null : bc.next === "all" ? "b → Show: All" : "b → Show: Beaten" };
+  } catch { return null; }
 }
 
 export const LOOKBACK_VERDICT_FILTER_PULSE_MS = 2400;
