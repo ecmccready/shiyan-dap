@@ -350,6 +350,12 @@ export function medicareToastDurationMs(id: unknown): number {
   return id === "complete" ? COMPLETE_TOAST_MS : id === "handoff_ready" ? HANDOFF_READY_TOAST_MS : id === "empty_filter" ? EMPTY_ROW_FILTER_TOAST_MS : 0;
 }
 
+/** Pure: plain text copied when a stacked toast is clicked (amber keeps its ⚠); "" for bad input. */
+export function medicareToastCopyText(t: { text?: unknown; tone?: unknown } | null | undefined): string {
+  if (!t || typeof t.text !== "string" || !t.text.trim()) return "";
+  return `${t.tone === "amber" ? "⚠ " : ""}${t.text.trim()}`;
+}
+
 /** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
 export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
   if (helpOpen === true) return "help";
