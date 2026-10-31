@@ -663,3 +663,9 @@ export function lookbackExpandedChip(rows: unknown, open: unknown): { show: bool
     return { show: true, label: `expanded: #${rank} ${hit.run_id} ✕`, id: hit.run_id };
   } catch { return { show: false, label: "", id: null }; }
 }
+
+/** Pure: sticky chip while the ? cheat sheet is open ("keys open ✕"); click closes it. Never throws. */
+export function lookbackCheatsheetChip(open: unknown): { show: boolean; label: string } {
+  const show = open === true;
+  return { show, label: show ? "keys open ✕" : "" };
+}
