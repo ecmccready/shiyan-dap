@@ -3,7 +3,7 @@
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
+import { medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -886,3 +886,9 @@ console.log("ok review complete banner click action");
   assert.equal(keyActionChanges({ kind: "copy_last_row" }, { entries: es }), true); assert.equal(keyActionChanges({ kind: "copy_last_row" }, { entries: [] }), false);
   assert.equal(keyToastText({ kind: "copy_last_row" }, ""), "⧉ copied last row JSON"); assert.ok(MEDICARE_KEYMAP.some((k) => k.key === ";"));
   console.log("medicareCopyLastRowKey OK"); }
+{ const es = [{ item_id: "a", status: "cleared" }, { item_id: "b", status: "needs_review" }];
+  assert.equal(medicareCopyFirstRowChip([]).show, false); assert.equal(medicareCopyLastRowChip([es[0]]).show, false); assert.equal(medicareCopyLastRowChip(null).show, false);
+  assert.deepEqual(medicareCopyFirstRowChip([es[0]]), { show: true, label: "⧉ #1", json: medicareFirstRowJson([es[0]]), toast: "⧉ #1 → copied #1 row JSON" });
+  assert.equal(medicareCopyFirstRowChip(es).json, medicareCopyFirstRowKey(es).json, "⧉ #1 == x");
+  assert.equal(medicareCopyLastRowChip(es).json, medicareCopyLastRowKey(es).json, "⧉ Last == ;"); assert.equal(medicareCopyLastRowChip(es).label, "⧉ Last");
+  console.log("medicareCopyFirstRowChip/CopyLastRowChip OK"); }

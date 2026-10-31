@@ -1031,6 +1031,18 @@ export function secondRowShouldPulse(alreadyPulsed: unknown, jump: unknown): boo
 /** Win strip "#1" chip: shown when ≥1 disposition rows; click targets/scrolls the 1st row (index 0). Display/navigation only. */
 export const FIRST_ROW_PULSE_MS = 2400;
 /** Pure: "#1" chip state; jump is the 1st row's item_id. Never throws. */
+/** Pure: sticky "⧉ #1" chip — copies report.entries[0] JSON (same as key x) without moving focus. Shown when ≥1 row. Never throws. */
+export function medicareCopyFirstRowChip(entries: unknown): { show: boolean; label: string; json: string; toast: string } {
+  const json = medicareFirstRowJson(entries);
+  return json ? { show: true, label: "⧉ #1", json, toast: "⧉ #1 → copied #1 row JSON" } : { show: false, label: "", json: "", toast: "" };
+}
+/** Pure: sticky "⧉ Last" chip — copies report.entries[last] JSON (same as key ;) without moving focus. Shown when ≥2 rows. Never throws. */
+export function medicareCopyLastRowChip(entries: unknown): { show: boolean; label: string; json: string; toast: string } {
+  try {
+    const json = Array.isArray(entries) && entries.length >= 2 ? medicareLastRowJson(entries) : "";
+    return json ? { show: true, label: "⧉ Last", json, toast: "⧉ Last → copied last row JSON" } : { show: false, label: "", json: "", toast: "" };
+  } catch { return { show: false, label: "", json: "", toast: "" }; }
+}
 /** Pure: sticky "Last ↓" chip — jumps to the last disposition row (same as key z). Shown when ≥2 rows. Display/navigation only. */
 export function lastRowChip(entries: unknown): { show: boolean; label: string; jump: string | null } {
   try {
