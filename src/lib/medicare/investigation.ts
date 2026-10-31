@@ -1307,3 +1307,8 @@ export function medicareDirectButtonCopyWhich(handoff: unknown, brief: unknown, 
   if (handoff === true) return "handoff";
   return brief ? "" : "dispositions";
 }
+
+/** Pure: pack-copied kind for a direct (trusted) click on the live Copy (reviewed) case brief button after clipboard success; "" otherwise (hand-off/dispositions use medicareDirectButtonCopyWhich). Never throws. */
+export function medicareDirectBriefCopyKind(handoff: unknown, brief: unknown, isTrusted: unknown, ok: unknown): "brief" | "" {
+  return isTrusted === true && ok === true && handoff !== true && !!brief ? "brief" : "";
+}

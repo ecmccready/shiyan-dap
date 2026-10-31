@@ -5,7 +5,7 @@ import { useCopy, copiedRing } from "@/lib/use-copy";
 import { buildHandoffPack, formatReviewedCaseBrief } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 import type { MedicareProvenance } from "@/lib/medicare/provenance";
-import { medicareDirectButtonCopyWhich, MEDICARE_COPY_ROW_TOAST_EVENT, handoffReadyAnnotated, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, MEDICARE_HANDOFF_COPIED_EVENT, MEDICARE_DISPOSITIONS_COPIED_EVENT, HANDOFF_PULSE_MS, handoffPulseActive, MEDICARE_TIMER_EVENT, currentDispositionsJson, dispositionsCopyPulse, DISPOSITIONS_COPY_PULSE_MS, handoffCopyPulse, HANDOFF_COPY_PULSE_MS, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
+import { medicareDirectButtonCopyWhich, medicareDirectBriefCopyKind, MEDICARE_PACK_COPIED_EVENT, MEDICARE_COPY_ROW_TOAST_EVENT, handoffReadyAnnotated, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, MEDICARE_HANDOFF_COPIED_EVENT, MEDICARE_DISPOSITIONS_COPIED_EVENT, HANDOFF_PULSE_MS, handoffPulseActive, MEDICARE_TIMER_EVENT, currentDispositionsJson, dispositionsCopyPulse, DISPOSITIONS_COPY_PULSE_MS, handoffCopyPulse, HANDOFF_COPY_PULSE_MS, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
 
 /** Copies the live investigation report (current statuses + report_hash). With `report` it is controlled; otherwise it follows the stub's tab-local event. */
 export default function CopyLiveInvestigation({ report, initial, brief, handoff }: { report?: InvestigationReport; initial?: InvestigationReport; brief?: { evidence: EvidencePack; provenance: MedicareProvenance }; handoff?: boolean }) {
@@ -80,7 +80,7 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
       {...(handoff ? { "data-copy-medicare-handoff": true } : brief ? { "data-copy-medicare-reviewed-brief": true } : { "data-copy-medicare-dispositions": true })}
       data-review-complete={done ? "true" : "false"}
       disabled={!json}
-      onClick={(ev) => { const trusted = ev.isTrusted; void copy.copy(json).then((ok) => { const which = medicareDirectButtonCopyWhich(!!handoff, !!brief, trusted, ok); if (which) window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which, json: "1" } })); }); }}
+      onClick={(ev) => { const trusted = ev.isTrusted; void copy.copy(json).then((ok) => { const which = medicareDirectButtonCopyWhich(!!handoff, !!brief, trusted, ok); if (which) window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which, json: "1" } })); const kind = medicareDirectBriefCopyKind(!!handoff, !!brief, trusted, ok); if (kind) window.dispatchEvent(new CustomEvent(MEDICARE_PACK_COPIED_EVENT, { detail: kind })); }); }}
       data-pulse={pulsing ? "true" : undefined}
       data-medicare-handoff-ready-pulse={readyPulsing ? "1" : undefined}
       data-medicare-handoff-copy-pulse={hoCopyPulsing ? "1" : undefined}
