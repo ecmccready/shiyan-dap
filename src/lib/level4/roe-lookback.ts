@@ -1149,6 +1149,10 @@ export function lookbackCopyCompareChip(pack: unknown, winner?: unknown, gain?: 
 export function lookbackCompareChipToast(ok: unknown, toast: unknown): string | null {
   return ok === true && typeof toast === "string" && toast ? toast : null;
 }
+/** Pure: m / g / c / s key toast is deferred until the clipboard write succeeds (no early "copied" toast). Never throws. */
+export function lookbackKeyToastDeferred(k: unknown): boolean {
+  return k === "compare" || k === "summary" || k === "copy" || k === "steps";
+}
 /** Pure: sticky ⧉ TOP / ⧉ Last / ⧉ Greedy chip toast only after a successful clipboard write (ok === true); null otherwise. Never throws. */
 export function lookbackCopyChipToast(ok: unknown, toast: unknown): string | null {
   return ok === true && typeof toast === "string" && toast ? toast : null;
