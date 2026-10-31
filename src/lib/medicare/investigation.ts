@@ -1065,6 +1065,13 @@ export function medicareCopyFirstRowChip(entries: unknown): { show: boolean; lab
   const json = medicareFirstRowJson(entries);
   return json ? { show: true, label: "⧉ #1", json, toast: "⧉ #1 → copied #1 row JSON" } : { show: false, label: "", json: "", toast: "" };
 }
+/** Pure: sticky "⧉ Target" chip — copies the keyboard-targeted (j/k / clicked) row JSON (same as key s) without moving focus. Shown only when a key target exists in entries. Never throws. */
+export function medicareCopyTargetRowChip(entries: unknown, targetId: unknown): { show: boolean; label: string; json: string; toast: string } {
+  try {
+    const k = medicareCopyTargetRowKey(entries, typeof targetId === "string" ? targetId : null);
+    return k.changes ? { show: true, label: "⧉ Target", json: k.json, toast: "⧉ Target → copied target row JSON" } : { show: false, label: "", json: "", toast: "" };
+  } catch { return { show: false, label: "", json: "", toast: "" }; }
+}
 /** Pure: sticky "⧉ Last" chip — copies report.entries[last] JSON (same as key ;) without moving focus. Shown when ≥2 rows. Never throws. */
 export function medicareCopyLastRowChip(entries: unknown): { show: boolean; label: string; json: string; toast: string } {
   try {
@@ -1276,7 +1283,7 @@ export const MEDICARE_COPY_ROW_TOAST_EVENT = "medicare:copy-row-toast";
 /** Pure: stacked top-toast text after a successful ⧉ #1 / ⧉ Last copy (same text as the chip flash); "" when nothing was copied. Never throws. */
 export function medicareCopyRowToast(which: unknown, json: unknown): string {
   if (typeof json !== "string" || !json) return "";
-  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : "";
+  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : "";
 }
 
 /** Display-only: first-use (per session) pulse window for the sticky 📦 Hand-off chip. */

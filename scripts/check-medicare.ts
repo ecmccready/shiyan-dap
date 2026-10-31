@@ -996,3 +996,10 @@ import { firstUpRowChip } from "../src/lib/medicare/investigation";
   assert.equal(keyToastText({ kind: "copy_target_row" }, ""), "⧉ copied target row JSON"); assert.ok(MEDICARE_KEYMAP.some((k) => k.key === "s"));
   assert.deepEqual(dispositionShortcut({ key: "r" }), { kind: "redo" });
   console.log("ok s key copies target row JSON"); }
+
+import { medicareCopyTargetRowChip as MCTRC, medicareCopyRowToast as MCRT } from "../src/lib/medicare/investigation";
+{ const es = [{ item_id: "a", status: "unreviewed" }, { item_id: "b", status: "cleared_pattern_only" }];
+  const c = MCTRC(es, "b"); assert.equal(c.show, true); assert.equal(c.label, "⧉ Target"); assert.equal(c.json, medicareCopyTargetRowKey(es, "b").json);
+  assert.equal(MCTRC(es, null).show, false); assert.equal(MCTRC(es, "zz").show, false); assert.equal(MCTRC(null, "a").show, false); assert.equal(MCTRC(es, 7).show, false);
+  assert.equal(MCRT("target", c.json), "⧉ Target → copied target row JSON"); assert.equal(MCRT("target", ""), "");
+  console.log("ok medicareCopyTargetRowChip (⧉ Target = s without moving focus)"); }
