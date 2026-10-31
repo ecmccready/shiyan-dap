@@ -405,6 +405,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "x", does: "copy the TOP-ranked (#1) sealed path JSON regardless of focus or Show filter — no-op with no ranked path" },
   { key: "y", does: "copy the greedy-picked sealed path JSON without moving focus — same as sticky ⧉ Greedy; pairs with q / x / ;; no-op without a greedy path" },
   { key: ";", does: "copy the LAST-ranked sealed path JSON without moving focus — pairs with z / Last ↓ and x; no-op with <2 paths" },
+  { key: "l", does: "copy the LAST-ranked path's steps JSON without expanding or moving focus — same as sticky ⧉ Last steps (shares its first-use pulse); l = Last steps (t is TOP steps); no-op with <2 ranked paths" },
   { key: "t", does: "copy the TOP-ranked path's steps JSON without expanding or moving focus — same as sticky ⧉ TOP steps (shares its first-use pulse); no-op with no ranked path" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
@@ -1192,4 +1193,15 @@ export function lookbackCopyGreedyChip(json: unknown): { json: string; label: st
 export function lookbackSummaryButtonToast(ok: unknown, src: unknown): string | null {
   if (ok !== true) return null;
   return src === "delta_e" ? "+Δe → copied summary JSON" : "Copy summary → copied summary JSON";
+}
+
+/** Pure: key `l` (Last steps; l was unused — t is TOP steps) → copy LAST steps JSON without expanding/focusing, same as ⧉ Last steps. Null when not l, modified, typing, or no JSON (<2 paths). Never throws. */
+export function lookbackCopyLastStepsKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, json: unknown): { json: string; toast: string } | null {
+  try {
+    if (!ev || ev.key !== "l" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof json !== "string" || !json) return null;
+    return { json, toast: "l → copied LAST steps JSON" };
+  } catch { return null; }
 }
