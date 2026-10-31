@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import EvidencePacksChip from "@/components/EvidencePacksChip";
 import { medicareDispositionsChip, medicareDispositionsChipShouldPulse, medicareDispositionsChipPulse, medicareDispositionsChipCopiedOk, MEDICARE_DISPOSITIONS_CHIP_PULSE_MS, MEDICARE_DISPOSITIONS_COPIED_EVENT, MEDICARE_HANDOFF_COPIED_EVENT, medicareHandoffChipCopiedOk, medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, MEDICARE_COPY_ROW_TOAST_EVENT, medicareCopyRowChipPulse, medicareCopyRowChipShouldPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { lastDownChipChanged, firstUpChipChanged, firstUpPulse, firstUpShouldPulse, FIRST_UP_PULSE_MS, MEDICARE_FIRST_UP_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { blankNoteStickyChip, blankNoteStickyChanged, blankNoteStickyPulse, BLANK_NOTE_STICKY_PULSE_MS } from "@/lib/medicare/investigation";
@@ -316,6 +317,7 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
             title="Copy a compact review-progress pack ({kind:'progress', reviewed, total, percent, complete, notes, handoff_ready, counts, elapsed_ms, report_hash}) — no rows; smaller than ⧉ Statuses; unlike 📦 Hand-off (full pack) or the Win strip (display only); target/filter unchanged"
             className={`rounded-full border px-3 py-1 text-xs font-mono hover:border-white ${rowCopied?.txt === c.toast ? "border-green-400 bg-green-500 text-black" : "border-sky-500 text-sky-100"}${on ? " ring-4 ring-emerald-300 shadow-[0_0_16px_rgba(110,231,183,0.8)] motion-safe:animate-pulse" : ""}`}>{rowCopied?.txt === c.toast ? c.toast : c.label}</button>
         ); })()}
+        <span data-medicare-evidence-packs-sticky="" onMouseDown={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()}><EvidencePacksChip scope="medicare" /></span>
         {(() => { const c = medicareCopySecondRowChip(r.entries); if (!c.show) return null; const on = medicareCopyRowChipPulse(cpPulseAt.second, cpPulseNow); return (
           <button type="button" data-medicare-copy-second-row-chip="" data-medicare-row-copied={rowCopied?.txt === c.toast ? "1" : undefined} data-medicare-copy-row-pulsing={on ? "1" : undefined}
             onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); void navigator.clipboard?.writeText(c.json).then(() => { window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_PULSE_EVENT, { detail: { which: "second", json: c.json } })); window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which: "second", json: c.json } })); const at = Date.now(); setRowCopied({ txt: c.toast, at }); window.setTimeout(() => setRowCopied((x) => (x && x.at === at ? null : x)), TOAST_PILL_COPIED_MS); }, () => {}); }}

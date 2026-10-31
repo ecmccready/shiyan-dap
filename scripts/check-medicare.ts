@@ -1186,3 +1186,7 @@ import { topCandidateStickyChip, topCandidateStickyChanged, topCandidateStickyPu
 { const m = require("../src/lib/evidence-packs-link"); assert.equal(m.EVIDENCE_PACKS_HREF, "/workbench/offer#evidence-packs");
   assert.equal(m.evidencePacksChipLabel("medicare"), "Medicare · Evidence packs →"); assert.equal(m.evidencePacksChipLabel("lookback"), "Evidence packs →");
   console.log("evidencePacksChip OK (→ /workbench/offer#evidence-packs)"); }
+{ const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8");
+  assert.ok(src.includes('data-medicare-evidence-packs-sticky') && src.includes('<EvidencePacksChip scope="medicare" />'));
+  const pg = require("fs").readFileSync(require("path").join(__dirname, "../src/app/workbench/medicare/page.tsx"), "utf8"); assert.ok(pg.includes('<EvidencePacksChip scope="medicare" />'));
+  console.log("evidencePacksSticky OK (intro chip kept + sticky strip chip)"); }
