@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { lookbackPhiGapChip, lookbackToastClickAction, lookbackStepsDeltaTargets, LOOKBACK_DELTA_GREEDY_SCROLL_MS, lookbackGreedyFocusTarget, lookbackTopFocusTarget, lookbackTopSteps, lookbackGreedySteps, lookbackStepsDelta, lookbackHelpPulse, LOOKBACK_HELP_PULSE_MS, lookbackFocusPulse, LOOKBACK_FOCUS_PULSE_MS, lookbackExpandPulse, LOOKBACK_EXPAND_PULSE_MS, lookbackSortPulse, LOOKBACK_SORT_PULSE_MS, lookbackFilterPulse, LOOKBACK_FILTER_PULSE_MS, lookbackSummaryCopyPulse, LOOKBACK_SUMMARY_COPY_PULSE_MS, lookbackSummaryCopiedPulse, LOOKBACK_SUMMARY_COPIED_PULSE_MS, lookbackPathCopiedPulse, LOOKBACK_PATH_COPIED_PULSE_MS, lookbackComparePulse, LOOKBACK_COMPARE_PULSE_MS, lookbackCompareCopyPulse, LOOKBACK_COMPARE_COPY_PULSE_MS, lookbackTopPulse, LOOKBACK_TOP_PULSE_MS, lookbackWinPulse, LOOKBACK_WIN_PULSE_MS, restoreLookbackToast, lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, lookbackCopyAllLabel, clearLookbackToastHistory, lookbackToastHistoryJson, removeLookbackToastHistoryEntry, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackDeltaECopiesSummary, lookbackSummary, lookbackVerdictCopiesCompare, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackPhiGapChip, lookbackToastClickAction, lookbackStepsDeltaTargets, LOOKBACK_DELTA_GREEDY_SCROLL_MS, lookbackGreedyFocusTarget, lookbackTopFocusTarget, lookbackTopSteps, lookbackGreedySteps, lookbackStepsDelta, lookbackHelpPulse, LOOKBACK_HELP_PULSE_MS, lookbackFocusPulse, LOOKBACK_FOCUS_PULSE_MS, lookbackExpandPulse, LOOKBACK_EXPAND_PULSE_MS, lookbackSortPulse, LOOKBACK_SORT_PULSE_MS, lookbackFilterPulse, LOOKBACK_FILTER_PULSE_MS, lookbackSummaryCopyPulse, LOOKBACK_SUMMARY_COPY_PULSE_MS, lookbackSummaryCopiedPulse, LOOKBACK_SUMMARY_COPIED_PULSE_MS, lookbackPathCopiedPulse, LOOKBACK_PATH_COPIED_PULSE_MS, lookbackStepsCopiedPulse, LOOKBACK_STEPS_COPIED_PULSE_MS, lookbackComparePulse, LOOKBACK_COMPARE_PULSE_MS, lookbackCompareCopyPulse, LOOKBACK_COMPARE_COPY_PULSE_MS, lookbackTopPulse, LOOKBACK_TOP_PULSE_MS, lookbackWinPulse, LOOKBACK_WIN_PULSE_MS, restoreLookbackToast, lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, lookbackCopyAllLabel, clearLookbackToastHistory, lookbackToastHistoryJson, removeLookbackToastHistoryEntry, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackDeltaECopiesSummary, lookbackSummary, lookbackVerdictCopiesCompare, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -44,6 +44,15 @@ export default function RoeLookbackNote() {
     window.setTimeout(() => setPathCopiedNow(Date.now()), LOOKBACK_PATH_COPIED_PULSE_MS);
   };
   const markPathCopiedRef = useRef(markPathCopied); markPathCopiedRef.current = markPathCopied;
+  const stepsCopiedPulsedRef = useRef(false);
+  const [stepsCopiedPulse, setStepsCopiedPulse] = useState<{ runId: string; at: number } | null>(null);
+  const [stepsCopiedNow, setStepsCopiedNow] = useState(0);
+  const markStepsCopied = (runId: string) => {
+    if (stepsCopiedPulsedRef.current) return; stepsCopiedPulsedRef.current = true;
+    const t = Date.now(); setStepsCopiedPulse({ runId, at: t }); setStepsCopiedNow(t);
+    window.setTimeout(() => setStepsCopiedNow(Date.now()), LOOKBACK_STEPS_COPIED_PULSE_MS);
+  };
+  const markStepsCopiedRef = useRef(markStepsCopied); markStepsCopiedRef.current = markStepsCopied;
   focusRef.current = focusRow;
   useEffect(() => {
     const on = (ev: KeyboardEvent) => {
@@ -76,7 +85,7 @@ export default function RoeLookbackNote() {
         ev.preventDefault();
         if (k === "steps") setOpen(id);
         const label = k === "steps" ? `${id} steps` : id;
-        void navigator.clipboard?.writeText(j).then(() => { if (k === "copy") markPathCopiedRef.current(id); setKeyCopied(label); window.setTimeout(() => setKeyCopied((x) => (x === label ? null : x)), 1600); }, () => {});
+        void navigator.clipboard?.writeText(j).then(() => { if (k === "copy") markPathCopiedRef.current(id); else markStepsCopiedRef.current(id); setKeyCopied(label); window.setTimeout(() => setKeyCopied((x) => (x === label ? null : x)), 1600); }, () => {});
       }
     };
     window.addEventListener("keydown", on);
@@ -367,7 +376,7 @@ export default function RoeLookbackNote() {
                             </li>
                           ))}
                         </ol>
-                        <div className="mt-1" onClick={(ev) => ev.stopPropagation()}><CopyLookbackPath kind="steps" runId={r.run_id} json={pathStepsJson(r)} /></div>
+                        <div className="mt-1" onClick={(ev) => ev.stopPropagation()}><CopyLookbackPath kind="steps" runId={r.run_id} json={pathStepsJson(r)} pulsing={lookbackStepsCopiedPulse(stepsCopiedPulse, r.run_id, stepsCopiedNow)} onCopied={markStepsCopied} /></div>
                       </td>
                     </tr>
                   )}
