@@ -433,3 +433,10 @@ export function moveLookbackFocus(ids: unknown, current: unknown, dir: "next" | 
   if (i < 0) return list[0];
   return list[Math.max(0, Math.min(list.length - 1, i + (dir === "next" ? 1 : -1)))];
 }
+
+export const LOOKBACK_TOAST_HISTORY_SCHEMA = "aethel.roe.lookback.toast_history.v1";
+/** Pure: ⧉ Copy all on the look-back Recent toasts strip — shown history (newest first) as one JSON pack { schema, count, entries: [{ kind, text, tone }] }. Bad entries skipped; input not mutated. Tab-local, nothing sent. */
+export function lookbackToastHistoryJson(hist: readonly ({ id?: unknown; text?: unknown; tone?: unknown } | null)[] | null | undefined): string {
+  const entries = (hist ?? []).filter((h) => h && typeof h.text === "string" && h.text.trim()).map((h) => ({ kind: String(h!.id ?? ""), text: h!.text as string, tone: h!.tone === "amber" ? "amber" : h!.tone === "blue" ? "blue" : "green" }));
+  return JSON.stringify({ schema: LOOKBACK_TOAST_HISTORY_SCHEMA, count: entries.length, entries }, null, 2);
+}
