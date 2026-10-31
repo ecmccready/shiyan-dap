@@ -1032,3 +1032,11 @@ export function medicareCopyRecentKey(ev: { key?: unknown; ctrlKey?: unknown; me
     return { changed: n > 0, copied: n, toast: n > 0 ? `p → copied ${n} recent toast${n === 1 ? "" : "s"} JSON` : null };
   } catch { return null; }
 }
+
+/** Pure: Win strip "N needs review" chip — shown when ≥1 entry is needs_human_review; click toggles row filter to needs_human_review, re-click returns to All ("✓" when active). Mirrors look-back lookbackBeatenChip. Display/filter only. Never throws. */
+export function needsReviewChip(count: unknown, filter: unknown): { show: boolean; label: string; active: boolean; next: "needs_human_review" | null } {
+  const n = typeof count === "number" && Number.isFinite(count) ? Math.floor(count) : 0;
+  const active = filter === "needs_human_review";
+  if (n < 1) return { show: false, label: "", active: false, next: active ? "needs_human_review" : null };
+  return { show: true, label: `${n} needs review${active ? " ✓" : ""}`, active, next: active ? null : "needs_human_review" };
+}

@@ -1,6 +1,6 @@
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
-import { filterAllKey, filterAllChip } from "../src/lib/medicare/investigation";
+import { filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -804,3 +804,8 @@ console.log("ok review complete banner click action");
   assert.equal(K({ key: "e" }, 2), null); assert.equal(K(null, 2), null); assert.equal(K({ key: "p" }, NaN)?.changed, false);
   assert.equal(MEDICARE_KEYMAP.filter((r) => r.key === "p").length, 1);
   const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8") as string; assert.ok(src.includes("medicareCopyRecentKey(") && src.includes("new CustomEvent(MEDICARE_RECENT_COPY_EVENT, { detail: pk.toast })") && src.includes("MEDICARE_RECENT_COPIED_EVENT, { detail: at })")); console.log("medicareCopyRecentKey OK"); }
+
+{ const N = needsReviewChip; assert.equal(N(0, null).show, false); assert.equal(N(NaN, null).show, false); assert.equal(N("x", "needs_human_review").next, "needs_human_review");
+  assert.deepEqual(N(2, null), { show: true, label: "2 needs review", active: false, next: "needs_human_review" }); assert.deepEqual(N(1, "needs_human_review"), { show: true, label: "1 needs review ✓", active: true, next: null });
+  assert.equal(N(1, "has_note").next, "needs_human_review");
+  const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8") as string; assert.ok(src.includes("data-medicare-needs-review-chip") && src.includes("pick(nr.next)")); console.log("needsReviewChip OK"); }
