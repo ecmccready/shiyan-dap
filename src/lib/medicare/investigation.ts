@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -236,6 +236,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "y": case "Y": return { kind: "dispositions" };
       case "f": case "F": return { kind: "filter" };
       case "t": case "T": return { kind: "template" };
+      case "v": case "V": return { kind: "review_notes" };
       default: return null;
     }
   } catch { return null; }
@@ -269,13 +270,14 @@ export function keyToastText(a: DispositionShortcut, label: unknown): string | n
       case "filter": return "filter →";
       case "dispositions": return "copy dispositions JSON";
       case "handoff": return "📦 copy hand-off pack";
+      case "review_notes": return "review done → ✎";
       default: return null;
     }
   } catch { return null; }
 }
 
 /** What the key handler knows when a shortcut fires (display only). */
-export type KeyActionContext = { target_id?: string | null; target_status?: unknown; target_kind?: unknown; target_note?: unknown; can_undo?: boolean; can_redo?: boolean; ids?: unknown; button_ready?: boolean };
+export type KeyActionContext = { target_id?: string | null; target_status?: unknown; target_kind?: unknown; target_note?: unknown; can_undo?: boolean; can_redo?: boolean; ids?: unknown; button_ready?: boolean; complete?: boolean };
 /** Pure: true only when the shortcut will actually change state (or copy); gates the ⌨ toast. */
 export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | null | undefined): boolean {
   try {
@@ -288,6 +290,7 @@ export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | n
       case "note": return !!c.target_id && c.target_status !== "unreviewed" && DISPOSITION_STATUSES.includes(c.target_status as DispositionStatus);
       case "template": return !!c.target_id && firstAvailableTemplate(c.target_status, c.target_kind, c.target_note) !== null;
       case "filter": return true;
+      case "review_notes": return c.complete === true;
       case "dispositions": case "handoff": return !!c.button_ready;
       default: return false;
     }
@@ -433,6 +436,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "f", does: "cycle filter: All → unreviewed → needs review → cleared → has note" },
   { key: "y", does: "copy current dispositions JSON" },
   { key: "h", does: "copy 📦 hand-off pack" },
+  { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else clear the top toasts" },
 ];
@@ -826,4 +830,10 @@ export function reviewDoneNotesChip(complete: boolean, filter: RowFilter): { sho
   if (complete !== true) return { show: false, label: "", active: false, next: null };
   const active = filter === "has_note";
   return { show: true, label: `review done → ✎${active ? " ✓" : ""}`, active, next: active ? null : "has_note" };
+}
+
+/** Pure: next row filter for key v — same as the review done → ✎ chip; null result (no-op) when review is not complete. */
+export function reviewDoneNotesKey(complete: unknown, filter: RowFilter): { changes: boolean; next: RowFilter } {
+  try { const d = reviewDoneNotesChip(complete === true, filter); return d.show ? { changes: true, next: d.next } : { changes: false, next: filter }; }
+  catch { return { changes: false, next: filter }; }
 }
