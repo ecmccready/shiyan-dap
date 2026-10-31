@@ -1301,7 +1301,7 @@ export const MEDICARE_COPY_ROW_TOAST_EVENT = "medicare:copy-row-toast";
 /** Pure: stacked top-toast text after a successful ⧉ #1 / ⧉ Last copy (same text as the chip flash); "" when nothing was copied. Never throws. */
 export function medicareCopyRowToast(which: unknown, json: unknown): string {
   if (typeof json !== "string" || !json) return "";
-  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "second" ? "⧉ #2 → copied #2 row JSON" : which === "third" ? "⧉ #3 → copied #3 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : which === "all_rows" ? medicareAllRowsToast(json) : which === "notes" ? medicareNotesToast(json) : which === "statuses" ? medicareStatusesToast(json) : "";
+  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "second" ? "⧉ #2 → copied #2 row JSON" : which === "third" ? "⧉ #3 → copied #3 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : which === "all_rows" ? medicareAllRowsToast(json) : which === "notes" ? medicareNotesToast(json) : which === "statuses" ? medicareStatusesToast(json) : which === "progress" ? medicareProgressToast(json) : "";
 }
 
 /** Display-only: first-use (per session) pulse window for the sticky 📦 Hand-off chip. */
@@ -1638,4 +1638,25 @@ export function medicareStatusesToast(json: unknown): string {
 export function medicareCopyStatusesChip(report: unknown): { show: boolean; label: string; json: string; toast: string } {
   const json = medicareStatusesJson(report); if (!json) return { show: false, label: "", json: "", toast: "" };
   return { show: true, label: "⧉ Statuses", json, toast: medicareStatusesToast(json) };
+}
+
+/** Pure: compact review-progress pack — smaller than ⧉ Statuses (no rows), ⧉ Dispositions / y (whole envelope) and ⧉ Notes (note text). { schema, kind: "progress", reviewed, total, percent, complete, notes, handoff_ready, counts, elapsed_ms (number|null; null when no timer is available), report_hash (reference) }. "" when no rows. Never throws. */
+export function medicareProgressJson(report: unknown, elapsedMs: unknown = null): string {
+  try {
+    const r = report as Partial<InvestigationReport> | null; const es = Array.isArray(r?.entries) ? r!.entries! : [];
+    if (!es.length) return "";
+    const p = reviewProgress(report);
+    const notes = es.filter((e) => e && typeof (e as { note?: unknown }).note === "string" && (e as { note: string }).note.trim()).length;
+    const elapsed_ms = typeof elapsedMs === "number" && Number.isFinite(elapsedMs) && elapsedMs >= 0 ? Math.round(elapsedMs) : null;
+    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "progress", reviewed: p.reviewed, total: p.items, percent: p.percent, complete: p.items > 0 && p.reviewed === p.items, notes, handoff_ready: handoffReadyAnnotated(report).ready, counts: p.by_status, elapsed_ms, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null }, null, 2);
+  } catch { return ""; }
+}
+/** Pure: toast text for ⧉ Progress. */
+export function medicareProgressToast(json: unknown): string {
+  try { const o = typeof json === "string" && json ? JSON.parse(json) : null; return o && o.kind === "progress" ? `⧉ Progress → copied ${o.reviewed}/${o.total} progress JSON` : ""; } catch { return ""; }
+}
+/** Pure: sticky "⧉ Progress" chip. Hidden with no rows. Never throws. */
+export function medicareCopyProgressChip(report: unknown, elapsedMs: unknown = null): { show: boolean; label: string; json: string; toast: string } {
+  const json = medicareProgressJson(report, elapsedMs); if (!json) return { show: false, label: "", json: "", toast: "" };
+  const o = JSON.parse(json); return { show: true, label: `⧉ Progress ${o.reviewed}/${o.total}`, json, toast: medicareProgressToast(json) };
 }

@@ -1152,3 +1152,12 @@ import { medicareStatusesJson, medicareCopyStatusesChip, medicareStatusesToast }
   assert.equal(o.notes, undefined); assert.equal(o.entries, undefined); assert.equal(o.evidence, undefined);
   const ch = medicareCopyStatusesChip(rep); assert.equal(ch.label, "⧉ Statuses"); assert.equal(medicareCopyRowToast("statuses", ch.json), ch.toast); assert.ok(ch.toast.startsWith("⧉ Statuses → copied")); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
   console.log("sticky ⧉ Statuses chip OK"); }
+
+import { medicareProgressJson, medicareCopyProgressChip, medicareProgressToast } from "../src/lib/medicare/investigation";
+{ assert.equal(medicareProgressJson(null), ""); assert.equal(medicareCopyProgressChip({ entries: [] }).show, false); assert.equal(medicareProgressToast(""), "");
+  const rep = buildInvestigationReport({ pack: ev, dispositions: applyDispositionNote(nAll, ids[0], "entry error") }); const o = JSON.parse(medicareProgressJson(rep, 1234.4));
+  assert.equal(o.kind, "progress"); assert.equal(o.total, rep.entries.length); assert.equal(o.report_hash, rep.report_hash); assert.equal(o.elapsed_ms, 1234);
+  assert.equal(JSON.parse(medicareProgressJson(rep)).elapsed_ms, null); assert.equal(typeof o.complete, "boolean"); assert.equal(typeof o.handoff_ready, "boolean"); assert.ok(o.notes >= 1);
+  assert.equal(o.rows, undefined); assert.equal(o.entries, undefined); assert.ok(medicareProgressJson(rep).length < medicareStatusesJson(rep).length, "smaller than Statuses");
+  const ch = medicareCopyProgressChip(rep); assert.equal(medicareCopyRowToast("progress", ch.json), ch.toast); assert.ok(ch.toast.startsWith("⧉ Progress → copied")); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
+  console.log("sticky ⧉ Progress chip OK"); }
