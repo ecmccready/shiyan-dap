@@ -474,3 +474,10 @@ export function lookbackSummaryCopyPulse(startedAt: unknown, now: unknown, hasDa
   if (hasData !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_SUMMARY_COPY_PULSE_MS;
 }
+
+export const LOOKBACK_FILTER_PULSE_MS = 2400;
+/** Pure: true while the Show filter control should pulse — once per tab after the filter first leaves "all" (`startedAt` set then), for LOOKBACK_FILTER_PULSE_MS. Display only. */
+export function lookbackFilterPulse(startedAt: unknown, now: unknown, filter: unknown): boolean {
+  if (typeof filter !== "string" || filter === "all" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_FILTER_PULSE_MS;
+}
