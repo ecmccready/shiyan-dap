@@ -1126,6 +1126,14 @@ export function lookbackCopyTopStepsKey(ev: { key?: unknown; ctrlKey?: unknown; 
 export function lookbackCopyTopStepsChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ TOP steps", toast: "⧉ TOP steps → copied TOP steps JSON" } : null; } catch { return null; }
 }
+/** Pure: LAST-ranked path steps JSON (same payload as expanding LAST + key s), without expanding. Null with <2 paths. Never throws. */
+export function lookbackLastStepsJson(c: LookbackCompare | null | undefined): string | null {
+  try { if (!c) return null; const rs = rankedLookbackRows(c); if (rs.length < 2) return null; const r = rs[rs.length - 1]; if (!r || typeof r.run_id !== "string" || !r.run_id) return null; const j = pathStepsJson(r); return j || null; } catch { return null; }
+}
+/** Pure: sticky ⧉ Last steps chip — copies LAST steps JSON without expanding or moving focus. Null when no JSON. Never throws. */
+export function lookbackCopyLastStepsChip(json: unknown): { json: string; label: string; toast: string } | null {
+  try { return typeof json === "string" && json ? { json, label: "⧉ Last steps", toast: "⧉ Last steps → copied LAST steps JSON" } : null; } catch { return null; }
+}
 /** Pure: sticky ⧉ Last chip — copies LAST path JSON (same as key ;) without moving focus. Null with <2 paths. Never throws. */
 export function lookbackCopyLastChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ Last", toast: "⧉ Last → copied LAST path JSON" } : null; } catch { return null; }
