@@ -401,6 +401,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
   { key: "p", does: "copy Recent toasts JSON — same as sticky ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
+  { key: "z", does: "focus, expand and scroll to the LAST-ranked sealed path (bottom of the table), Show → All — mirrors 1 / 2 / 3; no-op with <2 paths" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -1032,4 +1033,22 @@ export function lookbackPilotPulse(seen: unknown, mountedAt: unknown, now: unkno
   if (typeof mountedAt !== "number" || typeof now !== "number" || !Number.isFinite(mountedAt) || !Number.isFinite(now)) return false;
   const d = now - mountedAt;
   return d >= 0 && d < LOOKBACK_PILOT_PULSE_MS;
+}
+
+/** Pure: run_id of the last-ranked sealed path (needs ≥2 ranked paths, else null). Never throws. */
+export function lookbackLastFocusTarget(c: LookbackCompare | null | undefined): string | null {
+  try { if (!c) return null; const rows = rankedLookbackRows(c); if (rows.length < 2) return null; const r = rows[rows.length - 1] as { run_id?: unknown } | undefined; return r && typeof r.run_id === "string" && r.run_id ? r.run_id : null; } catch { return null; }
+}
+
+/** Pure: key `z` → focus/expand/scroll to the last-ranked sealed path. Null when not z, modified, typing, or no target. `toast` only when effective. Never throws. */
+export function lookbackLastKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, last: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): { target: string; changed: boolean; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "z" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof last !== "string" || !last) return null;
+    const st = state ?? {};
+    const changed = !((st.filter ?? "all") === "all" && st.focus === last && st.open === last);
+    return { target: last, changed, toast: changed ? "z → last-ranked path" : null };
+  } catch { return null; }
 }
