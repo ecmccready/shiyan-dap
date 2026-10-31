@@ -481,3 +481,10 @@ export function lookbackFilterPulse(startedAt: unknown, now: unknown, filter: un
   if (typeof filter !== "string" || filter === "all" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_FILTER_PULSE_MS;
 }
+
+export const LOOKBACK_SORT_PULSE_MS = 2400;
+/** Pure: true while the Sort control should pulse — once per tab after sort first leaves look-back "rank" (`startedAt` set then), for LOOKBACK_SORT_PULSE_MS. Display only. */
+export function lookbackSortPulse(startedAt: unknown, now: unknown, sort: unknown): boolean {
+  if (typeof sort !== "string" || sort === "rank" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_SORT_PULSE_MS;
+}
