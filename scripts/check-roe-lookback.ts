@@ -443,6 +443,7 @@ console.log("Δe copy    -> sticky +Δe click copies summary JSON (same as g)");
   console.log("lookbackVerdictFilterChip OK"); }
 { const P = lookbackVerdictFilterPulse, M = LOOKBACK_VERDICT_FILTER_PULSE_MS; assert.equal(M, 2400); assert.equal(P(null, 5), false); assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + M - 1), true); assert.equal(P(1000, 1000 + M), false); assert.equal(P(1000, 999), false); assert.equal(P(NaN, 1), false);
   const S = lookbackVerdictFilterShouldPulse; assert.equal(S(false, "all", "winners"), true); assert.equal(S(false, "agree", "agree"), false); assert.equal(S(true, "all", "winners"), false); assert.equal(S(false, "all", undefined), false); console.log("lookbackVerdictFilterPulse OK"); }
+{ const vk = lookbackVerdictKey({ key: "v" }, "lookback", "all"); if (vk && vk.changed) { assert.equal(lookbackVerdictFilterShouldPulse(false, "all", vk.next), true); assert.equal(lookbackVerdictFilterShouldPulse(true, "all", vk.next), false); } const back = lookbackVerdictKey({ key: "v" }, "lookback", "winners"); if (back && back.changed) assert.equal(lookbackVerdictFilterShouldPulse(false, "winners", back.next), back.next !== "winners"); console.log("v key → verdict-filter pulse OK"); }
 
 { const K = lookbackVerdictKey;
   assert.deepEqual(K({ key: "v" }, "lookback", "all"), { next: "winners", changed: true, toast: "v → Show: ★ Winners (look-back wins)" });

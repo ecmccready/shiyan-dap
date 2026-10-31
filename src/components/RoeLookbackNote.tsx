@@ -59,7 +59,7 @@ export default function RoeLookbackNote() {
     const on = (ev: KeyboardEvent) => {
       const el = ev.target as HTMLElement | null;
       { const vk = lookbackVerdictKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable }, vkRef.current.winner, vkRef.current.filter);
-        if (vk) { ev.preventDefault(); if (vk.changed) { vkRef.current.filter = vk.next; setRoleFilter(vk.next); if (vk.toast) { const at = Date.now(); const txt = vk.toast; setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); } } return; } }
+        if (vk) { ev.preventDefault(); if (vk.changed) { const prevF = vkRef.current.filter; setVfPulseAt((pa) => (lookbackVerdictFilterShouldPulse(pa != null, prevF, vk.next) ? Date.now() : pa)); vkRef.current.filter = vk.next; setRoleFilter(vk.next); if (vk.toast) { const at = Date.now(); const txt = vk.toast; setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); } } return; } }
       const k = lookbackKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable });
       const btn = k === "compare" || k === "summary" ? document.querySelector<HTMLButtonElement>(k === "summary" ? "[data-copy-roe-summary]" : "[data-copy-roe-compare]") : null;
       const changes = lookbackKeyChanges(k, { visible: visibleRef.current, focus: focusRef.current, open: openRef.current, button_ready: !!btn && !btn.disabled });
