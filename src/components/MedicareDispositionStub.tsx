@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -164,7 +164,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       {pastToasts.length > 0 && (
         <div data-medicare-toast-history className="rounded-xl border-2 border-amber-300/80 bg-zinc-950 px-3 py-2 text-xs space-y-1">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-amber-300 font-semibold uppercase tracking-widest">Recent toasts · last {pastToasts.length} (click to re-copy)</p>
+            <p className="text-amber-300 font-semibold uppercase tracking-widest">Recent toasts · last {pastToasts.length} (click to re-copy · 📌 to re-show)</p>
             <button type="button" data-medicare-toast-history-clear title="Clear recent toasts (this tab)" onClick={() => setToastHist((h) => clearToastHistory(h, topStack))}
               className="rounded-full border border-amber-300 px-3 py-0.5 font-semibold text-amber-200 hover:bg-amber-300 hover:text-black">Clear</button>
           </div>
@@ -177,6 +177,9 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
                   className={`max-w-[28rem] truncate rounded-full border px-3 py-0.5 text-left font-semibold transition-colors ${pillCopied?.key === medicareToastCopyText(h) ? "border-emerald-300 bg-emerald-400 text-black ring-2 ring-emerald-300 motion-safe:animate-pulse" : h.tone === "amber" ? "border-amber-400 text-amber-200" : "border-emerald-400 text-emerald-200"}`}>
                   {medicareToastPillLabel(h, pillCopied, pillCopied ? pillCopied.at : 0)}
                 </button>
+                <button type="button" data-medicare-toast-history-restore={h.id} title="Re-show this toast at the top (this tab)" aria-label="Restore toast"
+                  onClick={() => { const r = restoreMedicareToast(h, topStack); if (!r) return; const txt = r.text; if (r.id === "complete") { setDoneToast(txt); window.setTimeout(() => expireToast("complete", () => setDoneToast((x) => (x === txt ? null : x))), COMPLETE_TOAST_MS); } else if (r.id === "handoff_ready") { setReadyToast(txt); window.setTimeout(() => expireToast("handoff_ready", () => setReadyToast((x) => (x === txt ? null : x))), HANDOFF_READY_TOAST_MS); } else { setEmptyToast(txt); window.setTimeout(() => expireToast("empty_filter", () => setEmptyToast((x) => (x === txt ? null : x))), EMPTY_ROW_FILTER_TOAST_MS); } }}
+                  className="ml-1 rounded-full border border-sky-400 px-2 py-0.5 font-semibold text-sky-200 hover:bg-sky-400 hover:text-black">📌 Restore</button>
               </li>
             ))}
           </ul>

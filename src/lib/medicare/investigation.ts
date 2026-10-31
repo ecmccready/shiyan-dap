@@ -394,6 +394,14 @@ export function clearToastHistory(hist: readonly ToastHistoryEntry[] | null | un
   return (hist ?? []).filter((h) => on.has(medicareToastCopyText(h)));
 }
 
+/** Pure: 📌 Restore on a Recent toasts pill — the toast to re-show as a live top toast ({ id, text }, same slot and timer as before), or null for bad input or when that exact toast is already on screen. A different toast in the same slot is replaced (it is already in history). Tab-local. */
+export function restoreMedicareToast(entry: { id?: unknown; text?: unknown; tone?: unknown } | null | undefined, showing: readonly { id: MedicareToastId; text: string; tone: "green" | "amber" }[] | null | undefined): { id: MedicareToastId; text: string } | null {
+  if (!entry || typeof entry.text !== "string" || !entry.text.trim() || !MEDICARE_TOAST_ORDER.includes(entry.id as MedicareToastId)) return null;
+  const id = entry.id as MedicareToastId;
+  if ((showing ?? []).some((t) => t.id === id && t.text === entry.text)) return null;
+  return { id, text: entry.text };
+}
+
 /** Pure: what Esc closes — the cheat sheet first if open, else the stacked top toasts if any, else nothing. */
 export function medicareEscTarget(helpOpen: unknown, toastCount: unknown): "help" | "toasts" | null {
   if (helpOpen === true) return "help";
