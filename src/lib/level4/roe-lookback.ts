@@ -495,3 +495,10 @@ export function lookbackExpandPulse(startedAt: unknown, now: unknown, openId: un
   if (typeof openId !== "string" || openId === "" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_EXPAND_PULSE_MS;
 }
+
+export const LOOKBACK_FOCUS_PULSE_MS = 2400;
+/** Pure: true while the focused row should pulse — once per tab after the first j/k focus move (`startedAt` set then), for LOOKBACK_FOCUS_PULSE_MS. Display only. */
+export function lookbackFocusPulse(startedAt: unknown, now: unknown, focusId: unknown): boolean {
+  if (typeof focusId !== "string" || focusId === "" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_FOCUS_PULSE_MS;
+}
