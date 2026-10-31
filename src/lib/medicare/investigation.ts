@@ -400,6 +400,13 @@ export function removeToastHistoryEntry(hist: readonly ToastHistoryEntry[] | nul
   return (hist ?? []).filter((h) => !k || medicareToastCopyText(h) !== k);
 }
 
+export const MEDICARE_TOAST_HISTORY_SCHEMA = "aethel.medicare.toast_history.v1";
+/** Pure: Copy all on the Recent toasts strip — the shown history (newest first) as one JSON pack { schema, domain_label, count, entries: [{ kind, text, tone }] }. Bad entries are skipped; input not mutated. Tab-local, nothing sent. */
+export function medicareToastHistoryJson(hist: readonly { id?: unknown; text?: unknown; tone?: unknown }[] | null | undefined): string {
+  const entries = (hist ?? []).filter((h) => h && typeof h.text === "string" && h.text.trim()).map((h) => ({ kind: String(h.id ?? ""), text: h.text as string, tone: h.tone === "amber" ? "amber" : "green" }));
+  return JSON.stringify({ schema: MEDICARE_TOAST_HISTORY_SCHEMA, domain_label: "medicare", count: entries.length, entries }, null, 2);
+}
+
 /** Pure: 📌 Restore on a Recent toasts pill — the toast to re-show as a live top toast ({ id, text }, same slot and timer as before), or null for bad input or when that exact toast is already on screen. A different toast in the same slot is replaced (it is already in history). Tab-local. */
 export function restoreMedicareToast(entry: { id?: unknown; text?: unknown; tone?: unknown } | null | undefined, showing: readonly { id: MedicareToastId; text: string; tone: "green" | "amber" }[] | null | undefined): { id: MedicareToastId; text: string } | null {
   if (!entry || typeof entry.text !== "string" || !entry.text.trim() || !MEDICARE_TOAST_ORDER.includes(entry.id as MedicareToastId)) return null;
