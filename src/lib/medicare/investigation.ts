@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "first_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | { kind: "copy_target_row" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "first_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | { kind: "copy_target_row" } | { kind: "copy_investigation" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -249,6 +249,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case ";": return { kind: "copy_last_row" };
       case "o": case "O": return { kind: "copy_brief" };
       case "s": case "S": return { kind: "copy_target_row" };
+      case "m": case "M": return { kind: "copy_investigation" };
       default: return null;
     }
   } catch { return null; }
@@ -534,6 +535,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: ";", does: "copy the last disposition row's JSON (report.entries[last], same shape as x / y) without moving focus; pairs with z / Last ↓; no-op with no rows" },
   { key: "s", does: "copy the targeted (selected) row's JSON — same shape as x / ;; follows j/k / click; key toast only after clipboard success; no-op with no target" },
   { key: "o", does: "copy the reviewed case brief — same as the sticky ⧉ Case brief chip / Copy (reviewed) case brief button; toast only after clipboard success; no-op with no dispositions" },
+  { key: "m", does: "copy the full investigation JSON — same as the Copy investigation JSON button (stacked toast only after clipboard success); no-op when the button is absent" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
@@ -1395,3 +1397,6 @@ export function firstUpPulse(pulseAt: unknown, now: unknown): boolean {
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < FIRST_UP_PULSE_MS;
 }
+
+/** m key: free key (r = redo, s = target row, o = brief) — "m" for "medicare investigation". Presses the existing Copy investigation JSON button; no new schema. */
+export const MEDICARE_INVESTIGATION_KEY = "m";

@@ -1003,3 +1003,11 @@ import { medicareCopyTargetRowChip as MCTRC, medicareCopyRowToast as MCRT } from
   assert.equal(MCTRC(es, null).show, false); assert.equal(MCTRC(es, "zz").show, false); assert.equal(MCTRC(null, "a").show, false); assert.equal(MCTRC(es, 7).show, false);
   assert.equal(MCRT("target", c.json), "⧉ Target → copied target row JSON"); assert.equal(MCRT("target", ""), "");
   console.log("ok medicareCopyTargetRowChip (⧉ Target = s without moving focus)"); }
+
+import { dispositionShortcut as DSM, MEDICARE_KEYMAP as MKM, MEDICARE_INVESTIGATION_KEY as MIK } from "../src/lib/medicare/investigation";
+{ const a = DSM({ key: "m" }); if (!a || a.kind !== "copy_investigation") throw new Error("m → copy_investigation");
+  if (DSM({ key: "M" })?.kind !== "copy_investigation") throw new Error("M → copy_investigation");
+  if (DSM({ key: "m", targetTag: "INPUT" }) !== null || DSM({ key: "m", ctrlKey: true }) !== null) throw new Error("m guarded");
+  if (DSM({ key: "r" })?.kind !== "redo") throw new Error("r still redo");
+  if (MIK !== "m" || !MKM.some((k) => k.key === "m")) throw new Error("m in keymap");
+  console.log("ok m key → copy investigation JSON"); }
