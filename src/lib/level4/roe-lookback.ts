@@ -417,6 +417,8 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "n", does: "copy the runner-up (#2) sealed path JSON without moving focus — same as sticky ⧉ #2 (shares its first-use pulse); pairs with 2 / x / ;; no-op with <2 paths" },
   { key: "h", does: "copy the #3-ranked sealed path JSON without moving focus — same as sticky ⧉ #3 (shares its first-use pulse); h = tHird (n = ruNner-up #2, 3 still jumps); no-op with <3 paths" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
+  { key: "[", does: "toggle Packs ▾ / Packs ▴ — same as clicking the sticky chip (toast on first open only)" },
+  { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
   { key: "*", does: "expand all ↔ collapse all sealed-path step lists — same as the sticky ⊞ Expand all / ⊟ Collapse all chip (shares its first-use pulse); no-op with no sealed paths" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -1598,4 +1600,11 @@ export const LOOKBACK_ESC_ORDER = ["help", "toasts", "packs", "jumps", "all", "r
 /** Pure: toast shown when Esc collapses a layer (null for help/toasts/row). */
 export function lookbackEscToast(t: unknown): string | null {
   return t === "packs" ? "Packs \u25be hidden (Esc)" : t === "jumps" ? "Jumps \u25be hidden (Esc)" : t === "all" ? "\u229f Collapsed all (Esc)" : null;
+}
+
+/** Pure: `[` → Packs toggle, `]` → Jumps toggle. Ignored with modifiers or while typing. Never throws. */
+export function lookbackStripToggleKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): "packs" | "jumps" | null {
+  if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+  if (typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase())) return null;
+  return ev.key === "[" ? "packs" : ev.key === "]" ? "jumps" : null;
 }
