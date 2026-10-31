@@ -1095,3 +1095,10 @@ export function clearedPulse(startedAt: unknown, now: unknown): boolean {
 export function clearedShouldPulse(alreadyPulsed: unknown, current: unknown, next: unknown): boolean {
   return alreadyPulsed !== true && (current ?? null) !== (next ?? null);
 }
+/** Pure: "N unreviewed" filter toggle chip — toggles row filter unreviewed ↔ All (mirrors N cleared / N needs review). Never throws. */
+export function unreviewedFilterChip(count: unknown, filter: unknown): { show: boolean; label: string; active: boolean; next: "unreviewed" | null } {
+  const n = typeof count === "number" && Number.isFinite(count) ? Math.floor(count) : 0;
+  const active = filter === "unreviewed";
+  if (n < 1) return { show: false, label: "", active: false, next: active ? "unreviewed" : null };
+  return { show: true, label: `${n} unreviewed${active ? " ✓" : ""}`, active, next: active ? null : "unreviewed" };
+}
