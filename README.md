@@ -340,3 +340,5 @@ Proprietary. All rights reserved by the owner. Commercial licensing and paid use
 - **Medicare · cheat sheet pulse:** the first time the keyboard cheat sheet opens in the tab (`?` or the ? button), its panel glows amber and pulses for ~2.4 s (`cheatsheetPulse`, `CHEATSHEET_PULSE_MS`, `data-pulsing`). Once per tab; respects reduced motion; display only.
 
 - **ROE look-back · top path steps:** the sticky summary strip shows the top-ranked path's step count ("top N steps") next to verdict, +Δe and ΔΦ (pure `lookbackTopSteps`, `data-roe-summary-top-steps`; hover shows run id). Display only; hidden when no sealed paths. Beside it, "· greedy M steps" shows the greedy path's step count when greedy is a different run (pure `lookbackGreedySteps`, `data-roe-summary-greedy-steps`). When the counts differ, a chip shows "+N steps vs greedy" / "−N steps vs greedy" (pure `lookbackStepsDelta`, `data-roe-summary-steps-delta`); hidden when equal.
+
+- Medicare: the Win-strip **status mix** chip is clickable — each click cycles the disposition row filter (All → unreviewed → needs review → cleared → has note), same as `f`.
