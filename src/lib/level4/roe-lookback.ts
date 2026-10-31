@@ -471,6 +471,13 @@ export function lookbackComparePulse(startedAt: unknown, now: unknown, winner: u
   return now >= startedAt && now - startedAt < LOOKBACK_COMPARE_PULSE_MS;
 }
 
+export const LOOKBACK_COMPARE_COPY_PULSE_MS = 2400;
+/** Pure: true while the ⚖ Copy compare pack button should pulse after the first successful user-initiated compare copy (m, click, or verdict) — once per tab (`startedAt` set on first "copied"), for LOOKBACK_COMPARE_COPY_PULSE_MS. Distinct from the beats-greedy mount pulse. Display only. */
+export function lookbackCompareCopyPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_COMPARE_COPY_PULSE_MS;
+}
+
 export const LOOKBACK_SUMMARY_COPY_PULSE_MS = 2400;
 /** Pure: true while the sticky strip's Copy summary JSON button should pulse — once per tab after the strip first has data (`startedAt` set when lookbackSummaryJson first returns non-empty), for LOOKBACK_SUMMARY_COPY_PULSE_MS. Display only. */
 export function lookbackSummaryCopyPulse(startedAt: unknown, now: unknown, hasData: unknown): boolean {
