@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -241,6 +241,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "a": case "A": return { kind: "filter_all" };
       case "i": case "I": return { kind: "incomplete" };
       case "b": case "B": return { kind: "needs_review" };
+      case "c": case "C": return { kind: "cleared" };
       default: return null;
     }
   } catch { return null; }
@@ -279,6 +280,7 @@ export function keyToastText(a: DispositionShortcut, label: unknown): string | n
       case "filter_all": return "filter → All";
       case "incomplete": return "↓ first unreviewed";
       case "needs_review": return "filter → needs review / All";
+      case "cleared": return "filter → cleared / All";
       default: return null;
     }
   } catch { return null; }
@@ -303,6 +305,7 @@ export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | n
       case "filter_all": return filterAllKey(c.row_filter).changes;
       case "incomplete": return incompleteKey(c.entries).changes;
       case "needs_review": return needsReviewKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "needs_human_review").length : 0, c.row_filter).changes;
+      case "cleared": return clearedKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "cleared_pattern_only").length : 0, c.row_filter).changes;
       case "dispositions": case "handoff": return !!c.button_ready;
       default: return false;
     }
@@ -451,6 +454,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "i", does: "jump to the first unreviewed disposition (same as N unreviewed left / review progress)" },
   { key: "a", does: "reset row filter to All (no-op when already All)" },
   { key: "b", does: "toggle row filter needs_human_review ↔ All (same as N needs review chip)" },
+  { key: "c", does: "toggle row filter cleared_pattern_only ↔ All (same as N cleared chip)" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
@@ -1062,5 +1066,32 @@ export function needsReviewPulse(startedAt: unknown, now: unknown): boolean {
 }
 /** Pure: pulse once per session, only when the filter actually changes (chip or `b`). */
 export function needsReviewShouldPulse(alreadyPulsed: unknown, current: unknown, next: unknown): boolean {
+  return alreadyPulsed !== true && (current ?? null) !== (next ?? null);
+}
+
+/** Pure: Win strip "N cleared" chip — shown when ≥1 entry is cleared_pattern_only; click toggles row filter to cleared_pattern_only, re-click returns to All ("✓" when active). Mirrors needsReviewChip. Display/filter only. Never throws. */
+export function clearedChip(count: unknown, filter: unknown): { show: boolean; label: string; active: boolean; next: "cleared_pattern_only" | null } {
+  const n = typeof count === "number" && Number.isFinite(count) ? Math.floor(count) : 0;
+  const active = filter === "cleared_pattern_only";
+  if (n < 1) return { show: false, label: "", active: false, next: active ? "cleared_pattern_only" : null };
+  return { show: true, label: `${n} cleared${active ? " ✓" : ""}`, active, next: active ? null : "cleared_pattern_only" };
+}
+/** Pure: key `c` (was free) — toggles row filter cleared_pattern_only ↔ All, same as the N cleared chip. Never throws. */
+export function clearedKey(count: unknown, current: unknown): { changes: boolean; next: "cleared_pattern_only" | null } {
+  try {
+    const c = clearedChip(count, current);
+    if (current === "cleared_pattern_only") return { changes: true, next: null };
+    return { changes: c.show, next: c.show ? "cleared_pattern_only" : null };
+  } catch { return { changes: false, next: null }; }
+}
+export const CLEARED_PULSE_MS = 2400;
+export const MEDICARE_CLEARED_PULSE_EVENT = "medicare:cleared-pulse";
+/** Pure: true while the N cleared chip glows after its first filter change. Never throws. */
+export function clearedPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < CLEARED_PULSE_MS;
+}
+/** Pure: pulse once per session, only when the filter actually changes (chip or `c`). */
+export function clearedShouldPulse(alreadyPulsed: unknown, current: unknown, next: unknown): boolean {
   return alreadyPulsed !== true && (current ?? null) !== (next ?? null);
 }

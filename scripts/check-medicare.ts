@@ -1,6 +1,6 @@
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
-import { needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
+import { clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -820,3 +820,13 @@ console.log("ok review complete banner click action");
   assert.equal(keyToastText({ kind: "needs_review" }, ""), "filter → needs review / All"); assert.ok(MEDICARE_KEYMAP.some((k) => k.key === "b"));
   const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8") as string; assert.ok(src.includes("data-medicare-needs-review-pulsing"));
   console.log("needsReviewKey/Pulse OK"); }
+
+{ const C = clearedChip; assert.equal(C(0, null).show, false); assert.deepEqual(C(2, null), { show: true, label: "2 cleared", active: false, next: "cleared_pattern_only" }); assert.deepEqual(C(1, "cleared_pattern_only"), { show: true, label: "1 cleared ✓", active: true, next: null }); assert.equal(C(NaN, "cleared_pattern_only").next, "cleared_pattern_only");
+  const K = clearedKey; assert.deepEqual(K(1, null), { changes: true, next: "cleared_pattern_only" }); assert.deepEqual(K(0, null), { changes: false, next: null }); assert.deepEqual(K(0, "cleared_pattern_only"), { changes: true, next: null }); assert.deepEqual(K(1, "has_note"), { changes: true, next: "cleared_pattern_only" });
+  assert.equal(clearedPulse(10, 10), true); assert.equal(clearedPulse(10, 10 + CLEARED_PULSE_MS), false); assert.equal(clearedPulse(null, 1), false);
+  assert.equal(clearedShouldPulse(false, null, "cleared_pattern_only"), true); assert.equal(clearedShouldPulse(true, null, "cleared_pattern_only"), false); assert.equal(clearedShouldPulse(false, null, null), false);
+  assert.deepEqual(dispositionShortcut({ key: "c" }), { kind: "cleared" }); assert.equal(dispositionShortcut({ key: "c", targetTag: "INPUT" }), null);
+  assert.equal(keyActionChanges({ kind: "cleared" }, { entries: [{ status: "cleared_pattern_only" }], row_filter: null }), true); assert.equal(keyActionChanges({ kind: "cleared" }, { entries: [{ status: "unreviewed" }], row_filter: null }), false);
+  assert.equal(keyToastText({ kind: "cleared" }, ""), "filter → cleared / All"); assert.equal(MEDICARE_KEYMAP.filter((k) => k.key === "c").length, 1);
+  const fs = require("fs"), path = require("path"); assert.ok((fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8") as string).includes("data-medicare-cleared-chip")); assert.ok((fs.readFileSync(path.join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8") as string).includes("clearedKey("));
+  console.log("clearedChip/Key/Pulse OK"); }
