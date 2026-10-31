@@ -1011,3 +1011,11 @@ import { dispositionShortcut as DSM, MEDICARE_KEYMAP as MKM, MEDICARE_INVESTIGAT
   if (DSM({ key: "r" })?.kind !== "redo") throw new Error("r still redo");
   if (MIK !== "m" || !MKM.some((k) => k.key === "m")) throw new Error("m in keymap");
   console.log("ok m key → copy investigation JSON"); }
+
+import { medicareInvestigationChip, medicareInvestigationChipCopiedOk, medicareInvestigationChipShouldPulse, medicareInvestigationChipPulse, MEDICARE_INVESTIGATION_CHIP_PULSE_MS } from "../src/lib/medicare/investigation";
+{ assert.equal(medicareInvestigationChip(null).show, false); assert.equal(medicareInvestigationChip({ entries: [] }).show, false);
+  assert.deepEqual(medicareInvestigationChip(inv), { show: true, label: "⧉ Investigation", toast: "copied investigation JSON" });
+  assert.equal(medicareInvestigationChipCopiedOk(1000, 2000, "investigation"), true); assert.equal(medicareInvestigationChipCopiedOk(1000, 2000, "brief"), false); assert.equal(medicareInvestigationChipCopiedOk(1000, 5000, "investigation"), false); assert.equal(medicareInvestigationChipCopiedOk(null, 2000, "investigation"), false);
+  assert.equal(medicareInvestigationChipShouldPulse(false, true), true); assert.equal(medicareInvestigationChipShouldPulse(true, true), false); assert.equal(medicareInvestigationChipShouldPulse(false, false), false);
+  assert.equal(medicareInvestigationChipPulse(0, MEDICARE_INVESTIGATION_CHIP_PULSE_MS - 1), true); assert.equal(medicareInvestigationChipPulse(0, MEDICARE_INVESTIGATION_CHIP_PULSE_MS), false); assert.equal(medicareInvestigationChipPulse(null, 1), false);
+  console.log("sticky ⧉ Investigation chip OK"); }

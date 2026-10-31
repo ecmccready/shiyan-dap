@@ -1400,3 +1400,14 @@ export function firstUpPulse(pulseAt: unknown, now: unknown): boolean {
 
 /** m key: free key (r = redo, s = target row, o = brief) — "m" for "medicare investigation". Presses the existing Copy investigation JSON button; no new schema. */
 export const MEDICARE_INVESTIGATION_KEY = "m";
+
+/** Pure: sticky "⧉ Investigation" chip — presses the page-level Copy investigation JSON button (same as m). Shown when the report has entries. Never throws. */
+export function medicareInvestigationChip(report: unknown): { show: boolean; label: string; toast: string } {
+  try { const e = (report as { entries?: unknown } | null)?.entries; return Array.isArray(e) && e.length > 0 ? { show: true, label: "⧉ Investigation", toast: "copied investigation JSON" } : { show: false, label: "", toast: "" }; } catch { return { show: false, label: "", toast: "" }; }
+}
+/** Pure: chip "Copied ✓" / first-use pulse fires only for its own (or m's) pending press when the investigation copy succeeded within 3s. */
+export function medicareInvestigationChipCopiedOk(pendingAt: unknown, now: unknown, kind: unknown): boolean { return kind === "investigation" && medicareDispositionsChipCopiedOk(pendingAt, now); }
+export const MEDICARE_INVESTIGATION_CHIP_PULSE_MS = 1600;
+/** Pure: first-use pulse once per page view (shared by chip click and m). */
+export function medicareInvestigationChipShouldPulse(alreadyPulsed: unknown, ok: unknown): boolean { return alreadyPulsed !== true && ok === true; }
+export function medicareInvestigationChipPulse(at: unknown, now: unknown): boolean { return typeof at === "number" && typeof now === "number" && now >= at && now - at < MEDICARE_INVESTIGATION_CHIP_PULSE_MS; }
