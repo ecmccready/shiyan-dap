@@ -1063,6 +1063,12 @@ export function lookbackLastChip(c: LookbackCompare | null | undefined): { targe
   try { const t = lookbackLastFocusTarget(c); return typeof t === "string" && t ? { target: t, label: "Last ↓" } : null; } catch { return null; }
 }
 
+/** Pure: sticky "First ↑" chip model — visible pair for Last ↓; null with <2 ranked paths (with 1 path #1 suffices).
+ *  Click = key 1 / #1 chip (TOP sealed path: filter All, focus, expand, scroll, TOP pulse). No new key: g is taken (copy summary), 1 already jumps. Never throws. */
+export function lookbackFirstUpChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
+  try { if (!lookbackLastFocusTarget(c)) return null; const t = lookbackTopFocusTarget(c); return typeof t === "string" && t ? { target: t, label: "First ↑" } : null; } catch { return null; }
+}
+
 /** Display-only: first-use (per session) pulse window for the sticky Last ↓ chip. */
 export const LOOKBACK_LAST_PULSE_MS = 1200;
 /** Pure: start the Last ↓ pulse only on first use (chip or z) this session, with a target. Never throws. */
