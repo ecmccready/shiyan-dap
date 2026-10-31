@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_RECENT_STATE_EVENT, MEDICARE_RECENT_CLEAR_EVENT, medicareRecentChip, MEDICARE_TOASTS_STATE_EVENT, MEDICARE_TOASTS_CLEAR_EVENT, medicareToastsChip, MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, undoDepthChip, MEDICARE_UNDO_DEPTH_EVENT, MEDICARE_UNDO_REQUEST_EVENT, redoDepthChip, MEDICARE_REDO_DEPTH_EVENT, MEDICARE_REDO_REQUEST_EVENT, cheatsheetOpenChip, MEDICARE_HELP_STATE_EVENT, MEDICARE_HELP_CLOSE_EVENT, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_RECENT_COPY_EVENT, MEDICARE_RECENT_COPIED_EVENT, medicareCopyRecentChip, TOAST_PILL_COPIED_MS, MEDICARE_RECENT_STATE_EVENT, MEDICARE_RECENT_CLEAR_EVENT, medicareRecentChip, MEDICARE_TOASTS_STATE_EVENT, MEDICARE_TOASTS_CLEAR_EVENT, medicareToastsChip, MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, undoDepthChip, MEDICARE_UNDO_DEPTH_EVENT, MEDICARE_UNDO_REQUEST_EVENT, redoDepthChip, MEDICARE_REDO_DEPTH_EVENT, MEDICARE_REDO_REQUEST_EVENT, cheatsheetOpenChip, MEDICARE_HELP_STATE_EVENT, MEDICARE_HELP_CLOSE_EVENT, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -19,6 +19,8 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
   const [helpOpen, setHelpOpen] = useState(false);
   const [toastCount, setToastCount] = useState(0);
   const [recentCount, setRecentCount] = useState(0);
+  const [copyRecentAt, setCopyRecentAt] = useState<number | null>(null);
+  useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; const at = typeof d === "number" ? d : Date.now(); setCopyRecentAt(at); window.setTimeout(() => setCopyRecentAt((x) => (x === at ? null : x)), TOAST_PILL_COPIED_MS); }; window.addEventListener(MEDICARE_RECENT_COPIED_EVENT, on); return () => window.removeEventListener(MEDICARE_RECENT_COPIED_EVENT, on); }, []);
   useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setRecentCount(typeof d === "number" ? d : 0); }; window.addEventListener(MEDICARE_RECENT_STATE_EVENT, on); return () => window.removeEventListener(MEDICARE_RECENT_STATE_EVENT, on); }, []);
   useEffect(() => { const on = (ev: Event) => { const d = (ev as CustomEvent<unknown>).detail; setToastCount(typeof d === "number" ? d : 0); }; window.addEventListener(MEDICARE_TOASTS_STATE_EVENT, on); return () => window.removeEventListener(MEDICARE_TOASTS_STATE_EVENT, on); }, []);
   useEffect(() => { const on = (ev: Event) => setHelpOpen((ev as CustomEvent<unknown>).detail === true); window.addEventListener(MEDICARE_HELP_STATE_EVENT, on); return () => window.removeEventListener(MEDICARE_HELP_STATE_EVENT, on); }, []);
@@ -125,6 +127,10 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
         {(() => { const rc = medicareRecentChip(recentCount); return rc.show ? (
           <button type="button" data-medicare-recent-chip={recentCount} onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_RECENT_CLEAR_EVENT))} title="Click to Clear recent toasts (same as Recent → Clear) · on-screen toasts kept"
             className="rounded-full border border-amber-400/60 px-3 py-1 text-xs font-mono text-amber-200 hover:border-amber-300 hover:bg-white/10">{rc.label}</button>
+        ) : null; })()}
+        {(() => { const cr = medicareCopyRecentChip(recentCount, copyRecentAt, copyRecentAt ?? 0); return cr.show ? (
+          <button type="button" data-medicare-copy-recent-chip={recentCount} data-medicare-copy-recent-copied={cr.copied ? "" : undefined} onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_RECENT_COPY_EVENT))} title="Copy Recent toasts JSON (same as Recent → ⧉ Copy all)"
+            className={cr.copied ? "rounded-full border border-green-400 bg-green-500 px-3 py-1 text-xs font-mono font-semibold text-black motion-safe:animate-pulse" : "rounded-full border border-amber-400/60 px-3 py-1 text-xs font-mono text-amber-200 hover:border-amber-300 hover:bg-white/10"}>{cr.label}</button>
         ) : null; })()}
         {(() => { const hc = cheatsheetOpenChip(helpOpen); return hc.show ? (
           <button type="button" data-medicare-cheatsheet-chip onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_HELP_CLOSE_EVENT))} title="Keyboard cheat sheet is open — click to close (same as Esc)"

@@ -801,3 +801,13 @@ export function medicareRecentChip(history: readonly unknown[] | number | null |
   const n = Array.isArray(history) ? history.length : typeof history === "number" && Number.isFinite(history) && history > 0 ? Math.floor(history) : 0;
   return n < 1 ? { show: false, label: "" } : { show: true, label: `${n} recent ✕` };
 }
+
+export const MEDICARE_RECENT_COPY_EVENT = "medicare:recent-copy";
+export const MEDICARE_RECENT_COPIED_EVENT = "medicare:recent-copied";
+/** Pure: Win-strip "⧉ Copy recent" chip while Recent toasts has ≥1 entry; click copies the same JSON as Recent → ⧉ Copy all and flashes "✓ Copied" for TOAST_PILL_COPIED_MS. Mirrors lookbackCopyRecentChip. Never throws. */
+export function medicareCopyRecentChip(history: readonly unknown[] | number | null | undefined, copiedAt: number | null | undefined, now: number): { show: boolean; label: string; copied: boolean } {
+  const n = Array.isArray(history) ? history.length : typeof history === "number" && Number.isFinite(history) && history > 0 ? Math.floor(history) : 0;
+  if (n < 1) return { show: false, label: "", copied: false };
+  const copied = typeof copiedAt === "number" && Number.isFinite(copiedAt) && Number.isFinite(now) && now >= copiedAt && now - copiedAt < TOAST_PILL_COPIED_MS;
+  return { show: true, label: copied ? "✓ Copied" : "⧉ Copy recent", copied };
+}
