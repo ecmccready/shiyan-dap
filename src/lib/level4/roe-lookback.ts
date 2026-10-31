@@ -1057,3 +1057,15 @@ export function lookbackLastKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?
 export function lookbackLastChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
   try { const t = lookbackLastFocusTarget(c); return typeof t === "string" && t ? { target: t, label: "Last ↓" } : null; } catch { return null; }
 }
+
+/** Display-only: first-use (per session) pulse window for the sticky Last ↓ chip. */
+export const LOOKBACK_LAST_PULSE_MS = 1200;
+/** Pure: start the Last ↓ pulse only on first use (chip or z) this session, with a target. Never throws. */
+export function lookbackLastShouldPulse(alreadyPulsed: unknown, target: unknown): boolean {
+  return alreadyPulsed !== true && typeof target === "string" && target.length > 0;
+}
+/** Pure: Last ↓ chip is pulsing while within the window after the first-use timestamp. Never throws. */
+export function lookbackLastPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LOOKBACK_LAST_PULSE_MS;
+}
