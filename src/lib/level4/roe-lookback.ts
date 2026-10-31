@@ -373,10 +373,12 @@ export function restoreLookbackToast(entry: { id?: unknown; text?: unknown; tone
   if ((showing ?? []).some((t) => t.id === id && t.text === entry.text)) return null;
   return { id, text: entry.text };
 }
-/** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then ⊞ Expand all (same as ⊟ Collapse all), then the expanded row. */
-export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown, allOpen?: unknown): "help" | "toasts" | "all" | "row" | null {
+/** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then Packs ▴ (open), then Jumps ▴ (open), then ⊞ Expand all (same as ⊟ Collapse all), then the expanded row. */
+export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown, allOpen?: unknown, packsOpen?: unknown, jumpsOpen?: unknown): "help" | "toasts" | "packs" | "jumps" | "all" | "row" | null {
   if (helpOpen === true) return "help";
   if (typeof toastCount === "number" && toastCount > 0) return "toasts";
+  if (packsOpen === true) return "packs";
+  if (jumpsOpen === true) return "jumps";
   if (allOpen === true) return "all";
   return typeof openRow === "string" && openRow ? "row" : null;
 }
@@ -384,7 +386,7 @@ export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRo
 export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "j / k", does: "move the row focus down / up" },
   { key: "Enter", does: "expand / collapse the focused row's steps" },
-  { key: "Escape", does: "close this sheet, then the top toasts, then ⊞ Expand all (collapse all), then the expanded row" },
+  { key: "Escape", does: "close this sheet, then the top toasts, then Packs ▴, then Jumps ▴, then ⊞ Expand all (collapse all), then the expanded row" },
   { key: "c", does: "copy the focused row's path JSON" },
   { key: "s", does: "expand and copy the focused row's steps JSON" },
   { key: "m", does: "copy ⚖ compare pack" },
@@ -1589,4 +1591,11 @@ export function lookbackJumpsToggle(open: unknown, everOpened: unknown): { next:
 export function lookbackJumpsPulse(at: unknown, now: unknown): boolean {
   if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
   const d = now - at; return d >= 0 && d < LOOKBACK_JUMPS_PULSE_MS;
+}
+
+/** Esc priority order (one layer per press). */
+export const LOOKBACK_ESC_ORDER = ["help", "toasts", "packs", "jumps", "all", "row"] as const;
+/** Pure: toast shown when Esc collapses a layer (null for help/toasts/row). */
+export function lookbackEscToast(t: unknown): string | null {
+  return t === "packs" ? "Packs \u25be hidden (Esc)" : t === "jumps" ? "Jumps \u25be hidden (Esc)" : t === "all" ? "\u229f Collapsed all (Esc)" : null;
 }
