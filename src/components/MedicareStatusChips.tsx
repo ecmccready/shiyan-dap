@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, statusMix, notesNudge, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -73,7 +73,9 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
       ) : null; })()}
       {(() => { const n = notesNudge(r); return n.show ? (
         <div role="status" data-medicare-notes-nudge className="rounded-xl border-2 border-sky-400 bg-sky-500/15 px-3 py-2 text-sm text-sky-100">
-          <span className="mr-2 rounded-full bg-sky-400 text-black px-2 py-0.5 text-xs font-bold">✎ Add notes?</span>
+          <button type="button" data-medicare-notes-nudge-jump={firstRowWithoutNote(r).item_id ?? ""} title="Jump to the first row without a note and focus its note field"
+            onClick={() => { const id = firstRowWithoutNote(r).item_id; if (!id) return; const inp = document.querySelector<HTMLInputElement>(`[data-medicare-note="${CSS.escape(id)}"]`); if (!inp) { document.getElementById("medicare-disposition-list")?.scrollIntoView({ behavior: "smooth", block: "start" }); return; } inp.scrollIntoView({ behavior: "smooth", block: "center" }); window.setTimeout(() => { if (!inp.disabled) inp.focus({ preventScroll: true }); }, 400); }}
+            className="mr-2 rounded-full bg-sky-400 text-black px-2 py-0.5 text-xs font-bold hover:ring-2 hover:ring-white">✎ Add notes? ↓</button>
           {n.message} <a href="#medicare-disposition-list" className="underline font-semibold">Go to dispositions ↓</a>
         </div>
       ) : null; })()}

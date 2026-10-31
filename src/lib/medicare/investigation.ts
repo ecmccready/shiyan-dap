@@ -517,6 +517,21 @@ export function notesNudge(report: unknown): { show: boolean; message: string } 
   } catch { return { show: false, message: "" }; }
 }
 
+/** Pure: first reviewed entry with no note — target for the ✎ Add notes? nudge jump. */
+export function firstRowWithoutNote(report: unknown): { item_id: string | null } {
+  try {
+    const es = (report as { entries?: unknown })?.entries;
+    if (!Array.isArray(es)) return { item_id: null };
+    for (const e of es) {
+      const x = e as { item_id?: unknown; status?: unknown; note?: unknown };
+      if (typeof x?.item_id !== "string" || x.status === "unreviewed") continue;
+      if (typeof x.note === "string" && x.note.trim()) continue;
+      return { item_id: x.item_id };
+    }
+    return { item_id: null };
+  } catch { return { item_id: null }; }
+}
+
 /** Pure: annotated hand-off ready = review complete and at least one reviewer note. */
 export function handoffReadyAnnotated(report: unknown): { ready: boolean; label: string } {
   try {
