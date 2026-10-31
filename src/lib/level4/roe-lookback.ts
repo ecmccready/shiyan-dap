@@ -818,3 +818,8 @@ export function lookbackThirdPulse(startedAt: unknown, now: unknown): boolean {
 export function lookbackThirdShouldPulse(alreadyPulsed: unknown, third: unknown): boolean {
   return alreadyPulsed !== true && typeof third === "string" && third.length > 0;
 }
+
+/** Pure: sticky "#2" chip model — null with <2 sealed paths; shares the runner-up pulse. Never throws. */
+export function lookbackSecondChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
+  try { const r = lookbackRunnerUpLeadChip(c); return r && typeof r.runner_up === "string" && r.runner_up ? { target: r.runner_up, label: "#2" } : null; } catch { return null; }
+}
