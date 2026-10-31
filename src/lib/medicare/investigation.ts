@@ -514,6 +514,15 @@ export function rowMatchesFilter(entry: { status?: unknown; note?: unknown } | n
   if (filter === "has_note") return typeof entry.note === "string" && entry.note.trim() !== "";
   return entry.status === filter;
 }
+/** Pure: "K of N shown" chip when a row filter is active (not All); click resets to All. */
+export function filterShownChip(report: unknown, filter: RowFilter): { shown: number; total: number; label: string; show: boolean } {
+  try {
+    const entries = (report as InvestigationReport)?.entries;
+    if (filter === null || filter === undefined || !Array.isArray(entries) || !entries.length) return { shown: 0, total: 0, label: "", show: false };
+    const shown = entries.filter((e) => rowMatchesFilter(e as { status?: unknown; note?: unknown }, filter)).length;
+    return { shown, total: entries.length, label: `${shown} of ${entries.length} shown`, show: true };
+  } catch { return { shown: 0, total: 0, label: "", show: false }; }
+}
 /** Pure: row emphasis under a row filter: "all", "match" or "dim". */
 export function rowFilterEmphasis(entry: { status?: unknown; note?: unknown } | null | undefined, filter: RowFilter): "all" | "match" | "dim" {
   return filter === null ? "all" : rowMatchesFilter(entry, filter) ? "match" : "dim";
