@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -72,6 +72,15 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     window.addEventListener(MEDICARE_FILTER_EVENT, on);
     return () => window.removeEventListener(MEDICARE_FILTER_EVENT, on);
   }, []);
+  const rowFilterPulsedRef = useRef(false);
+  const [rowFilterPulseAt, setRowFilterPulseAt] = useState<number | null>(null);
+  const [rowFilterPulseNow, setRowFilterPulseNow] = useState(0);
+  useEffect(() => {
+    if (!filter || rowFilterPulsedRef.current) return;
+    rowFilterPulsedRef.current = true; const t = Date.now(); setRowFilterPulseAt(t); setRowFilterPulseNow(t);
+    const id = setTimeout(() => setRowFilterPulseNow(Date.now()), ROW_FILTER_PULSE_MS); return () => clearTimeout(id);
+  }, [filter]);
+  const rowFilterPulsing = rowFilterPulse(rowFilterPulseAt, rowFilterPulseNow, filter);
   const report = useMemo(() => buildInvestigationReport({ pack, dispositions: disp }), [pack, disp]);
   const progress = useMemo(() => reviewProgress(report), [report]);
   const toastHoverRef = useRef(false);
@@ -198,7 +207,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       </p>
       <ProgressBar p={progress} />
       {filter && (
-        <p className="text-xs text-zinc-300" data-medicare-filter-note>Filtered: {filter === "has_note" ? "rows with notes" : filter} ({report.entries.filter((e) => rowMatchesFilter(e, filter)).length}) · <button type="button" className="underline" onClick={() => { setFilter(null); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: null })); }}>Show all</button></p>
+        <p className={`text-xs text-zinc-300 rounded${rowFilterPulsing ? " ring-4 ring-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.8)] motion-safe:animate-pulse" : ""}`} data-medicare-filter-note data-pulsing={rowFilterPulsing ? "1" : undefined}>Filtered: {filter === "has_note" ? "rows with notes" : filter} ({report.entries.filter((e) => rowMatchesFilter(e, filter)).length}) · <button type="button" className="underline" onClick={() => { setFilter(null); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: null })); }}>Show all</button></p>
       )}
       {filter && (() => {
         const visible = report.entries.filter((e) => rowMatchesFilter(e, filter)).map((e) => e.item_id);

@@ -2,7 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS } from "../src/lib/medicare/investigation";
+import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
@@ -577,3 +577,6 @@ console.log("OK");
   assert.equal(reviewProgressStartPulse(1000, 1500, 0), false, "back to 0 stops pulse");
   assert.equal(reviewProgressStartPulse(1000, 999, 1), false); assert.equal(reviewProgressStartPulse("x", 1000, 1), false); assert.equal(reviewProgressStartPulse(1000, NaN, 1), false); assert.equal(reviewProgressStartPulse(1000, 1000, "1"), false);
   console.log("review progress start pulse OK"); }
+
+{ const P = rowFilterPulse, M = ROW_FILTER_PULSE_MS; assert.equal(M, 2400); assert.equal(P(null, 5, "has_note"), false); assert.equal(P(1000, 1000, "needs_human_review"), true); assert.equal(P(1000, 1000 + M - 1, "has_note"), true);
+  assert.equal(P(1000, 1000 + M, "has_note"), false); assert.equal(P(1000, 1500, null), false); assert.equal(P(1000, 1500, 3), false); assert.equal(P(1000, 999, "unreviewed"), false); assert.equal(P(NaN, 1000, "has_note"), false); assert.equal(P(1000, Infinity, "has_note"), false); console.log("rowFilterPulse OK"); }

@@ -588,3 +588,10 @@ export function reviewProgressStartPulse(startedAt: unknown, now: unknown, revie
   if (typeof reviewed !== "number" || !Number.isFinite(reviewed) || reviewed < 1 || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < PROGRESS_START_PULSE_MS;
 }
+
+export const ROW_FILTER_PULSE_MS = 2400;
+/** Pure: true while the disposition row filter note should pulse — once per tab after the row filter first leaves All (null), for ROW_FILTER_PULSE_MS. Display only. */
+export function rowFilterPulse(startedAt: unknown, now: unknown, filter: unknown): boolean {
+  if (typeof filter !== "string" || filter === "" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < ROW_FILTER_PULSE_MS;
+}
