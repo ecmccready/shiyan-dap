@@ -707,3 +707,14 @@ export function lookbackVerdictFilterChip(winner: unknown, filter: unknown): { s
   const active = cur === target;
   return { show: true, label: winner === "lookback" ? `look-back wins → ★${active ? " ✓" : ""}` : `agree → =${active ? " ✓" : ""}`, target, active, next: active ? "all" : target };
 }
+
+export const LOOKBACK_VERDICT_FILTER_PULSE_MS = 2400;
+/** Pure: true while the sticky verdict→Show chip should glow/pulse after the first click in the tab that actually changed the Show filter (`startedAt` set once per session), for LOOKBACK_VERDICT_FILTER_PULSE_MS. Display only. Never throws. */
+export function lookbackVerdictFilterPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_VERDICT_FILTER_PULSE_MS;
+}
+/** Pure: whether a verdict-chip click should start the once-per-session pulse: only when not yet pulsed and next filter differs from current. */
+export function lookbackVerdictFilterShouldPulse(alreadyPulsed: unknown, cur: unknown, next: unknown): boolean {
+  return alreadyPulsed !== true && typeof next === "string" && next !== cur;
+}
