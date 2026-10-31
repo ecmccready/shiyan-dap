@@ -1052,3 +1052,8 @@ export function lookbackLastKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?
     return { target: last, changed, toast: changed ? "z → last-ranked path" : null };
   } catch { return null; }
 }
+
+/** Pure: sticky "Last ↓" chip model — null with <2 ranked paths; click = key z (last-ranked sealed path). Never throws. */
+export function lookbackLastChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
+  try { const t = lookbackLastFocusTarget(c); return typeof t === "string" && t ? { target: t, label: "Last ↓" } : null; } catch { return null; }
+}
