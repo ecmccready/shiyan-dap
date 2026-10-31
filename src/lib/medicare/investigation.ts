@@ -560,3 +560,10 @@ export function reviewCompletePulse(startedAt: unknown, now: unknown, complete: 
   if (complete !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < COMPLETE_PULSE_MS;
 }
+
+export const HANDOFF_READY_PULSE_MS = 2400;
+/** Pure: true while the ✅ Hand-off ready chip should pulse — only after a seen not-ready→ready transition (`startedAt` set, first time in the tab), for HANDOFF_READY_PULSE_MS. Display only. */
+export function handoffReadyChipPulse(startedAt: unknown, now: unknown, ready: unknown): boolean {
+  if (ready !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < HANDOFF_READY_PULSE_MS;
+}

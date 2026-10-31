@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesNudge, handoffReadyAnnotated, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { useEffect, useRef, useState } from "react";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesNudge, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -28,18 +28,32 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
     window.addEventListener(MEDICARE_FILTER_EVENT, on);
     return () => window.removeEventListener(MEDICARE_FILTER_EVENT, on);
   }, []);
+  const ready = handoffReadyAnnotated(r).ready;
+  const prevReady = useRef<boolean | null>(null);
+  const pulsedOnce = useRef(false);
+  const [pulseAt, setPulseAt] = useState<number | null>(null);
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    if (prevReady.current === false && ready && !pulsedOnce.current) {
+      pulsedOnce.current = true; prevReady.current = true;
+      const t = Date.now(); setPulseAt(t); setNow(t);
+      const id = setTimeout(() => setNow(Date.now()), HANDOFF_READY_PULSE_MS); return () => clearTimeout(id);
+    }
+    prevReady.current = ready;
+  }, [ready]);
+  const chipPulsing = handoffReadyChipPulse(pulseAt, now, ready);
   const chips = statusChips(r);
   return (
     <div data-medicare-status-chips className="space-y-2">
       {(() => { const h = handoffReadyAnnotated(r); return h.ready ? (
-        <a href="#medicare-win" data-medicare-handoff-ready-annotated onClick={(ev) => {
+        <a href="#medicare-win" data-medicare-handoff-ready-annotated data-pulsing={chipPulsing ? "1" : undefined} onClick={(ev) => {
             const btn = document.querySelector<HTMLElement>("[data-copy-medicare-handoff]");
             if (!btn) return;
             ev.preventDefault();
             btn.scrollIntoView({ behavior: "smooth", block: "center" });
             window.dispatchEvent(new CustomEvent(MEDICARE_HANDOFF_FOCUS_EVENT, { detail: Date.now() }));
             window.setTimeout(() => btn.focus({ preventScroll: true }), 400);
-          }} className="inline-flex items-center gap-2 rounded-full border-2 border-white bg-emerald-400 px-4 py-1.5 text-sm font-bold text-black shadow-lg shadow-emerald-500/40">
+          }} className={`inline-flex items-center gap-2 rounded-full border-2 border-white bg-emerald-400 px-4 py-1.5 text-sm font-bold text-black shadow-lg shadow-emerald-500/40 transition-shadow ${chipPulsing ? "ring-4 ring-emerald-300 shadow-[0_0_24px_rgba(52,211,153,0.7)] motion-safe:animate-pulse" : ""}`}>
           ✅ {h.label} <span className="text-xs font-semibold opacity-80">— copy the 📦 hand-off pack</span>
         </a>
       ) : null; })()}
