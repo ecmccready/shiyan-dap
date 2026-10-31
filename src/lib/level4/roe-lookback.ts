@@ -1414,3 +1414,24 @@ export function lookbackWinnersJumpPulse(pulseAt: unknown, now: unknown): boolea
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < LOOKBACK_WINNERS_JUMP_PULSE_MS;
 }
+/** Display-only: pulse window for the sticky "agree ↓" chip (fires only when the jump changes something). */
+export const LOOKBACK_AGREE_JUMP_PULSE_MS = 1200;
+/** Pure: sticky "agree ↓" chip — focuses the first (rank-order) agree-role (=) sealed path, the same role as Show = Agree / `=`.
+ *  Null when 0 agree paths or invalid. Distinct from the "N agree" chip: that one only toggles the Show filter; this one also
+ *  focuses, expands and scrolls to the first agree path. Never throws. */
+export function lookbackAgreeJumpChip(c: LookbackCompare | null | undefined): { target: string; label: string; count: number } | null {
+  try {
+    const rows = filterLookbackRows(rankedLookbackRows(c), "agree", c?.winner);
+    const t = rows[0]?.run_id;
+    return typeof t === "string" && t ? { target: t, label: "agree ↓", count: rows.length } : null;
+  } catch { return null; }
+}
+/** Pure: would an agree ↓ click change anything (Show → Agree, focus/expand → first agree path)? Never throws; false without target. */
+export function lookbackAgreeJumpChanged(target: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): boolean {
+  try { if (typeof target !== "string" || !target) return false; const st = state ?? {}; return !(st.filter === "agree" && st.focus === target && st.open === target); } catch { return false; }
+}
+/** Pure: agree ↓ chip is pulsing within the window after a changing click. Never throws. */
+export function lookbackAgreeJumpPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LOOKBACK_AGREE_JUMP_PULSE_MS;
+}
