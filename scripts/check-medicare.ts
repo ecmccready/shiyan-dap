@@ -835,3 +835,12 @@ console.log("ok review complete banner click action");
   assert.deepEqual(uf(2, "unreviewed"), { show: true, label: "2 unreviewed ✓", active: true, next: null });
   assert.equal(uf(0, null).show, false); assert.equal(uf("x", null).show, false);
   console.log("ok unreviewedFilterChip"); }
+{ const { unreviewedFilterKey: k, unreviewedFilterPulse: pu, unreviewedFilterShouldPulse: sp, UNREVIEWED_FILTER_PULSE_MS: ms, dispositionShortcut: ds, keyToastText: kt, MEDICARE_KEYMAP: km } = require("../src/lib/medicare/investigation");
+  assert.deepEqual(k(2, null), { changes: true, next: "unreviewed" }); assert.deepEqual(k(2, "unreviewed"), { changes: true, next: null });
+  assert.deepEqual(k(0, null), { changes: false, next: null }); assert.deepEqual(k(0, "unreviewed"), { changes: true, next: null });
+  assert.equal(pu(1000, 1000 + ms - 1), true); assert.equal(pu(1000, 1000 + ms), false); assert.equal(pu("x", 1), false);
+  assert.equal(sp(false, null, "unreviewed"), true); assert.equal(sp(true, null, "unreviewed"), false); assert.equal(sp(false, null, null), false);
+  assert.deepEqual(ds({ key: "l" }), { kind: "unreviewed_filter" }); assert.equal(kt({ kind: "unreviewed_filter" }, ""), "filter → unreviewed / All");
+  assert.equal(km.filter((r: { key: string }) => r.key === "l").length, 1);
+  const fs = require("fs"), path = require("path"); assert.ok((fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8") as string).includes("data-medicare-unreviewed-filter-pulsing")); assert.ok((fs.readFileSync(path.join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8") as string).includes("unreviewedFilterKey("));
+  console.log("ok unreviewedFilterKey/Pulse + key l"); }
