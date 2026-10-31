@@ -851,6 +851,16 @@ export function reviewDoneFilterShouldPulse(alreadyPulsed: unknown, cur: unknown
   return alreadyPulsed !== true && next !== cur && (next === null || typeof next === "string");
 }
 
+export const WITHOUT_NOTES_PULSE_MS = 2400;
+/** Pure: true while the Win strip "N without notes" chip glows after its first successful jump in the tab (session once). Display only. Never throws. */
+export function withoutNotesPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < WITHOUT_NOTES_PULSE_MS;
+}
+/** Pure: start the session-once pulse only when not yet pulsed and there is a jump target. */
+export function withoutNotesShouldPulse(alreadyPulsed: unknown, target: unknown): boolean {
+  return alreadyPulsed !== true && typeof target === "string" && target.length > 0;
+}
 /** Pure: Win strip "N without notes" chip. Shown only when review is complete and ≥1 reviewed entry lacks a note; target = first such row. */
 export function withoutNotesChip(report: unknown): { show: boolean; count: number; label: string; target: string | null } {
   const hide = { show: false, count: 0, label: "", target: null };
