@@ -1689,3 +1689,23 @@ export function topCandidateStickyPulse(startedAt: unknown, now: unknown): boole
   return now >= startedAt && now - startedAt < TOP_CANDIDATE_STICKY_PULSE_MS;
 }
 export function topCandidateStickyToast(target: unknown): string { return typeof target === "string" && target ? `★ ↓ top anomaly (rank 1): ${target}` : ""; }
+
+/** Secondary copy-pack chips hidden behind the Medicare sticky Packs ▾ toggle (default collapsed). Always visible: Hand-off, Dispositions, Investigation, Case brief, Evidence, Target/#1/#2/#3/Last, Evidence packs →. */
+export const MEDICARE_PACKS_HIDDEN = ["All rows", "Notes", "Statuses", "Progress", "Provenance", "Baselines", "DQ"] as const;
+export const MEDICARE_PACKS_ALWAYS = ["Hand-off", "Dispositions", "Investigation", "Case brief", "Evidence", "Target", "#1", "#2", "#3", "Last", "Evidence packs →"] as const;
+export const MEDICARE_PACKS_PULSE_MS = 1200;
+/** Pure: Packs toggle chip label/title. Never throws. */
+export function medicarePacksChip(open: unknown): { open: boolean; label: string; title: string; hidden: readonly string[] } {
+  const o = open === true;
+  return { open: o, label: o ? "Packs \u25b4" : "Packs \u25be", title: `${o ? "Hide" : "Show"} secondary copy packs: ${MEDICARE_PACKS_HIDDEN.join(", ")}`, hidden: MEDICARE_PACKS_HIDDEN };
+}
+/** Pure: toggle result; toast only on the first-ever open. Never throws. */
+export function medicarePacksToggle(open: unknown, everOpened: unknown): { next: boolean; toast: string | null; everOpened: boolean } {
+  const next = open !== true; const first = next && everOpened !== true;
+  return { next, toast: first ? `Packs shown: ${MEDICARE_PACKS_HIDDEN.join(", ")}` : null, everOpened: everOpened === true || next };
+}
+/** Pure: Packs chip pulse window. Never throws. */
+export function medicarePacksPulse(at: unknown, now: unknown): boolean {
+  if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
+  const d = now - at; return d >= 0 && d < MEDICARE_PACKS_PULSE_MS;
+}

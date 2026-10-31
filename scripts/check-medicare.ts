@@ -10,6 +10,7 @@ import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } 
 import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { medicareToastClickAction, notesCoverage, statusMix, unreviewedLeftChip as U, filterShownChip as FS } from "../src/lib/medicare/investigation";
+import { MEDICARE_PACKS_HIDDEN, MEDICARE_PACKS_ALWAYS, MEDICARE_PACKS_PULSE_MS, medicarePacksChip, medicarePacksToggle, medicarePacksPulse } from "../src/lib/medicare/investigation";
 import { firstIncompleteDispositionTarget, reviewTimerClickAction, reviewCompleteBannerClickAction, handoffReadyAnnotated as HRA } from "../src/lib/medicare/investigation";
 import type { DispositionStatus, DispositionInput, DispositionHistory } from "../src/lib/medicare/investigation";
 import { filterAllPulse, filterAllShouldPulse, FILTER_ALL_PULSE_MS, MEDICARE_FILTER_ALL_PULSE_EVENT } from "../src/lib/medicare/investigation";
@@ -1190,3 +1191,13 @@ import { topCandidateStickyChip, topCandidateStickyChanged, topCandidateStickyPu
   assert.ok(src.includes('data-medicare-evidence-packs-sticky') && src.includes('<EvidencePacksChip scope="medicare" />'));
   const pg = require("fs").readFileSync(require("path").join(__dirname, "../src/app/workbench/medicare/page.tsx"), "utf8"); assert.ok(pg.includes('<EvidencePacksChip scope="medicare" />'));
   console.log("evidencePacksSticky OK (intro chip kept + sticky strip chip)"); }
+// Packs ▾/▴ toggle (Medicare declutter)
+assert.deepEqual([...MEDICARE_PACKS_HIDDEN], ["All rows", "Notes", "Statuses", "Progress", "Provenance", "Baselines", "DQ"]);
+for (const p of MEDICARE_PACKS_ALWAYS) assert.ok(!(MEDICARE_PACKS_HIDDEN as readonly string[]).includes(p));
+assert.equal(medicarePacksChip(false).label, "Packs \u25be"); assert.equal(medicarePacksChip(undefined).open, false); assert.equal(medicarePacksChip(true).label, "Packs \u25b4");
+{ const a = medicarePacksToggle(false, false); assert.equal(a.next, true); assert.ok(a.toast); const b = medicarePacksToggle(true, a.everOpened); assert.equal(b.next, false); assert.equal(b.toast, null); assert.equal(medicarePacksToggle(false, b.everOpened).toast, null); }
+assert.ok(medicarePacksPulse(0, 10)); assert.ok(!medicarePacksPulse(0, MEDICARE_PACKS_PULSE_MS)); assert.ok(!medicarePacksPulse(null, 1));
+{ const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8"); assert.ok(src.includes("data-medicare-packs-toggle")); assert.equal((src.match(/\{packsOpen && \(\(\) =>/g) || []).length, 7);
+  for (const a of ["data-medicare-copy-all-rows-chip", "data-medicare-copy-notes-chip", "data-medicare-copy-statuses-chip", "data-medicare-copy-progress-chip"]) assert.ok(new RegExp(`packsOpen && \\(\\(\\) => \\{[^\\n]*\\n\\s*<button[^\\n]*${a}`).test(src), a);
+  assert.ok(/\{packsOpen && \(\(\) => \{ const c = medicareProvenanceChip/.test(src) && /\{packsOpen && \(\(\) => \{ const c = medicareBaselinesChip/.test(src) && /\{packsOpen && \(\(\) => \{ const c = medicareDqChip/.test(src)); assert.ok(src.includes('<EvidencePacksChip scope="medicare" />')); }
+console.log("check-medicare: Packs toggle ok");

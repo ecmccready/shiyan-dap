@@ -519,3 +519,7 @@ Proprietary. All rights reserved by the owner. Commercial licensing and paid use
 ### Look-back: sticky Packs ▾ / Packs ▴ toggle
 
 The look-back sticky strip now has a **Packs ▾** chip (default collapsed) that shows/hides the secondary copy-pack chips: **⧉ All paths, ⧉ All steps, ⧉ Roles, ⧉ Gaps, ⧉ Verdict, ⧉ Summary** (`LOOKBACK_PACKS_HIDDEN`). Primary chips — ⧉ Compare, ⧉ TOP / Last / #2 / #3, ⧉ Focus, ⧉ Greedy, the steps chips, and navigation jumps — stay always visible. Click **Packs ▴** to collapse again. First click pulses the chip once; a toast lists the revealed packs only on the first open. Keyboard shortcuts for packs are unchanged. Pure helpers: `lookbackPacksChip`, `lookbackPacksToggle`, `lookbackPacksPulse` (checked in `scripts/check-roe-lookback.ts`).
+
+### Medicare: sticky Packs ▾ / Packs ▴ toggle (declutter)
+
+The Medicare sticky strip now has a **Packs ▾** chip (default collapsed), mirroring look-back. Collapsed, it hides the secondary copy packs (`MEDICARE_PACKS_HIDDEN`): **⧉ All rows, ⧉ Notes, ⧉ Statuses, ⧉ Progress, ⧉ Provenance, ⧉ Baselines, ⧉ DQ**. Always visible (`MEDICARE_PACKS_ALWAYS`): 📦 Hand-off, ⧉ Dispositions, ⧉ Investigation, ⧉ Case brief, ⧉ Evidence, ⧉ Target / #1 / #2 / #3 / Last, and Evidence packs →. Click **Packs ▴** to collapse. First click pulses the chip once; a toast lists the revealed packs only on the first open. Keyboard shortcuts (e.g. `.` `,` `/`) are unchanged and work while collapsed. Pure helpers: `medicarePacksChip`, `medicarePacksToggle`, `medicarePacksPulse` (checked in `scripts/check-medicare.ts`).
