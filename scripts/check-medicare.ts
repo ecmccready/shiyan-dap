@@ -1076,3 +1076,11 @@ import { medicareBaselinesChip, medicareBaselinesChipCopiedOk, medicareBaselines
   if (!medicareBaselinesChipCopiedOk(1000, 2000, "baselines") || medicareBaselinesChipCopiedOk(1000, 2000, "provenance") || medicareBaselinesChipCopiedOk(1000, 5000, "baselines")) throw new Error("baselines copiedOk");
   if (!medicareBaselinesChipShouldPulse(false, true) || medicareBaselinesChipShouldPulse(true, true) || !medicareBaselinesChipPulse(0, 100) || medicareBaselinesChipPulse(0, 2000)) throw new Error("baselines pulse");
   console.log("ok , key + ⧉ Baselines chip → copy Know How baselines JSON"); }
+
+import { medicareDqChip, medicareDqChipCopiedOk, medicareDqChipShouldPulse, medicareDqChipPulse, MEDICARE_DQ_KEY } from "../src/lib/medicare/investigation";
+{ if (DSM({ key: "/" })?.kind !== "copy_dq" || MEDICARE_DQ_KEY !== "/") throw new Error("/ → copy_dq");
+  if (medicareDqChip({ entries: [1] }).label !== "⧉ DQ" || medicareDqChip(null).show) throw new Error("dq chip");
+  if (MPCT("dq") !== "copied data-quality JSON") throw new Error("dq toast");
+  if (!medicareDqChipCopiedOk(1000, 2000, "dq") || medicareDqChipCopiedOk(1000, 2000, "baselines") || medicareDqChipCopiedOk(1000, 5000, "dq")) throw new Error("dq copiedOk");
+  if (!medicareDqChipShouldPulse(false, true) || medicareDqChipShouldPulse(true, true) || !medicareDqChipPulse(0, 100) || medicareDqChipPulse(0, 2000)) throw new Error("dq pulse");
+  console.log("ok / key + ⧉ DQ chip → copy Know-stage data-quality JSON"); }

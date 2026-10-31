@@ -149,6 +149,7 @@ export default function MedicarePage() {
               ))}
             </ul>
             <p className="text-xs text-zinc-500 mt-1">Data-quality patterns for human review, not findings of fraud or misconduct. Hash is sha256 of the canonical JSON of the rows.</p>
+            <CopyMedicareJson kind="dq" label="Copy DQ JSON" json={JSON.stringify(FIXTURE_DQ, null, 2)} />
           </div>
         </section>
 
