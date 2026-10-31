@@ -403,6 +403,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
   { key: "z", does: "focus, expand and scroll to the LAST-ranked sealed path (bottom of the table), Show → All — mirrors 1 / 2 / 3; no-op with <2 paths" },
   { key: "x", does: "copy the TOP-ranked (#1) sealed path JSON regardless of focus or Show filter — no-op with no ranked path" },
+  { key: "y", does: "copy the greedy-picked sealed path JSON without moving focus — same as sticky ⧉ Greedy; pairs with q / x / ;; no-op without a greedy path" },
   { key: ";", does: "copy the LAST-ranked sealed path JSON without moving focus — pairs with z / Last ↓ and x; no-op with <2 paths" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
@@ -1121,4 +1122,23 @@ export function lookbackCopyChipShouldPulse(alreadyPulsed: unknown, json: unknow
 export function lookbackCopyChipPulse(pulseAt: unknown, now: unknown): boolean {
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < LOOKBACK_COPY_TOP_LAST_PULSE_MS;
+}
+
+/** Pure: greedy-picked sealed path JSON (same shape as c / x / ;), or null. Never throws. */
+export function lookbackGreedyPathJson(c: LookbackCompare | null | undefined): string | null {
+  try { if (!c) return null; const r = rankedLookbackRows(c).find((x) => x && x.is_greedy); return r && typeof r.run_id === "string" && r.run_id ? lookbackPathJson(r, c.winner) : null; } catch { return null; }
+}
+/** Pure: key `y` → copy greedy path JSON. Null when not y, modified, typing, or no JSON. Never throws. */
+export function lookbackCopyGreedyKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, json: unknown): { json: string; toast: string } | null {
+  try {
+    if (!ev || ev.key !== "y" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof json !== "string" || !json) return null;
+    return { json, toast: "y → copied greedy path JSON" };
+  } catch { return null; }
+}
+/** Pure: sticky ⧉ Greedy chip (mirrors y). Null without JSON. Never throws. */
+export function lookbackCopyGreedyChip(json: unknown): { json: string; label: string; toast: string } | null {
+  try { return typeof json === "string" && json ? { json, label: "⧉ Greedy", toast: "⧉ Greedy → copied greedy path JSON" } : null; } catch { return null; }
 }
