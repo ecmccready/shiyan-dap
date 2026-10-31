@@ -357,6 +357,13 @@ export function clearLookbackToastHistory(hist: readonly LookbackToastHistoryEnt
   const on = new Set((showing ?? []).map((t) => lookbackToastCopyText(t)));
   return (hist ?? []).filter((h) => on.has(lookbackToastCopyText(h)));
 }
+/** Pure: 📌 Restore on a look-back Recent toasts pill — the toast to re-show as a live top toast ({ id, text }, same slot and timer), or null for bad input or when that exact toast is already on screen. Tab-local. */
+export function restoreLookbackToast(entry: { id?: unknown; text?: unknown; tone?: unknown } | null | undefined, showing: readonly { id: LookbackToastId; text: string }[] | null | undefined): { id: LookbackToastId; text: string } | null {
+  if (!entry || typeof entry.text !== "string" || !entry.text.trim() || !LOOKBACK_TOAST_ORDER.includes(entry.id as LookbackToastId)) return null;
+  const id = entry.id as LookbackToastId;
+  if ((showing ?? []).some((t) => t.id === id && t.text === entry.text)) return null;
+  return { id, text: entry.text };
+}
 /** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
 export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
   if (helpOpen === true) return "help";
