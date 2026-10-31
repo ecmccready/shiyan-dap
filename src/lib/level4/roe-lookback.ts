@@ -617,3 +617,12 @@ export function lookbackSealedPathsChip(paths: unknown): { count: number; label:
   if (n <= 0) return null;
   return { count: n, label: `${n} sealed path${n === 1 ? "" : "s"}` };
 }
+
+/** Pure: sticky "K of N shown" chip when Show is not All; null on All, unknown filter or N<=0. Click resets Show to All. */
+export function lookbackShownChip(filter: unknown, shown: unknown, total: unknown): { shown: number; total: number; label: string } | null {
+  if (filter !== "winners" && filter !== "beaten" && filter !== "agree") return null;
+  const n = typeof total === "number" && Number.isFinite(total) ? Math.floor(total) : 0;
+  if (n <= 0) return null;
+  const k = typeof shown === "number" && Number.isFinite(shown) ? Math.max(0, Math.min(n, Math.floor(shown))) : 0;
+  return { shown: k, total: n, label: `${k} of ${n} shown` };
+}
