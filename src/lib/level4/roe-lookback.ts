@@ -316,6 +316,11 @@ export function lookbackToastsAfterLeave(deferred: Iterable<LookbackToastId> | n
 export function lookbackToastDurationMs(id: unknown): number {
   return id === "win" || id === "agree" ? WIN_TOAST_MS : id === "empty_filter" ? EMPTY_FILTER_TOAST_MS : 0;
 }
+/** Pure: plain text copied when a stacked toast is clicked (amber keeps its ⚠); "" for bad input. */
+export function lookbackToastCopyText(t: { text?: unknown; tone?: unknown } | null | undefined): string {
+  if (!t || typeof t.text !== "string" || !t.text.trim()) return "";
+  return `${t.tone === "amber" ? "⚠ " : ""}${t.text.trim()}`;
+}
 /** Pure: what one Esc closes, in priority: the cheat sheet, then the stacked top toasts, then the expanded row. */
 export function lookbackEscTarget(helpOpen: unknown, toastCount: unknown, openRow: unknown): "help" | "toasts" | "row" | null {
   if (helpOpen === true) return "help";
