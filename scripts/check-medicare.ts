@@ -403,7 +403,7 @@ console.log("key t       -> adds the next unused quick note to the target row (u
 // 37. ? cheat sheet (pure key map + keymap table).
 assert.deepEqual(dispositionShortcut({ key: "?" }), { kind: "help" }); assert.deepEqual(dispositionShortcut({ key: "Escape" }), { kind: "help_close" });
 assert.equal(dispositionShortcut({ key: "?", targetTag: "INPUT" }), null, "typing ? in a note stays text"); assert.equal(dispositionShortcut({ key: "?", metaKey: true }), null);
-for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(dispositionShortcut({ key: k }) || medicareClearToastsKey({ key: k }, 1) || medicareClearRecentKey({ key: k }, 1) || medicareCopyRecentKey({ key: k }, 1), `sheet key ${k} is live`);
+for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(medicareStripToggleKey({ key: k }) !== null || dispositionShortcut({ key: k }) || medicareClearToastsKey({ key: k }, 1) || medicareClearRecentKey({ key: k }, 1) || medicareCopyRecentKey({ key: k }, 1), `sheet key ${k} is live`);
 assert.equal(new Set(MEDICARE_KEYMAP.map((r) => r.key)).size, MEDICARE_KEYMAP.length); assert.ok(!MEDICARE_KEYMAP.some((r) => /fraud|misconduct|misdiagnos/i.test(r.does)));
 console.log("key ?       -> toggles the keyboard cheat sheet (every listed key is live); Esc closes");
 // 38. Keyboard action toast (pure text).
@@ -1222,3 +1222,11 @@ console.log("medicareJumps toggle OK");
   const fs = require("fs"), path = require("path"); const sc = fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8"); const ds = fs.readFileSync(path.join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8");
   assert.ok(sc.includes("MEDICARE_STRIP_COLLAPSE_EVENT, on") && sc.includes("medicareEscToast(t)")); assert.ok(ds.includes("stripRef.current.packs, stripRef.current.jumps")); }
 console.log("medicare Esc Packs/Jumps OK");
+
+import { medicareStripToggleKey, MEDICARE_KEYMAP as MKM_ST } from "../src/lib/medicare/investigation";
+{ const f = medicareStripToggleKey;
+  assert.equal(f({ key: "[" }), "packs"); assert.equal(f({ key: "]" }), "jumps"); assert.equal(f({ key: "x" }), null);
+  assert.equal(f({ key: "[", ctrlKey: true }), null); assert.equal(f({ key: "]", metaKey: true }), null); assert.equal(f({ key: "]", targetTag: "textarea" }), null); assert.equal(f({ key: "[", editable: true }), null); assert.equal(f(null), null);
+  assert.ok(MKM_ST.some((k) => k.key === "[") && MKM_ST.some((k) => k.key === "]"));
+  const fs = require("fs"), path = require("path"); const ds = fs.readFileSync(path.join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8"); assert.ok(ds.includes("medicareStripToggleKey(") && ds.includes("[data-medicare-packs-toggle]")); }
+console.log("medicare [ / ] Packs/Jumps OK");

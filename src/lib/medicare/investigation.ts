@@ -569,6 +569,8 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else collapse Packs \u25b4, else Jumps \u25b4, else clear the top toasts" },
+  { key: "[", does: "toggle Packs ▾ / Packs ▴ — same as clicking the sticky chip (toast on first open only)" },
+  { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
 ];
 
 /** Review-session timer state (tab-local, display only). */
@@ -1738,4 +1740,11 @@ export function medicareJumpsToggle(open: unknown, everOpened: unknown): { next:
 export function medicareJumpsPulse(at: unknown, now: unknown): boolean {
   if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
   const d = now - at; return d >= 0 && d < MEDICARE_JUMPS_PULSE_MS;
+}
+
+/** Pure: `[` → Packs toggle, `]` → Jumps toggle. Ignored with modifiers or while typing. Never throws. */
+export function medicareStripToggleKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): "packs" | "jumps" | null {
+  if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+  if (typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase())) return null;
+  return ev.key === "[" ? "packs" : ev.key === "]" ? "jumps" : null;
 }
