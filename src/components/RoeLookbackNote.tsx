@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { restoreLookbackToast, lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, lookbackCopyAllLabel, clearLookbackToastHistory, lookbackToastHistoryJson, removeLookbackToastHistoryEntry, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackWinPulse, LOOKBACK_WIN_PULSE_MS, restoreLookbackToast, lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, lookbackCopyAllLabel, clearLookbackToastHistory, lookbackToastHistoryJson, removeLookbackToastHistoryEntry, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, clearAllLookbackToasts, showClearAllLookbackToasts, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -95,6 +95,15 @@ export default function RoeLookbackNote() {
     const id = window.setTimeout(() => expireToast("empty_filter", () => setEmptyToast(null)), EMPTY_FILTER_TOAST_MS);
     return () => window.clearTimeout(id);
   }, [roleFilter, c]);
+  const winPulsedRef = useRef(false);
+  const [winPulseAt, setWinPulseAt] = useState<number | null>(null);
+  const [winPulseNow, setWinPulseNow] = useState(0);
+  const summaryTone = c ? lookbackSummary(c).tone : null;
+  useEffect(() => {
+    if (summaryTone !== "win" || winPulsedRef.current) return;
+    winPulsedRef.current = true; const t = Date.now(); setWinPulseAt(t); setWinPulseNow(t);
+    const id = setTimeout(() => setWinPulseNow(Date.now()), LOOKBACK_WIN_PULSE_MS); return () => clearTimeout(id);
+  }, [summaryTone]);
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
   const topStack = lookbackToastStack({ win: winToast, agree: agreeToast, empty_filter: emptyToast });
   const topKey = topStack.map((t) => lookbackToastCopyText(t)).join("\n");
@@ -197,7 +206,7 @@ export default function RoeLookbackNote() {
             ))}
           </div>
           {(() => { const m = lookbackSummary(c); return (
-            <div data-roe-lookback-summary-strip={m.tone} className={`sticky top-0 z-20 -mx-4 px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs backdrop-blur border-y ${m.tone === "win" ? "bg-emerald-950/90 border-emerald-400 text-emerald-100" : m.tone === "agree" ? "bg-sky-950/90 border-sky-500 text-sky-100" : "bg-zinc-950/90 border-zinc-700 text-zinc-300"}`}>
+            <div data-roe-lookback-summary-strip={m.tone} data-pulsing={lookbackWinPulse(winPulseAt, winPulseNow, m.tone) ? "1" : undefined} className={`${lookbackWinPulse(winPulseAt, winPulseNow, m.tone) ? "ring-4 ring-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.6)] motion-safe:animate-pulse " : ""}transition-shadow sticky top-0 z-20 -mx-4 px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs backdrop-blur border-y ${m.tone === "win" ? "bg-emerald-950/90 border-emerald-400 text-emerald-100" : m.tone === "agree" ? "bg-sky-950/90 border-sky-500 text-sky-100" : "bg-zinc-950/90 border-zinc-700 text-zinc-300"}`}>
               <span className={`rounded-full px-2 py-0.5 font-bold ${m.tone === "win" ? "bg-amber-400 text-black" : m.tone === "agree" ? "bg-sky-400 text-black" : "bg-zinc-700"}`}>{m.verdict}</span>
               <span>+Δe <b>{m.delta_e_gain}</b></span>
               <span>ΔΦ <b>{fmtDeltaPhi(m.delta_phi)}</b></span>

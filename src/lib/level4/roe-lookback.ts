@@ -446,3 +446,10 @@ export function lookbackCopyAllLabel(copiedAt: number | null | undefined, now: n
   if (typeof copiedAt !== "number" || !Number.isFinite(copiedAt) || !Number.isFinite(now)) return "⧉ Copy all";
   const d = now - copiedAt; return d >= 0 && d < LOOKBACK_TOAST_PILL_COPIED_MS ? "✓ Copied" : "⧉ Copy all";
 }
+
+export const LOOKBACK_WIN_PULSE_MS = 2400;
+/** Pure: true while the sticky summary strip should pulse — once after look-back first shows "beats greedy" in this tab (`startedAt` set when tone first becomes win, incl. first data load), for LOOKBACK_WIN_PULSE_MS. Display only. */
+export function lookbackWinPulse(startedAt: unknown, now: unknown, tone: unknown): boolean {
+  if (tone !== "win" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_WIN_PULSE_MS;
+}
