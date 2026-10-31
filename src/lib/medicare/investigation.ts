@@ -387,9 +387,9 @@ export function handoffReadyToast(prevReady: unknown, report: unknown): string |
   } catch { return null; }
 }
 
-export type MedicareToastId = "complete" | "handoff_ready" | "empty_filter";
+export type MedicareToastId = "complete" | "handoff_ready" | "empty_filter" | "copy_row";
 /** Fixed top-to-bottom order of the stacked top toasts (the ⌨ key toast sits at the bottom edge on its own). */
-export const MEDICARE_TOAST_ORDER: readonly MedicareToastId[] = ["complete", "handoff_ready", "empty_filter"];
+export const MEDICARE_TOAST_ORDER: readonly MedicareToastId[] = ["complete", "handoff_ready", "empty_filter", "copy_row"];
 /** Pure: the visible top toasts in stack order, so they render in one column and never overlap. */
 export function medicareToastStack(t: Partial<Record<MedicareToastId, unknown>> | null | undefined): { id: MedicareToastId; text: string; tone: "green" | "amber" }[] {
   if (!t) return [];
@@ -418,7 +418,7 @@ export function toastsAfterLeave(deferred: Iterable<MedicareToastId> | null | un
 
 /** Pure: each stacked top toast's auto-dismiss time, for its time-left bar. */
 export function medicareToastDurationMs(id: unknown): number {
-  return id === "complete" ? COMPLETE_TOAST_MS : id === "handoff_ready" ? HANDOFF_READY_TOAST_MS : id === "empty_filter" ? EMPTY_ROW_FILTER_TOAST_MS : 0;
+  return id === "complete" ? COMPLETE_TOAST_MS : id === "handoff_ready" ? HANDOFF_READY_TOAST_MS : id === "empty_filter" ? EMPTY_ROW_FILTER_TOAST_MS : id === "copy_row" ? COPY_ROW_TOAST_MS : 0;
 }
 
 /** Pure: plain text copied when a stacked toast is clicked (amber keeps its ⚠); "" for bad input. */
@@ -1230,4 +1230,14 @@ export function medicareCopyRowChipShouldPulse(alreadyPulsed: unknown, json: unk
 export function medicareCopyRowChipPulse(pulseAt: unknown, now: unknown): boolean {
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < MEDICARE_COPY_ROW_CHIP_PULSE_MS;
+}
+
+/** Display-only: how long the stacked "⧉ #1 / ⧉ Last copied" top toast stays up. */
+export const COPY_ROW_TOAST_MS = 2600;
+/** Window event: detail { which: "first" | "last", json } — a ⧉ #1 / ⧉ Last copy (chip or x / ;) SUCCEEDED; push a stacked top toast. (y stays dispositions-copy.) */
+export const MEDICARE_COPY_ROW_TOAST_EVENT = "medicare:copy-row-toast";
+/** Pure: stacked top-toast text after a successful ⧉ #1 / ⧉ Last copy (same text as the chip flash); "" when nothing was copied. Never throws. */
+export function medicareCopyRowToast(which: unknown, json: unknown): string {
+  if (typeof json !== "string" || !json) return "";
+  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : "";
 }
