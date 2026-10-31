@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { medicareToastClickAction, notesCoverage, statusMix } from "../src/lib/medicare/investigation";
-import { firstIncompleteDispositionTarget, reviewTimerClickAction, handoffReadyAnnotated as HRA } from "../src/lib/medicare/investigation";
+import { firstIncompleteDispositionTarget, reviewTimerClickAction, reviewCompleteBannerClickAction, handoffReadyAnnotated as HRA } from "../src/lib/medicare/investigation";
 import type { DispositionStatus, DispositionInput, DispositionHistory } from "../src/lib/medicare/investigation";
 import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, cheatsheetPulse, CHEATSHEET_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
@@ -628,3 +628,7 @@ console.log("OK");
   assert.equal(reviewTimerClickAction(mk("")), HRA(mk("")).ready ? "copy_handoff" : "jump_progress");
   assert.equal(reviewTimerClickAction(mk("ok")), HRA(mk("ok")).ready ? "copy_handoff" : "jump_progress");
   console.log("review timer click -> hand-off copy when ready OK"); }
+
+assert.equal(reviewCompleteBannerClickAction(true), "copy_dispositions");
+assert.equal(reviewCompleteBannerClickAction(false), "none");
+console.log("ok review complete banner click action");
