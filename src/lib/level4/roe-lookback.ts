@@ -543,3 +543,8 @@ export function lookbackStepsDelta(c: LookbackCompare | null | undefined): { del
 export function lookbackTopFocusTarget(c: LookbackCompare | null | undefined): string | null {
   return lookbackTopSteps(c)?.run_id ?? null;
 }
+
+/** Click target for sticky "greedy M steps": the greedy run id (null when none / same as top). */
+export function lookbackGreedyFocusTarget(c: LookbackCompare | null | undefined): string | null {
+  return lookbackGreedySteps(c)?.run_id ?? null;
+}
