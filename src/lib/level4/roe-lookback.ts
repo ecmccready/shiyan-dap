@@ -405,6 +405,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "x", does: "copy the TOP-ranked (#1) sealed path JSON regardless of focus or Show filter — no-op with no ranked path" },
   { key: "y", does: "copy the greedy-picked sealed path JSON without moving focus — same as sticky ⧉ Greedy; pairs with q / x / ;; no-op without a greedy path" },
   { key: ";", does: "copy the LAST-ranked sealed path JSON without moving focus — pairs with z / Last ↓ and x; no-op with <2 paths" },
+  { key: "t", does: "copy the TOP-ranked path's steps JSON without expanding or moving focus — same as sticky ⧉ TOP steps (shares its first-use pulse); no-op with no ranked path" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -1110,6 +1111,16 @@ export function lookbackCopyTopChip(json: unknown): { json: string; label: strin
 /** Pure: TOP (#1) path steps JSON (same payload as expanding TOP + key s), without expanding. Null when no paths. Never throws. */
 export function lookbackTopStepsJson(c: LookbackCompare | null | undefined): string | null {
   try { if (!c) return null; const r = rankedLookbackRows(c)[0]; if (!r || typeof r.run_id !== "string" || !r.run_id) return null; const j = pathStepsJson(r); return j || null; } catch { return null; }
+}
+/** Pure: key `t` (TOP sTeps; t was unused) → copy TOP steps JSON without expanding/focusing. Null when not t, modified, typing, or no JSON. Never throws. */
+export function lookbackCopyTopStepsKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, json: unknown): { json: string; toast: string } | null {
+  try {
+    if (!ev || ev.key !== "t" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof json !== "string" || !json) return null;
+    return { json, toast: "t → copied TOP steps JSON" };
+  } catch { return null; }
 }
 /** Pure: sticky ⧉ TOP steps chip — copies TOP steps JSON without expanding or moving focus. Null when no JSON. Never throws. */
 export function lookbackCopyTopStepsChip(json: unknown): { json: string; label: string; toast: string } | null {
