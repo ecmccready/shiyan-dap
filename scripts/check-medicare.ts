@@ -2,7 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { notesCoverage, statusMix, cycleRowFilter, toggleRowFilter } from "../src/lib/medicare/investigation";
+import { medicareToastClickAction, notesCoverage, statusMix, cycleRowFilter, toggleRowFilter } from "../src/lib/medicare/investigation";
 import { firstIncompleteDispositionTarget } from "../src/lib/medicare/investigation";
 import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, cheatsheetPulse, CHEATSHEET_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
@@ -618,3 +618,6 @@ console.log("OK");
   assert.equal(F([{ item_id: "a", status: "cleared_pattern_only" }, { item_id: "b", status: "needs_human_review" }]), "a");
   assert.equal(F([]), null); assert.equal(F(null), null); assert.equal(F([null, { item_id: "" }, { item_id: "z", status: "unreviewed" }]), "z");
   console.log("progress block -> first unreviewed target OK"); }
+
+{ assert.equal(medicareToastClickAction("empty_filter"), "reset_filter");
+  for (const id of ["complete", "handoff_ready", null, undefined, 3]) assert.equal(medicareToastClickAction(id), "copy"); }

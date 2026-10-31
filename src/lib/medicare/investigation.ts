@@ -671,3 +671,7 @@ export function firstIncompleteDispositionTarget(entries: unknown): string | nul
   const un = ok.find((e) => e.status === "unreviewed");
   return (un ?? ok[0])?.item_id ?? null;
 }
+
+/** Click on a stacked Medicare top toast: the amber empty-filter toast resets the row filter to All (text still copied); others just copy. */
+export type MedicareToastClickAction = "reset_filter" | "copy";
+export function medicareToastClickAction(id: unknown): MedicareToastClickAction { return id === "empty_filter" ? "reset_filter" : "copy"; }
