@@ -950,3 +950,23 @@ export function secondRowPulse(startedAt: unknown, now: unknown): boolean {
 export function secondRowShouldPulse(alreadyPulsed: unknown, jump: unknown): boolean {
   return alreadyPulsed !== true && typeof jump === "string" && jump.length > 0;
 }
+
+/** Win strip "#1" chip: shown when ≥1 disposition rows; click targets/scrolls the 1st row (index 0). Display/navigation only. */
+export const FIRST_ROW_PULSE_MS = 2400;
+/** Pure: "#1" chip state; jump is the 1st row's item_id. Never throws. */
+export function firstRowChip(entries: unknown): { show: boolean; label: string; jump: string | null } {
+  try {
+    const list = Array.isArray(entries) ? entries.filter((e): e is { item_id: string } => !!e && typeof (e as { item_id?: unknown }).item_id === "string") : [];
+    if (list.length < 1) return { show: false, label: "", jump: null };
+    return { show: true, label: "#1 ↓", jump: list[0].item_id };
+  } catch { return { show: false, label: "", jump: null }; }
+}
+/** Pure: true while the "#1" chip glows. */
+export function firstRowPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < FIRST_ROW_PULSE_MS;
+}
+/** Pure: pulse once per session, only when the jump has a target. */
+export function firstRowShouldPulse(alreadyPulsed: unknown, jump: unknown): boolean {
+  return alreadyPulsed !== true && typeof jump === "string" && jump.length > 0;
+}
