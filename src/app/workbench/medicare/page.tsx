@@ -138,6 +138,7 @@ export default function MedicarePage() {
             <dt className="text-zinc-500">content sha256</dt><dd className="break-all">{FIXTURE_PROVENANCE.content_hash}</dd>
             <dt className="text-zinc-500">domain</dt><dd>{FIXTURE_PROVENANCE.domain_label}</dd>
           </dl>
+          <CopyMedicareJson kind="provenance" label="Copy provenance JSON" json={JSON.stringify(FIXTURE_PROVENANCE, null, 2)} />
           <div data-medicare-dq>
             <p className="text-zinc-300">
               Data-quality check <code>{FIXTURE_DQ.check_id}</code>: {FIXTURE_DQ.rows_checked} rows checked, {FIXTURE_DQ.rows_with_issues} with issues.

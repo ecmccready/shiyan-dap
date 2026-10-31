@@ -61,6 +61,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       if (!a) return;
       if (a.kind === "copy_investigation") { const c = document.querySelector<HTMLButtonElement>("[data-medicare-investigation-chip]") ?? document.querySelector<HTMLButtonElement>('[data-copy-medicare-json="investigation"]'); if (!c) return; ev.preventDefault(); c.click(); return; }
       if (a.kind === "copy_evidence") { const c = document.querySelector<HTMLButtonElement>("[data-medicare-evidence-chip]") ?? document.querySelector<HTMLButtonElement>('[data-copy-medicare-json="evidence"]'); if (!c) return; ev.preventDefault(); c.click(); return; }
+      if (a.kind === "copy_provenance") { const c = document.querySelector<HTMLButtonElement>("[data-medicare-provenance-chip]") ?? document.querySelector<HTMLButtonElement>('[data-copy-medicare-json="provenance"]'); if (!c) return; ev.preventDefault(); c.click(); return; }
       if (a.kind === "copy_brief") { const c = document.querySelector<HTMLButtonElement>("[data-medicare-brief-chip]"); if (!c) return; ev.preventDefault(); c.click(); return; }
       const btn = a.kind === "dispositions" || a.kind === "handoff" ? document.querySelector<HTMLButtonElement>(a.kind === "handoff" ? "[data-copy-medicare-handoff]" : "[data-copy-medicare-dispositions]") : null;
       const wnBtn = a.kind === "without_notes" ? document.querySelector<HTMLButtonElement>("[data-medicare-without-notes-target]") : null; const wnTarget = wnBtn?.getAttribute("data-medicare-without-notes-target") || null;

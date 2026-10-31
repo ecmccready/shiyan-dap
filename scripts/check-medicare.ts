@@ -1056,3 +1056,14 @@ import { medicareCopyThirdRowKey, medicareCopyThirdRowChip, MEDICARE_COPY_THIRD_
   if (KTT3({ kind: "copy_third_row" }, "") !== "⧉ copied #3 row JSON" || !MKTD3({ kind: "copy_third_row" })) throw new Error('" key toast deferred');
   if (c.label === (TRC3 as (x: unknown) => { label?: string })(es as unknown)?.label) throw new Error("⧉ #3 distinct from #3 ↓");
   console.log('ok " key + sticky ⧉ #3 chip → copy #3 row JSON (target unchanged)'); }
+
+import { medicareProvenanceChip, medicareProvenanceChipCopiedOk, medicareProvenanceChipShouldPulse, medicareProvenanceChipPulse, MEDICARE_PROVENANCE_KEY, medicarePackCopiedToast as MPCT } from "../src/lib/medicare/investigation";
+{ if (DSM({ key: "." })?.kind !== "copy_provenance") throw new Error(". → copy_provenance");
+  if (DSM({ key: ".", targetTag: "TEXTAREA" }) !== null || DSM({ key: ".", ctrlKey: true }) !== null) throw new Error(". guarded");
+  if (DSM({ key: "q" })?.kind !== "copy_evidence") throw new Error("q still evidence");
+  if (MEDICARE_PROVENANCE_KEY !== "." || !MKM.some((k) => k.key === ".")) throw new Error(". in keymap");
+  if (medicareProvenanceChip({ entries: [1] }).label !== "⧉ Provenance" || medicareProvenanceChip(null).show) throw new Error("provenance chip");
+  if (MPCT("provenance") !== "copied provenance JSON") throw new Error("provenance toast");
+  if (!medicareProvenanceChipCopiedOk(1000, 2000, "provenance") || medicareProvenanceChipCopiedOk(1000, 2000, "evidence") || medicareProvenanceChipCopiedOk(1000, 5000, "provenance")) throw new Error("provenance copiedOk");
+  if (!medicareProvenanceChipShouldPulse(false, true) || medicareProvenanceChipShouldPulse(true, true) || !medicareProvenanceChipPulse(0, 100) || medicareProvenanceChipPulse(0, 2000)) throw new Error("provenance pulse");
+  console.log("ok . key + ⧉ Provenance chip → copy Know-stage provenance JSON"); }
