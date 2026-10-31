@@ -1,5 +1,6 @@
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
+import { blankNoteStickyChip, blankNoteStickyChanged, blankNoteStickyPulse, BLANK_NOTE_STICKY_PULSE_MS } from "../src/lib/medicare/investigation";
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -1084,3 +1085,11 @@ import { medicareDqChip, medicareDqChipCopiedOk, medicareDqChipShouldPulse, medi
   if (!medicareDqChipCopiedOk(1000, 2000, "dq") || medicareDqChipCopiedOk(1000, 2000, "baselines") || medicareDqChipCopiedOk(1000, 5000, "dq")) throw new Error("dq copiedOk");
   if (!medicareDqChipShouldPulse(false, true) || medicareDqChipShouldPulse(true, true) || !medicareDqChipPulse(0, 100) || medicareDqChipPulse(0, 2000)) throw new Error("dq pulse");
   console.log("ok / key + ⧉ DQ chip → copy Know-stage data-quality JSON"); }
+
+{ const n = { entries: [{ item_id: "i0", status: "cleared_pattern_only" }, { item_id: "i1", status: "needs_human_review", note: "ok" }] };
+  const st = blankNoteStickyChip(n); assert.equal(st.show, withoutNotesChip(n).show); assert.equal(st.target, withoutNotesChip(n).target);
+  if (st.show) assert.ok(st.label.startsWith("✎ ")); 
+  assert.equal(blankNoteStickyChip({ entries: [{ item_id: "i0", status: "unreviewed" }] }).show, false); assert.equal(blankNoteStickyChip(null).show, false);
+  assert.equal(blankNoteStickyChanged("i0", null), true); assert.equal(blankNoteStickyChanged("i0", "i0"), false); assert.equal(blankNoteStickyChanged("i1", "i0"), true); assert.equal(blankNoteStickyChanged(null, "i0"), false);
+  assert.equal(blankNoteStickyPulse(1, 1), true); assert.equal(blankNoteStickyPulse(1, 1 + BLANK_NOTE_STICKY_PULSE_MS), false); assert.equal(blankNoteStickyPulse(null, 1), false);
+  console.log("blankNoteStickyChip OK (sticky ✎ N blank ↓ = key w)"); }

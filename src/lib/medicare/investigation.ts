@@ -1498,3 +1498,19 @@ export function medicareDqChipCopiedOk(pendingAt: unknown, now: unknown, kind: u
 export const MEDICARE_DQ_CHIP_PULSE_MS = 1600;
 export function medicareDqChipShouldPulse(alreadyPulsed: unknown, ok: unknown): boolean { return alreadyPulsed !== true && ok === true; }
 export function medicareDqChipPulse(at: unknown, now: unknown): boolean { return typeof at === "number" && typeof now === "number" && now >= at && now - at < MEDICARE_DQ_CHIP_PULSE_MS; }
+
+/** Pure: sticky "✎ N blank ↓" chip — same gate and target as key w / the Win strip "N without notes ↓" chip (review complete and ≥1 reviewed row lacks a note). Never throws. */
+export function blankNoteStickyChip(report: unknown): { show: boolean; count: number; label: string; target: string | null } {
+  const w = withoutNotesChip(report);
+  return w.show && w.target ? { show: true, count: w.count, label: `✎ ${w.count} blank ↓`, target: w.target } : { show: false, count: 0, label: "", target: null };
+}
+export const BLANK_NOTE_STICKY_PULSE_MS = 2400;
+/** Pure: pulse the sticky blank-note chip only when the jump target differs from the last jump's target. Never throws. */
+export function blankNoteStickyChanged(target: unknown, lastTarget: unknown): boolean {
+  return typeof target === "string" && target.length > 0 && target !== lastTarget;
+}
+/** Pure: true while the sticky blank-note chip glows. */
+export function blankNoteStickyPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < BLANK_NOTE_STICKY_PULSE_MS;
+}
