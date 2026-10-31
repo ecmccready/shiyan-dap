@@ -823,3 +823,8 @@ export function lookbackThirdShouldPulse(alreadyPulsed: unknown, third: unknown)
 export function lookbackSecondChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
   try { const r = lookbackRunnerUpLeadChip(c); return r && typeof r.runner_up === "string" && r.runner_up ? { target: r.runner_up, label: "#2" } : null; } catch { return null; }
 }
+
+/** Pure: sticky "#1" chip model — null with no sealed paths; click = key 1 (re-flashes TOP badge pulse). Never throws. */
+export function lookbackFirstChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
+  try { const t = lookbackTopFocusTarget(c); return typeof t === "string" && t ? { target: t, label: "#1" } : null; } catch { return null; }
+}
