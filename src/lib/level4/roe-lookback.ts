@@ -1175,6 +1175,10 @@ export function lookbackCopyGreedyStepsChip(json: unknown): { json: string; labe
 export function lookbackCopyFocusChip(focusId: unknown, json: unknown): { id: string; json: string; label: string; toast: string } | null {
   try { return typeof focusId === "string" && focusId && typeof json === "string" && json ? { id: focusId, json, label: "⧉ Focus", toast: `⧉ Focus → copied ${focusId} path JSON` } : null; } catch { return null; }
 }
+/** Pure: sticky ⧉ Focus steps chip — copies the focused row's steps JSON (same payload as expand + s) without expanding or moving focus. Null without a focused row or JSON. Never throws. */
+export function lookbackCopyFocusStepsChip(focusId: unknown, json: unknown): { id: string; json: string; label: string; toast: string } | null {
+  try { return typeof focusId === "string" && focusId && typeof json === "string" && json ? { id: focusId, json, label: "⧉ Focus steps", toast: `⧉ Focus steps → copied ${focusId} steps JSON` } : null; } catch { return null; }
+}
 /** Pure: sticky ⧉ Last chip — copies LAST path JSON (same as key ;) without moving focus. Null with <2 paths. Never throws. */
 export function lookbackCopyLastChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ Last", toast: "⧉ Last → copied LAST path JSON" } : null; } catch { return null; }
