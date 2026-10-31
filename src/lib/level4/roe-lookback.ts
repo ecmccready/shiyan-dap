@@ -509,3 +509,12 @@ export function lookbackHelpPulse(startedAt: unknown, now: unknown, open: unknow
   if (open !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_HELP_PULSE_MS;
 }
+
+/** Pure: the top-ranked (look-back) path's step count and its label ("1 step" / "N steps"); null when no sealed paths. Display only. */
+export function lookbackTopSteps(c: LookbackCompare | null | undefined): { run_id: string; steps: number; label: string } | null {
+  try {
+    const top = rankedLookbackRows(c)[0];
+    if (!top || typeof top.steps !== "number" || !Number.isFinite(top.steps)) return null;
+    return { run_id: top.run_id, steps: top.steps, label: `${top.steps} step${top.steps === 1 ? "" : "s"}` };
+  } catch { return null; }
+}
