@@ -734,3 +734,14 @@ export function lookbackVerdictKey(ev: { key?: unknown; ctrlKey?: unknown; metaK
     return { next: vf.next, changed, toast };
   } catch { return null; }
 }
+
+/** Pure: sticky "lead +Δe over #2" chip — TOP path's cumulative Δe margin over rank #2. Null when <2 paths. Click target = #2 run id. */
+export function lookbackRunnerUpLeadChip(c: LookbackCompare | null | undefined): { delta: number; label: string; runner_up: string; tie: boolean } | null {
+  try {
+    const r = rankedLookbackRows(c);
+    if (r.length < 2) return null;
+    const d = Math.round((r[0].cumulative_delta_e - r[1].cumulative_delta_e) * 1e4) / 1e4;
+    if (!Number.isFinite(d)) return null;
+    return { delta: d, label: d === 0 ? "tie with #2" : `lead +${d} over #2`, runner_up: r[1].run_id, tie: d === 0 };
+  } catch { return null; }
+}
