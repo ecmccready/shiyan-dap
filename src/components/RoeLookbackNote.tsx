@@ -62,7 +62,6 @@ export default function RoeLookbackNote() {
         if (id && !focusPulsedRef.current) { focusPulsedRef.current = true; const t = Date.now(); setFocusPulseAt(t); setFocusPulseNow(t); setTimeout(() => setFocusPulseNow(Date.now()), LOOKBACK_FOCUS_PULSE_MS); }
         if (id) document.querySelector(`[data-roe-lookback-row="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "nearest" });
       } else if (k === "toggle" && focusRef.current) { ev.preventDefault(); const id = focusRef.current; setOpen((o) => (o === id ? null : id)); }
-      else if (k === "close") setOpen(null);
       else if ((k === "copy" || k === "steps") && focusRef.current) {
         const id = focusRef.current; const j = (k === "steps" ? stepsRef.current : jsonRef.current)[id]; if (!j) return;
         ev.preventDefault();

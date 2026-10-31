@@ -2,8 +2,9 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { medicareToastClickAction, notesCoverage, statusMix, cycleRowFilter, toggleRowFilter } from "../src/lib/medicare/investigation";
+import { medicareToastClickAction, notesCoverage, statusMix } from "../src/lib/medicare/investigation";
 import { firstIncompleteDispositionTarget } from "../src/lib/medicare/investigation";
+import type { DispositionStatus, DispositionInput, DispositionHistory } from "../src/lib/medicare/investigation";
 import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, cheatsheetPulse, CHEATSHEET_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
@@ -221,7 +222,7 @@ assert.deepEqual(applyBulkDisposition(b1, ids, "fraud"), b1, "invented status ig
 assert.deepEqual(applyBulkDisposition(b1, "x", "needs_human_review"), b1);
 console.log("bulk        -> set all shown to one review status or reset; pure; invented statuses ignored");
 // 18. Undo history (pure).
-let h = { past: [] as Record<string, never>[], present: {}, last_action: null as string | null };
+let h: DispositionHistory = { past: [], present: {}, last_action: null };
 h = commitDisposition(h, applyDisposition(h.present, ids[2], "needs_human_review"), "SYN-0006 → needs_human_review");
 h = commitDisposition(h, applyBulkDisposition(h.present, [ids[0], ids[1]], "cleared_pattern_only"), "set 2 to cleared_pattern_only");
 assert.equal(h.past.length, 2); assert.equal(h.last_action, "set 2 to cleared_pattern_only");
