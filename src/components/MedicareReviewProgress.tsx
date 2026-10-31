@@ -1,17 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MEDICARE_PROGRESS_EVENT, reviewProgress, reviewCompletion } from "@/lib/medicare/investigation";
+import { useEffect, useRef, useState } from "react";
+import { MEDICARE_PROGRESS_EVENT, reviewProgress, reviewCompletion, reviewCompletePulse, COMPLETE_PULSE_MS } from "@/lib/medicare/investigation";
 
 type P = ReturnType<typeof reviewProgress>;
 
 /** Progress bar + counts. Pass `initial`; when `live`, follows the disposition stub's tab-local event. */
 export function ProgressBar({ p }: { p: P }) {
   const done = reviewCompletion(p);
+  const prev = useRef<boolean | null>(null);
+  const [pulseAt, setPulseAt] = useState<number | null>(null);
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    if (prev.current === false && done.complete) { const t = Date.now(); setPulseAt(t); setNow(t); const id = setTimeout(() => setNow(Date.now()), COMPLETE_PULSE_MS); prev.current = true; return () => clearTimeout(id); }
+    prev.current = done.complete;
+  }, [done.complete]);
+  const pulsing = reviewCompletePulse(pulseAt, now, done.complete);
   return (
     <div data-medicare-review-progress className="space-y-1">
       {done.complete && (
-        <div role="status" data-medicare-review-complete className="rounded-xl border-2 border-emerald-400 bg-emerald-500/20 px-3 py-2 text-sm text-emerald-100">
+        <div role="status" data-medicare-review-complete data-pulsing={pulsing ? "1" : undefined} className={`rounded-xl border-2 border-emerald-400 bg-emerald-500/20 px-3 py-2 text-sm text-emerald-100 transition-shadow ${pulsing ? "ring-4 ring-emerald-300 shadow-[0_0_24px_rgba(52,211,153,0.6)] motion-safe:animate-pulse" : ""}`}>
           <span className="mr-2 rounded-full bg-emerald-400 text-black px-2 py-0.5 text-xs font-bold">✓ Review complete</span>
           {done.message}
         </div>

@@ -553,3 +553,10 @@ export function medicareCopyAllLabel(copiedAt: number | null | undefined, now: n
   if (typeof copiedAt !== "number" || !Number.isFinite(copiedAt) || !Number.isFinite(now)) return "⧉ Copy all";
   const d = now - copiedAt; return d >= 0 && d < TOAST_PILL_COPIED_MS ? "✓ Copied" : "⧉ Copy all";
 }
+
+export const COMPLETE_PULSE_MS = 2400;
+/** Pure: true while the Review complete banner should pulse — only after a seen false→true transition (`startedAt` set), for COMPLETE_PULSE_MS. Display only. */
+export function reviewCompletePulse(startedAt: unknown, now: unknown, complete: unknown): boolean {
+  if (complete !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < COMPLETE_PULSE_MS;
+}

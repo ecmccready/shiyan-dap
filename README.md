@@ -322,3 +322,5 @@ With no Upstash variables, `GET /api/level4/experience` and `GET /api/marketplac
 ## License
 
 Proprietary. All rights reserved by the owner. Commercial licensing and paid use are available from the owner: contact the owner for a commercial license. This repository has no LICENSE file by design (no MIT or Apache); the code is publicly viewable on GitHub, but viewing it does not grant a license to copy, modify, redistribute or use it. The `founder-z` dataset card lists its license as unspecified.
+
+- **Medicare · Review complete pulse:** when review first goes to 3/3 in the tab, the ✓ Review complete banner glows and pulses for ~2.4 s (`reviewCompletePulse`, `COMPLETE_PULSE_MS`), so the milestone shows even if you miss the top toast. Never pulses on a page load that is already complete; respects reduced motion; display only.
