@@ -1282,3 +1282,8 @@ export function medicareDispositionsChipPulse(pulseAt: unknown, now: unknown): b
 export function medicareDispositionsChipCopiedOk(pendingAt: unknown, now: unknown): boolean {
   return typeof pendingAt === "number" && typeof now === "number" && now >= pendingAt && now - pendingAt <= MEDICARE_HANDOFF_CHIP_PENDING_MS;
 }
+
+/** Keys whose key toast is deferred until clipboard success (x / ;). Pure. */
+export function medicareKeyToastDeferred(a: DispositionShortcut): boolean {
+  return !!a && (a.kind === "copy_first_row" || a.kind === "copy_last_row");
+}
