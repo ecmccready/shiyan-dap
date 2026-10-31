@@ -1149,6 +1149,10 @@ export function lookbackCopyCompareChip(pack: unknown, winner?: unknown, gain?: 
 export function lookbackCompareChipToast(ok: unknown, toast: unknown): string | null {
   return ok === true && typeof toast === "string" && toast ? toast : null;
 }
+/** Pure: sticky ⧉ TOP / ⧉ Last / ⧉ Greedy chip toast only after a successful clipboard write (ok === true); null otherwise. Never throws. */
+export function lookbackCopyChipToast(ok: unknown, toast: unknown): string | null {
+  return ok === true && typeof toast === "string" && toast ? toast : null;
+}
 export function lookbackCopyGreedyChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ Greedy", toast: "⧉ Greedy → copied greedy path JSON" } : null; } catch { return null; }
 }
