@@ -1,6 +1,6 @@
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
-import { unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
+import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -844,3 +844,10 @@ console.log("ok review complete banner click action");
   assert.equal(km.filter((r: { key: string }) => r.key === "l").length, 1);
   const fs = require("fs"), path = require("path"); assert.ok((fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8") as string).includes("data-medicare-unreviewed-filter-pulsing")); assert.ok((fs.readFileSync(path.join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8") as string).includes("unreviewedFilterKey("));
   console.log("ok unreviewedFilterKey/Pulse + key l"); }
+{ const p = medicarePilotPulse, M = MEDICARE_PILOT_PULSE_MS;
+  assert.equal(M, 6000); assert.equal(MEDICARE_PILOT_SEEN_KEY, "aethel.medicare.pilotSeen.v1");
+  assert.equal(p(false, 1000, 1000), true); assert.equal(p(false, 1000, 1000 + M - 1), true);
+  assert.equal(p(false, 1000, 1000 + M), false); assert.equal(p(true, 1000, 1000), false);
+  assert.equal(p(false, null, 1), false); assert.equal(p(false, 5, 1), false); assert.equal(p(false, NaN, 1), false);
+  const fs = require("fs"), path = require("path"); assert.ok((fs.readFileSync(path.join(__dirname, "../src/app/workbench/medicare/page.tsx"), "utf8") as string).includes("<MedicarePilotChip"));
+  console.log("ok medicarePilotPulse"); }

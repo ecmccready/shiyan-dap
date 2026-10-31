@@ -1125,3 +1125,14 @@ export function unreviewedFilterPulse(startedAt: unknown, now: unknown): boolean
 export function unreviewedFilterShouldPulse(alreadyPulsed: unknown, current: unknown, next: unknown): boolean {
   return alreadyPulsed !== true && (current ?? null) !== (next ?? null);
 }
+
+/** Display-only: first-visit pulse window for the Medicare · Pilot proposition chip. */
+export const MEDICARE_PILOT_PULSE_MS = 6000;
+export const MEDICARE_PILOT_SEEN_KEY = "aethel.medicare.pilotSeen.v1";
+/** Pure: Pilot chip pulses while not yet clicked (seen=false) and within the window after mount. Never throws. */
+export function medicarePilotPulse(seen: unknown, mountedAt: unknown, now: unknown): boolean {
+  if (seen === true) return false;
+  if (typeof mountedAt !== "number" || typeof now !== "number" || !Number.isFinite(mountedAt) || !Number.isFinite(now)) return false;
+  const d = now - mountedAt;
+  return d >= 0 && d < MEDICARE_PILOT_PULSE_MS;
+}

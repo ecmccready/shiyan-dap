@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyMedicareJson from "@/components/CopyMedicareJson";
+import MedicarePilotChip from "@/components/MedicarePilotChip";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
 import MedicareReviewTimer from "@/components/MedicareReviewTimer";
 import MedicareStatusChips from "@/components/MedicareStatusChips";
@@ -85,7 +86,7 @@ export default function MedicarePage() {
           investigation. It reuses the shared engine and isolates the Medicare domain rules. This page is a skeleton: no data is
           ingested or fetched yet.
         </p>
-        <Link data-medicare-pilot-chip href="/workbench/offer#pilot-proposition" className="inline-flex w-fit items-center gap-1 rounded-full border border-emerald-700 bg-emerald-950/40 px-3 py-1 text-xs font-semibold text-emerald-300 hover:bg-emerald-900/50">Medicare · Pilot proposition →</Link>
+        <MedicarePilotChip />
 
         <section data-medicare-guardrail className="border border-amber-500/60 bg-zinc-950 rounded-2xl p-5">
           <p className="text-amber-300 text-xs uppercase tracking-widest mb-2">Guardrail</p>
