@@ -390,6 +390,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "g", does: "copy summary JSON" },
   { key: "f", does: "cycle Show: All → ★ Winners → Beaten → = Agree" },
   { key: "o", does: "toggle Sort: look-back rank ↔ ΔΦ vs greedy" },
+  { key: "2", does: "focus, expand and scroll to the runner-up (#2), Show → All — same as the sticky lead chip; no-op with <2 paths" },
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -754,5 +755,18 @@ export function lookbackRunnerUpLeadChip(c: LookbackCompare | null | undefined):
     const d = Math.round((r[0].cumulative_delta_e - r[1].cumulative_delta_e) * 1e4) / 1e4;
     if (!Number.isFinite(d)) return null;
     return { delta: d, label: d === 0 ? "tie with #2" : `lead +${d} over #2`, runner_up: r[1].run_id, tie: d === 0 };
+  } catch { return null; }
+}
+
+/** Pure: key 2 mirrors the sticky "lead over #2" chip. Null when not 2, modified, typing, or <2 paths (no runner-up). `changed` false when Show is All and #2 is already focused+expanded; `toast` only when effective. Never throws. */
+export function lookbackRunnerUpKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, runnerUp: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): { target: string; changed: boolean; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "2" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof runnerUp !== "string" || !runnerUp) return null;
+    const st = state ?? {};
+    const changed = !((st.filter ?? "all") === "all" && st.focus === runnerUp && st.open === runnerUp);
+    return { target: runnerUp, changed, toast: changed ? "2 → runner-up (#2)" : null };
   } catch { return null; }
 }
