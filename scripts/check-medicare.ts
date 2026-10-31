@@ -898,7 +898,7 @@ console.log("ok review complete banner click action");
   console.log("medicareCopyRowChipShouldPulse/Pulse OK"); }
 
 // ⧉ #1 / ⧉ Last (chip or x / ;) successful copy → stacked top toast (y stays dispositions-copy)
-{   assert.equal(medicareCopyRowToast("first", "{}"), "⧉ #1 → copied #1 row JSON"); assert.equal(medicareCopyRowToast("last", "{}"), "⧉ Last → copied last row JSON");
+{ console.log("medicareCopyRowToast stacked toast (y stays dispositions) OK"); assert.equal(medicareCopyRowToast("first", "{}"), "⧉ #1 → copied #1 row JSON"); assert.equal(medicareCopyRowToast("last", "{}"), "⧉ Last → copied last row JSON");
   assert.equal(medicareCopyRowToast("first", ""), ""); assert.equal(medicareCopyRowToast("x", "{}"), ""); assert.equal(medicareCopyRowToast(null, null), "");
   assert.equal(medicareToastDurationMs("copy_row"), COPY_ROW_TOAST_MS); assert.ok(MEDICARE_TOAST_ORDER.includes("copy_row")); assert.ok(MEDICARE_COPY_ROW_TOAST_EVENT);
   const st = medicareToastStack({ copy_row: medicareCopyRowToast("first", "{}") }); assert.equal(st.length, 1); assert.equal(st[0].tone, "green");
