@@ -1101,3 +1101,12 @@ export function lookbackCopyLastKey(ev: { key?: unknown; ctrlKey?: unknown; meta
     return { json, toast: "; → copied LAST path JSON" };
   } catch { return null; }
 }
+
+/** Pure: sticky ⧉ TOP chip — copies TOP path JSON (same as key x) without moving focus. Null with no ranked path. Never throws. */
+export function lookbackCopyTopChip(json: unknown): { json: string; label: string; toast: string } | null {
+  try { return typeof json === "string" && json ? { json, label: "⧉ TOP", toast: "⧉ TOP → copied TOP path JSON" } : null; } catch { return null; }
+}
+/** Pure: sticky ⧉ Last chip — copies LAST path JSON (same as key ;) without moving focus. Null with <2 paths. Never throws. */
+export function lookbackCopyLastChip(json: unknown): { json: string; label: string; toast: string } | null {
+  try { return typeof json === "string" && json ? { json, label: "⧉ Last", toast: "⧉ Last → copied LAST path JSON" } : null; } catch { return null; }
+}
