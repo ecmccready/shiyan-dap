@@ -639,3 +639,15 @@ export function lookbackShowChip(filter: unknown): { filter: LookbackRoleFilter;
   const name = { all: "All", winners: "Winners", beaten: "Beaten", agree: "Agree" }[f];
   return { filter: f, label: `show: ${name}`, next: cycleRoleFilter(f) };
 }
+
+/** Pure: sticky focused-row chip ("focus: #rank run_id ↓"); jump = focused id, else first ranked row (like j). Hidden with no rows. */
+export function lookbackFocusChip(rows: unknown, focus: unknown): { show: boolean; label: string; id: string | null; jump: string | null } {
+  try {
+    const list = Array.isArray(rows) ? rows.filter((r): r is { run_id: string; rank?: unknown } => !!r && typeof r === "object" && typeof (r as { run_id?: unknown }).run_id === "string") : [];
+    if (!list.length) return { show: false, label: "", id: null, jump: null };
+    const hit = typeof focus === "string" ? list.find((r) => r.run_id === focus) : undefined;
+    if (!hit) return { show: true, label: "focus: — (j) ↓", id: null, jump: list[0].run_id };
+    const rank = typeof hit.rank === "number" ? hit.rank : list.indexOf(hit) + 1;
+    return { show: true, label: `focus: #${rank} ${hit.run_id} ↓`, id: hit.run_id, jump: hit.run_id };
+  } catch { return { show: false, label: "", id: null, jump: null }; }
+}
