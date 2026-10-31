@@ -1301,7 +1301,7 @@ export const MEDICARE_COPY_ROW_TOAST_EVENT = "medicare:copy-row-toast";
 /** Pure: stacked top-toast text after a successful ⧉ #1 / ⧉ Last copy (same text as the chip flash); "" when nothing was copied. Never throws. */
 export function medicareCopyRowToast(which: unknown, json: unknown): string {
   if (typeof json !== "string" || !json) return "";
-  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "second" ? "⧉ #2 → copied #2 row JSON" : which === "third" ? "⧉ #3 → copied #3 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : which === "all_rows" ? medicareAllRowsToast(json) : which === "notes" ? medicareNotesToast(json) : "";
+  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "second" ? "⧉ #2 → copied #2 row JSON" : which === "third" ? "⧉ #3 → copied #3 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : which === "all_rows" ? medicareAllRowsToast(json) : which === "notes" ? medicareNotesToast(json) : which === "statuses" ? medicareStatusesToast(json) : "";
 }
 
 /** Display-only: first-use (per session) pulse window for the sticky 📦 Hand-off chip. */
@@ -1617,4 +1617,25 @@ export function medicareNotesToast(json: unknown): string {
 export function medicareCopyNotesChip(report: unknown): { show: boolean; label: string; json: string; toast: string } {
   const json = medicareNotesJson(report); if (!json) return { show: false, label: "", json: "", toast: "" };
   const n = JSON.parse(json).count as number; return { show: true, label: `⧉ ${n} note${n === 1 ? "" : "s"}`, json, toast: medicareNotesToast(json) };
+}
+
+/** Pure: compact status-mix pack. Unlike ⧉ Notes (reviewer rationale), ⧉ All rows (full ReportEntry per row) and ⧉ Dispositions / y (whole hashed report envelope), this is { schema, kind: "statuses", count, report_hash (reference), counts{per DISPOSITION_STATUSES}, rows[{ rank, item_id, status }] } — no notes, reviewer, evidence or other hashes. "" when no rows. Never throws. */
+export function medicareStatusesJson(report: unknown): string {
+  try {
+    const r = report as Partial<InvestigationReport> | null; const es = Array.isArray(r?.entries) ? r!.entries! : [];
+    const rows = es.map((e, i) => ({ e, rank: i + 1 })).filter(({ e }) => e && typeof e === "object" && typeof e.item_id === "string")
+      .map(({ e, rank }) => ({ rank, item_id: e.item_id, status: (DISPOSITION_STATUSES as readonly string[]).includes(e.status) ? e.status : "unreviewed" }));
+    if (!rows.length) return "";
+    const counts = Object.fromEntries(DISPOSITION_STATUSES.map((st) => [st, rows.filter((x) => x.status === st).length]));
+    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "statuses", count: rows.length, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, counts, rows }, null, 2);
+  } catch { return ""; }
+}
+/** Pure: toast text for ⧉ Statuses (count read from the copied JSON). */
+export function medicareStatusesToast(json: unknown): string {
+  try { const n = typeof json === "string" && json ? JSON.parse(json).count : null; return typeof n === "number" && n > 0 ? `⧉ Statuses → copied ${n}-row status mix JSON` : ""; } catch { return ""; }
+}
+/** Pure: sticky "⧉ Statuses" chip. Hidden with no rows. Never throws. */
+export function medicareCopyStatusesChip(report: unknown): { show: boolean; label: string; json: string; toast: string } {
+  const json = medicareStatusesJson(report); if (!json) return { show: false, label: "", json: "", toast: "" };
+  return { show: true, label: "⧉ Statuses", json, toast: medicareStatusesToast(json) };
 }
