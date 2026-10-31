@@ -488,3 +488,10 @@ export function lookbackSortPulse(startedAt: unknown, now: unknown, sort: unknow
   if (typeof sort !== "string" || sort === "rank" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_SORT_PULSE_MS;
 }
+
+export const LOOKBACK_EXPAND_PULSE_MS = 2400;
+/** Pure: true while the expanded path panel should pulse — once per tab after the first row expand (`startedAt` set then), for LOOKBACK_EXPAND_PULSE_MS. Display only. */
+export function lookbackExpandPulse(startedAt: unknown, now: unknown, openId: unknown): boolean {
+  if (typeof openId !== "string" || openId === "" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_EXPAND_PULSE_MS;
+}
