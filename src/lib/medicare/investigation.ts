@@ -449,6 +449,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "a", does: "reset row filter to All (no-op when already All)" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
+  { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else clear the top toasts" },
 ];
@@ -995,4 +996,15 @@ export function filterAllKey(current: unknown): { changes: boolean; next: null }
 /** Pure: Win strip "All" reset chip — shown only when a row filter is active (same as key a). Never throws. */
 export function filterAllChip(current: unknown): { show: boolean; label: string } {
   const k = filterAllKey(current); return { show: k.changes, label: "All ✕" };
+}
+
+/** Pure: key `d` clears all live top toasts (same as ✕ Clear all / Win strip N toasts chip) when ≥1 shows. Recent history untouched. Effective-only ⌨ toast. Never throws. */
+export function medicareClearToastsKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, count: unknown): { changed: boolean; cleared: number; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "d" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    const n = typeof count === "number" && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
+    return { changed: n > 0, cleared: n, toast: n > 0 ? `d → cleared ${n} toast${n === 1 ? "" : "s"}` : null };
+  } catch { return null; }
 }
