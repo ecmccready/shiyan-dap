@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
 import { MEDICARE_PROGRESS_JUMP_EVENT, firstIncompleteDispositionTarget } from "@/lib/medicare/investigation";
-import { medicareToastClickAction, cheatsheetPulse, CHEATSHEET_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, undoPulse, UNDO_PULSE_MS, redoPulse, REDO_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { medicareToastClickAction, cheatsheetPulse, CHEATSHEET_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, quickNotePulse, QUICK_NOTE_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, undoPulse, UNDO_PULSE_MS, redoPulse, REDO_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -35,6 +35,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     setTimeout(() => setUndoPulseNow(Date.now()), UNDO_PULSE_MS);
   };
   const startUndoPulseRef = useRef(startUndoPulse);
+  const startQuickNotePulseRef = useRef<(id: string) => void>(() => {});
   const redoPulsedRef = useRef(false);
   const [redoPulseAt, setRedoPulseAt] = useState<number | null>(null);
   const [redoPulseNow, setRedoPulseNow] = useState(0);
@@ -67,6 +68,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
         ev.preventDefault();
         const id = e.item_id; const next = appendNoteTemplate(e.note, tpl);
         setHist((h) => commitDisposition(h, applyDispositionNote(h.present, id, next), `${e.provider_id ?? id} note (key t)`));
+        if (next !== e.note) startQuickNotePulseRef.current(id);
         return;
       }
       if (a.kind === "filter") { ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: cycleRowFilter(filterRef.current) })); return; }
@@ -130,6 +132,14 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     if (notePulsedRef.current) return;
     notePulsedRef.current = true; const t = Date.now(); setNotePulse({ id, at: t }); setNotePulseNow(t);
     setTimeout(() => setNotePulseNow(Date.now()), NOTE_FOCUS_PULSE_MS);
+  };
+  const quickNotePulsedRef = useRef(false);
+  const [quickNotePulseState, setQuickNotePulseState] = useState<{ id: string; at: number } | null>(null);
+  const [quickNotePulseNow, setQuickNotePulseNow] = useState(0);
+  startQuickNotePulseRef.current = (id: string) => {
+    if (quickNotePulsedRef.current) return;
+    quickNotePulsedRef.current = true; const t = Date.now(); setQuickNotePulseState({ id, at: t }); setQuickNotePulseNow(t);
+    setTimeout(() => setQuickNotePulseNow(Date.now()), QUICK_NOTE_PULSE_MS);
   };
   const undoPulsing = undoPulse(undoPulseAt, undoPulseNow, undoPulsedRef.current);
   const redoPulsing = redoPulse(redoPulseAt, redoPulseNow, redoPulsedRef.current);
@@ -310,8 +320,9 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
               onKeyDown={(ev) => { if (ev.key === "Enter") (ev.target as HTMLInputElement).blur(); }}
               onFocus={() => startNotePulse(e.item_id)}
               data-pulsing={noteFocusPulse(notePulse?.at, notePulseNow, notePulse?.id, e.item_id) ? "1" : undefined}
+              data-quick-note-pulsing={quickNotePulse(quickNotePulseState?.at, quickNotePulseNow, quickNotePulseState?.id, e.item_id) ? "1" : undefined}
               onBlur={(ev) => { const v = ev.target.value; if ((e.note ?? "") !== v.trim()) commit((d) => applyDispositionNote(d, e.item_id, v), `${e.provider_id ?? e.item_id} note`); }}
-              className={`min-w-[12rem] flex-1 bg-zinc-900 border rounded px-2 py-0.5 font-sans ${e.note ? "border-sky-500 text-sky-100" : "border-zinc-700 text-zinc-300"} disabled:opacity-40${noteFocusPulse(notePulse?.at, notePulseNow, notePulse?.id, e.item_id) ? " ring-4 ring-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.8)] motion-safe:animate-pulse" : ""}`}
+              className={`min-w-[12rem] flex-1 bg-zinc-900 border rounded px-2 py-0.5 font-sans ${e.note ? "border-sky-500 text-sky-100" : "border-zinc-700 text-zinc-300"} disabled:opacity-40${noteFocusPulse(notePulse?.at, notePulseNow, notePulse?.id, e.item_id) ? " ring-4 ring-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.8)] motion-safe:animate-pulse" : ""}${quickNotePulse(quickNotePulseState?.at, quickNotePulseNow, quickNotePulseState?.id, e.item_id) ? " ring-4 ring-emerald-300 shadow-[0_0_16px_rgba(110,231,183,0.8)] motion-safe:animate-pulse" : ""}`}
             />
             {noteTemplates(e.status, e.kind).length > 0 && (
               <span data-medicare-note-templates={e.item_id} className="flex flex-wrap gap-1">

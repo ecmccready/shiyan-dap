@@ -664,6 +664,13 @@ export function noteFocusPulse(startedAt: unknown, now: unknown, pulsedId: unkno
   return now >= startedAt && now - startedAt < NOTE_FOCUS_PULSE_MS;
 }
 
+export const QUICK_NOTE_PULSE_MS = 2400;
+/** Pure: true while the note field should pulse after the first successful `t` quick-note append in the tab — for QUICK_NOTE_PULSE_MS, only the appended row. Distinct from noteFocusPulse. Display only. */
+export function quickNotePulse(startedAt: unknown, now: unknown, pulsedId: unknown, rowId: unknown): boolean {
+  if (typeof pulsedId !== "string" || pulsedId === "" || pulsedId !== rowId || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < QUICK_NOTE_PULSE_MS;
+}
+
 export const KEY_TARGET_PULSE_MS = 2400;
 /** Pure: true while the key-target disposition row should pulse — once per tab after the first j/k move (`startedAt` set then), for KEY_TARGET_PULSE_MS. Display only. */
 export function keyTargetPulse(startedAt: unknown, now: unknown, targetId: unknown): boolean {
