@@ -502,3 +502,10 @@ export function lookbackFocusPulse(startedAt: unknown, now: unknown, focusId: un
   if (typeof focusId !== "string" || focusId === "" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_FOCUS_PULSE_MS;
 }
+
+export const LOOKBACK_HELP_PULSE_MS = 2400;
+/** Pure: true while the keyboard cheat sheet should pulse — once per tab after it first opens (`startedAt` set then), for LOOKBACK_HELP_PULSE_MS, only while open. Display only. */
+export function lookbackHelpPulse(startedAt: unknown, now: unknown, open: unknown): boolean {
+  if (open !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_HELP_PULSE_MS;
+}
