@@ -1,5 +1,6 @@
 "use client";
 
+import { filterAllKey } from "@/lib/medicare/investigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
@@ -53,7 +54,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       const btn = a.kind === "dispositions" || a.kind === "handoff" ? document.querySelector<HTMLButtonElement>(a.kind === "handoff" ? "[data-copy-medicare-handoff]" : "[data-copy-medicare-dispositions]") : null;
       const wnBtn = a.kind === "without_notes" ? document.querySelector<HTMLButtonElement>("[data-medicare-without-notes-target]") : null; const wnTarget = wnBtn?.getAttribute("data-medicare-without-notes-target") || null;
       const en = entryRef.current; const hh = histRef.current;
-      const changes = keyActionChanges(a, { target_id: targetRef.current.id, target_status: en?.status, target_kind: en?.kind, target_note: en?.note, can_undo: hh.past.length > 0, can_redo: (hh.future?.length ?? 0) > 0, ids: idsRef.current, button_ready: !!btn && !btn.disabled, complete: prevCompleteRef.current === true, without_notes_target: wnTarget, entries: entriesRef.current });
+      const changes = keyActionChanges(a, { target_id: targetRef.current.id, target_status: en?.status, target_kind: en?.kind, target_note: en?.note, can_undo: hh.past.length > 0, can_redo: (hh.future?.length ?? 0) > 0, ids: idsRef.current, button_ready: !!btn && !btn.disabled, complete: prevCompleteRef.current === true, without_notes_target: wnTarget, entries: entriesRef.current, row_filter: filterRef.current });
       { const txt = changes ? keyToastText(a, a.kind === "move" || a.kind === "filter" ? "" : targetRef.current.label) : null; if (txt) { const at = Date.now(); setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); } }
       if (a.kind === "help") { ev.preventDefault(); setHelp((x) => !x); return; }
       if (a.kind === "help_close") {
@@ -75,6 +76,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       }
       if (a.kind === "review_notes") { const k = reviewDoneNotesKey(prevCompleteRef.current, filterRef.current); if (!k.changes) return; ev.preventDefault(); if (reviewDoneFilterShouldPulse(false, filterRef.current, k.next)) window.dispatchEvent(new CustomEvent(MEDICARE_REVIEW_DONE_PULSE_EVENT)); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: k.next })); return; }
       if (a.kind === "incomplete") { if (!incompleteKey(entriesRef.current).changes) return; ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_UNREVIEWED_PULSE_EVENT, { detail: entriesRef.current.filter((e) => e?.status === "unreviewed").length })); window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_JUMP_EVENT)); return; }
+      if (a.kind === "filter_all") { const k = filterAllKey(filterRef.current); if (!k.changes) return; ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: k.next })); return; }
       if (a.kind === "without_notes") { const k = withoutNotesKey(prevCompleteRef.current === true, wnTarget); if (!k.changes || !wnBtn) return; ev.preventDefault(); wnBtn.click(); return; }
       if (a.kind === "filter") { ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: cycleRowFilter(filterRef.current) })); return; }
       if (a.kind === "dispositions") { const b = document.querySelector<HTMLButtonElement>("[data-copy-medicare-dispositions]"); if (!b || b.disabled) return; ev.preventDefault(); b.scrollIntoView({ block: "nearest" }); b.click(); return; }

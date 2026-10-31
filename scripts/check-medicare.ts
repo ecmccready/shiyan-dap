@@ -1,5 +1,6 @@
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
+import { filterAllKey } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -762,3 +763,8 @@ console.log("ok review complete banner click action");
   assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + MS), false); assert.equal(P(null, 1), false);
   assert.equal(S(false, "a"), true); assert.equal(S(true, "a"), false); assert.equal(S(false, null), false);
   console.log("firstRowChip OK"); }
+
+{ assert.equal(filterAllKey("has_note").changes, true); assert.equal(filterAllKey("unreviewed").changes, true); assert.equal(filterAllKey(null).changes, false); assert.equal(filterAllKey(undefined).changes, false); assert.equal(filterAllKey("has_note").next, null);
+  assert.deepEqual(dispositionShortcut({ key: "a" }), { kind: "filter_all" }); assert.deepEqual(dispositionShortcut({ key: "A" }), { kind: "filter_all" }); assert.equal(dispositionShortcut({ key: "a", ctrlKey: true }), null);
+  assert.equal(keyActionChanges({ kind: "filter_all" }, { row_filter: "has_note" }), true); assert.equal(keyActionChanges({ kind: "filter_all" }, { row_filter: null }), false);
+  assert.equal(keyToastText({ kind: "filter_all" }, ""), "filter → All"); assert.ok(MEDICARE_KEYMAP.some((k) => k.key === "a")); console.log("filterAllKey OK"); }
