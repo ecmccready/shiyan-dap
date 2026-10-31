@@ -1371,3 +1371,25 @@ export function lookbackExpandAllShouldPulse(alreadyPulsed: boolean, action: unk
 export function lookbackCopySummaryChip(json: unknown): { label: string; selector: string } | null {
   try { return typeof json === "string" && json ? { label: "⧉ Summary", selector: "[data-copy-roe-summary]" } : null; } catch { return null; }
 }
+
+/** Display-only: pulse window for the sticky "beaten ↓" chip (fires only when the jump changes something). */
+export const LOOKBACK_BEATEN_JUMP_PULSE_MS = 1200;
+/** Pure: sticky "beaten ↓" chip — focuses the first (rank-order) greedy_beaten sealed path, the same role as Show = Beaten / `b`.
+ *  Null when 0 beaten paths or invalid. Distinct from the "N beaten" chip: that one only toggles the Show filter; this one also
+ *  focuses, expands and scrolls to the first beaten path. Never throws. */
+export function lookbackBeatenJumpChip(c: LookbackCompare | null | undefined): { target: string; label: string; count: number } | null {
+  try {
+    const rows = filterLookbackRows(rankedLookbackRows(c), "beaten", c?.winner);
+    const t = rows[0]?.run_id;
+    return typeof t === "string" && t ? { target: t, label: "beaten ↓", count: rows.length } : null;
+  } catch { return null; }
+}
+/** Pure: would a beaten ↓ click change anything (Show → Beaten, focus/expand → first beaten)? Never throws; false without target. */
+export function lookbackBeatenJumpChanged(target: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): boolean {
+  try { if (typeof target !== "string" || !target) return false; const st = state ?? {}; return !(st.filter === "beaten" && st.focus === target && st.open === target); } catch { return false; }
+}
+/** Pure: beaten ↓ chip is pulsing within the window after a changing click. Never throws. */
+export function lookbackBeatenJumpPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LOOKBACK_BEATEN_JUMP_PULSE_MS;
+}
