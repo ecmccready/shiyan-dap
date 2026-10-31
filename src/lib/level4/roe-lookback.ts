@@ -478,6 +478,16 @@ export function lookbackCompareCopyPulse(startedAt: unknown, now: unknown): bool
   return now >= startedAt && now - startedAt < LOOKBACK_COMPARE_COPY_PULSE_MS;
 }
 
+export const LOOKBACK_PATH_COPIED_PULSE_MS = 2400;
+/** Pure: true while row `runId`'s Copy path JSON button should pulse after the first successful path copy in the tab (`c` on the focused row or the per-row button) — `pulse` is `{ runId, at }` set once on first copy, for LOOKBACK_PATH_COPIED_PULSE_MS. Display only. */
+export function lookbackPathCopiedPulse(pulse: unknown, runId: unknown, now: unknown): boolean {
+  if (!pulse || typeof pulse !== "object") return false;
+  const { runId: id, at } = pulse as { runId?: unknown; at?: unknown };
+  if (typeof id !== "string" || !id || id !== runId) return false;
+  if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
+  return now >= at && now - at < LOOKBACK_PATH_COPIED_PULSE_MS;
+}
+
 export const LOOKBACK_SUMMARY_COPIED_PULSE_MS = 2400;
 /** Pure: true while the sticky Copy summary JSON button should pulse after the first successful user-initiated summary copy (g, +Δe click, or button) — once per tab (`startedAt` set on first "copied"), for LOOKBACK_SUMMARY_COPIED_PULSE_MS. Distinct from the first-data mount pulse. Display only. */
 export function lookbackSummaryCopiedPulse(startedAt: unknown, now: unknown): boolean {
