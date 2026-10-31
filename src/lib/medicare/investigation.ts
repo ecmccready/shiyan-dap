@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -237,6 +237,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "f": case "F": return { kind: "filter" };
       case "t": case "T": return { kind: "template" };
       case "v": case "V": return { kind: "review_notes" };
+      case "w": case "W": return { kind: "without_notes" };
       default: return null;
     }
   } catch { return null; }
@@ -271,13 +272,14 @@ export function keyToastText(a: DispositionShortcut, label: unknown): string | n
       case "dispositions": return "copy dispositions JSON";
       case "handoff": return "📦 copy hand-off pack";
       case "review_notes": return "review done → ✎";
+      case "without_notes": return "↓ first without note";
       default: return null;
     }
   } catch { return null; }
 }
 
 /** What the key handler knows when a shortcut fires (display only). */
-export type KeyActionContext = { target_id?: string | null; target_status?: unknown; target_kind?: unknown; target_note?: unknown; can_undo?: boolean; can_redo?: boolean; ids?: unknown; button_ready?: boolean; complete?: boolean };
+export type KeyActionContext = { target_id?: string | null; target_status?: unknown; target_kind?: unknown; target_note?: unknown; can_undo?: boolean; can_redo?: boolean; ids?: unknown; button_ready?: boolean; complete?: boolean; without_notes_target?: string | null };
 /** Pure: true only when the shortcut will actually change state (or copy); gates the ⌨ toast. */
 export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | null | undefined): boolean {
   try {
@@ -291,6 +293,7 @@ export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | n
       case "template": return !!c.target_id && firstAvailableTemplate(c.target_status, c.target_kind, c.target_note) !== null;
       case "filter": return true;
       case "review_notes": return c.complete === true;
+      case "without_notes": return withoutNotesKey(c.complete, c.without_notes_target).changes;
       case "dispositions": case "handoff": return !!c.button_ready;
       default: return false;
     }
@@ -436,6 +439,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "f", does: "cycle filter: All → unreviewed → needs review → cleared → has note" },
   { key: "y", does: "copy current dispositions JSON" },
   { key: "h", does: "copy 📦 hand-off pack" },
+  { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else clear the top toasts" },
@@ -878,4 +882,9 @@ export function withoutNotesChip(report: unknown): { show: boolean; count: numbe
     if (!count) return hide;
     return { show: true, count, label: `${count} without note${count === 1 ? "" : "s"} ↓`, target: firstRowWithoutNote(report).item_id };
   } catch { return hide; }
+}
+
+/** Pure: keyboard w — effective only when review is complete and a row without a note exists (the N without notes chip target). Never throws. */
+export function withoutNotesKey(complete: unknown, target: unknown): { changes: boolean; target: string | null } {
+  try { const ok = complete === true && typeof target === "string" && target.length > 0; return { changes: ok, target: ok ? (target as string) : null }; } catch { return { changes: false, target: null }; }
 }
