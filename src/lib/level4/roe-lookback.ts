@@ -1461,3 +1461,17 @@ export function lookbackAllStepsJson(c: LookbackCompare | null | undefined): str
 export function lookbackCopyAllStepsChip(json: unknown, count?: unknown): { json: string; label: string; toast: string } | null {
   try { if (typeof json !== "string" || !json) return null; const n = typeof count === "number" && count > 0 ? count : null; return { json, label: n ? `⧉ All ${n} steps` : "⧉ All steps", toast: `⧉ All steps → copied ${n ?? "all"} sealed paths' steps JSON` }; } catch { return null; }
 }
+/** Pure: compact roles pack for all ranked sealed paths — rank, run_id, role (winner/beaten/agree/other), greedy/look-back flags, Φ, ΔΦ vs greedy. No steps/actions. Null when no paths. Never throws. */
+export function lookbackRolesJson(c: LookbackCompare | null | undefined): string | null {
+  try {
+    const rows = rankedLookbackRows(c); if (!c || !rows.length) return null;
+    const short: Record<LookbackRowRole, string> = { winner_lookback: "winner", greedy_beaten: "beaten", agree_both: "agree", other: "other" };
+    const roles = rows.map((r) => ({ rank: r.rank, run_id: r.run_id, role: short[lookbackRowRole(r, c.winner)], is_greedy: r.is_greedy, is_lookback: r.is_lookback, final_phi: r.final_phi, delta_phi_vs_greedy: r.delta_phi_vs_greedy }));
+    const counts = { winner: 0, beaten: 0, agree: 0, other: 0 } as Record<string, number>; for (const x of roles) counts[x.role]++;
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "roles", count: roles.length, greedy: c.greedy?.run_id ?? null, winner: c.winner ?? null, counts, roles, note: ROE_LOOKBACK_NOTE }, null, 2);
+  } catch { return null; }
+}
+/** Pure: sticky "⧉ Roles" chip — copies the compact roles pack without moving focus. Null without JSON. Never throws. */
+export function lookbackCopyRolesChip(json: unknown, count?: unknown): { json: string; label: string; toast: string } | null {
+  try { if (typeof json !== "string" || !json) return null; const n = typeof count === "number" && count > 0 ? count : null; return { json, label: n ? `⧉ Roles ${n}` : "⧉ Roles", toast: `⧉ Roles → copied ${n ?? "all"} path roles JSON` }; } catch { return null; }
+}
