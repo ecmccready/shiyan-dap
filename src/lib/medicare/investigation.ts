@@ -1217,3 +1217,17 @@ export function lastRowPulse(pulseAt: unknown, now: unknown): boolean {
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < LAST_ROW_PULSE_MS;
 }
+
+/** Display-only: first-use (per session) pulse window for the sticky ⧉ #1 / ⧉ Last copy chips. */
+export const MEDICARE_COPY_ROW_CHIP_PULSE_MS = 1200;
+/** Window event: detail "first" | "last" — a ⧉ #1 / ⧉ Last copy happened (chip or x / ;). */
+export const MEDICARE_COPY_ROW_PULSE_EVENT = "medicare:copy-row-pulse";
+/** Pure: start a ⧉ #1 / ⧉ Last pulse only on the first copy this session, with non-empty JSON. Never throws. */
+export function medicareCopyRowChipShouldPulse(alreadyPulsed: unknown, json: unknown): boolean {
+  return alreadyPulsed !== true && typeof json === "string" && json.length > 0;
+}
+/** Pure: ⧉ #1 / ⧉ Last chip is pulsing within the window after its first-use timestamp. Never throws. */
+export function medicareCopyRowChipPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < MEDICARE_COPY_ROW_CHIP_PULSE_MS;
+}

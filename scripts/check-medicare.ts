@@ -3,7 +3,7 @@
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
+import { medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -892,3 +892,7 @@ console.log("ok review complete banner click action");
   assert.equal(medicareCopyFirstRowChip(es).json, medicareCopyFirstRowKey(es).json, "⧉ #1 == x");
   assert.equal(medicareCopyLastRowChip(es).json, medicareCopyLastRowKey(es).json, "⧉ Last == ;"); assert.equal(medicareCopyLastRowChip(es).label, "⧉ Last");
   console.log("medicareCopyFirstRowChip/CopyLastRowChip OK"); }
+{ assert.equal(MEDICARE_COPY_ROW_CHIP_PULSE_MS, 1200); assert.equal(typeof MEDICARE_COPY_ROW_PULSE_EVENT, "string");
+  assert.equal(medicareCopyRowChipShouldPulse(false, "{}"), true); assert.equal(medicareCopyRowChipShouldPulse(true, "{}"), false); assert.equal(medicareCopyRowChipShouldPulse(false, ""), false); assert.equal(medicareCopyRowChipShouldPulse(false, null), false);
+  assert.equal(medicareCopyRowChipPulse(1000, 1000), true); assert.equal(medicareCopyRowChipPulse(1000, 2199), true); assert.equal(medicareCopyRowChipPulse(1000, 2200), false); assert.equal(medicareCopyRowChipPulse(1000, 999), false); assert.equal(medicareCopyRowChipPulse(null, 1), false); assert.equal(medicareCopyRowChipPulse(NaN, 1), false);
+  console.log("medicareCopyRowChipShouldPulse/Pulse OK"); }
