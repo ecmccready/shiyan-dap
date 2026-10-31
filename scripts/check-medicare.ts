@@ -3,6 +3,7 @@
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { lastRowChip } from "../src/lib/medicare/investigation";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -768,6 +769,10 @@ console.log("ok review complete banner click action");
   assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + MS), false); assert.equal(P(null, 1), false);
   assert.equal(S(false, "a"), true); assert.equal(S(true, "a"), false); assert.equal(S(false, null), false);
   console.log("firstRowChip OK"); }
+{ assert.deepEqual(lastRowChip([]), { show: false, label: "", jump: null }); assert.equal(lastRowChip([{ item_id: "a" }]).show, false);
+  assert.deepEqual(lastRowChip([{ item_id: "a" }, { item_id: "b" }, { item_id: "c" }]), { show: true, label: "Last ↓", jump: "c" });
+  assert.equal(lastRowChip(null).show, false); assert.equal(lastRowChip([null, { item_id: "a" }]).show, false);
+  console.log("lastRowChip OK"); }
 
 { assert.equal(filterAllKey("has_note").changes, true); assert.equal(filterAllKey("unreviewed").changes, true); assert.equal(filterAllKey(null).changes, false); assert.equal(filterAllKey(undefined).changes, false); assert.equal(filterAllKey("has_note").next, null);
   assert.deepEqual(dispositionShortcut({ key: "a" }), { kind: "filter_all" }); assert.deepEqual(dispositionShortcut({ key: "A" }), { kind: "filter_all" }); assert.equal(dispositionShortcut({ key: "a", ctrlKey: true }), null);

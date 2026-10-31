@@ -998,6 +998,15 @@ export function secondRowShouldPulse(alreadyPulsed: unknown, jump: unknown): boo
 /** Win strip "#1" chip: shown when ≥1 disposition rows; click targets/scrolls the 1st row (index 0). Display/navigation only. */
 export const FIRST_ROW_PULSE_MS = 2400;
 /** Pure: "#1" chip state; jump is the 1st row's item_id. Never throws. */
+/** Pure: sticky "Last ↓" chip — jumps to the last disposition row (same as key z). Shown when ≥2 rows. Display/navigation only. */
+export function lastRowChip(entries: unknown): { show: boolean; label: string; jump: string | null } {
+  try {
+    const list = Array.isArray(entries) ? entries.filter((e): e is { item_id: string } => !!e && typeof (e as { item_id?: unknown }).item_id === "string") : [];
+    if (list.length < 2) return { show: false, label: "", jump: null };
+    return { show: true, label: "Last ↓", jump: list[list.length - 1].item_id };
+  } catch { return { show: false, label: "", jump: null }; }
+}
+
 export function firstRowChip(entries: unknown): { show: boolean; label: string; jump: string | null } {
   try {
     const list = Array.isArray(entries) ? entries.filter((e): e is { item_id: string } => !!e && typeof (e as { item_id?: unknown }).item_id === "string") : [];
