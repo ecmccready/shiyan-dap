@@ -828,3 +828,18 @@ export function lookbackSecondChip(c: LookbackCompare | null | undefined): { tar
 export function lookbackFirstChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
   try { const t = lookbackTopFocusTarget(c); return typeof t === "string" && t ? { target: t, label: "#1" } : null; } catch { return null; }
 }
+
+export const LOOKBACK_GREEDY_CHIP_PULSE_MS = 2400;
+/** Pure: sticky "greedy" chip model — target = greedy-picked sealed path (lookbackGreedyFocusTarget); null when none. Never throws. */
+export function lookbackGreedyChip(c: LookbackCompare | null | undefined): { target: string; label: string } | null {
+  try { const t = lookbackGreedyFocusTarget(c); return t ? { target: t, label: "greedy" } : null; } catch { return null; }
+}
+/** Pure: true while the sticky greedy chip pulses after its first click (session once). Never throws. */
+export function lookbackGreedyChipPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_GREEDY_CHIP_PULSE_MS;
+}
+/** Pure: whether a greedy-chip jump should start the once-per-session pulse. */
+export function lookbackGreedyChipShouldPulse(alreadyPulsed: unknown, target: unknown): boolean {
+  return alreadyPulsed !== true && typeof target === "string" && target.length > 0;
+}
