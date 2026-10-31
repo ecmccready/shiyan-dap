@@ -610,3 +610,10 @@ export function lookbackVerdictCopiesCompare(c: LookbackCompare | null | undefin
 export function lookbackDeltaECopiesSummary(c: Parameters<typeof lookbackSummaryJson>[0]): boolean {
   return lookbackSummaryJson(c) !== "";
 }
+
+/** Pure: sticky "N sealed paths" chip from lookbackSummary path count; null when 0. Click resets Show to All. */
+export function lookbackSealedPathsChip(paths: unknown): { count: number; label: string } | null {
+  const n = typeof paths === "number" && Number.isFinite(paths) ? Math.floor(paths) : 0;
+  if (n <= 0) return null;
+  return { count: n, label: `${n} sealed path${n === 1 ? "" : "s"}` };
+}
