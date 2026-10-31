@@ -560,3 +560,9 @@ export function lookbackStepsDeltaTargets(c: LookbackCompare | null | undefined)
   return { top, greedy: g && g !== top ? g : null };
 }
 export const LOOKBACK_DELTA_GREEDY_SCROLL_MS = 900;
+
+/** Pure: sticky Φ-gap chip vs greedy (reuses fmtDeltaPhi). null when ΔΦ is missing or 0. Click sets sort to "dphi" (next is unchanged when already dphi). */
+export function lookbackPhiGapChip(deltaPhi: number | null | undefined, sort: LookbackSort): { delta: number; label: string; tone: "up" | "down"; nextSort: LookbackSort; changes: boolean } | null {
+  if (typeof deltaPhi !== "number" || !Number.isFinite(deltaPhi) || deltaPhi === 0) return null;
+  return { delta: deltaPhi, label: `Φ ${fmtDeltaPhi(deltaPhi)} vs greedy`, tone: deltaPhi > 0 ? "up" : "down", nextSort: "dphi", changes: sort !== "dphi" };
+}
