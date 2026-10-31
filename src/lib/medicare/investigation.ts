@@ -337,6 +337,13 @@ export function dismissMedicareToast<T extends { id: MedicareToastId }>(stack: r
   return Array.isArray(stack) ? stack.filter((t) => t.id !== id) : [];
 }
 
+/** Pure: Clear all — dismiss every live stacked top toast in one shot; returns the ids cleared (stack order) and an empty stack. Recent history is untouched. */
+export function clearAllMedicareToasts<T extends { id: MedicareToastId }>(stack: readonly T[] | null | undefined): { cleared: MedicareToastId[]; stack: T[] } {
+  return { cleared: Array.isArray(stack) ? stack.map((t) => t.id) : [], stack: [] };
+}
+/** Pure: the Clear all control shows only when 2+ top toasts are stacked. */
+export function showClearAllToasts(stack: readonly unknown[] | null | undefined): boolean { return Array.isArray(stack) && stack.length >= 2; }
+
 export const TOAST_LEAVE_GRACE_MS = 1200;
 /** Pure: on a toast's timer, defer while the pointer is over the stack, else dismiss. */
 export function toastExpiry(hovered: unknown): "defer" | "dismiss" { return hovered === true ? "defer" : "dismiss"; }
