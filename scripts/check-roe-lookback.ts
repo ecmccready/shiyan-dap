@@ -1,6 +1,6 @@
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
-import { clearLookbackToastHistory, pushLookbackToastHistory, dismissedLookbackToastHistory, LOOKBACK_TOAST_HISTORY_MAX, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
+import { lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, clearLookbackToastHistory, pushLookbackToastHistory, dismissedLookbackToastHistory, LOOKBACK_TOAST_HISTORY_MAX, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, LOOKBACK_TOAST_ORDER, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, ROLE_FILTER_CYCLE, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, lookbackRowRole, lookbackPathJson, sortLookbackRows, fmtDeltaPhi, lookbackRowEmphasis, rankedLookbackRows, lookbackVerdict, scoreSealedPaths, ROE_LOOKBACK_SCHEMA, ROE_LOOKBACK_NOTE } from "../src/lib/level4/roe-lookback";
 
 const row = (run_id: string, iteration: number, e: number, o: Record<string, unknown> = {}) => ({ run_id, iteration, e, e0: 1.6, verified_at: "2026-10-01T00:00:00Z", eligible: false, y: `a${iteration}`, state: "CONTINUE", ...o });
 // A: big first step, stalls (greedy pick). B: smaller steps, more total Δe (look-back pick). C: unsealed.
@@ -257,5 +257,16 @@ console.log("history     -> last 5 dismissed/expired look-back toasts in an ambe
   assert.deepEqual(dismissedLookbackToastHistory(cl, on), [], "strip empty right after Clear"); assert.deepEqual(cl.map((x) => x.text), ["a1"], "on-screen toast kept for later");
   assert.deepEqual(dismissedLookbackToastHistory(cl, []).map((x) => x.text), ["a1"], "it appears once it goes");
   assert.deepEqual(clearLookbackToastHistory(h, []), []); assert.deepEqual(clearLookbackToastHistory(null, null), []); assert.equal(h.length, 2, "input not mutated"); }
+{ const g = { text: "agree", tone: "blue" }, a = { text: "warn", tone: "amber" };
+  assert.equal(LOOKBACK_TOAST_PILL_COPIED_MS, 1500);
+  assert.equal(lookbackToastPillLabel(g, null, 0), "⧉ agree");
+  assert.equal(lookbackToastPillLabel(g, { key: "agree", at: 1000 }, 1000), "✓ Copied");
+  assert.equal(lookbackToastPillLabel(g, { key: "agree", at: 1000 }, 2499), "✓ Copied");
+  assert.equal(lookbackToastPillLabel(g, { key: "agree", at: 1000 }, 2500), "⧉ agree", "reverts after 1.5 s");
+  assert.equal(lookbackToastPillLabel(g, { key: "agree", at: 1000 }, 999), "⧉ agree", "clock skew");
+  assert.equal(lookbackToastPillLabel(a, { key: "agree", at: 1000 }, 1000), "⧉ ⚠ warn", "only the clicked pill");
+  assert.equal(lookbackToastPillLabel(a, { key: "⚠ warn", at: 1000 }, 1100), "✓ Copied");
+  assert.equal(lookbackToastPillLabel(g, { key: "agree", at: NaN }, 1000), "⧉ agree");
+  assert.equal(lookbackToastPillLabel(null, { key: "", at: 0 }, 0), ""); assert.equal(lookbackToastPillLabel({ text: "" }, null, 0), ""); }
 console.log("clear       -> Clear empties the look-back Recent toasts strip; a toast still on screen shows up after it goes");
 console.log("OK");

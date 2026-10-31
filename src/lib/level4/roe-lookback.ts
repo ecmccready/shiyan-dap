@@ -337,6 +337,15 @@ export function dismissedLookbackToastHistory(hist: readonly LookbackToastHistor
   return (hist ?? []).filter((h) => !on.has(lookbackToastCopyText(h)));
 }
 /** Pure: Clear on the Recent toasts strip — drops every gone toast; ones still on screen stay so they show up after they go. */
+export const LOOKBACK_TOAST_PILL_COPIED_MS = 1500;
+/** Label for a look-back Recent toasts pill: "✓ Copied" for ~1.5 s after it was clicked, else "⧉ <text>". Pure; tab-local. */
+export function lookbackToastPillLabel(h: { text?: unknown; tone?: unknown } | null | undefined, copied: { key: string; at: number } | null | undefined, now: number): string {
+  const txt = lookbackToastCopyText(h);
+  if (!txt) return "";
+  if (copied && copied.key === txt && Number.isFinite(copied.at) && now >= copied.at && now - copied.at < LOOKBACK_TOAST_PILL_COPIED_MS) return "✓ Copied";
+  return `⧉ ${txt}`;
+}
+
 export function clearLookbackToastHistory(hist: readonly LookbackToastHistoryEntry[] | null | undefined, showing: readonly { text: string; tone: unknown }[] | null | undefined): LookbackToastHistoryEntry[] {
   const on = new Set((showing ?? []).map((t) => lookbackToastCopyText(t)));
   return (hist ?? []).filter((h) => on.has(lookbackToastCopyText(h)));

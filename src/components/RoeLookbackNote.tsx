@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
-import { clearLookbackToastHistory, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
+import { lookbackToastPillLabel, LOOKBACK_TOAST_PILL_COPIED_MS, clearLookbackToastHistory, pushLookbackToastHistory, dismissedLookbackToastHistory, type LookbackToastHistoryEntry, lookbackToastCopyText, lookbackToastDurationMs, lookbackToastExpiry, lookbackToastsAfterLeave, LOOKBACK_TOAST_LEAVE_GRACE_MS, type LookbackToastId, dismissLookbackToast, lookbackEscTarget, lookbackToastStack, lookbackAgreeToast, lookbackWinToast, WIN_TOAST_MS, emptyFilterToast, EMPTY_FILTER_TOAST_MS, lookbackKeyChanges, lookbackToastText, LOOKBACK_TOAST_MS, LOOKBACK_KEYMAP, toggleLookbackSort, cycleRoleFilter, lookbackKey, moveLookbackFocus, toggleRoleFilter, lookbackSummaryJson, lookbackSummary, pathStepsJson, pathStepsDetail, sparklinePoints, stepGains, lookbackComparePack, filterLookbackRows, type LookbackRoleFilter, lookbackRowRole, lookbackPathJson, sortLookbackRows, type LookbackSort, fmtDeltaPhi, lookbackRowEmphasis, lookbackVerdict, rankedLookbackRows, scoreSealedPaths, type LookbackCompare } from "@/lib/level4/roe-lookback";
 
 /** Read-only ROE look-back note. GET /api/level4/experience only; nothing is written. */
 export default function RoeLookbackNote() {
@@ -75,6 +75,7 @@ export default function RoeLookbackNote() {
   };
   const [winToast, setWinToast] = useState<string | null>(null);
   const [toastHist, setToastHist] = useState<LookbackToastHistoryEntry[]>([]);
+  const [pillCopied, setPillCopied] = useState<{ key: string; at: number } | null>(null);
   const [agreeToast, setAgreeToast] = useState<string | null>(null);
   const winShownRef = useRef(false);
   useEffect(() => {
@@ -146,9 +147,10 @@ export default function RoeLookbackNote() {
             {pastToasts.map((h) => (
               <li key={lookbackToastCopyText(h)}>
                 <button type="button" data-roe-lookback-toast-history-item={h.id} title="Copy this toast text again"
-                  onClick={() => { const cp = lookbackToastCopyText(h); void navigator.clipboard?.writeText(cp).then(() => { const at = Date.now(); setToast({ txt: "copied toast text", at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); }, () => {}); }}
-                  className={`max-w-[28rem] truncate rounded-full border px-3 py-0.5 text-left font-semibold ${h.tone === "amber" ? "border-amber-400 text-amber-200" : h.tone === "blue" ? "border-sky-400 text-sky-200" : "border-emerald-400 text-emerald-200"}`}>
-                  ⧉ {lookbackToastCopyText(h)}
+                  onClick={() => { const cp = lookbackToastCopyText(h); void navigator.clipboard?.writeText(cp).then(() => { const at = Date.now(); setPillCopied({ key: cp, at }); window.setTimeout(() => setPillCopied((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_PILL_COPIED_MS); setToast({ txt: "copied toast text", at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); }, () => {}); }}
+                  data-roe-lookback-toast-history-copied={pillCopied?.key === lookbackToastCopyText(h) ? "" : undefined}
+                  className={`max-w-[28rem] truncate rounded-full border px-3 py-0.5 text-left font-semibold transition-colors ${pillCopied?.key === lookbackToastCopyText(h) ? "border-emerald-300 bg-emerald-400 text-black ring-2 ring-emerald-300 motion-safe:animate-pulse" : h.tone === "amber" ? "border-amber-400 text-amber-200" : h.tone === "blue" ? "border-sky-400 text-sky-200" : "border-emerald-400 text-emerald-200"}`}>
+                  {lookbackToastPillLabel(h, pillCopied, pillCopied ? pillCopied.at : 0)}
                 </button>
               </li>
             ))}
