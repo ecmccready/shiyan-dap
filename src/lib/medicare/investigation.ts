@@ -394,6 +394,12 @@ export function clearToastHistory(hist: readonly ToastHistoryEntry[] | null | un
   return (hist ?? []).filter((h) => on.has(medicareToastCopyText(h)));
 }
 
+/** Pure: ✕ on one Recent toasts pill — drops just that entry (matched by copy text); everything else stays in order. Bad input returns a copy unchanged. Tab-local. */
+export function removeToastHistoryEntry(hist: readonly ToastHistoryEntry[] | null | undefined, entry: { text?: unknown; tone?: unknown } | null | undefined): ToastHistoryEntry[] {
+  const k = entry && typeof entry.text === "string" ? medicareToastCopyText(entry) : "";
+  return (hist ?? []).filter((h) => !k || medicareToastCopyText(h) !== k);
+}
+
 /** Pure: 📌 Restore on a Recent toasts pill — the toast to re-show as a live top toast ({ id, text }, same slot and timer as before), or null for bad input or when that exact toast is already on screen. A different toast in the same slot is replaced (it is already in history). Tab-local. */
 export function restoreMedicareToast(entry: { id?: unknown; text?: unknown; tone?: unknown } | null | undefined, showing: readonly { id: MedicareToastId; text: string; tone: "green" | "amber" }[] | null | undefined): { id: MedicareToastId; text: string } | null {
   if (!entry || typeof entry.text !== "string" || !entry.text.trim() || !MEDICARE_TOAST_ORDER.includes(entry.id as MedicareToastId)) return null;
