@@ -356,6 +356,15 @@ export function medicareToastCopyText(t: { text?: unknown; tone?: unknown } | nu
   return `${t.tone === "amber" ? "⚠ " : ""}${t.text.trim()}`;
 }
 
+export const TOAST_PILL_COPIED_MS = 1500;
+/** Label for a Recent toasts pill: "✓ Copied" for ~1.5 s after it was clicked, else "⧉ <text>". Pure; tab-local. */
+export function medicareToastPillLabel(h: { text?: unknown; tone?: unknown } | null | undefined, copied: { key: string; at: number } | null | undefined, now: number): string {
+  const txt = medicareToastCopyText(h);
+  if (!txt) return "";
+  if (copied && copied.key === txt && Number.isFinite(copied.at) && now >= copied.at && now - copied.at < TOAST_PILL_COPIED_MS) return "✓ Copied";
+  return `⧉ ${txt}`;
+}
+
 export const TOAST_HISTORY_MAX = 5;
 export type ToastHistoryEntry = { id: MedicareToastId; text: string; tone: "green" | "amber" };
 /** Pure: add shown toasts to the tab-local history, newest first, de-duplicated by copy text, capped at TOAST_HISTORY_MAX. */

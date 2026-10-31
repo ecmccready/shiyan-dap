@@ -6,7 +6,7 @@ import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
 import { MEDICARE_CASE, formatInvestigationCaseBrief, formatReviewedCaseBrief, buildHandoffPack, buildWinSummary, medicareAnchorId } from "../src/lib/medicare/case-brief";
-import { clearToastHistory, pushToastHistory, dismissedToastHistory, TOAST_HISTORY_MAX, medicareToastCopyText, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, dismissMedicareToast, medicareEscTarget, medicareToastStack, MEDICARE_TOAST_ORDER, handoffReadyToast, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
+import { clearToastHistory, pushToastHistory, dismissedToastHistory, TOAST_HISTORY_MAX, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, dismissMedicareToast, medicareEscTarget, medicareToastStack, MEDICARE_TOAST_ORDER, handoffReadyToast, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, cycleRowFilter, ROW_FILTER_CYCLE, moveDispositionTarget, noteTemplates, appendNoteTemplate, handoffPulseActive, HANDOFF_PULSE_MS, handoffReadyAnnotated, notesNudge, toggleRowFilter, rowMatchesFilter, rowFilterEmphasis, notesCount, applyDispositionNote, DISPOSITION_NOTE_MAX, nextReviewTimer, reviewElapsedMs, formatElapsed, dispositionShortcut, redoDisposition, commitDisposition, undoDisposition, DISPOSITION_HISTORY_LIMIT, applyBulkDisposition, toggleStatusFilter, filterEmphasis, statusChips, currentDispositionsJson, reviewCompletion, reviewProgress, applyDisposition, buildInvestigationReport, verifyReportHash, MEDICARE_INVESTIGATION_SCHEMA, DISPOSITION_STATUSES } from "../src/lib/medicare/investigation";
 import { buildEvidencePack, verifyPackHash, MEDICARE_EVIDENCE_SCHEMA, UNCERTAINTY_NOTE } from "../src/lib/medicare/evidence";
 import { runBaselines, paymentVsCharge, MEDICARE_BASELINES_SCHEMA, PAYMENT_VS_CHARGE_RULE } from "../src/lib/medicare/baselines";
 
@@ -493,4 +493,18 @@ console.log("history     -> last 5 dismissed/expired top toasts in an amber stri
   assert.deepEqual(dismissedToastHistory(cl, []).map((x) => x.text), ["c1"], "it appears once it goes");
   assert.deepEqual(clearToastHistory(h, []), []); assert.deepEqual(clearToastHistory(null, null), []); assert.equal(h.length, 2, "input not mutated"); }
 console.log("clear       -> Clear empties the Recent toasts strip; a toast still on screen shows up after it goes");
+{
+  const e = { id: "complete", text: "Review complete", tone: "green" } as const;
+  const a = { id: "empty_filter", text: "Filter x", tone: "amber" } as const;
+  assert.equal(medicareToastPillLabel(e, null, 0), "⧉ Review complete");
+  assert.equal(medicareToastPillLabel(e, { key: "Review complete", at: 100 }, 100), "✓ Copied");
+  assert.equal(medicareToastPillLabel(e, { key: "Review complete", at: 100 }, 100 + TOAST_PILL_COPIED_MS - 1), "✓ Copied");
+  assert.equal(medicareToastPillLabel(e, { key: "Review complete", at: 100 }, 100 + TOAST_PILL_COPIED_MS), "⧉ Review complete");
+  assert.equal(medicareToastPillLabel(a, { key: "Review complete", at: 100 }, 100), "⧉ ⚠ Filter x");
+  assert.equal(medicareToastPillLabel(a, { key: "⚠ Filter x", at: 100 }, 100), "✓ Copied");
+  assert.equal(medicareToastPillLabel(null, null, 0), "");
+  assert.equal(medicareToastPillLabel({ text: " " }, { key: "", at: 0 }, 0), "");
+  assert.equal(medicareToastPillLabel(e, { key: "Review complete", at: NaN }, 0), "⧉ Review complete");
+}
+console.log("pill copied -> clicking a Recent toasts pill re-copies it and the pill flashes green \"✓ Copied\" for ~1.5 s");
 console.log("OK");
