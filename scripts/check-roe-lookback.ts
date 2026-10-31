@@ -639,3 +639,5 @@ console.log("Δe copy    -> sticky +Δe click copies summary JSON (same as g)");
   console.log("ok lookbackCompareChipToast (⚖ toast only after clipboard success)"); }
 { const T = lookbackCopyChipToast; assert.equal(T(true, "⧉ TOP → x"), "⧉ TOP → x"); assert.equal(T(false, "⧉ x"), null); assert.equal(T(undefined, "⧉ x"), null); assert.equal(T("true", "⧉ x"), null); assert.equal(T(true, ""), null); assert.equal(T(true, 3), null);
   console.log("ok lookbackCopyChipToast (⧉ TOP/Last/Greedy toast + pulse only after clipboard success)"); }
+{ const T = lookbackCopyChipToast; assert.equal(T(true, "⧉ TOP JSON (x)"), "⧉ TOP JSON (x)"); assert.equal(T(false, "⧉ Last JSON (;)"), null); assert.equal(T(undefined, "⧉ Greedy JSON (y)"), null);
+  console.log("ok lookbackCopyChipToast keys (x / ; / y toast + pulse only after clipboard success)"); }
