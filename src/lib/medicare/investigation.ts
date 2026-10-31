@@ -1293,3 +1293,10 @@ export function medicareKeyCopyPendingOk(pending: unknown, kind: unknown, now: u
   const p = pending as { kind?: unknown; at?: unknown; txt?: unknown };
   return (kind === "dispositions" || kind === "handoff") && p.kind === kind && typeof p.txt === "string" && p.txt.length > 0 && typeof p.at === "number" && typeof now === "number" && now >= p.at && now - p.at <= MEDICARE_HANDOFF_CHIP_PENDING_MS;
 }
+
+/** Fired by CopyMedicareJson (investigation / evidence / brief) only after its clipboard copy resolves true. */
+export const MEDICARE_PACK_COPIED_EVENT = "medicare:pack-copied";
+/** Pure: stacked key-toast text for a successful Copy investigation / evidence pack / case brief; null for unknown kinds. Never throws. */
+export function medicarePackCopiedToast(kind: unknown): string | null {
+  return kind === "investigation" ? "copied investigation JSON" : kind === "evidence" ? "copied evidence pack JSON" : kind === "brief" ? "copied case brief" : null;
+}
