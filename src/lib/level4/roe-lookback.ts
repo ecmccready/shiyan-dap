@@ -1552,3 +1552,22 @@ export function lookbackGapsJson(c: LookbackCompare | null | undefined): string 
 export function lookbackCopyGapsChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { if (typeof json !== "string" || !json) return null; return { json, label: "⧉ Gaps", toast: "⧉ Gaps → copied ΔΦ-vs-greedy leaderboard JSON" }; } catch { return null; }
 }
+
+/** Secondary copy-pack chips hidden behind the sticky Packs ▾ toggle (default collapsed). Primary chips (Compare, TOP, Last, Focus, Greedy, #2/#3, steps) stay visible. */
+export const LOOKBACK_PACKS_HIDDEN = ["All paths", "All steps", "Roles", "Gaps", "Verdict", "Summary"] as const;
+export const LOOKBACK_PACKS_PULSE_MS = 1200;
+/** Pure: Packs toggle chip label/title. Never throws. */
+export function lookbackPacksChip(open: unknown): { open: boolean; label: string; title: string; hidden: readonly string[] } {
+  const o = open === true;
+  return { open: o, label: o ? "Packs \u25b4" : "Packs \u25be", title: `${o ? "Hide" : "Show"} secondary copy packs: ${LOOKBACK_PACKS_HIDDEN.join(", ")}`, hidden: LOOKBACK_PACKS_HIDDEN };
+}
+/** Pure: toggle result; toast only on the first-ever open. Never throws. */
+export function lookbackPacksToggle(open: unknown, everOpened: unknown): { next: boolean; toast: string | null; everOpened: boolean } {
+  const next = open !== true; const first = next && everOpened !== true;
+  return { next, toast: first ? `Packs shown: ${LOOKBACK_PACKS_HIDDEN.join(", ")}` : null, everOpened: everOpened === true || next };
+}
+/** Pure: Packs chip pulse window. Never throws. */
+export function lookbackPacksPulse(at: unknown, now: unknown): boolean {
+  if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
+  const d = now - at; return d >= 0 && d < LOOKBACK_PACKS_PULSE_MS;
+}
