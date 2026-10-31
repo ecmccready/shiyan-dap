@@ -720,6 +720,17 @@ export function lookbackVerdictFilterShouldPulse(alreadyPulsed: unknown, cur: un
   return alreadyPulsed !== true && typeof next === "string" && next !== cur;
 }
 
+export const LOOKBACK_RUNNER_UP_PULSE_MS = 2400;
+/** Pure: true while the sticky runner-up lead chip glows/pulses after its first click in the tab (session once), for LOOKBACK_RUNNER_UP_PULSE_MS. Display only. Never throws. */
+export function lookbackRunnerUpPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_RUNNER_UP_PULSE_MS;
+}
+/** Pure: whether a runner-up chip click should start the once-per-session pulse (not yet pulsed and a #2 id exists). */
+export function lookbackRunnerUpShouldPulse(alreadyPulsed: unknown, runnerUp: unknown): boolean {
+  return alreadyPulsed !== true && typeof runnerUp === "string" && runnerUp.length > 0;
+}
+
 /** Pure: key v mirrors the sticky verdict→Show chip. Returns null when not v, modified, typing, or no verdict (none/unknown). `changed` false when next equals current; `toast` only when effective. Never throws. */
 export function lookbackVerdictKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, winner: unknown, filter: unknown): { next: LookbackRoleFilter; changed: boolean; toast: string | null } | null {
   try {
