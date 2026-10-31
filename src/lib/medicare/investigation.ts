@@ -650,6 +650,13 @@ export function dispositionsCopyPulse(startedAt: unknown, now: unknown, fired: u
   return now >= startedAt && now - startedAt < DISPOSITIONS_COPY_PULSE_MS;
 }
 
+export const HANDOFF_COPY_PULSE_MS = 2400;
+/** Pure: true while 📦 Copy hand-off pack should pulse — once per tab after the first successful user hand-off copy (h, timer when ready, or click), for HANDOFF_COPY_PULSE_MS. Distinct from handoffPackReadyPulse. Display only. */
+export function handoffCopyPulse(startedAt: unknown, now: unknown, fired: unknown): boolean {
+  if (fired !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < HANDOFF_COPY_PULSE_MS;
+}
+
 export const NOTE_FOCUS_PULSE_MS = 2400;
 /** Pure: true while the focused note field should pulse — once per tab on the first note focus (key n or click), for NOTE_FOCUS_PULSE_MS, only for the row that fired. Display only. */
 export function noteFocusPulse(startedAt: unknown, now: unknown, pulsedId: unknown, rowId: unknown): boolean {
