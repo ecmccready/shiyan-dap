@@ -1183,3 +1183,6 @@ import { topCandidateStickyChip, topCandidateStickyChanged, topCandidateStickyPu
   assert.equal(topCandidateStickyPulse(1, 1), true); assert.equal(topCandidateStickyPulse(1, 1 + TOP_CANDIDATE_STICKY_PULSE_MS), false);
   assert.equal(topCandidateStickyToast("a"), "★ ↓ top anomaly (rank 1): a"); assert.equal(topCandidateStickyToast(""), "");
   console.log("topCandidateStickyChip OK (sticky ★ top anomaly ↓ = rank-1 entry, filter All + focus note)"); }
+{ const m = require("../src/lib/evidence-packs-link"); assert.equal(m.EVIDENCE_PACKS_HREF, "/workbench/offer#evidence-packs");
+  assert.equal(m.evidencePacksChipLabel("medicare"), "Medicare · Evidence packs →"); assert.equal(m.evidencePacksChipLabel("lookback"), "Evidence packs →");
+  console.log("evidencePacksChip OK (→ /workbench/offer#evidence-packs)"); }

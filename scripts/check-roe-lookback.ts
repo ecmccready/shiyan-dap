@@ -867,3 +867,6 @@ console.log("Δe copy    -> sticky +Δe click copies summary JSON (same as g)");
     const ch = lookbackCopyAllStepsChip(j, rows.length)!; assert.equal(ch.label, `⧉ All ${rows.length} steps`); assert.equal(lookbackCopyChipToast(true, ch.toast), ch.toast); assert.equal(lookbackCopyChipToast(false, ch.toast), null); }
   else assert.equal(j, null);
   console.log(`ok lookbackAllStepsJson / CopyAllStepsChip (sticky ⧉ All steps, n=${rows.length})`); }
+{ const m = require("../src/lib/evidence-packs-link"); assert.equal(m.EVIDENCE_PACKS_HREF, "/workbench/offer#evidence-packs");
+  assert.equal(m.evidencePacksChipLabel("medicare"), "Medicare · Evidence packs →"); assert.equal(m.evidencePacksChipLabel("lookback"), "Evidence packs →");
+  console.log("evidencePacksChip OK (→ /workbench/offer#evidence-packs)"); }

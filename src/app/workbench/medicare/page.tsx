@@ -2,6 +2,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import CopyMedicareJson from "@/components/CopyMedicareJson";
 import MedicarePilotChip from "@/components/MedicarePilotChip";
+import EvidencePacksChip from "@/components/EvidencePacksChip";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
 import MedicareReviewTimer from "@/components/MedicareReviewTimer";
 import MedicareStatusChips from "@/components/MedicareStatusChips";
@@ -86,7 +87,7 @@ export default function MedicarePage() {
           investigation. It reuses the shared engine and isolates the Medicare domain rules. This page is a skeleton: no data is
           ingested or fetched yet.
         </p>
-        <MedicarePilotChip />
+        <div className="flex flex-wrap gap-2"><MedicarePilotChip /><EvidencePacksChip scope="medicare" /></div>
 
         <section data-medicare-guardrail className="border border-amber-500/60 bg-zinc-950 rounded-2xl p-5">
           <p className="text-amber-300 text-xs uppercase tracking-widest mb-2">Guardrail</p>
