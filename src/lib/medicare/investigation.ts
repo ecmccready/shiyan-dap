@@ -820,3 +820,10 @@ export function medicareCopyRecentPulse(startedAt: unknown, now: unknown): boole
   if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < MEDICARE_COPY_RECENT_PULSE_MS;
 }
+
+/** Pure: Win strip "review done → ✎" chip. Shown only when review is complete; click toggles row filter has_note ↔ All (mirrors look-back verdict filter chip). */
+export function reviewDoneNotesChip(complete: boolean, filter: RowFilter): { show: boolean; label: string; active: boolean; next: RowFilter } {
+  if (complete !== true) return { show: false, label: "", active: false, next: null };
+  const active = filter === "has_note";
+  return { show: true, label: `review done → ✎${active ? " ✓" : ""}`, active, next: active ? null : "has_note" };
+}
