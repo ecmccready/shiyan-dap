@@ -1158,6 +1158,14 @@ export function lookbackLastStepsJson(c: LookbackCompare | null | undefined): st
 export function lookbackCopyLastStepsChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ Last steps", toast: "⧉ Last steps → copied LAST steps JSON" } : null; } catch { return null; }
 }
+/** Pure: greedy-picked path steps JSON (same payload as expanding greedy row + s). Null without a greedy path. Never throws. */
+export function lookbackGreedyStepsJson(c: LookbackCompare | null | undefined): string | null {
+  try { if (!c) return null; const r = rankedLookbackRows(c).find((x) => x && x.is_greedy); if (!r || typeof r.run_id !== "string" || !r.run_id) return null; const j = pathStepsJson(r); return j || null; } catch { return null; }
+}
+/** Pure: sticky ⧉ Greedy steps chip — copies greedy steps JSON without expanding or moving focus. Null when no JSON. Never throws. */
+export function lookbackCopyGreedyStepsChip(json: unknown): { json: string; label: string; toast: string } | null {
+  try { return typeof json === "string" && json ? { json, label: "⧉ Greedy steps", toast: "⧉ Greedy steps → copied greedy steps JSON" } : null; } catch { return null; }
+}
 /** Pure: sticky ⧉ Last chip — copies LAST path JSON (same as key ;) without moving focus. Null with <2 paths. Never throws. */
 export function lookbackCopyLastChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ Last", toast: "⧉ Last → copied LAST path JSON" } : null; } catch { return null; }
