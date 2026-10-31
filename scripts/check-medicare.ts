@@ -530,12 +530,12 @@ console.log("pill copied -> clicking a Recent toasts pill re-copies it and the p
   assert.deepEqual(clearAllMedicareToasts(null), { cleared: [], stack: [] });
   assert.deepEqual(clearAllMedicareToasts("x" as never), { cleared: [], stack: [] });
   assert.equal(showClearAllToasts(st), true);
-  assert.equal(showClearAllToasts(st.slice(0, 1)), false, "single toast: no Clear all");
+  assert.equal(showClearAllToasts(st.slice(0, 1)), true, "single toast: Clear all (same as d)");
   assert.equal(showClearAllToasts([]), false); assert.equal(showClearAllToasts(null), false);
   const hist = pushToastHistory([], st);
   assert.equal(dismissedToastHistory(hist, r.stack).length, 3, "cleared toasts land in Recent toasts (history untouched)");
 }
-console.log("clear all -> with 2+ stacked top toasts a ✕ Clear all N (Esc) control dismisses them at once; Recent toasts kept");
+console.log("clear all -> with 1+ stacked top toasts a ✕ Clear all N (Esc) control dismisses them at once; Recent toasts kept");
 { const e = { id: "complete" as const, text: "✅ Review complete", tone: "green" as const };
   assert.deepEqual(restoreMedicareToast(e, []), { id: "complete", text: "✅ Review complete" });
   assert.equal(restoreMedicareToast(e, [e]), null, "already on screen -> no-op");
@@ -681,7 +681,7 @@ console.log("ok review complete banner click action");
 { const src = require("node:fs").readFileSync(require("node:path").join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8"); assert.ok(src.includes("data-medicare-cheatsheet-keys-open") && src.includes("z-[70]")); console.log("cheatsheet overlay keys-open chip OK"); }
 
 { const T = medicareToastsChip; assert.deepEqual(T([]), { show: false, label: "", clearable: false }); assert.deepEqual(T(null), { show: false, label: "", clearable: false });
-  assert.deepEqual(T([1]), { show: true, label: "1 toast", clearable: false }); assert.deepEqual(T([1,2]), { show: true, label: "2 toasts ✕", clearable: true });
+  assert.deepEqual(T([1]), { show: true, label: "1 toast ✕", clearable: true }); assert.deepEqual(T([1,2]), { show: true, label: "2 toasts ✕", clearable: true });
   assert.deepEqual(T(3), { show: true, label: "3 toasts ✕", clearable: true }); assert.equal(T(NaN).show, false); assert.equal(T(-1).show, false); console.log("medicareToastsChip OK"); }
 
 { const R = medicareRecentChip; assert.deepEqual(R([]), { show: false, label: "" }); assert.deepEqual(R(null), { show: false, label: "" }); assert.deepEqual(R([1]), { show: true, label: "1 recent ✕" });

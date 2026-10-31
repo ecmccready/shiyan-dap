@@ -354,7 +354,7 @@ export function clearAllMedicareToasts<T extends { id: MedicareToastId }>(stack:
   return { cleared: Array.isArray(stack) ? stack.map((t) => t.id) : [], stack: [] };
 }
 /** Pure: the Clear all control shows only when 2+ top toasts are stacked. */
-export function showClearAllToasts(stack: readonly unknown[] | null | undefined): boolean { return Array.isArray(stack) && stack.length >= 2; }
+export function showClearAllToasts(stack: readonly unknown[] | null | undefined): boolean { return Array.isArray(stack) && stack.length >= 1; }
 
 export const TOAST_LEAVE_GRACE_MS = 1200;
 /** Pure: on a toast's timer, defer while the pointer is over the stack, else dismiss. */
@@ -808,7 +808,7 @@ export const MEDICARE_TOASTS_CLEAR_EVENT = "medicare:toasts-clear";
 export function medicareToastsChip(stack: readonly unknown[] | number | null | undefined): { show: boolean; label: string; clearable: boolean } {
   const n = Array.isArray(stack) ? stack.length : typeof stack === "number" && Number.isFinite(stack) && stack > 0 ? Math.floor(stack) : 0;
   if (n < 1) return { show: false, label: "", clearable: false };
-  const clearable = n >= 2;
+  const clearable = n >= 1;
   return { show: true, label: `${n} toast${n === 1 ? "" : "s"}${clearable ? " ✕" : ""}`, clearable };
 }
 
