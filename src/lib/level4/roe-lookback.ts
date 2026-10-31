@@ -1087,6 +1087,11 @@ export const LOOKBACK_FIRST_UP_PULSE_MS = 1200;
 export function lookbackFirstUpShouldPulse(alreadyPulsed: unknown, target: unknown): boolean {
   return alreadyPulsed !== true && typeof target === "string" && target.length > 0;
 }
+/** Pure: would a First ↑ chip click actually change anything (Show filter → All, focus or expand → TOP)? Mirrors key 1's `changed`
+ *  so the chip only pulses (first-use / TOP) when the jump moves something. Never throws; false without a target. */
+export function lookbackFirstUpChipChanged(target: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): boolean {
+  try { if (typeof target !== "string" || !target) return false; const st = state ?? {}; return !((st.filter ?? "all") === "all" && st.focus === target && st.open === target); } catch { return false; }
+}
 /** Pure: First ↑ chip is pulsing while within the window after the first-use timestamp. Never throws. */
 export function lookbackFirstUpPulse(pulseAt: unknown, now: unknown): boolean {
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
