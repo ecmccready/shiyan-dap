@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
-import { rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
+import { bulkSetPulse, BULK_SET_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, rowMatchesFilter, rowFilterEmphasis, type RowFilter, MEDICARE_FILTER_EVENT, commitDisposition, undoDisposition, redoDisposition, applyDispositionNote, DISPOSITION_NOTE_MAX, noteTemplates, appendNoteTemplate, dispositionShortcut, clearToastHistory, medicareToastHistoryJson, removeToastHistoryEntry, restoreMedicareToast, pushToastHistory, dismissedToastHistory, type ToastHistoryEntry, medicareToastCopyText, medicareToastPillLabel, TOAST_PILL_COPIED_MS, medicareCopyAllLabel, medicareToastDurationMs, toastExpiry, toastsAfterLeave, TOAST_LEAVE_GRACE_MS, type MedicareToastId, dismissMedicareToast, clearAllMedicareToasts, showClearAllToasts, medicareEscTarget, medicareToastStack, handoffReadyToast, handoffReadyAnnotated, HANDOFF_READY_TOAST_MS, emptyRowFilterToast, EMPTY_ROW_FILTER_TOAST_MS, reviewCompleteToast, COMPLETE_TOAST_MS, reviewCompletion, keyActionChanges, keyToastText, KEY_TOAST_MS, MEDICARE_KEYMAP, firstAvailableTemplate, moveDispositionTarget, cycleRowFilter, MEDICARE_HANDOFF_FOCUS_EVENT, type DispositionHistory, applyBulkDisposition, filterEmphasis, type DispositionStatus, MEDICARE_REPORT_EVENT, MEDICARE_PROGRESS_EVENT, reviewProgress, applyDisposition, buildInvestigationReport, DISPOSITION_STATUSES, type DispositionInput } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
@@ -80,6 +80,15 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     rowFilterPulsedRef.current = true; const t = Date.now(); setRowFilterPulseAt(t); setRowFilterPulseNow(t);
     const id = setTimeout(() => setRowFilterPulseNow(Date.now()), ROW_FILTER_PULSE_MS); return () => clearTimeout(id);
   }, [filter]);
+  const bulkPulsedRef = useRef(false);
+  const [bulkPulseAt, setBulkPulseAt] = useState<number | null>(null);
+  const [bulkPulseNow, setBulkPulseNow] = useState(0);
+  const startBulkPulse = () => {
+    if (bulkPulsedRef.current) return;
+    bulkPulsedRef.current = true; const t = Date.now(); setBulkPulseAt(t); setBulkPulseNow(t);
+    setTimeout(() => setBulkPulseNow(Date.now()), BULK_SET_PULSE_MS);
+  };
+  const bulkPulsing = bulkSetPulse(bulkPulseAt, bulkPulseNow, bulkPulsedRef.current);
   const rowFilterPulsing = rowFilterPulse(rowFilterPulseAt, rowFilterPulseNow, filter);
   const report = useMemo(() => buildInvestigationReport({ pack, dispositions: disp }), [pack, disp]);
   const progress = useMemo(() => reviewProgress(report), [report]);
@@ -212,11 +221,11 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
       {filter && (() => {
         const visible = report.entries.filter((e) => rowMatchesFilter(e, filter)).map((e) => e.item_id);
         const bulk = (to: DispositionStatus) => {
-          commit((d) => applyBulkDisposition(d, visible, to), `set ${visible.length} to ${to}`);
+          commit((d) => applyBulkDisposition(d, visible, to), `set ${visible.length} to ${to}`); startBulkPulse();
           const nf: RowFilter = filter === "has_note" && to !== "unreviewed" ? "has_note" : to; setFilter(nf); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: nf }));
         };
         return visible.length > 0 ? (
-          <div data-medicare-bulk className="flex flex-wrap items-center gap-2 text-xs">
+          <div data-medicare-bulk data-pulsing={bulkPulsing ? "1" : undefined} className={`flex flex-wrap items-center gap-2 text-xs rounded${bulkPulsing ? " ring-4 ring-amber-300 shadow-[0_0_16px_rgba(251,191,36,0.8)] motion-safe:animate-pulse" : ""}`}>
             <span className="text-zinc-400">Set all {visible.length} shown:</span>
             {filter !== "needs_human_review" && <button type="button" data-medicare-bulk-set="needs_human_review" onClick={() => bulk("needs_human_review")} className="rounded-full bg-amber-400 text-black px-3 py-1 font-semibold">needs_human_review</button>}
             {filter !== "cleared_pattern_only" && <button type="button" data-medicare-bulk-set="cleared_pattern_only" onClick={() => bulk("cleared_pattern_only")} className="rounded-full bg-emerald-400 text-black px-3 py-1 font-semibold">cleared_pattern_only</button>}

@@ -595,3 +595,10 @@ export function rowFilterPulse(startedAt: unknown, now: unknown, filter: unknown
   if (typeof filter !== "string" || filter === "" || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < ROW_FILTER_PULSE_MS;
 }
+
+export const BULK_SET_PULSE_MS = 2400;
+/** Pure: true while the "Set all N shown" bulk control should pulse — once per tab after the first bulk disposition, for BULK_SET_PULSE_MS. Display only. */
+export function bulkSetPulse(startedAt: unknown, now: unknown, fired: unknown): boolean {
+  if (fired !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < BULK_SET_PULSE_MS;
+}
