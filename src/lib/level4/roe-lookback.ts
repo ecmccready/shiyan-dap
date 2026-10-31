@@ -669,3 +669,11 @@ export function lookbackCheatsheetChip(open: unknown): { show: boolean; label: s
   const show = open === true;
   return { show, label: show ? "keys open ✕" : "" };
 }
+
+/** Pure: sticky "N toasts" chip while ≥1 top toast shows; clickable (Clear all) only when ≥2. Never throws. */
+export function lookbackToastsChip(stack: readonly unknown[] | null | undefined): { show: boolean; label: string; clearable: boolean } {
+  const n = Array.isArray(stack) ? stack.length : 0;
+  if (n < 1) return { show: false, label: "", clearable: false };
+  const clearable = n >= 2;
+  return { show: true, label: `${n} toast${n === 1 ? "" : "s"}${clearable ? " ✕" : ""}`, clearable };
+}
