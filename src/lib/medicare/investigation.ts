@@ -1709,3 +1709,23 @@ export function medicarePacksPulse(at: unknown, now: unknown): boolean {
   if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
   const d = now - at; return d >= 0 && d < MEDICARE_PACKS_PULSE_MS;
 }
+
+/** Secondary jump chips hidden behind the Medicare sticky Jumps ▾ toggle (default collapsed), mirroring look-back. Always visible: First ↑, Last ↓, #1/#2/#3 ↓. */
+export const MEDICARE_JUMPS_HIDDEN = ["\u2605 top anomaly \u2193", "\u25cb unreviewed \u2193", "\u2691 needs review \u2193", "\u2713 cleared \u2193", "\u270e blank \u2193"] as const;
+export const MEDICARE_JUMPS_ALWAYS = ["First \u2191", "Last \u2193", "#1 \u2193", "#2 \u2193", "#3 \u2193"] as const;
+export const MEDICARE_JUMPS_PULSE_MS = 1200;
+/** Pure: Jumps toggle chip label/title. Never throws. */
+export function medicareJumpsChip(open: unknown): { open: boolean; label: string; title: string; hidden: readonly string[] } {
+  const o = open === true;
+  return { open: o, label: o ? "Jumps \u25b4" : "Jumps \u25be", title: `${o ? "Hide" : "Show"} secondary jump chips: ${MEDICARE_JUMPS_HIDDEN.join(", ")}`, hidden: MEDICARE_JUMPS_HIDDEN };
+}
+/** Pure: toggle result; toast only on the first-ever open. Never throws. */
+export function medicareJumpsToggle(open: unknown, everOpened: unknown): { next: boolean; toast: string | null; everOpened: boolean } {
+  const next = open !== true; const first = next && everOpened !== true;
+  return { next, toast: first ? `Jumps shown: ${MEDICARE_JUMPS_HIDDEN.join(", ")}` : null, everOpened: everOpened === true || next };
+}
+/** Pure: Jumps chip pulse window. Never throws. */
+export function medicareJumpsPulse(at: unknown, now: unknown): boolean {
+  if (typeof at !== "number" || typeof now !== "number" || !Number.isFinite(at) || !Number.isFinite(now)) return false;
+  const d = now - at; return d >= 0 && d < MEDICARE_JUMPS_PULSE_MS;
+}

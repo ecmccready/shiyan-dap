@@ -527,3 +527,7 @@ The Medicare sticky strip now has a **Packs ▾** chip (default collapsed), mirr
 ### Look-back: sticky Jumps ▾ / Jumps ▴ toggle
 
 The look-back sticky strip now has a **Jumps ▾** chip (default collapsed) that shows/hides the secondary jump chips: **beaten ↓, winners ↓, agree ↓, ΔΦ ↓, Φ ↑** (`LOOKBACK_JUMPS_HIDDEN`). Primary navigation — First ↑, Last ↓, #1 / #2 / #3, greedy, ⊞ Expand all — stays always visible. Click **Jumps ▴** to collapse again. First click pulses the chip once; a toast lists the revealed jumps only on the first open. Keyboard shortcuts are unchanged. Pure helpers: `lookbackJumpsChip`, `lookbackJumpsToggle`, `lookbackJumpsPulse` (checked in `scripts/check-roe-lookback.ts`).
+
+### Medicare: sticky Jumps ▾ / Jumps ▴ toggle
+
+The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirroring look-back. Collapsed, it hides the secondary jump chips (`MEDICARE_JUMPS_HIDDEN`): **★ top anomaly ↓, ○ unreviewed ↓, ⚑ needs review ↓, ✓ cleared ↓, ✎ blank ↓**. Always visible (`MEDICARE_JUMPS_ALWAYS`): **First ↑, Last ↓, #1 / #2 / #3 ↓**. Click **Jumps ▴** to collapse again. First click pulses the chip once; a toast lists the revealed jumps only on the first open. Keyboard shortcuts (`i`, `w`, etc.) are unchanged. Pure helpers: `medicareJumpsChip`, `medicareJumpsToggle`, `medicareJumpsPulse` (checked in `scripts/check-medicare.ts`).
