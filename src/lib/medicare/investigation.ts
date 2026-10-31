@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "first_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | { kind: "copy_target_row" } | { kind: "copy_investigation" } | { kind: "copy_evidence" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | { kind: "first_row" } | { kind: "copy_first_row" } | { kind: "copy_last_row" } | { kind: "copy_brief" } | { kind: "copy_target_row" } | { kind: "copy_investigation" } | { kind: "copy_evidence" } | { kind: "copy_second_row" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -251,6 +251,7 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "s": case "S": return { kind: "copy_target_row" };
       case "m": case "M": return { kind: "copy_investigation" };
       case "q": case "Q": return { kind: "copy_evidence" };
+      case "'": return { kind: "copy_second_row" };
       default: return null;
     }
   } catch { return null; }
@@ -347,6 +348,7 @@ export function keyToastText(a: DispositionShortcut, label: unknown): string | n
       case "copy_first_row": return "⧉ copied #1 row JSON";
       case "copy_last_row": return "⧉ copied last row JSON";
       case "copy_target_row": return "⧉ copied target row JSON";
+      case "copy_second_row": return "⧉ copied #2 row JSON";
       case "needs_review": return "filter → needs review / All";
       case "cleared": return "filter → cleared / All";
       case "unreviewed_filter": return "filter → unreviewed / All";
@@ -377,6 +379,7 @@ export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | n
       case "first_row": return firstRowKey(c.ids, c.target_id).changes;
       case "copy_first_row": return medicareCopyFirstRowKey(c.entries).changes;
       case "copy_last_row": return medicareCopyLastRowKey(c.entries).changes;
+      case "copy_second_row": return medicareCopySecondRowKey(c.entries).changes;
       case "needs_review": return needsReviewKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "needs_human_review").length : 0, c.row_filter).changes;
       case "unreviewed_filter": return unreviewedFilterKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "unreviewed").length : 0, c.row_filter).changes;
       case "cleared": return clearedKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "cleared_pattern_only").length : 0, c.row_filter).changes;
@@ -537,6 +540,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "s", does: "copy the targeted (selected) row's JSON — same shape as x / ;; follows j/k / click; key toast only after clipboard success; no-op with no target" },
   { key: "o", does: "copy the reviewed case brief — same as the sticky ⧉ Case brief chip / Copy (reviewed) case brief button; toast only after clipboard success; no-op with no dispositions" },
   { key: "m", does: "copy the full investigation JSON — same as the Copy investigation JSON button (stacked toast only after clipboard success); no-op when the button is absent" },
+  { key: "'", does: "copy the #2 disposition row JSON (report.entries[1]) — same as sticky ⧉ #2; target/filter unchanged (unlike #2 ↓, which jumps); stacked toast only after clipboard success; no-op with <2 rows" },
   { key: "q", does: "copy the evidence pack JSON — same as ⧉ Evidence / Copy evidence pack JSON (stacked toast only after clipboard success)" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
@@ -1287,7 +1291,7 @@ export const MEDICARE_COPY_ROW_TOAST_EVENT = "medicare:copy-row-toast";
 /** Pure: stacked top-toast text after a successful ⧉ #1 / ⧉ Last copy (same text as the chip flash); "" when nothing was copied. Never throws. */
 export function medicareCopyRowToast(which: unknown, json: unknown): string {
   if (typeof json !== "string" || !json) return "";
-  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : "";
+  return which === "first" ? "⧉ #1 → copied #1 row JSON" : which === "second" ? "⧉ #2 → copied #2 row JSON" : which === "last" ? "⧉ Last → copied last row JSON" : which === "target" ? "⧉ Target → copied target row JSON" : which === "handoff" ? "📦 Hand-off → copied hand-off pack" : which === "dispositions" ? "⧉ Dispositions → copied dispositions JSON" : "";
 }
 
 /** Display-only: first-use (per session) pulse window for the sticky 📦 Hand-off chip. */
@@ -1349,7 +1353,7 @@ export function medicareBriefChipPulse(at: unknown, now: unknown): boolean { ret
 
 /** Keys whose key toast is deferred until clipboard success (x / ; / y / h). Pure. */
 export function medicareKeyToastDeferred(a: DispositionShortcut): boolean {
-  return !!a && (a.kind === "copy_first_row" || a.kind === "copy_last_row" || a.kind === "dispositions" || a.kind === "handoff");
+  return !!a && (a.kind === "copy_first_row" || a.kind === "copy_last_row" || a.kind === "copy_second_row" || a.kind === "dispositions" || a.kind === "handoff");
 }
 /** Pure: y / h key toast fires only when the matching button's copied event arrives within 3s of the key press. Never throws. */
 export function medicareKeyCopyPendingOk(pending: unknown, kind: unknown, now: unknown): boolean {
@@ -1425,3 +1429,15 @@ export function medicareEvidenceChipCopiedOk(pendingAt: unknown, now: unknown, k
 export const MEDICARE_EVIDENCE_CHIP_PULSE_MS = 1600;
 export function medicareEvidenceChipShouldPulse(alreadyPulsed: unknown, ok: unknown): boolean { return alreadyPulsed !== true && ok === true; }
 export function medicareEvidenceChipPulse(at: unknown, now: unknown): boolean { return typeof at === "number" && typeof now === "number" && now >= at && now - at < MEDICARE_EVIDENCE_CHIP_PULSE_MS; }
+
+/** ' key: every letter is taken on Medicare (n = notes, q = evidence…), so apostrophe — beside ; (copy last row). Distinct from the "#2 ↓" win-strip chip, which TARGETS/scrolls row 2; ⧉ #2 / ' only COPY report.entries[1] and never move target or filter. */
+export const MEDICARE_COPY_SECOND_ROW_KEY = "'";
+/** Pure: ' key gate — copies report.entries[1] (same ReportEntry shape as x / ; / s); no-op with <2 rows. Never throws. */
+export function medicareCopySecondRowKey(entries: unknown): { changes: boolean; json: string } {
+  try { const json = Array.isArray(entries) && entries.length >= 2 ? medicareFirstRowJson([entries[1]]) : ""; return { changes: json !== "", json }; } catch { return { changes: false, json: "" }; }
+}
+/** Pure: sticky "⧉ #2" chip — copies report.entries[1] JSON (same as ') without moving target. Shown when ≥2 rows. Never throws. */
+export function medicareCopySecondRowChip(entries: unknown): { show: boolean; label: string; json: string; toast: string } {
+  const k = medicareCopySecondRowKey(entries);
+  return k.changes ? { show: true, label: "⧉ #2", json: k.json, toast: "⧉ #2 → copied #2 row JSON" } : { show: false, label: "", json: "", toast: "" };
+}

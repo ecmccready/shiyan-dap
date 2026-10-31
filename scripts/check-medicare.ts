@@ -1029,3 +1029,16 @@ import { medicareEvidenceChip, medicareEvidenceChipCopiedOk, medicareEvidenceChi
   if (!medicareEvidenceChipCopiedOk(1000, 2000, "evidence") || medicareEvidenceChipCopiedOk(1000, 2000, "investigation") || medicareEvidenceChipCopiedOk(1000, 5000, "evidence")) throw new Error("evidence copiedOk");
   if (!medicareEvidenceChipShouldPulse(false, true) || medicareEvidenceChipShouldPulse(true, true) || !medicareEvidenceChipPulse(0, 100) || medicareEvidenceChipPulse(0, 2000)) throw new Error("evidence pulse");
   console.log("ok q key + ⧉ Evidence chip → copy evidence pack JSON"); }
+
+import { medicareCopySecondRowKey, medicareCopySecondRowChip, MEDICARE_COPY_SECOND_ROW_KEY, medicareCopyRowToast as MCRT2, keyToastText as KTT2 } from "../src/lib/medicare/investigation";
+{ if (DSM({ key: "'" })?.kind !== "copy_second_row") throw new Error("' → copy_second_row");
+  if (DSM({ key: "'", targetTag: "TEXTAREA" }) !== null || DSM({ key: "'", ctrlKey: true }) !== null) throw new Error("' guarded");
+  if (DSM({ key: "q" })?.kind !== "copy_evidence" || DSM({ key: "2" })?.kind !== "set") throw new Error("q/2 unchanged");
+  if (MEDICARE_COPY_SECOND_ROW_KEY !== "'" || !MKM.some((k) => k.key === "'")) throw new Error("' in keymap");
+  const es = [{ item_id: "a" }, { item_id: "b", status: "cleared_pattern_only" }];
+  const k = medicareCopySecondRowKey(es); if (!k.changes || JSON.parse(k.json).item_id !== "b") throw new Error("2nd row json");
+  if (medicareCopySecondRowKey([{ item_id: "a" }]).changes || medicareCopySecondRowKey(null).changes) throw new Error("<2 rows no-op");
+  const c = medicareCopySecondRowChip(es); if (c.label !== "⧉ #2" || c.json !== k.json || medicareCopySecondRowChip([{ item_id: "a" }]).show) throw new Error("⧉ #2 chip");
+  if (MCRT2("second", k.json) !== c.toast || MCRT2("second", "") !== "") throw new Error("⧉ #2 toast");
+  if (KTT2({ kind: "copy_second_row" }, "") !== "⧉ copied #2 row JSON") throw new Error("' key toast");
+  console.log("ok ' key + sticky ⧉ #2 chip → copy #2 row JSON (target unchanged)"); }
