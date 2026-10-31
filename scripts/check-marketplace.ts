@@ -309,7 +309,7 @@ const cyc: J = {}; cyc.self = cyc;
 const proxy = new Proxy({}, { get() { throw new Error("boom"); }, ownKeys() { throw new Error("boom"); } });
 const junkBase: unknown[] = [null, undefined, true, false, 0, -1, 1.5, NaN, Infinity, -Infinity, "", "x", "{}", "aethel.marketplace.listings.v1", [], [[]], [null], [{}], {}, { listings: null }, { listings: {} },
   { schema: LISTINGS_SCHEMA }, { schema: LISTINGS_SCHEMA, listings: [] }, { schema: LISTINGS_SCHEMA, listings: [null, 1, "a", [], {}], count: 5 }, { listings: "abc", count: "0" },
-  Symbol("s"), 10n, () => 1, new Date(0), /re/, new Map(), new Set([1]), cyc, proxy, Object.create(null), new Array(1000), { count: NaN, peer_ready_count: -1, listings: [] }];
+  Symbol("s"), BigInt(10), () => 1, new Date(0), /re/, new Map(), new Set([1]), cyc, proxy, Object.create(null), new Array(1000), { count: NaN, peer_ready_count: -1, listings: [] }];
 const junk: unknown[] = [];
 for (let i = 0; i < 200; i++) junk.push(junkBase[i % junkBase.length]);
 for (const j of junk) { const r = validatePeerListingIndex(j); assert.equal(typeof r.ok, "boolean"); }
@@ -383,7 +383,7 @@ const ok2 = checkRouteContract("peers", pm((d) => { d.peers[2].role = "node"; d.
 assert.equal(ok2.ok, true, "a non-placeholder peer with a gate-valid URL is allowed by shape");
 const noCaps = checkRouteContract("peers", pm((d) => { delete d.peers[0].capabilities; }));
 assert.equal(noCaps.ok, true); if (noCaps.ok) assert.deepEqual(noCaps.warnings, ["self has no capabilities object"]);
-const rjunk: unknown[] = [null, undefined, 0, "", "x", [], [null], {}, { peers: null }, { peers: [null] }, { peers: [1], schema_version: PEERS_SCHEMA, self_id: "self" }, { listings: 5 }, cyc, proxy, Symbol("s"), 10n, () => 1, new Map(), Object.create(null), { schema: LISTINGS_SCHEMA, peers: [] }];
+const rjunk: unknown[] = [null, undefined, 0, "", "x", [], [null], {}, { peers: null }, { peers: [null] }, { peers: [1], schema_version: PEERS_SCHEMA, self_id: "self" }, { listings: 5 }, cyc, proxy, Symbol("s"), BigInt(10), () => 1, new Map(), Object.create(null), { schema: LISTINGS_SCHEMA, peers: [] }];
 let rn = 0;
 for (let i = 0; i < 200; i++) for (const route of ["peers", "listings"] as const) { const r = checkRouteContract(route, rjunk[i % rjunk.length]); assert.equal(typeof r.ok, "boolean"); rn++; }
 assert.equal(rn, 400);
