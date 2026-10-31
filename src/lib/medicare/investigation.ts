@@ -850,3 +850,22 @@ export function reviewDoneFilterPulse(startedAt: unknown, now: unknown): boolean
 export function reviewDoneFilterShouldPulse(alreadyPulsed: unknown, cur: unknown, next: unknown): boolean {
   return alreadyPulsed !== true && next !== cur && (next === null || typeof next === "string");
 }
+
+/** Pure: Win strip "N without notes" chip. Shown only when review is complete and ≥1 reviewed entry lacks a note; target = first such row. */
+export function withoutNotesChip(report: unknown): { show: boolean; count: number; label: string; target: string | null } {
+  const hide = { show: false, count: 0, label: "", target: null };
+  try {
+    if (!reviewCompletion(reviewProgress(report)).complete) return hide;
+    const es = (report as { entries?: unknown })?.entries;
+    if (!Array.isArray(es)) return hide;
+    let count = 0;
+    for (const e of es) {
+      const x = e as { item_id?: unknown; status?: unknown; note?: unknown };
+      if (typeof x?.item_id !== "string" || x.status === "unreviewed") continue;
+      if (typeof x.note === "string" && x.note.trim()) continue;
+      count++;
+    }
+    if (!count) return hide;
+    return { show: true, count, label: `${count} without note${count === 1 ? "" : "s"} ↓`, target: firstRowWithoutNote(report).item_id };
+  } catch { return hide; }
+}
