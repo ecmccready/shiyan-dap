@@ -548,3 +548,12 @@ export function lookbackTopFocusTarget(c: LookbackCompare | null | undefined): s
 export function lookbackGreedyFocusTarget(c: LookbackCompare | null | undefined): string | null {
   return lookbackGreedySteps(c)?.run_id ?? null;
 }
+
+/** Click targets for sticky Δsteps chip: focus+expand TOP, then scroll greedy into view when it differs. */
+export function lookbackStepsDeltaTargets(c: LookbackCompare | null | undefined): { top: string; greedy: string | null } | null {
+  const top = lookbackTopFocusTarget(c);
+  if (!top) return null;
+  const g = lookbackGreedyFocusTarget(c);
+  return { top, greedy: g && g !== top ? g : null };
+}
+export const LOOKBACK_DELTA_GREEDY_SCROLL_MS = 900;
