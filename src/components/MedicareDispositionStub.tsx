@@ -1,6 +1,6 @@
 "use client";
 
-import { filterAllKey } from "@/lib/medicare/investigation";
+import { filterAllKey, MEDICARE_FILTER_ALL_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
 import CopyLiveInvestigation from "@/components/CopyLiveInvestigation";
@@ -74,7 +74,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
         if (next !== e.note) startQuickNotePulseRef.current(id);
         return;
       }
-      if (a.kind === "review_notes") { const k = reviewDoneNotesKey(prevCompleteRef.current, filterRef.current); if (!k.changes) return; ev.preventDefault(); if (reviewDoneFilterShouldPulse(false, filterRef.current, k.next)) window.dispatchEvent(new CustomEvent(MEDICARE_REVIEW_DONE_PULSE_EVENT)); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: k.next })); return; }
+      if (a.kind === "review_notes") { const k = reviewDoneNotesKey(prevCompleteRef.current, filterRef.current); if (!k.changes) return; ev.preventDefault(); if (reviewDoneFilterShouldPulse(false, filterRef.current, k.next)) window.dispatchEvent(new CustomEvent(MEDICARE_REVIEW_DONE_PULSE_EVENT)); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: k.next })); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_ALL_PULSE_EVENT, { detail: true })); return; }
       if (a.kind === "incomplete") { if (!incompleteKey(entriesRef.current).changes) return; ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_UNREVIEWED_PULSE_EVENT, { detail: entriesRef.current.filter((e) => e?.status === "unreviewed").length })); window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_JUMP_EVENT)); return; }
       if (a.kind === "filter_all") { const k = filterAllKey(filterRef.current); if (!k.changes) return; ev.preventDefault(); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_EVENT, { detail: k.next })); return; }
       if (a.kind === "without_notes") { const k = withoutNotesKey(prevCompleteRef.current === true, wnTarget); if (!k.changes || !wnBtn) return; ev.preventDefault(); wnBtn.click(); return; }

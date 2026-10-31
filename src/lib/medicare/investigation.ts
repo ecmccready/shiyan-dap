@@ -915,6 +915,18 @@ export function unreviewedLeftShouldPulse(alreadyPulsed: unknown, left: unknown)
   return alreadyPulsed !== true && typeof left === "number" && Number.isFinite(left) && left > 0;
 }
 
+export const FILTER_ALL_PULSE_MS = 2400;
+export const MEDICARE_FILTER_ALL_PULSE_EVENT = "medicare:filter-all-pulse";
+/** Pure: true while the Win strip filter-mode chip glows after `a` reset the filter to All. Never throws. */
+export function filterAllPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < FILTER_ALL_PULSE_MS;
+}
+/** Pure: pulse once per session, only when `a` actually changed the filter (changes === true). */
+export function filterAllShouldPulse(alreadyPulsed: unknown, changed: unknown): boolean {
+  return alreadyPulsed !== true && changed === true;
+}
+
 /** Win strip "#3" chip: shown when ≥3 disposition rows; click targets/scrolls the 3rd row (index 2). Display/navigation only. */
 export const THIRD_ROW_PULSE_MS = 2400;
 /** Pure: "#3" chip state; jump is the 3rd row's item_id. Never throws. */

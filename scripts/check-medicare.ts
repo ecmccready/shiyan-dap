@@ -9,6 +9,7 @@ import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } 
 import { medicareToastClickAction, notesCoverage, statusMix, unreviewedLeftChip as U, filterShownChip as FS } from "../src/lib/medicare/investigation";
 import { firstIncompleteDispositionTarget, reviewTimerClickAction, reviewCompleteBannerClickAction, handoffReadyAnnotated as HRA } from "../src/lib/medicare/investigation";
 import type { DispositionStatus, DispositionInput, DispositionHistory } from "../src/lib/medicare/investigation";
+import { filterAllPulse, filterAllShouldPulse, FILTER_ALL_PULSE_MS, MEDICARE_FILTER_ALL_PULSE_EVENT } from "../src/lib/medicare/investigation";
 import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, undoPulse, UNDO_PULSE_MS, redoPulse, REDO_PULSE_MS, dispositionsCopyPulse, DISPOSITIONS_COPY_PULSE_MS, handoffCopyPulse, HANDOFF_COPY_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, quickNotePulse, QUICK_NOTE_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, cheatsheetPulse, CHEATSHEET_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
@@ -768,3 +769,6 @@ console.log("ok review complete banner click action");
   assert.deepEqual(dispositionShortcut({ key: "a" }), { kind: "filter_all" }); assert.deepEqual(dispositionShortcut({ key: "A" }), { kind: "filter_all" }); assert.equal(dispositionShortcut({ key: "a", ctrlKey: true }), null);
   assert.equal(keyActionChanges({ kind: "filter_all" }, { row_filter: "has_note" }), true); assert.equal(keyActionChanges({ kind: "filter_all" }, { row_filter: null }), false);
   assert.equal(keyToastText({ kind: "filter_all" }, ""), "filter → All"); assert.ok(MEDICARE_KEYMAP.some((k) => k.key === "a")); console.log("filterAllKey OK"); }
+
+{ const M = FILTER_ALL_PULSE_MS; assert.equal(M, 2400); assert.equal(MEDICARE_FILTER_ALL_PULSE_EVENT, "medicare:filter-all-pulse"); assert.equal(filterAllPulse(null, 5), false); assert.equal(filterAllPulse(1000, 1000), true); assert.equal(filterAllPulse(1000, 1000 + M - 1), true); assert.equal(filterAllPulse(1000, 1000 + M), false); assert.equal(filterAllPulse(1000, 999), false); assert.equal(filterAllPulse(NaN, 1000), false);
+  assert.equal(filterAllShouldPulse(false, true), true); assert.equal(filterAllShouldPulse(true, true), false); assert.equal(filterAllShouldPulse(false, false), false); assert.equal(filterAllShouldPulse(false, "x"), false); console.log("filterAllPulse OK"); }
