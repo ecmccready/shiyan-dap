@@ -677,3 +677,9 @@ export function lookbackToastsChip(stack: readonly unknown[] | null | undefined)
   const clearable = n >= 2;
   return { show: true, label: `${n} toast${n === 1 ? "" : "s"}${clearable ? " ✕" : ""}`, clearable };
 }
+
+/** Pure: sticky "N recent ✕" chip while the Recent toasts strip has entries; click = Clear (same as the strip's Clear button). Tab-local. */
+export function lookbackRecentChip(history: readonly unknown[] | null | undefined): { show: boolean; label: string } {
+  const n = Array.isArray(history) ? history.length : 0;
+  return n < 1 ? { show: false, label: "" } : { show: true, label: `${n} recent ✕` };
+}
