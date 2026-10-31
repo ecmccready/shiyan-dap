@@ -1256,3 +1256,11 @@ export function medicareHandoffChipPulse(pulseAt: unknown, now: unknown): boolea
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < MEDICARE_HANDOFF_CHIP_PULSE_MS;
 }
+
+/** Fired by the 📦 hand-off CopyLiveInvestigation button only after clipboard write succeeds. */
+export const MEDICARE_HANDOFF_COPIED_EVENT = "medicare:handoff-copied";
+/** Pure: sticky 📦 chip toasts/pulses only when its own click is pending and copy succeeded within the window. */
+export const MEDICARE_HANDOFF_CHIP_PENDING_MS = 3000;
+export function medicareHandoffChipCopiedOk(pendingAt: number | null, now: number): boolean {
+  return typeof pendingAt === "number" && now >= pendingAt && now - pendingAt <= MEDICARE_HANDOFF_CHIP_PENDING_MS;
+}

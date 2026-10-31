@@ -5,7 +5,7 @@ import { useCopy, copiedRing } from "@/lib/use-copy";
 import { buildHandoffPack, formatReviewedCaseBrief } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 import type { MedicareProvenance } from "@/lib/medicare/provenance";
-import { handoffReadyAnnotated, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, HANDOFF_PULSE_MS, handoffPulseActive, MEDICARE_TIMER_EVENT, currentDispositionsJson, dispositionsCopyPulse, DISPOSITIONS_COPY_PULSE_MS, handoffCopyPulse, HANDOFF_COPY_PULSE_MS, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
+import { handoffReadyAnnotated, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, MEDICARE_HANDOFF_COPIED_EVENT, HANDOFF_PULSE_MS, handoffPulseActive, MEDICARE_TIMER_EVENT, currentDispositionsJson, dispositionsCopyPulse, DISPOSITIONS_COPY_PULSE_MS, handoffCopyPulse, HANDOFF_COPY_PULSE_MS, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
 
 /** Copies the live investigation report (current statuses + report_hash). With `report` it is controlled; otherwise it follows the stub's tab-local event. */
 export default function CopyLiveInvestigation({ report, initial, brief, handoff }: { report?: InvestigationReport; initial?: InvestigationReport; brief?: { evidence: EvidencePack; provenance: MedicareProvenance }; handoff?: boolean }) {
@@ -58,6 +58,7 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
     window.setTimeout(() => setDispCopyTick(Date.now()), DISPOSITIONS_COPY_PULSE_MS + 50);
   }, [handoff, brief, copy.status]);
   const dispCopyPulsing = !handoff && !brief && dispositionsCopyPulse(dispCopyAt, dispCopyTick, dispCopyFired.current);
+  useEffect(() => { if (handoff && copy.status === "copied") window.dispatchEvent(new CustomEvent(MEDICARE_HANDOFF_COPIED_EVENT, { detail: Date.now() })); }, [handoff, copy.status]);
   const hoCopyFired = useRef(false);
   const [hoCopyAt, setHoCopyAt] = useState<number | null>(null);
   const [hoCopyTick, setHoCopyTick] = useState(0);

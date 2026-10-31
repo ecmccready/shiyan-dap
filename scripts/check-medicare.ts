@@ -3,7 +3,7 @@
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
+import { medicareHandoffChipCopiedOk, MEDICARE_HANDOFF_CHIP_PENDING_MS, MEDICARE_HANDOFF_COPIED_EVENT, medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -910,5 +910,6 @@ console.log("ok review complete banner click action");
   assert.equal(medicareHandoffChip(inv).show, false); assert.equal(medicareHandoffChip(all3).show, false, "complete no notes"); assert.equal(medicareHandoffChip(null).show, false);
   assert.equal(medicareCopyRowToast("handoff", "1"), "📦 Hand-off → copied hand-off pack"); assert.equal(medicareCopyRowToast("handoff", ""), "");
   assert.equal(medicareHandoffChipShouldPulse(false, true), true); assert.equal(medicareHandoffChipShouldPulse(true, true), false); assert.equal(medicareHandoffChipShouldPulse(false, false), false);
+  assert.equal(medicareHandoffChipCopiedOk(1000, 1500), true); assert.equal(medicareHandoffChipCopiedOk(null, 1500), false, "no pending click → no toast"); assert.equal(medicareHandoffChipCopiedOk(1000, 1001 + MEDICARE_HANDOFF_CHIP_PENDING_MS), false, "stale"); assert.equal(medicareHandoffChipCopiedOk(1000, 999), false); assert.equal(MEDICARE_HANDOFF_COPIED_EVENT, "medicare:handoff-copied");
   assert.equal(medicareHandoffChipPulse(1000, 1000), true); assert.equal(medicareHandoffChipPulse(1000, 1000 + MEDICARE_HANDOFF_CHIP_PULSE_MS), false); assert.equal(medicareHandoffChipPulse(null, 1), false);
   console.log("📦 Hand-off chip -> sticky chip at Hand-off ready (complete + ≥1 note); presses 📦 (same as h); stacked toast; first-use pulse OK"); }
