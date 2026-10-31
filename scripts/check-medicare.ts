@@ -1114,3 +1114,14 @@ import { clearedStickyChip, clearedStickyChanged, clearedStickyPulse, clearedSti
   assert.equal(clearedStickyToast("b"), "✓ ↓ first cleared: b"); assert.equal(clearedStickyToast(null), "");
   assert.equal(MEDICARE_STICKY_JUMP_TOAST_EVENT, "medicare:sticky-jump-toast");
   console.log("clearedStickyChip OK (sticky ✓ N cleared ↓ = filter + focus first cleared_pattern_only; jump toasts wired)"); }
+
+import { unreviewedStickyChip, unreviewedStickyChanged, unreviewedStickyPulse, unreviewedStickyToast, UNREVIEWED_STICKY_PULSE_MS, firstIncompleteDispositionTarget as fidt2 } from "../src/lib/medicare/investigation";
+{ const r = { entries: [{ item_id: "a", status: "cleared_pattern_only" }, { item_id: "b", status: "unreviewed" }, { item_id: "c", status: "unreviewed" }] };
+  assert.deepEqual(unreviewedStickyChip(r), { show: true, count: 2, label: "○ 2 unreviewed ↓", target: "b" });
+  assert.equal(unreviewedStickyChip(r).target, fidt2(r.entries));
+  assert.equal(unreviewedStickyChip({ entries: [{ item_id: "a", status: "cleared_pattern_only" }] }).show, false); assert.equal(unreviewedStickyChip(null).show, false); assert.equal(unreviewedStickyChip({ entries: "x" }).show, false);
+  assert.equal(unreviewedStickyChanged("b", { target: null, filter: null }), true); assert.equal(unreviewedStickyChanged("b", { target: "b", filter: "unreviewed" }), false);
+  assert.equal(unreviewedStickyChanged("b", { target: "b", filter: null }), true); assert.equal(unreviewedStickyChanged(null, { target: "b", filter: null }), false);
+  assert.equal(unreviewedStickyPulse(1, 1), true); assert.equal(unreviewedStickyPulse(1, 1 + UNREVIEWED_STICKY_PULSE_MS), false); assert.equal(unreviewedStickyPulse(null, 1), false);
+  assert.equal(unreviewedStickyToast("b"), "○ ↓ first unreviewed: b"); assert.equal(unreviewedStickyToast(null), "");
+  console.log("unreviewedStickyChip OK (sticky ○ N unreviewed ↓ = filter + focus first unreviewed; same target as i)"); }

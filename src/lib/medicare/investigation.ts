@@ -1558,3 +1558,24 @@ export function clearedStickyPulse(startedAt: unknown, now: unknown): boolean {
 export function clearedStickyToast(target: unknown): string { return typeof target === "string" && target ? `✓ ↓ first cleared: ${target}` : ""; }
 /** Event: sticky jump chips (needs review ↓ / cleared ↓) push a stacked toast (detail = text). */
 export const MEDICARE_STICKY_JUMP_TOAST_EVENT = "medicare:sticky-jump-toast";
+
+/** Pure: sticky "○ N unreviewed ↓" chip — jump (not toggle) to the first unreviewed row (same target as key i): sets filter unreviewed, scrolls to and focuses that row's note. Distinct from the N unreviewed filter-toggle chip / key l (filter only) and key i (clears filter to All). Never throws. */
+export function unreviewedStickyChip(report: unknown): { show: boolean; count: number; label: string; target: string | null } {
+  try {
+    const e = (report as { entries?: unknown } | null)?.entries;
+    if (!Array.isArray(e)) return { show: false, count: 0, label: "", target: null };
+    const hits = e.filter((x) => x && typeof x === "object" && (x as { status?: unknown }).status === "unreviewed" && typeof (x as { item_id?: unknown }).item_id === "string" && (x as { item_id: string }).item_id !== "");
+    if (!hits.length) return { show: false, count: 0, label: "", target: null };
+    return { show: true, count: hits.length, label: `○ ${hits.length} unreviewed ↓`, target: (hits[0] as { item_id: string }).item_id };
+  } catch { return { show: false, count: 0, label: "", target: null }; }
+}
+export const UNREVIEWED_STICKY_PULSE_MS = 2400;
+/** Pure: pulse/toast only when the jump target or filter actually changes. */
+export function unreviewedStickyChanged(target: unknown, last: { target: unknown; filter: unknown }): boolean {
+  return typeof target === "string" && target.length > 0 && (target !== last.target || last.filter !== "unreviewed");
+}
+export function unreviewedStickyPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < UNREVIEWED_STICKY_PULSE_MS;
+}
+export function unreviewedStickyToast(target: unknown): string { return typeof target === "string" && target ? `○ ↓ first unreviewed: ${target}` : ""; }
