@@ -571,3 +571,8 @@ export function lookbackPhiGapChip(deltaPhi: number | null | undefined, sort: Lo
 export function lookbackVerdictCopiesCompare(c: LookbackCompare | null | undefined): boolean {
   return lookbackComparePack(c) !== "";
 }
+
+/** Pure: whether clicking the sticky +Δe chip copies the summary JSON (same as g) — true iff there is a summary to copy. */
+export function lookbackDeltaECopiesSummary(c: Parameters<typeof lookbackSummaryJson>[0]): boolean {
+  return lookbackSummaryJson(c) !== "";
+}
