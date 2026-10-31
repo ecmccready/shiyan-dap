@@ -651,3 +651,15 @@ export function lookbackFocusChip(rows: unknown, focus: unknown): { show: boolea
     return { show: true, label: `focus: #${rank} ${hit.run_id} ↓`, id: hit.run_id, jump: hit.run_id };
   } catch { return { show: false, label: "", id: null, jump: null }; }
 }
+
+/** Pure: sticky expanded-row chip ("expanded: #rank run_id ✕"); click collapses (same as Esc on an open row). Hidden when nothing expanded or id unknown. */
+export function lookbackExpandedChip(rows: unknown, open: unknown): { show: boolean; label: string; id: string | null } {
+  try {
+    if (typeof open !== "string" || !open) return { show: false, label: "", id: null };
+    const list = Array.isArray(rows) ? rows.filter((r): r is { run_id: string; rank?: unknown } => !!r && typeof r === "object" && typeof (r as { run_id?: unknown }).run_id === "string") : [];
+    const hit = list.find((r) => r.run_id === open);
+    if (!hit) return { show: false, label: "", id: null };
+    const rank = typeof hit.rank === "number" ? hit.rank : list.indexOf(hit) + 1;
+    return { show: true, label: `expanded: #${rank} ${hit.run_id} ✕`, id: hit.run_id };
+  } catch { return { show: false, label: "", id: null }; }
+}
