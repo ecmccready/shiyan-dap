@@ -775,3 +775,11 @@ export function redoDepthChip(depth: unknown): { depth: number; label: string; c
   const n = typeof depth === "number" && Number.isFinite(depth) && depth > 0 ? Math.floor(depth) : 0;
   return { depth: n, label: n > 0 ? `redo ${n} ↷` : "redo 0", can_redo: n > 0 };
 }
+
+export const MEDICARE_HELP_STATE_EVENT = "medicare:help-state";
+export const MEDICARE_HELP_CLOSE_EVENT = "medicare:help-close";
+/** Pure: Win-strip chip while the ? cheat sheet is open. Click closes the sheet. Never throws. */
+export function cheatsheetOpenChip(open: unknown): { show: boolean; label: string } {
+  const show = open === true;
+  return { show, label: show ? "keys open ✕" : "" };
+}
