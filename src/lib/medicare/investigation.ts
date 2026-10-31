@@ -1514,3 +1514,24 @@ export function blankNoteStickyPulse(startedAt: unknown, now: unknown): boolean 
   if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < BLANK_NOTE_STICKY_PULSE_MS;
 }
+
+/** Pure: sticky "⚑ N needs review ↓" chip — jump (not toggle) to the first needs_human_review row: sets filter needs_human_review, scrolls to and focuses that row's note. Distinct from the N needs review filter-toggle chip / key b (filter only) and key i (first unreviewed). Never throws. */
+export function needsReviewStickyChip(report: unknown): { show: boolean; count: number; label: string; target: string | null } {
+  try {
+    const e = (report as { entries?: unknown } | null)?.entries;
+    if (!Array.isArray(e)) return { show: false, count: 0, label: "", target: null };
+    const hits = e.filter((x) => x && typeof x === "object" && (x as { status?: unknown }).status === "needs_human_review" && typeof (x as { item_id?: unknown }).item_id === "string");
+    if (!hits.length) return { show: false, count: 0, label: "", target: null };
+    return { show: true, count: hits.length, label: `⚑ ${hits.length} needs review ↓`, target: (hits[0] as { item_id: string }).item_id };
+  } catch { return { show: false, count: 0, label: "", target: null }; }
+}
+export const NEEDS_REVIEW_STICKY_PULSE_MS = 2400;
+/** Pure: pulse/toast only when the jump target or filter actually changes. */
+export function needsReviewStickyChanged(target: unknown, last: { target: unknown; filter: unknown }): boolean {
+  return typeof target === "string" && target.length > 0 && (target !== last.target || last.filter !== "needs_human_review");
+}
+export function needsReviewStickyPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < NEEDS_REVIEW_STICKY_PULSE_MS;
+}
+export function needsReviewStickyToast(target: unknown): string { return typeof target === "string" && target ? `⚑ ↓ first needs review: ${target}` : ""; }

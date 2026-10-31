@@ -1093,3 +1093,13 @@ import { medicareDqChip, medicareDqChipCopiedOk, medicareDqChipShouldPulse, medi
   assert.equal(blankNoteStickyChanged("i0", null), true); assert.equal(blankNoteStickyChanged("i0", "i0"), false); assert.equal(blankNoteStickyChanged("i1", "i0"), true); assert.equal(blankNoteStickyChanged(null, "i0"), false);
   assert.equal(blankNoteStickyPulse(1, 1), true); assert.equal(blankNoteStickyPulse(1, 1 + BLANK_NOTE_STICKY_PULSE_MS), false); assert.equal(blankNoteStickyPulse(null, 1), false);
   console.log("blankNoteStickyChip OK (sticky ✎ N blank ↓ = key w)"); }
+
+import { needsReviewStickyChip, needsReviewStickyChanged, needsReviewStickyPulse, needsReviewStickyToast, NEEDS_REVIEW_STICKY_PULSE_MS } from "../src/lib/medicare/investigation";
+{ const r = { entries: [{ item_id: "a", status: "cleared_pattern_only" }, { item_id: "b", status: "needs_human_review" }, { item_id: "c", status: "needs_human_review" }] };
+  const c = needsReviewStickyChip(r); assert.deepEqual(c, { show: true, count: 2, label: "⚑ 2 needs review ↓", target: "b" });
+  assert.equal(needsReviewStickyChip({ entries: [{ item_id: "a", status: "unreviewed" }] }).show, false); assert.equal(needsReviewStickyChip(null).show, false); assert.equal(needsReviewStickyChip({ entries: "x" }).show, false);
+  assert.equal(needsReviewStickyChanged("b", { target: null, filter: null }), true); assert.equal(needsReviewStickyChanged("b", { target: "b", filter: "needs_human_review" }), false);
+  assert.equal(needsReviewStickyChanged("b", { target: "b", filter: null }), true); assert.equal(needsReviewStickyChanged(null, { target: "b", filter: null }), false);
+  assert.equal(needsReviewStickyPulse(1, 1), true); assert.equal(needsReviewStickyPulse(1, 1 + NEEDS_REVIEW_STICKY_PULSE_MS), false); assert.equal(needsReviewStickyPulse(null, 1), false);
+  assert.equal(needsReviewStickyToast("b"), "⚑ ↓ first needs review: b"); assert.equal(needsReviewStickyToast(null), "");
+  console.log("needsReviewStickyChip OK (sticky ⚑ N needs review ↓ = filter + focus first needs_human_review)"); }
