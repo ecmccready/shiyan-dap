@@ -538,3 +538,8 @@ export function lookbackStepsDelta(c: LookbackCompare | null | undefined): { del
     return { delta: d, label: `${d > 0 ? "+" : "−"}${Math.abs(d)} step${Math.abs(d) === 1 ? "" : "s"} vs greedy` };
   } catch { return null; }
 }
+
+/** Click target for sticky "top N steps": the TOP ranked run id (null when none). */
+export function lookbackTopFocusTarget(c: LookbackCompare | null | undefined): string | null {
+  return lookbackTopSteps(c)?.run_id ?? null;
+}
