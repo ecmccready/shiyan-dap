@@ -1160,3 +1160,9 @@ export function lookbackCopyChipToast(ok: unknown, toast: unknown): string | nul
 export function lookbackCopyGreedyChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ Greedy", toast: "⧉ Greedy → copied greedy path JSON" } : null; } catch { return null; }
 }
+
+/** Pure: bottom "Copy summary JSON" button / +Δe strip chip toast only after a successful clipboard write (ok === true); null otherwise. Never throws. */
+export function lookbackSummaryButtonToast(ok: unknown, src: unknown): string | null {
+  if (ok !== true) return null;
+  return src === "delta_e" ? "+Δe → copied summary JSON" : "Copy summary → copied summary JSON";
+}
