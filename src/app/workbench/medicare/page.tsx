@@ -171,6 +171,7 @@ export default function MedicarePage() {
             </div>
           ))}
           <p className="text-xs text-zinc-500">Ranked by payment / charge, highest first. A candidate is a pattern for human review, not a finding of fraud or misconduct.</p>
+          <CopyMedicareJson kind="baselines" label="Copy baselines JSON" json={JSON.stringify(FIXTURE_BASELINES, null, 2)} />
         </section>
 
         <section data-medicare-show-panel className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">

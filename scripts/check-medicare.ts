@@ -1067,3 +1067,12 @@ import { medicareProvenanceChip, medicareProvenanceChipCopiedOk, medicareProvena
   if (!medicareProvenanceChipCopiedOk(1000, 2000, "provenance") || medicareProvenanceChipCopiedOk(1000, 2000, "evidence") || medicareProvenanceChipCopiedOk(1000, 5000, "provenance")) throw new Error("provenance copiedOk");
   if (!medicareProvenanceChipShouldPulse(false, true) || medicareProvenanceChipShouldPulse(true, true) || !medicareProvenanceChipPulse(0, 100) || medicareProvenanceChipPulse(0, 2000)) throw new Error("provenance pulse");
   console.log("ok . key + ⧉ Provenance chip → copy Know-stage provenance JSON"); }
+
+import { medicareBaselinesChip, medicareBaselinesChipCopiedOk, medicareBaselinesChipShouldPulse, medicareBaselinesChipPulse, MEDICARE_BASELINES_KEY } from "../src/lib/medicare/investigation";
+{ if (DSM({ key: "," })?.kind !== "copy_baselines" || MEDICARE_BASELINES_KEY !== ",") throw new Error(", → copy_baselines");
+  if (DSM({ key: "." })?.kind !== "copy_provenance") throw new Error(". unchanged");
+  if (medicareBaselinesChip({ entries: [1] }).label !== "⧉ Baselines" || medicareBaselinesChip(null).show) throw new Error("baselines chip");
+  if (MPCT("baselines") !== "copied baselines JSON") throw new Error("baselines toast");
+  if (!medicareBaselinesChipCopiedOk(1000, 2000, "baselines") || medicareBaselinesChipCopiedOk(1000, 2000, "provenance") || medicareBaselinesChipCopiedOk(1000, 5000, "baselines")) throw new Error("baselines copiedOk");
+  if (!medicareBaselinesChipShouldPulse(false, true) || medicareBaselinesChipShouldPulse(true, true) || !medicareBaselinesChipPulse(0, 100) || medicareBaselinesChipPulse(0, 2000)) throw new Error("baselines pulse");
+  console.log("ok , key + ⧉ Baselines chip → copy Know How baselines JSON"); }
