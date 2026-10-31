@@ -2,6 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { medicareToastClickAction, notesCoverage, statusMix, unreviewedLeftChip as U, filterShownChip as FS } from "../src/lib/medicare/investigation";
 import { firstIncompleteDispositionTarget, reviewTimerClickAction, reviewCompleteBannerClickAction, handoffReadyAnnotated as HRA } from "../src/lib/medicare/investigation";
 import type { DispositionStatus, DispositionInput, DispositionHistory } from "../src/lib/medicare/investigation";
@@ -738,3 +739,10 @@ console.log("ok review complete banner click action");
   assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + UNREVIEWED_LEFT_PULSE_MS), false); assert.equal(P(1000, 999), false); assert.equal(P(null, 5), false); assert.equal(P(NaN, 5), false);
   assert.equal(S(false, 2), true); assert.equal(S(true, 2), false, "session once"); assert.equal(S(false, 0), false, "no unreviewed → no jump → no pulse"); assert.equal(S(false, NaN), false); assert.equal(S(false, "2"), false);
   assert.equal(typeof MEDICARE_UNREVIEWED_PULSE_EVENT, "string"); console.log("unreviewedLeftPulse OK"); }
+{ const C = thirdRowChip, P = thirdRowPulse, S = thirdRowShouldPulse, MS = THIRD_ROW_PULSE_MS;
+  assert.deepEqual(C([{ item_id: "a" }, { item_id: "b" }]), { show: false, label: "", jump: null });
+  assert.deepEqual(C([{ item_id: "a" }, { item_id: "b" }, { item_id: "c" }, { item_id: "d" }]), { show: true, label: "#3 ↓", jump: "c" });
+  assert.equal(C(null).show, false); assert.equal(C([null, 1, { item_id: "a" }]).show, false);
+  assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + MS), false); assert.equal(P(null, 1), false);
+  assert.equal(S(false, "c"), true); assert.equal(S(true, "c"), false); assert.equal(S(false, null), false);
+  console.log("thirdRowChip OK"); }
