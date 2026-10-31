@@ -1133,3 +1133,12 @@ import { medicareAllRowsJson, medicareCopyAllRowsChip, medicareAllRowsToast } fr
   assert.deepEqual(o.rows.map((x: { item_id: string }) => x.item_id), rep.entries.map((e) => e.item_id)); assert.equal(o.counts, undefined, "rows only — no report envelope");
   const ch = medicareCopyAllRowsChip(rep); assert.equal(ch.label, `⧉ All ${rep.entries.length} rows`); assert.equal(medicareCopyRowToast("all_rows", ch.json), ch.toast); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
   console.log("sticky ⧉ All rows chip OK"); }
+
+import { medicareNotesJson, medicareCopyNotesChip, medicareNotesToast } from "../src/lib/medicare/investigation";
+{ assert.equal(medicareNotesJson(null), ""); assert.equal(medicareCopyNotesChip({ entries: [] }).show, false); assert.equal(medicareNotesToast(""), "");
+  const none = buildInvestigationReport({ pack: ev, dispositions: applyBulkDisposition({}, ids, "cleared_pattern_only") }); assert.equal(medicareCopyNotesChip(none).show, false, "hidden at 0 notes");
+  const rep = buildInvestigationReport({ pack: ev, dispositions: applyDispositionNote(nAll, ids[0], "entry error") }); const o = JSON.parse(medicareNotesJson(rep));
+  assert.equal(o.kind, "notes"); assert.equal(o.count, 2); assert.equal(o.of, rep.entries.length); assert.equal(o.report_hash, rep.report_hash); assert.equal(o.counts, undefined);
+  assert.ok(o.notes.every((n: { note: string }) => n.note.trim())); assert.ok(o.notes.some((n: { note: string }) => n.note === "explained by bundling"));
+  const ch = medicareCopyNotesChip(rep); assert.equal(ch.label, "⧉ 2 notes"); assert.equal(medicareCopyRowToast("notes", ch.json), ch.toast); assert.equal(ch.toast, "⧉ Notes → copied 2 notes JSON"); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
+  console.log("sticky ⧉ Notes chip OK"); }
