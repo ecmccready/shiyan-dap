@@ -1092,6 +1092,10 @@ export function lookbackFirstUpShouldPulse(alreadyPulsed: unknown, target: unkno
 export function lookbackFirstUpChipChanged(target: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): boolean {
   try { if (typeof target !== "string" || !target) return false; const st = state ?? {}; return !((st.filter ?? "all") === "all" && st.focus === target && st.open === target); } catch { return false; }
 }
+/** Pure: would a Last ↓ chip click change anything (Show → All, focus/expand → LAST)? Same rule as lookbackFirstUpChipChanged / key z `changed`. Never throws. */
+export function lookbackLastChipChanged(target: unknown, state: { filter?: unknown; focus?: unknown; open?: unknown } | null | undefined): boolean {
+  return lookbackFirstUpChipChanged(target, state);
+}
 /** Pure: First ↑ chip is pulsing while within the window after the first-use timestamp. Never throws. */
 export function lookbackFirstUpPulse(pulseAt: unknown, now: unknown): boolean {
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
