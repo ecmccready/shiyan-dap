@@ -1059,6 +1059,14 @@ export function medicareCopyLastRowChip(entries: unknown): { show: boolean; labe
     return json ? { show: true, label: "⧉ Last", json, toast: "⧉ Last → copied last row JSON" } : { show: false, label: "", json: "", toast: "" };
   } catch { return { show: false, label: "", json: "", toast: "" }; }
 }
+/** Pure: sticky "First ↑" chip — jumps to the first disposition row (same as key g). Shown when ≥2 rows; sits next to Last ↓. Display/navigation only. */
+export function firstUpRowChip(entries: unknown): { show: boolean; label: string; jump: string | null } {
+  try {
+    const list = Array.isArray(entries) ? entries.filter((e): e is { item_id: string } => !!e && typeof (e as { item_id?: unknown }).item_id === "string") : [];
+    if (list.length < 2) return { show: false, label: "", jump: null };
+    return { show: true, label: "First ↑", jump: list[0].item_id };
+  } catch { return { show: false, label: "", jump: null }; }
+}
 /** Pure: sticky "Last ↓" chip — jumps to the last disposition row (same as key z). Shown when ≥2 rows. Display/navigation only. */
 export function lastRowChip(entries: unknown): { show: boolean; label: string; jump: string | null } {
   try {
