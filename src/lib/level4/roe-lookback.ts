@@ -698,3 +698,12 @@ export function lookbackCopyRecentPulse(startedAt: unknown, now: unknown): boole
   if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < LOOKBACK_COPY_RECENT_PULSE_MS;
 }
+
+/** Pure: sticky verdict-filter chip. lookback win → "look-back wins → ★" sets Show to winners; agree → "agree → =" sets agree. Active (already set) → click returns to all. none/unknown → hidden. */
+export function lookbackVerdictFilterChip(winner: unknown, filter: unknown): { show: boolean; label: string; target: LookbackRoleFilter; active: boolean; next: LookbackRoleFilter } {
+  const cur: LookbackRoleFilter = filter === "winners" || filter === "beaten" || filter === "agree" ? filter : "all";
+  if (winner !== "lookback" && winner !== "agree") return { show: false, label: "", target: "all", active: false, next: cur };
+  const target: LookbackRoleFilter = winner === "lookback" ? "winners" : "agree";
+  const active = cur === target;
+  return { show: true, label: winner === "lookback" ? `look-back wins → ★${active ? " ✓" : ""}` : `agree → =${active ? " ✓" : ""}`, target, active, next: active ? "all" : target };
+}
