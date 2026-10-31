@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { filterAllPulse, filterAllShouldPulse, FILTER_ALL_PULSE_MS, MEDICARE_FILTER_ALL_PULSE_EVENT } from "@/lib/medicare/investigation";
+import { filterAllChip, filterAllPulse, filterAllShouldPulse, FILTER_ALL_PULSE_MS, MEDICARE_FILTER_ALL_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { reviewDoneFilterPulse, reviewDoneFilterShouldPulse, REVIEW_DONE_FILTER_PULSE_MS, MEDICARE_REVIEW_DONE_PULSE_EVENT, medicareCopyRecentPulse, MEDICARE_COPY_RECENT_PULSE_MS, MEDICARE_RECENT_COPY_EVENT, MEDICARE_RECENT_COPIED_EVENT, medicareCopyRecentChip, TOAST_PILL_COPIED_MS, MEDICARE_RECENT_STATE_EVENT, MEDICARE_RECENT_CLEAR_EVENT, medicareRecentChip, MEDICARE_TOASTS_STATE_EVENT, MEDICARE_TOASTS_CLEAR_EVENT, medicareToastsChip, MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, filterShownChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowFilterLabelChip, keyTargetChip, MEDICARE_TARGET_EVENT, MEDICARE_TARGET_JUMP_EVENT, undoDepthChip, MEDICARE_UNDO_DEPTH_EVENT, MEDICARE_UNDO_REQUEST_EVENT, redoDepthChip, MEDICARE_REDO_DEPTH_EVENT, MEDICARE_REDO_REQUEST_EVENT, cheatsheetOpenChip, MEDICARE_HELP_STATE_EVENT, MEDICARE_HELP_CLOSE_EVENT, rowMatchesFilter, reviewDoneNotesChip, withoutNotesChip, withoutNotesPulse, withoutNotesShouldPulse, WITHOUT_NOTES_PULSE_MS, unreviewedLeftPulse, unreviewedLeftShouldPulse, UNREVIEWED_LEFT_PULSE_MS, MEDICARE_UNREVIEWED_PULSE_EVENT, reviewCompletion, reviewProgress, firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS, secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS, thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
@@ -189,6 +189,10 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
           <button type="button" data-medicare-filter-label={c.value} data-medicare-filter-all-pulsing={filterAllPulse(faPulseAt, faPulseNow) ? "1" : undefined} onClick={() => pick(cycleRowFilter(filter))} title={`Current row filter — click to cycle (same as f); next: ${c.next}`}
             className={`rounded-full border px-3 py-1 text-xs font-mono hover:border-white ${filter ? "border-amber-300 text-amber-100" : "border-zinc-600 text-zinc-300"}${filterAllPulse(faPulseAt, faPulseNow) ? " ring-4 ring-zinc-200 shadow-[0_0_16px_rgba(228,228,231,0.8)] motion-safe:animate-pulse" : ""}`}>{c.label}</button>
         ); })()}
+        {(() => { const fa = filterAllChip(filter); return fa.show ? (
+          <button type="button" data-medicare-filter-all-chip onClick={() => { pick(null); window.dispatchEvent(new CustomEvent(MEDICARE_FILTER_ALL_PULSE_EVENT, { detail: true })); }} title="Reset row filter to All (same as a)"
+            className="rounded-full border border-zinc-400 px-3 py-1 text-xs font-mono text-zinc-100 hover:border-white">{fa.label}</button>
+        ) : null; })()}
         {(() => { const m = statusMix(r); return m.show ? (
           <button type="button" data-medicare-status-mix={`${m.counts.needs_human_review}/${m.counts.cleared_pattern_only}/${m.counts.unreviewed}`} data-medicare-status-mix-cycle={filter ?? "all"} onClick={() => pick(cycleRowFilter(filter))} title={`Items per review status — click to cycle row filter (same as f); now: ${filter ?? "all"}`}
             className={`rounded-full border border-zinc-500 bg-zinc-800 px-3 py-1 text-xs font-mono text-zinc-200 hover:border-white ${filter ? "ring-2 ring-white" : ""}`}>{m.label}{filter ? ` ▸ ${filter}` : " ▸"}</button>

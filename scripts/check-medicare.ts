@@ -1,6 +1,6 @@
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
-import { filterAllKey } from "../src/lib/medicare/investigation";
+import { filterAllKey, filterAllChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -773,3 +773,6 @@ console.log("ok review complete banner click action");
 { const M = FILTER_ALL_PULSE_MS; assert.equal(M, 2400); assert.equal(MEDICARE_FILTER_ALL_PULSE_EVENT, "medicare:filter-all-pulse"); assert.equal(filterAllPulse(null, 5), false); assert.equal(filterAllPulse(1000, 1000), true); assert.equal(filterAllPulse(1000, 1000 + M - 1), true); assert.equal(filterAllPulse(1000, 1000 + M), false); assert.equal(filterAllPulse(1000, 999), false); assert.equal(filterAllPulse(NaN, 1000), false);
   assert.equal(filterAllShouldPulse(false, true), true); assert.equal(filterAllShouldPulse(true, true), false); assert.equal(filterAllShouldPulse(false, false), false); assert.equal(filterAllShouldPulse(false, "x"), false); console.log("filterAllPulse OK"); }
 { const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8") as string; const line = (k: string) => src.split("\n").find((l) => l.includes(`a.kind === "${k}"`)) ?? ""; assert.ok(line("filter_all").includes("MEDICARE_FILTER_ALL_PULSE_EVENT")); assert.ok(!line("review_notes").includes("MEDICARE_FILTER_ALL_PULSE_EVENT")); console.log("filterAll pulse wiring OK"); }
+
+{ assert.equal(filterAllChip("has_note").show, true); assert.equal(filterAllChip(null).show, false); assert.equal(filterAllChip("").show, false); assert.equal(filterAllChip("unreviewed").label, "All ✕");
+  const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8") as string; const l = src.split("\n").find((x) => x.includes("data-medicare-filter-all-chip")) ?? ""; assert.ok(l.includes("MEDICARE_FILTER_ALL_PULSE_EVENT") && l.includes("pick(null)")); console.log("filterAllChip OK"); }

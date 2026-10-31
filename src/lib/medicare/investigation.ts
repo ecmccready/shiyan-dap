@@ -991,3 +991,8 @@ export function firstRowShouldPulse(alreadyPulsed: unknown, jump: unknown): bool
 export function filterAllKey(current: unknown): { changes: boolean; next: null } {
   try { return { changes: current !== null && current !== undefined && current !== "", next: null }; } catch { return { changes: false, next: null }; }
 }
+
+/** Pure: Win strip "All" reset chip — shown only when a row filter is active (same as key a). Never throws. */
+export function filterAllChip(current: unknown): { show: boolean; label: string } {
+  const k = filterAllKey(current); return { show: k.changes, label: "All ✕" };
+}
