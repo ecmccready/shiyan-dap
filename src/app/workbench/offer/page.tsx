@@ -21,6 +21,22 @@ export default function OfferPage() {
 
         <div className="mb-6"><JourneyNote /></div>
 
+        <section id="pilot-proposition" data-offer-pilot-proposition className="border border-emerald-800 bg-emerald-950/30 rounded-2xl p-5 mb-8 text-sm text-zinc-300">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest mb-2">Pilot proposition · Know → Know How → Show → Do</p>
+          <ol className="grid sm:grid-cols-4 gap-3 mb-3">
+            <li><span className="text-white">Know.</span> Provenance-hashed source data.</li>
+            <li><span className="text-white">Know How.</span> Deterministic checks; measured error reduction (Δe, Φ) against a recorded baseline.</li>
+            <li><span className="text-white">Show.</span> Source-linked evidence pack with a recomputable hash.</li>
+            <li><span className="text-white">Do.</span> Human-in-the-loop dispositions and a tamper-evident hand-off pack.</li>
+          </ol>
+          <p className="mb-2">
+            First concrete case: <Link className="underline text-emerald-400" href="/workbench/medicare">Medicare · Public Data Intelligence</Link> (SI-operated, synthetic fixture today, no live CMS fetch).
+          </p>
+          <p className="text-zinc-500 text-xs">
+            Detected pattern ≠ verified conclusion: findings are inputs for human review, not fraud, misconduct or clinical findings. Commercial licensing available from the owner. Display only; nothing is sent or stored.
+          </p>
+        </section>
+
         <section className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300 space-y-3">
           <p><span className="text-white">Buyer:</span> Organization responsible for the quality, cost, or reliability of repeated workflows.</p>
           <p><span className="text-white">Product:</span> Workbench that executes tasks, scores outcomes against a reference, and records reproducible evidence.</p>
