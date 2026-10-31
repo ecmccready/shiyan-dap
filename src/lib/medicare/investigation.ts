@@ -214,7 +214,7 @@ export function redoDisposition(h: DispositionHistory): DispositionHistory {
   return { past: [...h.past, h.present].slice(-DISPOSITION_HISTORY_LIMIT), present: f[f.length - 1], last_action: null, future: f.slice(0, -1) };
 }
 
-export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | null;
+export type DispositionShortcut = { kind: "set"; status: DispositionStatus } | { kind: "undo" } | { kind: "redo" } | { kind: "move"; dir: 1 | -1 } | { kind: "note" } | { kind: "handoff" } | { kind: "dispositions" } | { kind: "filter" } | { kind: "template" } | { kind: "help" } | { kind: "help_close" } | { kind: "review_notes" } | { kind: "without_notes" } | { kind: "incomplete" } | { kind: "filter_all" } | { kind: "needs_review" } | { kind: "cleared" } | { kind: "unreviewed_filter" } | { kind: "last_row" } | null;
 /** Pure keyboard map: 1 needs_human_review, 2 cleared_pattern_only, 3 unreviewed, u undo, r redo, j/k move target, n focus note, h copy hand-off pack, y copy dispositions JSON, f cycle row filter, t apply first unused note template, ? toggle cheat sheet, Esc close it. Modifiers or typing targets → null. */
 export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): DispositionShortcut {
   try {
@@ -243,9 +243,19 @@ export function dispositionShortcut(ev: { key?: unknown; ctrlKey?: unknown; meta
       case "b": case "B": return { kind: "needs_review" };
       case "c": case "C": return { kind: "cleared" };
       case "l": case "L": return { kind: "unreviewed_filter" };
+      case "z": case "Z": return { kind: "last_row" };
       default: return null;
     }
   } catch { return null; }
+}
+
+/** Pure: z key — target the last disposition row (bottom of the review list); no-op when empty or already there. */
+export function lastRowKey(ids: unknown, current: unknown): { changes: boolean; target: string | null } {
+  try {
+    const list = Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : [];
+    const t = list.length ? list[list.length - 1] : null;
+    return { changes: t !== null && t !== current, target: t };
+  } catch { return { changes: false, target: null }; }
 }
 
 /** Pure: next disposition target for j (+1) / k (-1); clamps at the ends, starts at the first (j) or last (k) row when none is targeted. */
@@ -280,6 +290,7 @@ export function keyToastText(a: DispositionShortcut, label: unknown): string | n
       case "without_notes": return "↓ first without note";
       case "filter_all": return "filter → All";
       case "incomplete": return "↓ first unreviewed";
+      case "last_row": return "⤓ last row";
       case "needs_review": return "filter → needs review / All";
       case "cleared": return "filter → cleared / All";
       case "unreviewed_filter": return "filter → unreviewed / All";
@@ -306,6 +317,7 @@ export function keyActionChanges(a: DispositionShortcut, c: KeyActionContext | n
       case "without_notes": return withoutNotesKey(c.complete, c.without_notes_target).changes;
       case "filter_all": return filterAllKey(c.row_filter).changes;
       case "incomplete": return incompleteKey(c.entries).changes;
+      case "last_row": return lastRowKey(c.ids, c.target_id).changes;
       case "needs_review": return needsReviewKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "needs_human_review").length : 0, c.row_filter).changes;
       case "unreviewed_filter": return unreviewedFilterKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "unreviewed").length : 0, c.row_filter).changes;
       case "cleared": return clearedKey(Array.isArray(c.entries) ? (c.entries as Array<{ status?: unknown } | null>).filter((e) => e?.status === "cleared_pattern_only").length : 0, c.row_filter).changes;
@@ -459,6 +471,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "b", does: "toggle row filter needs_human_review ↔ All (same as N needs review chip)" },
   { key: "c", does: "toggle row filter cleared_pattern_only ↔ All (same as N cleared chip)" },
   { key: "l", does: "toggle row filter unreviewed ↔ All (same as N unreviewed chip)" },
+  { key: "z", does: "jump the target to the last disposition row (opposite of i / j from top); no-op when already there" },
   { key: "w", does: "review complete: jump to the first disposition without a note (same as N without notes ↓)" },
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
