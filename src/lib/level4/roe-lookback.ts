@@ -396,6 +396,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "a", does: "reset Show filter to All — no-op when already All" },
   { key: "3", does: "focus, expand and scroll to sealed path #3 (rank 3), Show → All — mirrors 1 / 2; no-op with <3 paths" },
   { key: "b", does: "toggle Show to Beaten rows ↔ All — same as the sticky N beaten chip; only when ≥1 beaten" },
+  { key: "=", does: "toggle Show to = Agree rows ↔ All — same as the sticky N agree chip; only when ≥1 agree" },
   { key: "w", does: "toggle Show to ★ Winner rows ↔ All — same as the sticky N winners chip; only when ≥1 winner" },
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
   { key: "p", does: "copy Recent toasts JSON — same as sticky ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
@@ -781,6 +782,38 @@ export function lookbackWinnersKey(ev: { key?: unknown; ctrlKey?: unknown; metaK
     const cur = filter === "winners" || filter === "beaten" || filter === "agree" ? filter : "all";
     const changed = wc.next !== cur;
     return { next: wc.next, changed, toast: !changed ? null : wc.next === "all" ? "w → Show: All" : "w → Show: ★ Winners" };
+  } catch { return null; }
+}
+
+/** Pure: sticky "N agree" chip. When the compare has ≥1 agree path, clicking sets Show to agree; active → re-click returns to all. Hidden when 0/invalid. Mirrors lookbackWinnersChip. Never throws. */
+export function lookbackAgreeChip(agree: unknown, filter: unknown): { show: boolean; label: string; active: boolean; next: LookbackRoleFilter } {
+  const cur: LookbackRoleFilter = filter === "winners" || filter === "beaten" || filter === "agree" ? filter : "all";
+  const n = typeof agree === "number" && Number.isFinite(agree) ? Math.floor(agree) : 0;
+  if (n < 1) return { show: false, label: "", active: false, next: cur };
+  const active = cur === "agree";
+  return { show: true, label: `${n} agree${active ? " ✓" : ""}`, active, next: active ? "all" : "agree" };
+}
+export const LOOKBACK_AGREE_PULSE_MS = 2400;
+/** Pure: true while the sticky "N agree" chip glows after its first effective click / = (session once). Display only. Never throws. */
+export function lookbackAgreePulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_AGREE_PULSE_MS;
+}
+/** Pure: whether an agree chip click / = should start the once-per-session pulse. */
+export function lookbackAgreeShouldPulse(alreadyPulsed: unknown, cur: unknown, next: unknown): boolean {
+  return alreadyPulsed !== true && typeof next === "string" && next !== cur;
+}
+/** Pure: key = mirrors the sticky "N agree" chip (Show agree ↔ All). Null when not =, modified, typing, or 0 agree. Never throws. */
+export function lookbackAgreeKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, agree: unknown, filter: unknown): { next: LookbackRoleFilter; changed: boolean; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "=" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    const ac = lookbackAgreeChip(agree, filter);
+    if (!ac.show) return null;
+    const cur = filter === "winners" || filter === "beaten" || filter === "agree" ? filter : "all";
+    const changed = ac.next !== cur;
+    return { next: ac.next, changed, toast: !changed ? null : ac.next === "all" ? "= → Show: All" : "= → Show: = Agree" };
   } catch { return null; }
 }
 
