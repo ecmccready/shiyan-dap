@@ -1435,3 +1435,16 @@ export function lookbackAgreeJumpPulse(pulseAt: unknown, now: unknown): boolean 
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
   const d = now - pulseAt; return d >= 0 && d < LOOKBACK_AGREE_JUMP_PULSE_MS;
 }
+/** Pure: all ranked sealed paths as one JSON pack (rank order; each entry = lookbackPathJson payload). Null when no paths. Never throws. */
+export function lookbackAllPathsJson(c: LookbackCompare | null | undefined): string | null {
+  try {
+    const rows = rankedLookbackRows(c); if (!c || !rows.length) return null;
+    const paths = rows.map((r) => { try { return JSON.parse(lookbackPathJson(r, c.winner)); } catch { return null; } }).filter(Boolean);
+    if (!paths.length) return null;
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "all_paths", count: paths.length, greedy: c.greedy?.run_id ?? null, winner: c.winner ?? null, paths, note: ROE_LOOKBACK_NOTE }, null, 2);
+  } catch { return null; }
+}
+/** Pure: sticky "⧉ All paths" chip — copies every sealed path JSON without moving focus. Null without JSON. Never throws. */
+export function lookbackCopyAllPathsChip(json: unknown, count?: unknown): { json: string; label: string; toast: string } | null {
+  try { if (typeof json !== "string" || !json) return null; const n = typeof count === "number" && count > 0 ? count : null; return { json, label: n ? `⧉ All ${n} paths` : "⧉ All paths", toast: `⧉ All paths → copied ${n ?? "all"} sealed paths JSON` }; } catch { return null; }
+}
