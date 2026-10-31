@@ -1158,3 +1158,17 @@ export function medicarePilotPulse(seen: unknown, mountedAt: unknown, now: unkno
   const d = now - mountedAt;
   return d >= 0 && d < MEDICARE_PILOT_PULSE_MS;
 }
+
+/** Display-only: first-use (per session) pulse window for the sticky "Last ↓" chip (chip click or key z). */
+export const LAST_ROW_PULSE_MS = 1200;
+/** Window event dispatched when Last ↓ is used (chip or z); detail = target item_id. */
+export const MEDICARE_LAST_ROW_PULSE_EVENT = "medicare:last-row-pulse";
+/** Pure: pulse only on first use this session with a real target. Never throws. */
+export function lastRowShouldPulse(alreadyPulsed: unknown, jump: unknown): boolean {
+  return alreadyPulsed !== true && typeof jump === "string" && jump.length > 0;
+}
+/** Pure: chip is pulsing within LAST_ROW_PULSE_MS after the first-use timestamp. Never throws. */
+export function lastRowPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LAST_ROW_PULSE_MS;
+}

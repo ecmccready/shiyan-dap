@@ -3,7 +3,7 @@
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { lastRowChip } from "../src/lib/medicare/investigation";
+import { lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
 import { firstRowChip, firstRowPulse, firstRowShouldPulse, FIRST_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { secondRowChip, secondRowPulse, secondRowShouldPulse, SECOND_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
 import { thirdRowChip, thirdRowPulse, thirdRowShouldPulse, THIRD_ROW_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -860,3 +860,10 @@ console.log("ok review complete banner click action");
   assert.equal(p(false, null, 1), false); assert.equal(p(false, 5, 1), false); assert.equal(p(false, NaN, 1), false);
   const fs = require("fs"), path = require("path"); assert.ok((fs.readFileSync(path.join(__dirname, "../src/app/workbench/medicare/page.tsx"), "utf8") as string).includes("<MedicarePilotChip"));
   console.log("ok medicarePilotPulse"); }
+
+{ const P = lastRowPulse, S = lastRowShouldPulse, M = LAST_ROW_PULSE_MS;
+  assert.equal(M, 1200); assert.equal(MEDICARE_LAST_ROW_PULSE_EVENT, "medicare:last-row-pulse");
+  assert.equal(S(false, "c"), true); assert.equal(S(true, "c"), false); assert.equal(S(false, ""), false); assert.equal(S(false, null), false);
+  assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + M - 1), true); assert.equal(P(1000, 1000 + M), false);
+  assert.equal(P(null, 1), false); assert.equal(P(5, 1), false); assert.equal(P(NaN, 1), false);
+  console.log("ok lastRowPulse/ShouldPulse (first-use per session, chip or z)"); }
