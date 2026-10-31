@@ -767,3 +767,11 @@ export function undoDepthChip(depth: unknown): { depth: number; label: string; c
   const n = typeof depth === "number" && Number.isFinite(depth) && depth > 0 ? Math.floor(depth) : 0;
   return { depth: n, label: n > 0 ? `undo ${n} ↶` : "undo 0", can_undo: n > 0 };
 }
+
+export const MEDICARE_REDO_DEPTH_EVENT = "medicare:redo-depth";
+export const MEDICARE_REDO_REQUEST_EVENT = "medicare:redo-request";
+/** Pure: Win-strip chip for redo stack depth. Click redoes (like Redo) only when depth > 0. Never throws. */
+export function redoDepthChip(depth: unknown): { depth: number; label: string; can_redo: boolean } {
+  const n = typeof depth === "number" && Number.isFinite(depth) && depth > 0 ? Math.floor(depth) : 0;
+  return { depth: n, label: n > 0 ? `redo ${n} ↷` : "redo 0", can_redo: n > 0 };
+}
