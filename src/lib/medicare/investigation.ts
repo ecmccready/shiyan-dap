@@ -897,3 +897,16 @@ export function withoutNotesKey(complete: unknown, target: unknown): { changes: 
 export function incompleteKey(entries: unknown): { changes: boolean; target: string | null } {
   try { const hasUn = Array.isArray(entries) && entries.some((e) => !!e && (e as { status?: unknown }).status === "unreviewed" && typeof (e as { item_id?: unknown }).item_id === "string" && (e as { item_id: string }).item_id !== ""); const t = hasUn ? firstIncompleteDispositionTarget(entries) : null; return { changes: !!t, target: t }; } catch { return { changes: false, target: null }; }
 }
+
+/** Win strip "N unreviewed left" chip: session-once pulse after the first successful jump (chip click or key i). Display only. */
+export const UNREVIEWED_LEFT_PULSE_MS = 2400;
+export const MEDICARE_UNREVIEWED_PULSE_EVENT = "medicare:unreviewed-left-pulse";
+/** Pure: true while the unreviewed-left chip glows. Never throws. */
+export function unreviewedLeftPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < UNREVIEWED_LEFT_PULSE_MS;
+}
+/** Pure: pulse only once per session and only when ≥1 unreviewed row remains (jump is successful). */
+export function unreviewedLeftShouldPulse(alreadyPulsed: unknown, left: unknown): boolean {
+  return alreadyPulsed !== true && typeof left === "number" && Number.isFinite(left) && left > 0;
+}
