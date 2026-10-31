@@ -279,12 +279,12 @@ console.log("clear       -> Clear empties the look-back Recent toasts strip; a t
   assert.deepEqual(clearAllLookbackToasts(null), { cleared: [], stack: [] });
   assert.deepEqual(clearAllLookbackToasts("x" as never), { cleared: [], stack: [] });
   assert.equal(showClearAllLookbackToasts(st), true);
-  assert.equal(showClearAllLookbackToasts(st.slice(0, 1)), false, "single toast: no Clear all");
+  assert.equal(showClearAllLookbackToasts(st.slice(0, 1)), true, "single toast: Clear all (same as d)");
   assert.equal(showClearAllLookbackToasts([]), false); assert.equal(showClearAllLookbackToasts(null), false);
   const hist = pushLookbackToastHistory([], st);
   assert.equal(dismissedLookbackToastHistory(hist, r.stack).length, 3, "cleared toasts land in Recent toasts");
 }
-console.log("clear all -> with 2+ stacked look-back top toasts a ✕ Clear all N (Esc) control dismisses them at once; Recent toasts kept");
+console.log("clear all -> with 1+ stacked look-back top toasts a ✕ Clear all N (Esc) control dismisses them at once; Recent toasts kept");
 { const e = { id: "agree" as const, text: "= Look-back and greedy agree", tone: "blue" as const };
   assert.deepEqual(restoreLookbackToast(e, []), { id: "agree", text: e.text });
   assert.equal(restoreLookbackToast(e, [e]), null, "already on screen -> no-op");
@@ -422,7 +422,7 @@ console.log("Δe copy    -> sticky +Δe click copies summary JSON (same as g)");
   assert.equal(E(rs, null).show, false); assert.equal(E(rs, "zz").show, false); assert.equal(E(rs, "").show, false);
   assert.equal(E([{ run_id: "x" }], "x").label, "expanded: #1 x ✕"); assert.equal(E(null, "r1").show, false); assert.equal(E([7, null], "a").show, false); console.log("lookbackExpandedChip OK"); }
 
-{ const T = lookbackToastsChip; assert.deepEqual(T([]), { show: false, label: "", clearable: false }); assert.deepEqual(T(null), { show: false, label: "", clearable: false }); assert.deepEqual(T([1]), { show: true, label: "1 toast", clearable: false }); assert.deepEqual(T([1,2]), { show: true, label: "2 toasts ✕", clearable: true }); }
+{ const T = lookbackToastsChip; assert.deepEqual(T([]), { show: false, label: "", clearable: false }); assert.deepEqual(T(null), { show: false, label: "", clearable: false }); assert.deepEqual(T([1]), { show: true, label: "1 toast ✕", clearable: true }); assert.deepEqual(T([1,2]), { show: true, label: "2 toasts ✕", clearable: true }); }
 { const R = lookbackRecentChip; assert.deepEqual(R([]), { show: false, label: "" }); assert.deepEqual(R(null), { show: false, label: "" }); assert.deepEqual(R([1]), { show: true, label: "1 recent ✕" }); assert.deepEqual(R([1,2,3]), { show: true, label: "3 recent ✕" }); console.log("lookbackRecentChip OK"); }
 { const K = lookbackCheatsheetChip; assert.deepEqual(K(true), { show: true, label: "keys open ✕" }); assert.deepEqual(K(false), { show: false, label: "" });
   assert.equal(K(1).show, false); assert.equal(K("true").show, false); assert.equal(K(null).show, false); console.log("lookbackCheatsheetChip OK"); }

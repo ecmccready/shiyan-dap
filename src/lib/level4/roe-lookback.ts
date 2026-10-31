@@ -312,8 +312,8 @@ export function dismissLookbackToast<T extends { id: LookbackToastId }>(stack: r
 export function clearAllLookbackToasts<T extends { id: LookbackToastId }>(stack: readonly T[] | null | undefined): { cleared: LookbackToastId[]; stack: T[] } {
   return { cleared: Array.isArray(stack) ? stack.map((t) => t.id) : [], stack: [] };
 }
-/** Pure: the Clear all control shows only when 2+ top toasts are stacked. */
-export function showClearAllLookbackToasts(stack: readonly unknown[] | null | undefined): boolean { return Array.isArray(stack) && stack.length >= 2; }
+/** Pure: the Clear all control shows when ≥1 top toast is stacked (same as key `d`). */
+export function showClearAllLookbackToasts(stack: readonly unknown[] | null | undefined): boolean { return Array.isArray(stack) && stack.length >= 1; }
 
 export const LOOKBACK_TOAST_LEAVE_GRACE_MS = 1200;
 /** Pure: on a toast's timer, defer while the pointer is over the stack, else dismiss. */
@@ -677,11 +677,11 @@ export function lookbackCheatsheetChip(open: unknown): { show: boolean; label: s
   return { show, label: show ? "keys open ✕" : "" };
 }
 
-/** Pure: sticky "N toasts" chip while ≥1 top toast shows; clickable (Clear all) only when ≥2. Never throws. */
+/** Pure: sticky "N toasts" chip while ≥1 top toast shows; clickable (Clear all) at ≥1 (same as key `d`). Never throws. */
 export function lookbackToastsChip(stack: readonly unknown[] | null | undefined): { show: boolean; label: string; clearable: boolean } {
   const n = Array.isArray(stack) ? stack.length : 0;
   if (n < 1) return { show: false, label: "", clearable: false };
-  const clearable = n >= 2;
+  const clearable = n >= 1;
   return { show: true, label: `${n} toast${n === 1 ? "" : "s"}${clearable ? " ✕" : ""}`, clearable };
 }
 
