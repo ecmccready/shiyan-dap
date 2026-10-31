@@ -483,6 +483,16 @@ export function notesCoverage(report: unknown): { noted: number; total: number; 
   } catch { return { noted: 0, total: 0, label: "", show: false }; }
 }
 
+/** Pure: "N unreviewed left" chip; show only when 0 < reviewed-or-not and some items remain unreviewed (M < total). */
+export function unreviewedLeftChip(report: unknown): { left: number; total: number; label: string; show: boolean } {
+  try {
+    const entries = (report as InvestigationReport)?.entries;
+    if (!Array.isArray(entries) || !entries.length) return { left: 0, total: 0, label: "", show: false };
+    const left = entries.filter((e) => !e || e.status === "unreviewed" || typeof e.status !== "string").length;
+    return { left, total: entries.length, label: left ? `${left} unreviewed left` : "", show: left > 0 };
+  } catch { return { left: 0, total: 0, label: "", show: false }; }
+}
+
 /** Row filter: a review status, "has_note" (rows with a reviewer note), or null for All. */
 export type RowFilter = DispositionStatus | "has_note" | null;
 /** Pure: toggle a row filter (statuses or "has_note"); re-click or anything invalid clears to null. */

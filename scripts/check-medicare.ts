@@ -2,7 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { medicareToastClickAction, notesCoverage, statusMix } from "../src/lib/medicare/investigation";
+import { medicareToastClickAction, notesCoverage, statusMix, unreviewedLeftChip as U } from "../src/lib/medicare/investigation";
 import { firstIncompleteDispositionTarget, reviewTimerClickAction, reviewCompleteBannerClickAction, handoffReadyAnnotated as HRA } from "../src/lib/medicare/investigation";
 import type { DispositionStatus, DispositionInput, DispositionHistory } from "../src/lib/medicare/investigation";
 import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, reviewProgressStartPulse, PROGRESS_START_PULSE_MS, rowFilterPulse, ROW_FILTER_PULSE_MS, bulkSetPulse, BULK_SET_PULSE_MS, undoPulse, UNDO_PULSE_MS, redoPulse, REDO_PULSE_MS, dispositionsCopyPulse, DISPOSITIONS_COPY_PULSE_MS, handoffCopyPulse, HANDOFF_COPY_PULSE_MS, noteFocusPulse, NOTE_FOCUS_PULSE_MS, quickNotePulse, QUICK_NOTE_PULSE_MS, keyTargetPulse, KEY_TARGET_PULSE_MS, cheatsheetPulse, CHEATSHEET_PULSE_MS } from "../src/lib/medicare/investigation";
@@ -643,3 +643,9 @@ console.log("OK");
 assert.equal(reviewCompleteBannerClickAction(true), "copy_dispositions");
 assert.equal(reviewCompleteBannerClickAction(false), "none");
 console.log("ok review complete banner click action");
+
+{
+  assert.deepEqual(U({ entries: [{ status: "unreviewed" }, { status: "needs_human_review" }, { status: "unreviewed" }] }), { left: 2, total: 3, label: "2 unreviewed left", show: true });
+  assert.equal(U({ entries: [{ status: "needs_human_review" }, { status: "cleared_pattern_only" }] }).show, false);
+  assert.equal(U(null).show, false); assert.equal(U({ entries: [] }).show, false); assert.equal(U(inv).label, "3 unreviewed left");
+  console.log("unreviewedLeftChip OK"); }

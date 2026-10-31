@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesCoverage, unreviewedLeftChip, MEDICARE_PROGRESS_JUMP_EVENT, statusMix, notesNudge, firstRowWithoutNote, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, cycleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -89,6 +89,10 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
           <button type="button" data-medicare-notes-coverage={`${cv.noted}/${cv.total}`} data-medicare-notes-coverage-filter={filter === "has_note" ? "on" : "off"} aria-pressed={filter === "has_note"}
             onClick={() => pick(toggleRowFilter(filter, "has_note"))} title="Items with a reviewer note — click to show only rows with notes (click again to clear)"
             className={`rounded-full border px-3 py-1 text-xs font-semibold hover:border-white ${cv.noted === cv.total ? "border-emerald-300 bg-emerald-500/20 text-emerald-100" : "border-sky-300 bg-sky-500/15 text-sky-100"} ${filter === "has_note" ? "ring-2 ring-white" : ""}`}>{cv.label}{filter === "has_note" ? " ▸ has_note" : ""}</button>
+        ) : null; })()}
+        {(() => { const u = unreviewedLeftChip(r); return u.show ? (
+          <button type="button" data-medicare-unreviewed-left={`${u.left}/${u.total}`} onClick={() => window.dispatchEvent(new CustomEvent(MEDICARE_PROGRESS_JUMP_EVENT))} title="Jump to the first unreviewed disposition row (same as clicking review progress)"
+            className="rounded-full border border-zinc-400 bg-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-100 hover:border-white">{u.label} ↓</button>
         ) : null; })()}
         {(() => { const m = statusMix(r); return m.show ? (
           <button type="button" data-medicare-status-mix={`${m.counts.needs_human_review}/${m.counts.cleared_pattern_only}/${m.counts.unreviewed}`} data-medicare-status-mix-cycle={filter ?? "all"} onClick={() => pick(cycleRowFilter(filter))} title={`Items per review status — click to cycle row filter (same as f); now: ${filter ?? "all"}`}
