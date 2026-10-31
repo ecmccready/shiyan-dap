@@ -396,6 +396,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "a", does: "reset Show filter to All — no-op when already All" },
   { key: "3", does: "focus, expand and scroll to sealed path #3 (rank 3), Show → All — mirrors 1 / 2; no-op with <3 paths" },
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
+  { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -896,5 +897,16 @@ export function lookbackClearToastsKey(ev: { key?: unknown; ctrlKey?: unknown; m
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
     const n = typeof count === "number" && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
     return { changed: n > 0, cleared: n, toast: n > 0 ? `d → cleared ${n} toast${n === 1 ? "" : "s"}` : null };
+  } catch { return null; }
+}
+
+/** Pure: key `e` clears Recent toasts history (same as sticky N recent ✕ / Recent strip Clear) when ≥1 entry. Live top toasts untouched. Effective-only ⌨ toast. Never throws. */
+export function lookbackClearRecentKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, count: unknown): { changed: boolean; cleared: number; toast: string | null } | null {
+  try {
+    if (!ev || ev.key !== "e" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    const n = typeof count === "number" && Number.isFinite(count) && count > 0 ? Math.floor(count) : 0;
+    return { changed: n > 0, cleared: n, toast: n > 0 ? `e → cleared ${n} recent toast${n === 1 ? "" : "s"}` : null };
   } catch { return null; }
 }
