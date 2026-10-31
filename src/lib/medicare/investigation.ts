@@ -636,6 +636,13 @@ export function undoPulse(startedAt: unknown, now: unknown, fired: unknown): boo
   return now >= startedAt && now - startedAt < UNDO_PULSE_MS;
 }
 
+export const REDO_PULSE_MS = 2400;
+/** Pure: true while the ↷ Redo button should pulse — once per tab after the first successful redo (r or click with future), for REDO_PULSE_MS. Display only. */
+export function redoPulse(startedAt: unknown, now: unknown, fired: unknown): boolean {
+  if (fired !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < REDO_PULSE_MS;
+}
+
 export const NOTE_FOCUS_PULSE_MS = 2400;
 /** Pure: true while the focused note field should pulse — once per tab on the first note focus (key n or click), for NOTE_FOCUS_PULSE_MS, only for the row that fired. Display only. */
 export function noteFocusPulse(startedAt: unknown, now: unknown, pulsedId: unknown, rowId: unknown): boolean {
