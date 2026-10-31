@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesNudge, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
+import { MEDICARE_FILTER_EVENT, MEDICARE_REPORT_EVENT, DISPOSITION_STATUSES, statusChips, notesCount, notesNudge, handoffReadyAnnotated, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, toggleStatusFilter, toggleRowFilter, rowMatchesFilter, type RowFilter, type DispositionStatus, type InvestigationReport } from "@/lib/medicare/investigation";
 
 const TONE = {
   unreviewed: "border-zinc-500 text-zinc-200 bg-zinc-800",
@@ -42,6 +42,20 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
     prevReady.current = ready;
   }, [ready]);
   const chipPulsing = handoffReadyChipPulse(pulseAt, now, ready);
+  const noteCount = notesCount(r).count;
+  const prevNotes = useRef<number | null>(null);
+  const notesPulsedOnce = useRef(false);
+  const [notesPulseAt, setNotesPulseAt] = useState<number | null>(null);
+  const [notesNow, setNotesNow] = useState(0);
+  useEffect(() => {
+    if (prevNotes.current === 0 && noteCount >= 1 && !notesPulsedOnce.current) {
+      notesPulsedOnce.current = true; prevNotes.current = noteCount;
+      const t = Date.now(); setNotesPulseAt(t); setNotesNow(t);
+      const id = setTimeout(() => setNotesNow(Date.now()), NOTES_CHIP_PULSE_MS); return () => clearTimeout(id);
+    }
+    prevNotes.current = noteCount;
+  }, [noteCount]);
+  const notesPulsing = notesChipPulse(notesPulseAt, notesNow, noteCount);
   const chips = statusChips(r);
   return (
     <div data-medicare-status-chips className="space-y-2">
@@ -65,9 +79,9 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
       ) : null; })()}
       <div className="flex flex-wrap gap-2" data-medicare-status-filter={filter ?? "all"}>
         {(() => { const nc = notesCount(r); return (
-          <button type="button" data-medicare-notes-count={nc.count} data-medicare-filter-button="has_note" aria-pressed={filter === "has_note"} disabled={!nc.count && filter !== "has_note"}
+          <button type="button" data-medicare-notes-count={nc.count} data-medicare-notes-pulse={notesPulsing ? "on" : undefined} data-medicare-filter-button="has_note" aria-pressed={filter === "has_note"} disabled={!nc.count && filter !== "has_note"}
             onClick={() => pick(toggleRowFilter(filter, "has_note"))} title="Show only rows with a reviewer note (click again to clear)"
-            className={`rounded-full border px-3 py-1 text-xs font-semibold ${nc.count ? "border-sky-300 bg-sky-500 text-black" : "border-zinc-600 text-zinc-400"} ${filter === "has_note" ? "ring-2 ring-white" : ""} disabled:cursor-default`}>✎ {nc.label}</button>
+            className={`rounded-full border px-3 py-1 text-xs font-semibold ${nc.count ? "border-sky-300 bg-sky-500 text-black" : "border-zinc-600 text-zinc-400"} ${filter === "has_note" ? "ring-2 ring-white" : ""} ${notesPulsing ? "ring-4 ring-sky-300 motion-safe:animate-pulse" : ""} disabled:cursor-default`}>✎ {nc.label}</button>
         ); })()}
         <button type="button" onClick={() => pick(null)} aria-pressed={filter === null}
           className={`rounded-full border px-3 py-1 text-xs ${filter === null ? "border-white text-white" : "border-zinc-600 text-zinc-400"}`}>All ({chips.length})</button>

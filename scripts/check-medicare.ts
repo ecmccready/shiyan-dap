@@ -2,7 +2,7 @@
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS } from "../src/lib/medicare/investigation";
+import { reviewCompletePulse, COMPLETE_PULSE_MS, handoffReadyChipPulse, HANDOFF_READY_PULSE_MS, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, notesChipPulse, NOTES_CHIP_PULSE_MS } from "../src/lib/medicare/investigation";
 import { buildProvenance, canonicalJson, contentHash, MEDICARE_PROVENANCE_SCHEMA, MEDICARE_DOMAIN_LABEL, MEDICARE_NOTE } from "../src/lib/medicare/provenance";
 import { checkRequiredNonNegative, MEDICARE_DQ_SCHEMA, DQ_CHECK_ID } from "../src/lib/medicare/dq";
 import { MEDICARE_FIXTURE, FIXTURE_PROVENANCE, FIXTURE_DQ, FIXTURE_BASELINES, FIXTURE_EVIDENCE } from "../src/lib/medicare/fixture";
@@ -561,3 +561,11 @@ console.log("OK");
   assert.equal(handoffPackReadyPulse(1000, 1000 + HANDOFF_PACK_READY_PULSE_MS, true), false); assert.equal(handoffPackReadyPulse(1000, 1500, false), false);
   assert.equal(handoffPackReadyPulse(1000, 999, true), false); assert.equal(handoffPackReadyPulse(NaN, 1, true), false); assert.equal(handoffPackReadyPulse("1", 2, true), false);
   assert.equal(HANDOFF_PACK_READY_PULSE_MS, 2400); console.log("handoffPackReadyPulse OK"); }
+
+{ assert.equal(NOTES_CHIP_PULSE_MS, 2400);
+  assert.equal(notesChipPulse(null, 5, 1), false, "no 0->1 transition seen -> no pulse");
+  assert.equal(notesChipPulse(1000, 1000, 1), true); assert.equal(notesChipPulse(1000, 1000 + NOTES_CHIP_PULSE_MS - 1, 2), true);
+  assert.equal(notesChipPulse(1000, 1000 + NOTES_CHIP_PULSE_MS, 1), false, "expires");
+  assert.equal(notesChipPulse(1000, 1500, 0), false, "notes back to 0 stops pulse");
+  assert.equal(notesChipPulse(1000, 999, 1), false); assert.equal(notesChipPulse("x", 1000, 1), false); assert.equal(notesChipPulse(1000, NaN, 1), false); assert.equal(notesChipPulse(1000, 1000, "1"), false);
+  console.log("notes chip pulse OK"); }

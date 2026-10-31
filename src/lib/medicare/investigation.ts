@@ -574,3 +574,10 @@ export function handoffPackReadyPulse(startedAt: unknown, now: unknown, ready: u
   if (ready !== true || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
   return now >= startedAt && now - startedAt < HANDOFF_PACK_READY_PULSE_MS;
 }
+
+export const NOTES_CHIP_PULSE_MS = 2400;
+/** Pure: true while the ✎ N notes chip should pulse — only after a seen 0→≥1 notes transition (`startedAt` set, first time in the tab), for NOTES_CHIP_PULSE_MS. Display only. */
+export function notesChipPulse(startedAt: unknown, now: unknown, count: unknown): boolean {
+  if (typeof count !== "number" || !Number.isFinite(count) || count < 1 || typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < NOTES_CHIP_PULSE_MS;
+}
