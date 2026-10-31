@@ -409,6 +409,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "t", does: "copy the TOP-ranked path's steps JSON without expanding or moving focus — same as sticky ⧉ TOP steps (shares its first-use pulse); no-op with no ranked path" },
   { key: "r", does: "copy the greedy-picked path's steps JSON without expanding or moving focus — same as sticky ⧉ Greedy steps (shares its first-use pulse); r = gReedy steps (t = TOP steps, l = Last steps); no-op without a greedy path" },
   { key: "i", does: "copy the focused row's steps JSON without expanding or moving focus — same as sticky ⧉ Focus steps (shares its first-use pulse); i = Inspect focus steps (s still expands + copies); no-op without a focused row" },
+  { key: "n", does: "copy the runner-up (#2) sealed path JSON without moving focus — same as sticky ⧉ #2 (shares its first-use pulse); pairs with 2 / x / ;; no-op with <2 paths" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent toasts kept; no-op with none showing" },
   { key: "?", does: "show / hide this sheet" },
 ];
@@ -1179,6 +1180,24 @@ export function lookbackCopyFocusChip(focusId: unknown, json: unknown): { id: st
 /** Pure: sticky ⧉ Focus steps chip — copies the focused row's steps JSON (same payload as expand + s) without expanding or moving focus. Null without a focused row or JSON. Never throws. */
 export function lookbackCopyFocusStepsChip(focusId: unknown, json: unknown): { id: string; json: string; label: string; toast: string } | null {
   try { return typeof focusId === "string" && focusId && typeof json === "string" && json ? { id: focusId, json, label: "⧉ Focus steps", toast: `⧉ Focus steps → copied ${focusId} steps JSON` } : null; } catch { return null; }
+}
+/** Pure: runner-up (#2 ranked) path JSON without moving focus. Null with <2 paths. Never throws. */
+export function lookbackRunnerUpPathJson(c: LookbackCompare | null | undefined): string | null {
+  try { if (!c) return null; const rows = rankedLookbackRows(c); if (rows.length < 2) return null; const r = rows[1]; return r && typeof r.run_id === "string" && r.run_id ? lookbackPathJson(r, c.winner) : null; } catch { return null; }
+}
+/** Pure: key `n` (ruNner-up) → copy #2 path JSON without moving focus. Null when not n, modified, typing, or no JSON. Never throws. */
+export function lookbackCopyRunnerUpKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined, json: unknown): { json: string; toast: string } | null {
+  try {
+    if (!ev || ev.key !== "n" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
+    const tag = typeof ev.targetTag === "string" ? ev.targetTag.toUpperCase() : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return null;
+    if (typeof json !== "string" || !json) return null;
+    return { json, toast: "n → copied #2 path JSON" };
+  } catch { return null; }
+}
+/** Pure: sticky ⧉ #2 chip — copies runner-up path JSON (same as key n) without moving focus. Null with <2 paths. Never throws. */
+export function lookbackCopyRunnerUpChip(json: unknown): { json: string; label: string; toast: string } | null {
+  try { return typeof json === "string" && json ? { json, label: "⧉ #2", toast: "⧉ #2 → copied #2 path JSON" } : null; } catch { return null; }
 }
 /** Pure: sticky ⧉ Last chip — copies LAST path JSON (same as key ;) without moving focus. Null with <2 paths. Never throws. */
 export function lookbackCopyLastChip(json: unknown): { json: string; label: string; toast: string } | null {
