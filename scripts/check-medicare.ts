@@ -673,3 +673,4 @@ console.log("ok review complete banner click action");
   assert.equal(R(-1).can_redo, false); assert.equal(R(NaN).depth, 0); assert.equal(R("3").depth, 0); assert.equal(R(2.7).depth, 2); console.log("redoDepthChip OK"); }
 { const C = cheatsheetOpenChip; assert.deepEqual(C(true), { show: true, label: "keys open ✕" }); assert.deepEqual(C(false), { show: false, label: "" });
   assert.equal(C("true").show, false); assert.equal(C(undefined).show, false); assert.equal(C(1).show, false); console.log("cheatsheetOpenChip OK"); }
+{ const src = require("node:fs").readFileSync(require("node:path").join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8"); assert.ok(src.includes("data-medicare-cheatsheet-keys-open") && src.includes("z-[70]")); console.log("cheatsheet overlay keys-open chip OK"); }
