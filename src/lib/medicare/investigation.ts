@@ -1300,3 +1300,10 @@ export const MEDICARE_PACK_COPIED_EVENT = "medicare:pack-copied";
 export function medicarePackCopiedToast(kind: unknown): string | null {
   return kind === "investigation" ? "copied investigation JSON" : kind === "evidence" ? "copied evidence pack JSON" : kind === "brief" ? "copied case brief" : null;
 }
+
+/** Pure: which stacked toast a DIRECT (trusted user) click on the 📦 hand-off / Copy dispositions button should push after clipboard success. Synthetic .click() from the chip / h / y / banner returns "" (those paths already toast). Brief button excluded. Never throws. */
+export function medicareDirectButtonCopyWhich(handoff: unknown, brief: unknown, isTrusted: unknown, ok: unknown): "handoff" | "dispositions" | "" {
+  if (isTrusted !== true || ok !== true) return "";
+  if (handoff === true) return "handoff";
+  return brief ? "" : "dispositions";
+}
