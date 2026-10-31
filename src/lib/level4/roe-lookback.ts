@@ -1366,3 +1366,8 @@ export function lookbackExpandAllKey(ev: { key?: unknown; ctrlKey?: unknown; met
 }
 /** Pure: first-use pulse fires only on the first expand-all of the session. */
 export function lookbackExpandAllShouldPulse(alreadyPulsed: boolean, action: unknown): boolean { return !alreadyPulsed && action === "expand"; }
+
+/** Pure: sticky "⧉ Summary" chip — presses the existing bottom Copy summary JSON button (same as key g). Null when no summary JSON. Chip-only (g already owns the key). Never throws. */
+export function lookbackCopySummaryChip(json: unknown): { label: string; selector: string } | null {
+  try { return typeof json === "string" && json ? { label: "⧉ Summary", selector: "[data-copy-roe-summary]" } : null; } catch { return null; }
+}
