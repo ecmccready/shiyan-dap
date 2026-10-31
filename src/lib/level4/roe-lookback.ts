@@ -683,3 +683,11 @@ export function lookbackRecentChip(history: readonly unknown[] | null | undefine
   const n = Array.isArray(history) ? history.length : 0;
   return n < 1 ? { show: false, label: "" } : { show: true, label: `${n} recent ✕` };
 }
+
+/** Pure: sticky "⧉ Copy recent" chip while Recent toasts has ≥1 entry; click copies the same JSON as strip ⧉ Copy all and flashes "✓ Copied" for LOOKBACK_TOAST_PILL_COPIED_MS. Never throws. */
+export function lookbackCopyRecentChip(history: readonly unknown[] | null | undefined, copiedAt: number | null | undefined, now: number): { show: boolean; label: string; copied: boolean } {
+  const n = Array.isArray(history) ? history.length : 0;
+  if (n < 1) return { show: false, label: "", copied: false };
+  const copied = typeof copiedAt === "number" && Number.isFinite(copiedAt) && Number.isFinite(now) && now >= copiedAt && now - copiedAt < LOOKBACK_TOAST_PILL_COPIED_MS;
+  return { show: true, label: copied ? "✓ Copied" : "⧉ Copy recent", copied };
+}
