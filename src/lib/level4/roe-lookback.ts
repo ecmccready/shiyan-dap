@@ -691,3 +691,10 @@ export function lookbackCopyRecentChip(history: readonly unknown[] | null | unde
   const copied = typeof copiedAt === "number" && Number.isFinite(copiedAt) && Number.isFinite(now) && now >= copiedAt && now - copiedAt < LOOKBACK_TOAST_PILL_COPIED_MS;
   return { show: true, label: copied ? "✓ Copied" : "⧉ Copy recent", copied };
 }
+
+export const LOOKBACK_COPY_RECENT_PULSE_MS = 2400;
+/** Pure: true while the sticky "⧉ Copy recent" chip should glow/pulse after the first successful Recent-toasts copy in the tab (`startedAt` set once per session on first success), for LOOKBACK_COPY_RECENT_PULSE_MS. Display only. Never throws. */
+export function lookbackCopyRecentPulse(startedAt: unknown, now: unknown): boolean {
+  if (typeof startedAt !== "number" || typeof now !== "number" || !Number.isFinite(startedAt) || !Number.isFinite(now)) return false;
+  return now >= startedAt && now - startedAt < LOOKBACK_COPY_RECENT_PULSE_MS;
+}
