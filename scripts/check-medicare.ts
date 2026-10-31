@@ -976,4 +976,10 @@ import { firstUpRowChip } from "../src/lib/medicare/investigation";
   assert.equal(S(false, "c"), true); assert.equal(S(true, "c"), false); assert.equal(S(false, ""), false); assert.equal(S(false, null), false);
   assert.equal(P(1000, 1000), true); assert.equal(P(1000, 1000 + M - 1), true); assert.equal(P(1000, 1000 + M), false);
   assert.equal(P(null, 1), false); assert.equal(P(5, 1), false); assert.equal(P(NaN, 1), false);
+  { const { firstUpChipChanged: G, firstRowKey: K } = require("../src/lib/medicare/investigation");
+    assert.equal(G(null, {}), false); assert.equal(G("", {}), false); assert.equal(G("a", null), true);
+    assert.equal(G("a", { filter: null, target: "a" }), false); assert.equal(G("a", { target: "a" }), false);
+    assert.equal(G("a", { filter: "cleared", target: "a" }), true); assert.equal(G("a", { filter: null, target: "b" }), true); assert.equal(G("a", { filter: null, target: null }), true);
+    assert.equal(G("a", { filter: null, target: "b" }), K(["a", "b"], "b").changes); assert.equal(G("a", { filter: null, target: "a" }), K(["a", "b"], "a").changes);
+    console.log("ok firstUpChipChanged (matches g changes; filter reset counts)"); }
   console.log("ok firstUpPulse/ShouldPulse (first-use per session, chip or g)"); }

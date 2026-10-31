@@ -1361,6 +1361,11 @@ export const MEDICARE_FIRST_UP_PULSE_EVENT = "medicare:first-up-pulse";
 export function firstUpShouldPulse(alreadyPulsed: unknown, jump: unknown): boolean {
   return alreadyPulsed !== true && typeof jump === "string" && jump.length > 0;
 }
+/** Pure: would a First ↑ chip click actually change anything (filter → All, key target → first row)? Mirrors g's firstRowKey `changes`
+ *  (plus the chip's filter reset) so the first-use pulse only fires when the jump moves something. Never throws; false without a target. */
+export function firstUpChipChanged(jump: unknown, state: { filter?: unknown; target?: unknown } | null | undefined): boolean {
+  try { if (typeof jump !== "string" || !jump) return false; const st = state ?? {}; return !((st.filter ?? null) === null && st.target === jump); } catch { return false; }
+}
 /** Pure: chip is pulsing within FIRST_UP_PULSE_MS after the first-use timestamp. Never throws. */
 export function firstUpPulse(pulseAt: unknown, now: unknown): boolean {
   if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
