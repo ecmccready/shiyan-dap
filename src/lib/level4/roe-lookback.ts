@@ -274,6 +274,9 @@ export function emptyFilterToast(filter: unknown, shown: unknown, total: unknown
   if (typeof filter !== "string" || !(filter in ROLE_LABEL) || shown !== 0 || typeof total !== "number" || !(total > 0)) return null;
   return `Show ${ROLE_LABEL[filter]}: 0 of ${total} paths match · press f or click All to show all`;
 }
+/** Pure: what clicking a stacked top toast does. The amber empty-filter toast resets Show to All (and still copies its text); others copy and dismiss. */
+export type LookbackToastClickAction = "reset_filter" | "copy";
+export function lookbackToastClickAction(id: unknown): LookbackToastClickAction { return id === "empty_filter" ? "reset_filter" : "copy"; }
 export const WIN_TOAST_MS = 3500;
 /** Pure: toast text when look-back beats greedy (shown once per load); null on agree / none / bad input. */
 export function lookbackWinToast(c: { winner?: unknown; delta_e_gain?: unknown; lookback?: { run_id?: unknown } | null; greedy?: { run_id?: unknown } | null } | null | undefined): string | null {
