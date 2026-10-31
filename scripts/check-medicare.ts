@@ -1042,3 +1042,17 @@ import { medicareCopySecondRowKey, medicareCopySecondRowChip, MEDICARE_COPY_SECO
   if (MCRT2("second", k.json) !== c.toast || MCRT2("second", "") !== "") throw new Error("⧉ #2 toast");
   if (KTT2({ kind: "copy_second_row" }, "") !== "⧉ copied #2 row JSON") throw new Error("' key toast");
   console.log("ok ' key + sticky ⧉ #2 chip → copy #2 row JSON (target unchanged)"); }
+
+import { medicareCopyThirdRowKey, medicareCopyThirdRowChip, MEDICARE_COPY_THIRD_ROW_KEY, medicareCopyRowToast as MCRT3, keyToastText as KTT3, medicareKeyToastDeferred as MKTD3, thirdRowChip as TRC3 } from "../src/lib/medicare/investigation";
+{ if (DSM({ key: '"' })?.kind !== "copy_third_row") throw new Error('" → copy_third_row');
+  if (DSM({ key: '"', targetTag: "TEXTAREA" }) !== null || DSM({ key: '"', ctrlKey: true }) !== null) throw new Error('" guarded');
+  if (DSM({ key: "'" })?.kind !== "copy_second_row" || DSM({ key: "3" })?.kind !== "set") throw new Error("'/3 unchanged");
+  if (MEDICARE_COPY_THIRD_ROW_KEY !== '"' || !MKM.some((k) => k.key === '"')) throw new Error('" in keymap');
+  const es = [{ item_id: "a" }, { item_id: "b" }, { item_id: "c", status: "needs_human_review" }];
+  const k = medicareCopyThirdRowKey(es); if (!k.changes || JSON.parse(k.json).item_id !== "c") throw new Error("3rd row json");
+  if (medicareCopyThirdRowKey(es.slice(0, 2)).changes || medicareCopyThirdRowKey(null).changes) throw new Error("<3 rows no-op");
+  const c = medicareCopyThirdRowChip(es); if (c.label !== "⧉ #3" || c.json !== k.json || medicareCopyThirdRowChip(es.slice(0, 2)).show) throw new Error("⧉ #3 chip");
+  if (MCRT3("third", k.json) !== c.toast || MCRT3("third", "") !== "") throw new Error("⧉ #3 toast");
+  if (KTT3({ kind: "copy_third_row" }, "") !== "⧉ copied #3 row JSON" || !MKTD3({ kind: "copy_third_row" })) throw new Error('" key toast deferred');
+  if (c.label === (TRC3 as (x: unknown) => { label?: string })(es as unknown)?.label) throw new Error("⧉ #3 distinct from #3 ↓");
+  console.log('ok " key + sticky ⧉ #3 chip → copy #3 row JSON (target unchanged)'); }
