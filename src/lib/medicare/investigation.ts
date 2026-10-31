@@ -793,3 +793,11 @@ export function medicareToastsChip(stack: readonly unknown[] | number | null | u
   const clearable = n >= 2;
   return { show: true, label: `${n} toast${n === 1 ? "" : "s"}${clearable ? " ✕" : ""}`, clearable };
 }
+
+export const MEDICARE_RECENT_STATE_EVENT = "medicare:recent-state";
+export const MEDICARE_RECENT_CLEAR_EVENT = "medicare:recent-clear";
+/** Pure: Win-strip "N recent ✕" chip while Recent toasts has entries; click = Clear (same as Recent → Clear). Mirrors lookbackRecentChip. Never throws. */
+export function medicareRecentChip(history: readonly unknown[] | number | null | undefined): { show: boolean; label: string } {
+  const n = Array.isArray(history) ? history.length : typeof history === "number" && Number.isFinite(history) && history > 0 ? Math.floor(history) : 0;
+  return n < 1 ? { show: false, label: "" } : { show: true, label: `${n} recent ✕` };
+}
