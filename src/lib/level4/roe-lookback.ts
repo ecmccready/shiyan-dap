@@ -1110,3 +1110,15 @@ export function lookbackCopyTopChip(json: unknown): { json: string; label: strin
 export function lookbackCopyLastChip(json: unknown): { json: string; label: string; toast: string } | null {
   try { return typeof json === "string" && json ? { json, label: "⧉ Last", toast: "⧉ Last → copied LAST path JSON" } : null; } catch { return null; }
 }
+
+/** Display-only: first-use (per session) pulse window for the sticky ⧉ TOP / ⧉ Last copy chips. */
+export const LOOKBACK_COPY_TOP_LAST_PULSE_MS = 1200;
+/** Pure: start a ⧉ TOP / ⧉ Last pulse only on the first copy (chip or x / ;) this session, with JSON. Never throws. */
+export function lookbackCopyChipShouldPulse(alreadyPulsed: unknown, json: unknown): boolean {
+  return alreadyPulsed !== true && typeof json === "string" && json.length > 0;
+}
+/** Pure: ⧉ TOP / ⧉ Last chip is pulsing within the window after its first-use timestamp. Never throws. */
+export function lookbackCopyChipPulse(pulseAt: unknown, now: unknown): boolean {
+  if (typeof pulseAt !== "number" || typeof now !== "number" || !Number.isFinite(pulseAt) || !Number.isFinite(now)) return false;
+  const d = now - pulseAt; return d >= 0 && d < LOOKBACK_COPY_TOP_LAST_PULSE_MS;
+}
