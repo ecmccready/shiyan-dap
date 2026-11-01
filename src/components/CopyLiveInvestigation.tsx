@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { parseMedicareUrlView, medicareShareableViewUrl, resolveMedicareUrlTarget } from "@/lib/medicare/view-url";
-import { readMedicareKeyTarget } from "@/lib/medicare/investigation";
+import { medicareShareableViewUrl, resolveMedicareLiveKeyTarget } from "@/lib/medicare/view-url";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { buildHandoffPack, formatReviewedCaseBrief, caseBriefWithViewUrl } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
@@ -12,7 +11,7 @@ import { medicareDirectButtonCopyWhich, medicareDirectBriefCopyKind, MEDICARE_PA
 /** Current key target (sessionStorage, else URL m_target) resolved against report rows — feeds m_target into shareable view_url. */
 function liveKeyTarget(r: { entries?: { item_id: string }[] } | undefined): string | null {
   const ids = (r?.entries ?? []).map((e) => e.item_id); let st: Storage | null = null; try { st = window.sessionStorage; } catch {}
-  try { return readMedicareKeyTarget(st, ids) ?? resolveMedicareUrlTarget(parseMedicareUrlView(window.location.search).target, ids); } catch { return null; }
+  return resolveMedicareLiveKeyTarget(st, window.location.search, ids);
 }
 
 /** Copies the live investigation report (current statuses + report_hash). With `report` it is controlled; otherwise it follows the stub's tab-local event. */

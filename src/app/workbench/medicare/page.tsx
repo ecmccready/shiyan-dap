@@ -74,6 +74,9 @@ const STAGES = [
 
 const PILOT_MEASURES = ["Review time per finding", "Precision", "False positives", "Reproducibility across runs"];
 
+/** Report row ids — Know-trail view_url m_target only resolves to a row in the report. */
+const MEDICARE_REPORT_IDS: readonly string[] = FIXTURE_INVESTIGATION.entries.map((e) => e.item_id);
+
 export default function MedicarePage() {
   return (
     <div className="min-h-screen bg-black text-white">
@@ -139,7 +142,7 @@ export default function MedicarePage() {
             <dt className="text-zinc-500">content sha256</dt><dd className="break-all">{FIXTURE_PROVENANCE.content_hash}</dd>
             <dt className="text-zinc-500">domain</dt><dd>{FIXTURE_PROVENANCE.domain_label}</dd>
           </dl>
-          <CopyMedicareJson kind="provenance" label="Copy provenance JSON" json={JSON.stringify(FIXTURE_PROVENANCE, null, 2)} />
+          <CopyMedicareJson kind="provenance" ids={MEDICARE_REPORT_IDS} label="Copy provenance JSON" json={JSON.stringify(FIXTURE_PROVENANCE, null, 2)} />
           <div data-medicare-dq>
             <p className="text-zinc-300">
               Data-quality check <code>{FIXTURE_DQ.check_id}</code>: {FIXTURE_DQ.rows_checked} rows checked, {FIXTURE_DQ.rows_with_issues} with issues.
@@ -150,7 +153,7 @@ export default function MedicarePage() {
               ))}
             </ul>
             <p className="text-xs text-zinc-500 mt-1">Data-quality patterns for human review, not findings of fraud or misconduct. Hash is sha256 of the canonical JSON of the rows.</p>
-            <CopyMedicareJson kind="dq" label="Copy DQ JSON" json={JSON.stringify(FIXTURE_DQ, null, 2)} />
+            <CopyMedicareJson kind="dq" ids={MEDICARE_REPORT_IDS} label="Copy DQ JSON" json={JSON.stringify(FIXTURE_DQ, null, 2)} />
           </div>
         </section>
 
@@ -173,7 +176,7 @@ export default function MedicarePage() {
             </div>
           ))}
           <p className="text-xs text-zinc-500">Ranked by payment / charge, highest first. A candidate is a pattern for human review, not a finding of fraud or misconduct.</p>
-          <CopyMedicareJson kind="baselines" label="Copy baselines JSON" json={JSON.stringify(FIXTURE_BASELINES, null, 2)} />
+          <CopyMedicareJson kind="baselines" ids={MEDICARE_REPORT_IDS} label="Copy baselines JSON" json={JSON.stringify(FIXTURE_BASELINES, null, 2)} />
         </section>
 
         <section data-medicare-show-panel className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-3">
@@ -225,8 +228,8 @@ export default function MedicarePage() {
           </ul>
           <div className="flex flex-wrap gap-2" data-medicare-copy-row>
             <CopyLiveInvestigation initial={FIXTURE_INVESTIGATION} brief={{ evidence: FIXTURE_EVIDENCE, provenance: FIXTURE_PROVENANCE }} handoff />
-            <CopyMedicareJson kind="investigation" label="Copy investigation JSON" json={JSON.stringify(FIXTURE_INVESTIGATION, null, 2)} />
-            <CopyMedicareJson kind="evidence" label="Copy evidence pack JSON" json={JSON.stringify(FIXTURE_EVIDENCE, null, 2)} />
+            <CopyMedicareJson kind="investigation" ids={MEDICARE_REPORT_IDS} label="Copy investigation JSON" json={JSON.stringify(FIXTURE_INVESTIGATION, null, 2)} />
+            <CopyMedicareJson kind="evidence" ids={MEDICARE_REPORT_IDS} label="Copy evidence pack JSON" json={JSON.stringify(FIXTURE_EVIDENCE, null, 2)} />
             <CopyMedicareJson kind="brief" label="Copy case brief" json={formatInvestigationCaseBrief(FIXTURE_INVESTIGATION, FIXTURE_EVIDENCE, FIXTURE_PROVENANCE)} />
           </div>
           <MedicareDispositionStub pack={FIXTURE_EVIDENCE} highlight={TOP_ITEM} />

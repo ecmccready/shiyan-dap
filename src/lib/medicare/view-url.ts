@@ -1,5 +1,6 @@
 // Shareable Medicare view via URL query (display-only; no server writes, not Level 4).
 import type { RowFilter } from "@/lib/medicare/investigation";
+import { readMedicareKeyTarget, MEDICARE_KEY_TARGET_KEY } from "@/lib/medicare/investigation";
 
 /** `target` (key-target item_id) is optional: absent → existing m_target in href is left untouched; null/"" → omitted. */
 export type MedicareUrlView = { filter: RowFilter; packs: boolean; jumps: boolean; target?: string | null };
@@ -108,4 +109,15 @@ export function medicareResetViewPulse(at: number | null, now: number): boolean 
  *  (same as ⧉ Link / ⧉ View). `keyTarget` null/invalid → m_target dropped (never a stale URL target). Used by case brief, 📦 Hand-off, ⧉ Dispositions. Never throws (bad href → null). */
 export function medicareShareableViewUrl(href: string, keyTarget: string | null | undefined): string | null {
   try { const v = parseMedicareUrlView(new URL(href).search); return medicareUrlWithView(href, { filter: v.filter ?? null, packs: !!v.packs, jumps: !!v.jumps, target: keyTarget ?? null }); } catch { return null; }
+}
+
+/** Pure: live key target for view_url — sessionStorage key target first, then valid URL m_target. With `ids` (report available) both must be a row in it;
+ *  without ids (no report) the stored item_id / URL m_target are only shape-checked. Missing / malformed / throwing → null. Shared by CopyLiveInvestigation + CopyMedicareJson. */
+export function resolveMedicareLiveKeyTarget(store: { getItem(k: string): string | null } | null | undefined, search: string | URLSearchParams | null | undefined, ids?: readonly string[] | null): string | null {
+  try {
+    const urlT = parseMedicareUrlView(search).target ?? null;
+    if (ids) { const list = [...ids]; return readMedicareKeyTarget(store as never, list) ?? resolveMedicareUrlTarget(urlT, list); }
+    let saved: string | null = null; try { const v = store?.getItem(MEDICARE_KEY_TARGET_KEY); if (typeof v === "string") { const o = JSON.parse(v) as { item_id?: unknown }; saved = medicareUrlTarget(o?.item_id); } } catch {}
+    return saved ?? urlT;
+  } catch { return null; }
 }

@@ -1541,3 +1541,21 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   assert.ok(!s.includes("medicareUrlWithView(window.location.href"), "no filter-only view_url left");
   console.log("ok medicare shareable view_url m_target (brief/handoff/dispositions)");
 }
+
+// Shared live key-target resolve: session first, then URL m_target; row-checked when report ids are available.
+{
+  const U = MedUrlView; const mk = (v: unknown) => ({ getItem: (k: string) => (k === "aethel.medicare.keyTarget" && v !== undefined ? JSON.stringify(v) : null) });
+  assert.equal(U.resolveMedicareLiveKeyTarget(mk({ item_id: "b", index: 1 }), "?m_target=a", ["a", "b"]), "b", "session wins");
+  assert.equal(U.resolveMedicareLiveKeyTarget(mk(undefined), "?m_target=a", ["a", "b"]), "a", "URL fallback");
+  assert.equal(U.resolveMedicareLiveKeyTarget(mk(undefined), "?m_target=zz", ["a", "b"]), null, "URL target not in report dropped");
+  assert.equal(U.resolveMedicareLiveKeyTarget(mk(undefined), "?m_target=zz", null), "zz", "no report → shape-only");
+  assert.equal(U.resolveMedicareLiveKeyTarget(mk({ item_id: "s" }), "?m_target=zz", undefined), "s");
+  assert.equal(U.resolveMedicareLiveKeyTarget({ getItem: () => { throw new Error("x"); } }, "?m_target=a", ["a"]), "a");
+  assert.equal(U.resolveMedicareLiveKeyTarget(null, null, ["a"]), null);
+  const fs = require("node:fs") as typeof import("node:fs");
+  const cmj = fs.readFileSync("src/components/CopyMedicareJson.tsx", "utf8"); const cli = fs.readFileSync("src/components/CopyLiveInvestigation.tsx", "utf8"); const pg = fs.readFileSync("src/app/workbench/medicare/page.tsx", "utf8");
+  assert.ok(cmj.includes("resolveMedicareLiveKeyTarget(st, window.location.search, ids)") && !cmj.includes("parseMedicareUrlView"), "Know-trail uses shared resolve");
+  assert.ok(cli.includes("resolveMedicareLiveKeyTarget(st, window.location.search, ids)"), "live investigation uses shared resolve");
+  for (const k of ["provenance", "dq", "baselines", "investigation", "evidence"]) assert.ok(pg.includes(`kind="${k}" ids={MEDICARE_REPORT_IDS}`), `${k} passes report ids`);
+  console.log("ok medicare shared live key-target resolve (Know-trail parity)");
+}
