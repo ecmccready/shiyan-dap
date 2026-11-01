@@ -640,4 +640,11 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
   assert.ok(body.includes("data-first-use-pulse") && body.includes("animate-pulse"));
   console.log("view surfaces    -> Copy view surfaces JSON first-use pulse wired (success only, once per load)");
 }
+{ // wiring: Copy capabilities first-use pulse (success only, once per load)
+  const src = require("node:fs").readFileSync("src/app/workbench/marketplace/page.tsx", "utf8");
+  const i = src.indexOf("function CopyCapabilities"); const body = src.slice(i, src.indexOf("function CopyViewSurfaces", i));
+  assert.ok(/if \(ok\)[^\n]*\n\s*if \(!pulsedOnce\.current\)/.test(body), "caps pulse gated on ok + once");
+  assert.ok(body.includes("data-first-use-pulse") && body.includes("animate-pulse"));
+  console.log("capabilities     -> Copy capabilities JSON first-use pulse wired (success only, once per load)");
+}
 console.log("OK");

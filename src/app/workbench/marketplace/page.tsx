@@ -10,12 +10,19 @@ import { useCopy, copiedRing } from "@/lib/use-copy";
 /** Copies this node's self-reported capabilities (same object as /api/marketplace/peers). Clipboard only; nothing is sent. */
 function CopyCapabilities({ capabilities }: { capabilities: PeerCapabilities }) {
   const copy = useCopy(4000, undefined, "capabilities");
+  const pulsedOnce = useRef(false); // first-use pulse: once per page load, success only
+  const [pulsing, setPulsing] = useState(false);
   return (
     <button
       type="button"
       data-copy-capabilities
-      onClick={() => void copy.copy(JSON.stringify(capabilities, null, 2))}
-      className={`mt-2 inline-flex h-8 items-center rounded-full border border-zinc-600 px-3 text-xs text-zinc-200 hover:border-zinc-400${copiedRing(copy.status)}`}
+      data-first-use-pulse={pulsing ? "on" : undefined}
+      onClick={async () => {
+        const ok = await copy.copy(JSON.stringify(capabilities, null, 2));
+        if (ok) {
+          if (!pulsedOnce.current) { pulsedOnce.current = true; setPulsing(true); window.setTimeout(() => setPulsing(false), 1200); } }
+      }}
+      className={`mt-2 inline-flex h-8 items-center rounded-full border border-zinc-600 px-3 text-xs text-zinc-200 hover:border-zinc-400${copiedRing(copy.status)}${pulsing ? " animate-pulse ring-2 ring-emerald-400/70" : ""}`}
     >
       {copy.status === "copied" ? "Copied ✓" : copy.status === "failed" ? "Copy failed" : "Copy capabilities JSON"}
     </button>
