@@ -551,21 +551,21 @@ cfail(pm((d) => { d.schema_version = "x"; }), /schema_version/, "registry wrong 
 cfail(goodIdx(), /looks like a listings index/, "listings index is not capabilities");
 for (const v of [null, [], "x", 5, cyc, proxy, Symbol("s")]) assert.equal(validatePeerCapabilities(v).ok, false);
 for (let i = 0; i < 200; i++) assert.equal(typeof validatePeerCapabilities(junk[i]).ok, "boolean");
-assert.deepEqual(formatCapabilitiesReport(vc2), { lines: [CAPABILITIES_NOTE, "OK: capabilities match (from the peers registry self entry; 18 fields)"], exitCode: 0 });
+assert.deepEqual(formatCapabilitiesReport(vc2), { lines: [CAPABILITIES_NOTE, "OK: capabilities match (from the peers registry self entry; 19 fields)"], exitCode: 0 });
 assert.equal(formatCapabilitiesReport(validatePeerCapabilities({})).exitCode, 1);
 assert.deepEqual(validatePeerCapabilities(peersHttps), validatePeerCapabilities(peersHttps), "pure");
 // 23b. Soft-compat: pre-d58304d capabilities (no VIEW_SURFACES keys) pass with warnings; wrong values still fail.
 const oldCaps = cm((d) => { for (const k of SOFT_CAPABILITY_KEYS) delete d[k]; });
 const vOld = validatePeerCapabilities(oldCaps);
-assert.equal(vOld.ok, true, "pre-d58304d capabilities pass"); if (vOld.ok) { assert.equal(vOld.warnings.length, 8); assert.equal(Object.keys(vOld.capabilities).length, 10); assert.ok(vOld.warnings.every((w) => /missing/.test(w))); }
-const fOld = formatCapabilitiesReport(vOld); assert.equal(fOld.exitCode, 0); assert.equal(fOld.lines.filter((l) => l.startsWith("warning:")).length, 8);
+assert.equal(vOld.ok, true, "pre-d58304d capabilities pass"); if (vOld.ok) { assert.equal(vOld.warnings.length, 9); assert.equal(Object.keys(vOld.capabilities).length, 10); assert.ok(vOld.warnings.every((w) => /missing/.test(w))); }
+const fOld = formatCapabilitiesReport(vOld); assert.equal(fOld.exitCode, 0); assert.equal(fOld.lines.filter((l) => l.startsWith("warning:")).length, 9);
 const vOneMissing = validatePeerCapabilities(cm((d) => { delete d.evidence_packs; })); assert.equal(vOneMissing.ok, true); if (vOneMissing.ok) assert.deepEqual(vOneMissing.warnings, ["capabilities.evidence_packs: missing (older deploy? view surfaces are optional)"]);
 const oldReg = pm((d) => { for (const k of SOFT_CAPABILITY_KEYS) delete d.peers[0].capabilities[k]; });
 assert.equal(validatePeerCapabilities(oldReg).ok, true, "older registry passes");
-const oldPeers = checkRouteContract("peers", oldReg); assert.equal(oldPeers.ok, true); if (oldPeers.ok) assert.equal(oldPeers.warnings.length, 8);
+const oldPeers = checkRouteContract("peers", oldReg); assert.equal(oldPeers.ok, true); if (oldPeers.ok) assert.equal(oldPeers.warnings.length, 9);
 cfail(cm((d) => { d.lookback_view_param_prefix = "x_"; }), /lookback_view_param_prefix/, "present but wrong view field still fails");
 cfail(cm((d) => { delete d.listings_schema; }), /listings_schema/, "original required field still hard");
-assert.equal(SOFT_CAPABILITY_KEYS.length, 8); assert.equal(Object.keys(capsObj()).length, 18, "self still advertises all 18");
+assert.equal(SOFT_CAPABILITY_KEYS.length, 9); assert.equal(Object.keys(capsObj()).length, 19, "self still advertises all 19");
 console.log("capabilities     -> soft-compat: missing view surfaces warn (pre-d58304d ok), wrong values / original fields still fail");
 console.log("capabilities     -> object or registry; exact constants incl. global_snapshot_*; tampered, missing, extra rejected; junk never throws");
 
@@ -615,7 +615,7 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
   const self = buildPeerRegistry(null).peers[0].capabilities as unknown as Record<string, unknown>;
   assert.deepEqual(validateViewSurfaces(pickViewSurfaces(self)), { ok: true, errors: [], warnings: [] });
   const part = validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, lookback_view_path: "/a" });
-  assert.equal(part.ok, true); assert.equal(part.warnings.length, 8); assert.ok(part.warnings.includes('lookback_view_path: expected "/workbench/status" (soft-compat)'));
+  assert.equal(part.ok, true); assert.equal(part.warnings.length, 9); assert.ok(part.warnings.includes('lookback_view_path: expected "/workbench/status" (soft-compat)'));
   { const base = { schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES };
     assert.deepEqual(validateViewSurfaces({ ...base, lookback_view_path: "/workbench/status/", medicare_view_path: "/workbench/medicare/" }), { ok: true, errors: [], warnings: [] });
     const odd = validateViewSurfaces({ ...base, medicare_view_path: "/x", lookback_view_param_prefix: "q_", medicare_view_param_prefix: "" });
@@ -662,12 +662,12 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
 {
   const fx = viewSurfacesLegacy6 as unknown as Record<string, unknown>;
   const self = buildPeerRegistry(null).peers[0].capabilities as unknown as Record<string, unknown>;
-  assert.deepEqual({ ...fx, evidence_packs: undefined, audit_summary_path: undefined, asset_map_path: undefined }, { ...pickViewSurfaces(self), evidence_packs: undefined, audit_summary_path: undefined, asset_map_path: undefined }, "legacy fixture: non-pack fields drifted from self");
+  assert.deepEqual({ ...fx, evidence_packs: undefined, audit_summary_path: undefined, asset_map_path: undefined, compliance_path: undefined }, { ...pickViewSurfaces(self), evidence_packs: undefined, audit_summary_path: undefined, asset_map_path: undefined, compliance_path: undefined }, "legacy fixture: non-pack fields drifted from self");
   assert.equal(fx.evidence_packs, "handoff,compare,summary,verdict,progress,statuses");
   const r = validateViewSurfaces(fx);
   assert.equal(r.ok, true); assert.deepEqual(r.errors, []);
-  assert.equal(r.warnings.length, 3); assert.equal(r.warnings[0], "audit_summary_path: missing (soft-compat)"); assert.equal(r.warnings[1], "asset_map_path: missing (soft-compat)"); assert.ok(r.warnings[2].includes("evidence_packs: missing"), r.warnings[2]);
-  const r1 = r.warnings[2]; for (const t of ["notes","all_rows","investigation","evidence","provenance","baselines","dq","all_paths","all_steps","gaps","roles","dispositions","case_brief"]) assert.ok(r1.includes(t), t);
+  assert.equal(r.warnings.length, 4); assert.equal(r.warnings[0], "audit_summary_path: missing (soft-compat)"); assert.equal(r.warnings[1], "asset_map_path: missing (soft-compat)"); assert.equal(r.warnings[2], "compliance_path: missing (soft-compat)"); assert.ok(r.warnings[3].includes("evidence_packs: missing"), r.warnings[3]);
+  const r1 = r.warnings[3]; for (const t of ["notes","all_rows","investigation","evidence","provenance","baselines","dq","all_paths","all_steps","gaps","roles","dispositions","case_brief"]) assert.ok(r1.includes(t), t);
   console.log("view surfaces    -> legacy-6 fixture validates ok with soft-compat missing-token warning");
 }
 // 28. Bad-schema fixture: hard fail (ok false, schema error), the operator script exits 1 on it.
@@ -710,3 +710,16 @@ console.log("audit_summary_path soft-compat OK");
   assert.equal(validateViewSurfaces({ ...base, asset_map_path: 7 }).ok, false);
 }
 console.log("asset_map_path soft-compat OK");
+// 31. compliance_path: soft-compat view surface (missing / wrong path only warn).
+{
+  const base = { schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES };
+  assert.equal(VIEW_SURFACES.compliance_path, "/workbench/compliance");
+  const self = buildPeerRegistry(null).peers[0].capabilities as unknown as Record<string, unknown>;
+  assert.equal(self.compliance_path, "/workbench/compliance");
+  assert.deepEqual(validateViewSurfaces({ ...base, compliance_path: "/workbench/compliance/" }), { ok: true, errors: [], warnings: [] });
+  const { compliance_path: _c, ...noComp } = base;
+  assert.deepEqual(validateViewSurfaces(noComp), { ok: true, errors: [], warnings: ["compliance_path: missing (soft-compat)"] });
+  assert.deepEqual(validateViewSurfaces({ ...base, compliance_path: "/x" }), { ok: true, errors: [], warnings: ['compliance_path: expected "/workbench/compliance" (soft-compat)'] });
+  assert.equal(validateViewSurfaces({ ...base, compliance_path: 7 }).ok, false);
+}
+console.log("compliance_path soft-compat OK");

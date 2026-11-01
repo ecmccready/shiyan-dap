@@ -128,6 +128,9 @@ export default function MarketplacePage() {
                     {peer.capabilities.asset_map_path ? (
                       <> Asset map: <a className="underline" href={peer.capabilities.asset_map_path}><code>{peer.capabilities.asset_map_path}</code></a> (read-only).</>
                     ) : null}
+                    {peer.capabilities.compliance_path ? (
+                      <> Compliance: <a className="underline" href={peer.capabilities.compliance_path}><code>{peer.capabilities.compliance_path}</code></a> (read-only).</>
+                    ) : null}
                   </p>
                 ) : null}
                 {peer.capabilities ? (
