@@ -425,6 +425,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "-", does: "copy view snapshot JSON — same as the sticky ⧉ View chip (show, sort, packs/jumps, expand all, focus); toast + shared first-use pulse (free key)" },
   { key: "0", does: "reset view — same as the sticky ↺ Reset view chip (Show All, Sort rank, Packs/Jumps closed, Expand all off, focus cleared, session keys cleared + toast); 0 = back to zero (free key; digits 1–3 jump ranks)" },
   { key: "`", does: "open Audit summary → (/workbench/audit) — same as the sticky Audit summary → chip; jumps from look-back insight to the node-wide audit inventory (same key as Medicare)" },
+  { key: ".", does: "open Asset map → (/workbench/assets) — same as the sticky Asset map → chip; jumps from look-back insight to the node-wide asset map" },
   { key: "?", does: "show / hide this sheet" },
 ];
 /** Pure: key o flips Sort between look-back rank and ΔΦ vs greedy; unknown input goes to "dphi". */
@@ -1391,6 +1392,11 @@ export function lookbackCopyLinkKey(ev: { key?: unknown; ctrlKey?: unknown; meta
 /** Pure: backtick (`` ` ``) presses the sticky Audit summary → chip (navigates to /workbench/audit); unified with Medicare medicareAuditKey. `.` is free on look-back. Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
 export function lookbackAuditKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
   if (!ev || ev.key !== "`" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
+}
+/** Pure: `.` presses the sticky Asset map → chip (navigates to /workbench/assets); parity with ` → Audit summary. Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
+export function lookbackAssetsKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "." || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
 /** Pure: parse a clipboard string as an `aethel.roe_lookback.view.v1` snapshot (same shape ⧉ View copies). Returns ok:false with a reason on bad JSON / wrong schema / bad fields. Never throws. */
