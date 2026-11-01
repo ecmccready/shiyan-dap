@@ -578,6 +578,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "`", does: "open Audit summary → (/workbench/audit) — same as the sticky Audit summary → chip; parity with look-back `.` (`.` already copies provenance here; ` was free, no Shift)" },
   { key: "=", does: "open Asset map → (/workbench/assets) — same as the sticky Asset map → chip; parity with look-back `.` (`.` / `,` / `/` already copy provenance / baselines / DQ here; = was free, no Shift)" },
   { key: "<", does: "open Compliance → (/workbench/compliance) — same as the sticky Compliance → chip; parity with look-back `,` (`,` copies baselines here, so Shift+, = < is used)" },
+  { key: "Shift+P", does: "copy the ↺ payoff JSON (recovery after the ⑂ split) — same JSON as the ↺ payoff chip but no jump; parity with look-back Shift+P (p alone copies Recent toasts); no-op when there is no split" },
   { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
 ];
 
