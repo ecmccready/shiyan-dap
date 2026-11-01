@@ -226,11 +226,11 @@ export function lookbackSummary(c: LookbackCompare | null | undefined): { tone: 
 }
 
 /** Pure: the summary strip as JSON (schema, kind "summary", fields of lookbackSummary, note). "" when no sealed paths. */
-export function lookbackSummaryJson(c: LookbackCompare | null | undefined): string {
+export function lookbackSummaryJson(c: LookbackCompare | null | undefined, viewUrl?: string | null): string {
   try {
     const m = lookbackSummary(c);
     if (m.tone === "none") return "";
-    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "summary", ...m, note: ROE_LOOKBACK_NOTE }, null, 2);
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "summary", ...m, note: ROE_LOOKBACK_NOTE, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return ""; }
 }
 

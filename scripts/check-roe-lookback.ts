@@ -128,6 +128,9 @@ assert.equal(smj.schema, "aethel.roe.lookback.v1"); assert.equal(smj.kind, "summ
 const { schema: _s, kind: _k, note: _n, ...rest } = smj; void _s; void _k; void _n; assert.deepEqual(rest, lookbackSummary(c));
 assert.equal(JSON.parse(lookbackSummaryJson(same)).verdict, "Agree");
 for (const j of [null, undefined, scoreSealedPaths([])]) assert.equal(lookbackSummaryJson(j), "");
+{ const vu = "https://x.test/workbench/status?lb_show=winners"; assert.equal(JSON.parse(lookbackSummaryJson(c, vu)).view_url, vu);
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(lookbackSummaryJson(c, bad as never), lookbackSummaryJson(c), "no view_url = unchanged summary");
+  console.log("summary     -> optional view_url (shareable lb_* link); absent when not http(s)"); }
 console.log("summary json -> strip copies kind:summary JSON matching lookbackSummary");
 assert.equal(toggleRoleFilter("all", "winners"), "winners"); assert.equal(toggleRoleFilter("winners", "winners"), "all");
 assert.equal(toggleRoleFilter("winners", "beaten"), "beaten"); assert.equal(toggleRoleFilter("agree", "bogus"), "all"); assert.equal(toggleRoleFilter(null, "agree"), "agree");
