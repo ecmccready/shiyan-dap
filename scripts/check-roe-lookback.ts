@@ -1130,3 +1130,16 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
   assert.ok(src.includes("data-roe-copy-link-pulsing") && src.includes("lookbackCopyLinkShouldPulse(linkPulsedRef.current, true)"));
   console.log("ok · copy link pulse");
 }
+{ const U = UrlView; const base = { show: "all" as const, sort: "rank" as const, packs: false, jumps: false };
+  assert.deepEqual(U.serializeLookbackUrlView({ ...base, focus: null, expand: false }), {});
+  assert.deepEqual(U.serializeLookbackUrlView({ ...base, focus: "run-1", expand: true }), { lb_focus: "run-1", lb_expand: "1" });
+  assert.deepEqual(U.serializeLookbackUrlView({ ...base, focus: "bad id<>" }), {});
+  assert.deepEqual(U.parseLookbackUrlView("lb_focus=run-1&lb_expand=1"), { focus: "run-1", expand: true });
+  assert.deepEqual(U.parseLookbackUrlView("lb_focus=%3Cx%3E&lb_expand=yes"), {});
+  assert.equal(U.parseLookbackUrlView("lb_expand=0").expand, false);
+  assert.equal(U.lookbackUrlWithView("https://x.test/workbench/status?lb_focus=old&lb_expand=1#h", base), "https://x.test/workbench/status#h");
+  assert.equal(U.stripLookbackUrlParams("https://x.test/workbench/status?lb_focus=a&lb_expand=1&k=1").href, "https://x.test/workbench/status?k=1");
+  assert.equal(U.lookbackApplyViewUrl("https://x.test/workbench/status", { show: "all", sort: "rank", packsOpen: false, jumpsOpen: false, focusRunId: "p1", expandAll: true }).href, "https://x.test/workbench/status?lb_focus=p1&lb_expand=1");
+  const r = U.parseLookbackLinkText("https://x.test/workbench/status?lb_focus=p1"); assert.ok(r.ok && r.view.focus === "p1");
+  assert.match(U.lookbackApplyLinkToast(r), /focus p1/);
+  console.log("url focus   -> lb_focus / lb_expand optional; defaults + invalid omitted; link/apply/reset sync"); }

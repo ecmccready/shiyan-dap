@@ -1,8 +1,10 @@
 // Shareable look-back view via URL query (display-only; no server writes, not Level 4).
 import type { LookbackRoleFilter, LookbackSort } from "@/lib/level4/roe-lookback";
 
-export type LookbackUrlView = { show: LookbackRoleFilter; sort: LookbackSort; packs: boolean; jumps: boolean };
-export const LOOKBACK_URL_KEYS = ["lb_show", "lb_sort", "lb_packs", "lb_jumps"] as const;
+export type LookbackUrlView = { show: LookbackRoleFilter; sort: LookbackSort; packs: boolean; jumps: boolean; focus?: string | null; expand?: boolean };
+export const LOOKBACK_URL_KEYS = ["lb_show", "lb_sort", "lb_packs", "lb_jumps", "lb_focus", "lb_expand"] as const;
+/** lb_focus must look like a run id (1–128 of [A-Za-z0-9._:-]); anything else is ignored. Row membership is checked by the caller. */
+export function isLookbackUrlFocus(v: unknown): v is string { return typeof v === "string" && /^[A-Za-z0-9._:-]{1,128}$/.test(v); }
 const SHOWS: readonly string[] = ["all", "winners", "beaten", "agree"];
 const SORTS: readonly string[] = ["rank", "dphi"];
 
@@ -13,6 +15,8 @@ export function serializeLookbackUrlView(v: LookbackUrlView): Record<string, str
   if (v.sort !== "rank") o.lb_sort = v.sort;
   if (v.packs) o.lb_packs = "1";
   if (v.jumps) o.lb_jumps = "1";
+  if (isLookbackUrlFocus(v.focus)) o.lb_focus = v.focus;
+  if (v.expand) o.lb_expand = "1";
   return o;
 }
 
@@ -24,6 +28,8 @@ export function parseLookbackUrlView(search: string | URLSearchParams | null | u
   const t = p.get("lb_sort"); if (t != null && SORTS.includes(t)) o.sort = t as LookbackSort;
   const pk = p.get("lb_packs"); if (pk === "1" || pk === "0") o.packs = pk === "1";
   const j = p.get("lb_jumps"); if (j === "1" || j === "0") o.jumps = j === "1";
+  const f = p.get("lb_focus"); if (isLookbackUrlFocus(f)) o.focus = f;
+  const e = p.get("lb_expand"); if (e === "1" || e === "0") o.expand = e === "1";
   return o;
 }
 
@@ -49,8 +55,8 @@ export function stripLookbackUrlParams(href: string): { href: string; removed: n
 }
 
 /** Pure: href to replaceState after a successful ⇩ Apply view (lb_* = applied view, defaults omitted); `changed` false → leave URL alone. */
-export function lookbackApplyViewUrl(href: string, a: { show: LookbackRoleFilter; sort: LookbackSort; packsOpen: boolean; jumpsOpen: boolean }): { href: string; changed: boolean } {
-  const next = lookbackUrlWithView(href, { show: a.show, sort: a.sort, packs: a.packsOpen, jumps: a.jumpsOpen });
+export function lookbackApplyViewUrl(href: string, a: { show: LookbackRoleFilter; sort: LookbackSort; packsOpen: boolean; jumpsOpen: boolean; focusRunId?: string | null; expandAll?: boolean }): { href: string; changed: boolean } {
+  const next = lookbackUrlWithView(href, { show: a.show, sort: a.sort, packs: a.packsOpen, jumps: a.jumpsOpen, focus: a.focusRunId, expand: a.expandAll });
   return { href: next, changed: next !== href };
 }
 
@@ -72,7 +78,7 @@ export function parseLookbackLinkText(text: unknown, path: string = LOOKBACK_LIN
 
 export function lookbackApplyLinkToast(r: LookbackApplyLinkResult | { ok: false; reason: string }): string {
   if (!r.ok) return `⚠ Apply link rejected · ${r.reason} — expected ${LOOKBACK_LINK_PATH}?lb_*`;
-  return `⇩ applied view link · ${r.n} param${r.n === 1 ? "" : "s"}${r.view.show ? ` · show ${r.view.show}` : ""}${r.view.sort ? ` · sort ${r.view.sort}` : ""}`;
+  return `⇩ applied view link · ${r.n} param${r.n === 1 ? "" : "s"}${r.view.show ? ` · show ${r.view.show}` : ""}${r.view.sort ? ` · sort ${r.view.sort}` : ""}${r.view.focus ? ` · focus ${r.view.focus}` : ""}${r.view.expand ? " · expand all" : ""}`;
 }
 
 /** ⇩ Apply link first-use pulse: once per page load, only after a successful apply (never on reject). */
