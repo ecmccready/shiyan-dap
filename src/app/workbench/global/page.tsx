@@ -153,6 +153,15 @@ export default function GlobalMisdiagnosisPage() {
           </ul>
         </section>
 
+        <section data-global-view-surfaces className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">
+          <p className="text-emerald-400 text-xs">Shareable views &amp; evidence packs</p>
+          <p className="text-zinc-300">
+            This node exposes shareable look-back (<code>lb_*</code> on <Link className="underline" href="/workbench/status">/workbench/status</Link>) and Medicare (<code>m_*</code> on <Link className="underline" href="/workbench/medicare">/workbench/medicare</Link>) view surfaces, plus clipboard evidence packs that carry the same <code>view_url</code>. See{" "}
+            <Link className="underline" href="/workbench/offer#evidence-packs">evidence packs</Link> and the peer-advertised surfaces on{" "}
+            <Link className="underline" href="/workbench/marketplace">/workbench/marketplace</Link>. Read-only links; nothing is sent.
+          </p>
+        </section>
+
         <section data-global-external-confirmation className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">
           <p className="text-emerald-400 text-xs">External confirmation</p>
           <p className="text-zinc-300">
