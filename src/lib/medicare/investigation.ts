@@ -1896,3 +1896,12 @@ export function medicareCopyLinkKey(ev: { key?: unknown; ctrlKey?: unknown; meta
   if (!ev || ev.key !== "\\" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
+
+/** Pure: add optional view_url (shareable m_* link; omitted unless http(s)) to a copied ⧉ Investigation JSON string. Returns `json` unchanged when viewUrl is invalid or json is not a JSON object. Never throws. */
+export function medicareInvestigationJsonWithViewUrl(json: string, viewUrl?: string | null): string {
+  try {
+    if (typeof json !== "string" || !json || typeof viewUrl !== "string" || !/^https?:\/\//.test(viewUrl)) return typeof json === "string" ? json : "";
+    const o = JSON.parse(json); if (!o || typeof o !== "object" || Array.isArray(o)) return json;
+    return JSON.stringify({ ...o, view_url: viewUrl }, null, 2);
+  } catch { return typeof json === "string" ? json : ""; }
+}

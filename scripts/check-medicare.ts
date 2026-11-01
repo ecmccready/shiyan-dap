@@ -1445,3 +1445,9 @@ import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VI
   assert.ok(src.includes("data-medicare-copy-link-pulsing") && src.includes("medicareCopyLinkShouldPulse(linkPulsedRef.current, true)"));
   console.log("ok · medicare copy link pulse");
 }
+import { medicareInvestigationJsonWithViewUrl } from "../src/lib/medicare/investigation";
+{ const base = JSON.stringify({ report_hash: "abc", entries: [] }, null, 2); const vu = "https://x.test/workbench/medicare?m_filter=cleared";
+  const o = JSON.parse(medicareInvestigationJsonWithViewUrl(base, vu)); assert.equal(o.view_url, vu); assert.equal(o.report_hash, "abc");
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(medicareInvestigationJsonWithViewUrl(base, bad as never), base);
+  assert.equal(medicareInvestigationJsonWithViewUrl("", vu), ""); assert.equal(medicareInvestigationJsonWithViewUrl("not json", vu), "not json"); assert.equal(medicareInvestigationJsonWithViewUrl("[1]", vu), "[1]");
+  console.log("investigation -> optional view_url (shareable m_* link); absent when not http(s)"); }
