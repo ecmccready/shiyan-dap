@@ -167,7 +167,7 @@ export function lookbackComparePack(c: LookbackCompare | null | undefined, viewU
     const dphi = typeof lb.final_phi === "number" && typeof gr.final_phi === "number" ? Number((lb.final_phi - gr.final_phi).toFixed(4)) : null;
     return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "compare", winner: c.winner, verdict: v.label, verdict_detail: v.detail,
       delta_e_gain: c.delta_e_gain, delta_phi_lookback_vs_greedy: dphi, same_path: lb.run_id === gr.run_id, paths_considered: c.paths_considered,
-      lookback: lb, greedy: gr, divergence: lookbackDivergence(c), note: c.note, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
+      lookback: lb, greedy: gr, divergence: lookbackDivergence(c), payoff: lookbackPayoff(c), note: c.note, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return ""; }
 }
 
@@ -184,6 +184,23 @@ export function lookbackDivergence(c: LookbackCompare | null | undefined): { ste
     const ea = (p: LookbackPath, k: number) => (Array.isArray(p.e_series) && fin(p.e_series[k + 1]) ? p.e_series[k + 1] : null);
     const step = i + 1;
     return { step, shared_prefix: i, lookback_action: la[i] ?? null, greedy_action: ga[i] ?? null, lookback_e_after: ea(lb, i), greedy_e_after: ea(gr, i), label: `⑂ diverge @ step ${step}` };
+  } catch { return null; }
+}
+
+/** Pure: after the ⑂ split, the first step where look-back's e meets/overtakes greedy's again (the delayed payoff of looking back).
+ *  dip = max (greedy_e − lookback_e) paid after the split (≥0); payoff_step null when look-back never catches up on shared steps. */
+export function lookbackPayoff(c: LookbackCompare | null | undefined): { split_step: number; payoff_step: number | null; steps_to_payoff: number | null; max_dip: number; final_gap: number | null; label: string } | null {
+  try {
+    const dv = lookbackDivergence(c); if (!dv || !c) return null;
+    const lb = c.paths.find((p) => p.run_id === c.lookback!.run_id), gr = c.paths.find((p) => p.run_id === c.greedy!.run_id);
+    const le = Array.isArray(lb?.e_series) ? lb!.e_series : [], ge = Array.isArray(gr?.e_series) ? gr!.e_series : [];
+    const n = Math.min(le.length, ge.length); let dip = 0, pay: number | null = null;
+    for (let k = dv.step; k < n; k++) { const a = le[k], b = ge[k]; if (!fin(a) || !fin(b)) continue; const d = b - a; if (d > dip) dip = d; if (pay === null && a >= b) pay = k; }
+    const lf = le.length ? le[le.length - 1] : undefined, gf = ge.length ? ge[ge.length - 1] : undefined;
+    const final_gap = fin(lf) && fin(gf) ? Number((lf - gf).toFixed(4)) : null;
+    const max_dip = Number(dip.toFixed(4));
+    const label = pay === null ? `↺ no payoff after ⑂ ${dv.step}` : pay === dv.step ? `↺ ahead at ⑂ ${dv.step}` : `↺ pays @ step ${pay} (+${pay - dv.step})`;
+    return { split_step: dv.step, payoff_step: pay, steps_to_payoff: pay === null ? null : pay - dv.step, max_dip, final_gap, label };
   } catch { return null; }
 }
 
