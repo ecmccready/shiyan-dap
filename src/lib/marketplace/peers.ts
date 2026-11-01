@@ -29,6 +29,7 @@ export const VIEW_SURFACES = {
   medicare_view_param_prefix: "m_",
   evidence_packs: "handoff,compare,summary,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief",
   audit_summary_path: "/workbench/audit",
+  asset_map_path: "/workbench/assets",
   view_surfaces_note: "Shareable view URLs restore display state only (filters, sort, panels). Packs are copied to the local clipboard; this node serves no pack API and stores nothing.",
 } as const;
 export const VIEW_SURFACES_SCHEMA = "aethel.view_surfaces.v1";
@@ -58,7 +59,7 @@ export function validateViewSurfaces(json: unknown): { ok: boolean; errors: stri
     else if (typeof o[k] !== "string") errors.push(`${k}: expected string`);
   }
   // Soft-compat: present string paths/prefixes that differ from this node's expected values only warn.
-  for (const k of ["lookback_view_path", "medicare_view_path", "audit_summary_path"] as const) {
+  for (const k of ["lookback_view_path", "medicare_view_path", "audit_summary_path", "asset_map_path"] as const) {
     const v = o[k]; if (typeof v !== "string") continue;
     const want = VIEW_SURFACES[k];
     if (v !== want && v !== `${want}/`) warnings.push(`${k}: expected "${want}" (soft-compat)`);
@@ -98,6 +99,8 @@ export type PeerCapabilities = {
   evidence_packs: string;
   /** Additive: read-only Phase 3 audit summary page (links + pack inventory). */
   audit_summary_path: string;
+  /** Additive: read-only Phase 3 asset map page. */
+  asset_map_path: string;
   view_surfaces_note: string;
 };
 
