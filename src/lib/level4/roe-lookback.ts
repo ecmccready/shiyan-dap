@@ -1653,3 +1653,28 @@ export function writeLookbackExpandAll(store: LookbackStripStore, value: unknown
   if (!store) return false;
   try { store.setItem(LOOKBACK_EXPAND_ALL_KEY, value === true ? "1" : "0"); return true; } catch { return false; }
 }
+
+/** sessionStorage key for the look-back focused sealed path (per-tab; no localStorage). JSON {run_id, expanded}. */
+export const LOOKBACK_FOCUS_KEY = "aethel.lookback.focus";
+export type LookbackFocusState = { run_id: string; expanded: boolean };
+/** Pure read: valid {run_id: non-empty string, expanded?: boolean} else null; never throws. */
+export function readLookbackFocus(store: LookbackStripStore): LookbackFocusState | null {
+  try {
+    const raw = store?.getItem(LOOKBACK_FOCUS_KEY); if (!raw) return null;
+    const o = JSON.parse(raw) as { run_id?: unknown; expanded?: unknown };
+    if (!o || typeof o.run_id !== "string" || !o.run_id) return null;
+    return { run_id: o.run_id, expanded: o.expanded === true };
+  } catch { return null; }
+}
+/** Pure write: null/empty run_id clears to ""; false on missing store or throw. */
+export function writeLookbackFocus(store: LookbackStripStore, run_id: unknown, expanded: unknown): boolean {
+  if (!store) return false;
+  const v = typeof run_id === "string" && run_id ? JSON.stringify({ run_id, expanded: expanded === true }) : "";
+  try { store.setItem(LOOKBACK_FOCUS_KEY, v); return true; } catch { return false; }
+}
+/** Pure resolve against current run_ids: exact match keeps (expanded honored); missing → first row (collapsed) or null when fallback "null"/no rows. */
+export function resolveLookbackFocus(saved: LookbackFocusState | null, runIds: readonly string[], fallback: "first" | "null" = "null"): { focus: string | null; open: string | null } {
+  if (saved && runIds.includes(saved.run_id)) return { focus: saved.run_id, open: saved.expanded ? saved.run_id : null };
+  if (saved && fallback === "first" && runIds.length) return { focus: runIds[0], open: null };
+  return { focus: null, open: null };
+}

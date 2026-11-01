@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { readLookbackExpandAll, writeLookbackExpandAll, readLookbackViewState, writeLookbackViewState, readLookbackStripState, writeLookbackStripState, lookbackJumpsChip, lookbackJumpsToggle, lookbackJumpsPulse, LOOKBACK_JUMPS_PULSE_MS, lookbackPacksChip, lookbackPacksToggle, lookbackPacksPulse, LOOKBACK_PACKS_PULSE_MS, lookbackSummaryButtonToast } from "@/lib/level4/roe-lookback";
+import { readLookbackFocus, writeLookbackFocus, resolveLookbackFocus, readLookbackExpandAll, writeLookbackExpandAll, readLookbackViewState, writeLookbackViewState, readLookbackStripState, writeLookbackStripState, lookbackJumpsChip, lookbackJumpsToggle, lookbackJumpsPulse, LOOKBACK_JUMPS_PULSE_MS, lookbackPacksChip, lookbackPacksToggle, lookbackPacksPulse, LOOKBACK_PACKS_PULSE_MS, lookbackSummaryButtonToast } from "@/lib/level4/roe-lookback";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import EvidencePacksChip from "@/components/EvidencePacksChip";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
@@ -405,6 +405,9 @@ export default function RoeLookbackNote() {
     const id = setTimeout(() => setExpandPulseNow(Date.now()), LOOKBACK_EXPAND_PULSE_MS); return () => clearTimeout(id);
   }, [open]);
   useEffect(() => { let on = true; void loadExperienceServer().then((rows) => { if (on) setC(scoreSealedPaths(rows)); }); return () => { on = false; }; }, []);
+  const focusHydratedRef = useRef(false);
+  useEffect(() => { if (!c || focusHydratedRef.current) return; focusHydratedRef.current = true; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const r = resolveLookbackFocus(readLookbackFocus(st), rankedLookbackRows(c).map((x) => x.run_id), "first"); if (r.focus) { setFocusRow(r.focus); if (r.open) setOpen(r.open); const id = r.focus; setTimeout(() => document.querySelector(`[data-roe-lookback-row="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center" }), 0); } }, [c]);
+  useEffect(() => { if (!focusHydratedRef.current) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeLookbackFocus(st, focusRow, open != null && open === focusRow); }, [focusRow, open]);
   const topStack = lookbackToastStack({ win: winToast, agree: agreeToast, empty_filter: emptyToast });
   clearKeyRef.current.count = topStack.length;
   clearKeyRef.current.clear = () => { const r = clearAllLookbackToasts(topStack); deferredRef.current.clear(); toastHoverRef.current = false; if (r.cleared.includes("win")) setWinToast(null); if (r.cleared.includes("agree")) setAgreeToast(null); if (r.cleared.includes("empty_filter")) setEmptyToast(null); };
