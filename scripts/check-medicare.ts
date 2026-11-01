@@ -1,3 +1,4 @@
+import * as MedUrlView from "../src/lib/medicare/view-url";
 import * as mvw from "../src/lib/medicare/investigation";
 import { clearMedicareViewSession, medicareResetViewToast, MEDICARE_RESET_VIEW_KEYS, MEDICARE_RESET_VIEW_DEFAULTS } from "../src/lib/medicare/investigation";
 import { readFileSync as rfsReset } from "node:fs";
@@ -1350,3 +1351,23 @@ import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VI
   assert.ok(medicareApplyViewPulse(0, MEDICARE_APPLY_VIEW_PULSE_MS - 1) && !medicareApplyViewPulse(0, MEDICARE_APPLY_VIEW_PULSE_MS) && !medicareApplyViewPulse(null, 1));
   const sc = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8"); assert.ok(sc.includes("data-medicare-apply-view-pulsing") && sc.includes("medicareApplyViewShouldPulse(avPulsedRef.current, true)"));
   console.log("medicare apply view pulse OK"); }
+
+// Shareable view URL (m_* query)
+{
+  const U = MedUrlView;
+  assert.deepEqual(U.serializeMedicareUrlView({ filter: null, packs: false, jumps: false }), {});
+  assert.deepEqual(U.serializeMedicareUrlView({ filter: "has_note", packs: true, jumps: true }), { m_filter: "has_note", m_packs: "1", m_jumps: "1" });
+  assert.deepEqual(U.parseMedicareUrlView("?m_filter=unreviewed&m_packs=1&m_jumps=0"), { filter: "unreviewed", packs: true, jumps: false });
+  assert.deepEqual(U.parseMedicareUrlView("?m_filter=all"), { filter: null });
+  assert.deepEqual(U.parseMedicareUrlView("?m_filter=zzz&m_packs=yes&x=1"), {});
+  assert.deepEqual(U.parseMedicareUrlView(""), {}); assert.deepEqual(U.parseMedicareUrlView(null), {});
+  const v = { filter: "needs_human_review", packs: false, jumps: true } as const;
+  const href = U.medicareUrlWithView("https://x.test/workbench/medicare?foo=1&m_packs=1#h", v);
+  assert.equal(href, "https://x.test/workbench/medicare?foo=1&m_filter=needs_human_review&m_jumps=1#h");
+  assert.equal(U.medicareUrlWithView("https://x.test/a?m_filter=has_note", { filter: null, packs: false, jumps: false }), "https://x.test/a");
+  assert.ok(U.medicareCopyLinkToast(v).includes("2 params") && U.medicareCopyLinkToast({ filter: null, packs: false, jumps: false }).includes("default"));
+  const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes('data-medicare-copy-link="1"') && src.includes("history.replaceState") && !src.includes("history.pushState") && src.includes("parseMedicareUrlView(window.location.search)"));
+  assert.ok(src.indexOf('data-medicare-copy-link="1"') < src.indexOf('data-medicare-apply-view="1"'));
+  console.log("ok · medicare view link URL");
+}
