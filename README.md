@@ -236,6 +236,8 @@ The same text is on `/workbench/offer` and `/workbench/pilot`. How evidence move
 
 **Copy inventory JSON.** The *Inventory:* copy control on `/workbench/audit` copies the static catalog as `aethel.audit.inventory.v1` JSON (`schema`, `path: "/workbench/audit"`, four `sections` with `title`/`href`/`link`/`items`, and a read-only `note`), built by the pure `buildAuditInventory()` in `src/lib/audit-inventory.ts`. Covered by `npx tsx scripts/check-audit.ts`. Clipboard only; no fetch, no writes, no Level 4, no CMS.
 
+**Validate an inventory pack.** Pure `validateAuditInventory(json)` in `src/lib/audit-inventory.ts` (same shape as `validateViewSurfaces`: returns `{ok, errors, warnings}`, never throws). Hard errors: non-object, wrong `schema`, non-string `path`/`note`, `sections` not an array, a section that is not an object, non-string `title`/`href`/`link`, or `items` not an array of strings. Soft warnings (still `ok`): missing `path`, `note` or a section `link`, `path` other than `/workbench/audit`, empty `sections` or empty `items`. Covered in `npx tsx scripts/check-audit.ts`. No fetch, no writes, no Level 4, no CMS.
+
 ## Evidence and data support
 
 What an acquirer can check today without trusting this repo. Live unless marked directional.
