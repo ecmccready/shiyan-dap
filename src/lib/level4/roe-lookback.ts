@@ -156,7 +156,7 @@ export function filterLookbackRows<T extends { is_greedy: boolean; is_lookback: 
 }
 
 /** Pure compare pack: look-back pick vs greedy pick (full path rows), verdict, Δe gain and ΔΦ. "" when nothing to compare. */
-export function lookbackComparePack(c: LookbackCompare | null | undefined): string {
+export function lookbackComparePack(c: LookbackCompare | null | undefined, viewUrl?: string | null): string {
   try {
     if (!c || !c.greedy || !c.lookback) return "";
     const rows = rankedLookbackRows(c);
@@ -167,7 +167,7 @@ export function lookbackComparePack(c: LookbackCompare | null | undefined): stri
     const dphi = typeof lb.final_phi === "number" && typeof gr.final_phi === "number" ? Number((lb.final_phi - gr.final_phi).toFixed(4)) : null;
     return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "compare", winner: c.winner, verdict: v.label, verdict_detail: v.detail,
       delta_e_gain: c.delta_e_gain, delta_phi_lookback_vs_greedy: dphi, same_path: lb.run_id === gr.run_id, paths_considered: c.paths_considered,
-      lookback: lb, greedy: gr, note: c.note }, null, 2);
+      lookback: lb, greedy: gr, note: c.note, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return ""; }
 }
 

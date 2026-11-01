@@ -92,6 +92,9 @@ assert.equal(cp.delta_e_gain, 0.65); assert.equal(cp.delta_phi_lookback_vs_greed
 assert.equal(cp.lookback.run_id, "B"); assert.equal(cp.greedy.run_id, "A"); assert.equal(cp.greedy.best_step_i, 0.7); assert.deepEqual(cp.lookback.actions, ["a1", "a2", "a3"]);
 const ca = JSON.parse(lookbackComparePack(same)); assert.equal(ca.verdict, "Agree"); assert.equal(ca.same_path, true); assert.equal(ca.delta_phi_lookback_vs_greedy, 0);
 for (const j of [null, undefined, scoreSealedPaths([])]) assert.equal(lookbackComparePack(j), "");
+{ const vu = "https://x.test/workbench/status?lb_show=winners&lb_packs=1"; assert.equal(JSON.parse(lookbackComparePack(c, vu)).view_url, vu);
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(lookbackComparePack(c, bad as never), lookbackComparePack(c), "no view_url = unchanged compare pack");
+  console.log("compare     -> optional view_url (shareable lb_* link); absent when not http(s)"); }
 console.log("compare     -> look-back vs greedy paths, verdict, +Δe 0.65, ΔΦ +0.12; agree case same_path");
 const bRow = c.paths.find((p) => p.run_id === "B")!;
 assert.deepEqual(bRow.e_series, [1.6, 1.3, 0.9, 0.2]); assert.deepEqual(stepGains(bRow.e_series), [0.3, 0.4, 0.7]);
