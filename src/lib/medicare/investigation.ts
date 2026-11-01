@@ -1844,12 +1844,13 @@ export const MEDICARE_VIEW_SNAPSHOT_SCHEMA = "aethel.medicare.view.v1" as const;
 export const MEDICARE_COPY_VIEW_PULSE_MS = 1200;
 export type MedicareViewSnapshotInput = { rowFilter: string | null; packsOpen: boolean; jumpsOpen: boolean; keyTarget: string | null; entries?: ReadonlyArray<{ item_id: string }> | null };
 /** Pure: compact view JSON; keyTarget resolved to {item_id, index} (index -1 → null target). Never throws. */
-export function medicareViewSnapshot(v: MedicareViewSnapshotInput) {
+export function medicareViewSnapshot(v: MedicareViewSnapshotInput, viewUrl?: string | null) {
   const ids = Array.isArray(v.entries) ? v.entries.map((e) => e?.item_id) : [];
   const i = v.keyTarget ? ids.indexOf(v.keyTarget) : -1;
-  return { schema: MEDICARE_VIEW_SNAPSHOT_SCHEMA, rowFilter: v.rowFilter ?? null, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, keyTarget: i >= 0 ? { item_id: v.keyTarget as string, index: i } : null };
+  return { schema: MEDICARE_VIEW_SNAPSHOT_SCHEMA, rowFilter: v.rowFilter ?? null, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, keyTarget: i >= 0 ? { item_id: v.keyTarget as string, index: i } : null, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) };
 }
-export function medicareViewSnapshotJson(v: MedicareViewSnapshotInput): string { return JSON.stringify(medicareViewSnapshot(v), null, 2); }
+/** Optional view_url = shareable m_* medicare URL (incl. m_target); Apply view ignores it. */
+export function medicareViewSnapshotJson(v: MedicareViewSnapshotInput, viewUrl?: string | null): string { return JSON.stringify(medicareViewSnapshot(v, viewUrl), null, 2); }
 export function medicareCopyViewToast(v: MedicareViewSnapshotInput): string { const s = medicareViewSnapshot(v); return `⧉ View → copied view JSON · filter ${s.rowFilter ?? "All"}${s.keyTarget ? ` · target ${s.keyTarget.item_id} (#${s.keyTarget.index + 1})` : ""}`; }
 export function medicareCopyViewShouldPulse(alreadyPulsed: boolean): boolean { return !alreadyPulsed; }
 export function medicareCopyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_COPY_VIEW_PULSE_MS; }
