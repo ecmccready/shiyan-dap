@@ -1748,3 +1748,18 @@ export function medicareStripToggleKey(ev: { key?: unknown; ctrlKey?: unknown; m
   if (typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase())) return null;
   return ev.key === "[" ? "packs" : ev.key === "]" ? "jumps" : null;
 }
+
+/** sessionStorage keys for the Medicare sticky strip (per-tab; no localStorage, no cross-tab). */
+export const MEDICARE_PACKS_OPEN_KEY = "aethel.medicare.packsOpen";
+export const MEDICARE_JUMPS_OPEN_KEY = "aethel.medicare.jumpsOpen";
+type MedicareStripStore = { getItem(k: string): string | null; setItem(k: string, v: string): void } | null | undefined;
+/** Pure read: { packs, jumps } from a Storage-like object; missing / bad / throwing → false. */
+export function readMedicareStripState(store: MedicareStripStore): { packs: boolean; jumps: boolean } {
+  const get = (k: string) => { try { return store?.getItem(k) === "1"; } catch { return false; } };
+  return { packs: get(MEDICARE_PACKS_OPEN_KEY), jumps: get(MEDICARE_JUMPS_OPEN_KEY) };
+}
+/** Pure write: stores "1"/"0" for one strip; returns false on missing store or throw. */
+export function writeMedicareStripState(store: MedicareStripStore, which: "packs" | "jumps", open: unknown): boolean {
+  if (!store) return false;
+  try { store.setItem(which === "packs" ? MEDICARE_PACKS_OPEN_KEY : MEDICARE_JUMPS_OPEN_KEY, open === true ? "1" : "0"); return true; } catch { return false; }
+}

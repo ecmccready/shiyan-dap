@@ -1,8 +1,10 @@
+import { readMedicareStripState, writeMedicareStripState, MEDICARE_PACKS_OPEN_KEY, MEDICARE_JUMPS_OPEN_KEY } from "../src/lib/medicare/investigation";
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
 import { blankNoteStickyChip, blankNoteStickyChanged, blankNoteStickyPulse, BLANK_NOTE_STICKY_PULSE_MS } from "../src/lib/medicare/investigation";
 import { medicarePilotPulse, MEDICARE_PILOT_PULSE_MS, MEDICARE_PILOT_SEEN_KEY, unreviewedFilterChip, clearedChip, clearedKey, clearedPulse, clearedShouldPulse, CLEARED_PULSE_MS, needsReviewKey, needsReviewPulse, needsReviewShouldPulse, NEEDS_REVIEW_PULSE_MS, filterAllKey, filterAllChip, needsReviewChip } from "../src/lib/medicare/investigation";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { medicareProgressElapsedMs } from "../src/lib/medicare/investigation";
 import { createHash } from "node:crypto";
 import { medicareDispositionsChip, medicareDispositionsChipShouldPulse, medicareDispositionsChipPulse, medicareDispositionsChipCopiedOk, MEDICARE_DISPOSITIONS_CHIP_PULSE_MS, MEDICARE_DISPOSITIONS_COPIED_EVENT, medicareHandoffChipCopiedOk, MEDICARE_HANDOFF_CHIP_PENDING_MS, MEDICARE_HANDOFF_COPIED_EVENT, medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, medicareCopyRowChipShouldPulse, medicareCopyRowChipPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT, medicareCopyFirstRowChip, medicareCopyLastRowChip, lastRowChip, lastRowPulse, lastRowShouldPulse, LAST_ROW_PULSE_MS, MEDICARE_LAST_ROW_PULSE_EVENT } from "../src/lib/medicare/investigation";
@@ -1230,3 +1232,17 @@ import { medicareStripToggleKey, MEDICARE_KEYMAP as MKM_ST } from "../src/lib/me
   assert.ok(MKM_ST.some((k) => k.key === "[") && MKM_ST.some((k) => k.key === "]"));
   const fs = require("fs"), path = require("path"); const ds = fs.readFileSync(path.join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8"); assert.ok(ds.includes("medicareStripToggleKey(") && ds.includes("[data-medicare-packs-toggle]")); }
 console.log("medicare [ / ] Packs/Jumps OK");
+
+// sessionStorage persistence for Medicare Packs / Jumps
+{ const rf = readFileSync;
+  const mem = new Map<string, string>(); const st = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => { mem.set(k, v); } };
+  assert.equal(MEDICARE_PACKS_OPEN_KEY, "aethel.medicare.packsOpen"); assert.equal(MEDICARE_JUMPS_OPEN_KEY, "aethel.medicare.jumpsOpen");
+  assert.deepEqual(readMedicareStripState(st), { packs: false, jumps: false }); assert.deepEqual(readMedicareStripState(null), { packs: false, jumps: false });
+  assert.equal(writeMedicareStripState(st, "packs", true), true); assert.deepEqual(readMedicareStripState(st), { packs: true, jumps: false });
+  writeMedicareStripState(st, "jumps", true); writeMedicareStripState(st, "packs", false); assert.deepEqual(readMedicareStripState(st), { packs: false, jumps: true });
+  assert.equal(writeMedicareStripState(null, "packs", true), false);
+  const bad = { getItem: () => { throw new Error("x"); }, setItem: () => { throw new Error("x"); } };
+  assert.deepEqual(readMedicareStripState(bad), { packs: false, jumps: false }); assert.equal(writeMedicareStripState(bad, "jumps", true), false);
+  const src = rf(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes("window.sessionStorage") && !/localStorage[^\n]*(StripState|OPEN_KEY)/.test(src) && src.includes("readMedicareStripState(") && src.includes("writeMedicareStripState("));
+  console.log("ok medicare strip sessionStorage"); }
