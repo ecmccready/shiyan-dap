@@ -18,6 +18,7 @@ import { validateGlobalSnapshot, formatSnapshotReport, SNAPSHOT_VALIDATE_NOTE } 
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import viewSurfacesSample from "../fixtures/marketplace/view-surfaces.sample.json";
 import viewSurfacesLegacy6 from "../fixtures/marketplace/view-surfaces.legacy-6.sample.json";
+import viewSurfacesBadSchema from "../fixtures/marketplace/view-surfaces.bad-schema.sample.json";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
 const SEQ = ["mark_boundary", "complete_field", "request_independent_check", "seal_pack"];
@@ -668,5 +669,15 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
   assert.equal(r.warnings.length, 1); assert.ok(r.warnings[0].includes("evidence_packs: missing"), r.warnings[0]);
   for (const t of ["notes","all_rows","investigation","evidence","provenance","baselines","dq","all_paths","all_steps","gaps","roles","dispositions"]) assert.ok(r.warnings[0].includes(t), t);
   console.log("view surfaces    -> legacy-6 fixture validates ok with soft-compat missing-token warning");
+}
+// 28. Bad-schema fixture: hard fail (ok false, schema error), the operator script exits 1 on it.
+{
+  const fx = viewSurfacesBadSchema as unknown as Record<string, unknown>;
+  const self = buildPeerRegistry(null).peers[0].capabilities as unknown as Record<string, unknown>;
+  assert.equal(fx.schema, "aethel.view_surfaces.v0");
+  assert.deepEqual({ ...fx, schema: undefined }, { ...pickViewSurfaces(self), schema: undefined }, "bad-schema fixture: only schema should differ from self");
+  const r = validateViewSurfaces(fx);
+  assert.equal(r.ok, false); assert.ok(r.errors.length >= 1); assert.ok(r.errors.some((e) => e.includes("schema")), JSON.stringify(r.errors));
+  console.log("view surfaces    -> bad-schema fixture fails hard (ok false, schema error)");
 }
 console.log("OK");
