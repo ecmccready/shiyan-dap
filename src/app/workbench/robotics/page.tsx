@@ -13,6 +13,8 @@ export default function RoboticsPage() {
   const [show, setShow] = useState<"all" | "winner" | "beaten" | "greedy">("all");
   const [focus, setFocus] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [pulse, setPulse] = useState(false);
+  const [hasCopied, setHasCopied] = useState(false);
 
   const visible = POLICIES.filter((p) => show === "all" || p.role === show);
   const winner = POLICIES.find((p) => p.role === "winner");
@@ -24,6 +26,11 @@ export default function RoboticsPage() {
   const copySummary = async () => {
     await navigator.clipboard.writeText(summary);
     setCopied(true);
+    if (!hasCopied) {
+      setPulse(true);
+      setHasCopied(true);
+      setTimeout(() => setPulse(false), 1200);
+    }
     setTimeout(() => setCopied(false), 1200);
   };
 
@@ -42,7 +49,7 @@ export default function RoboticsPage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [focus, show, visible, summary]);
+  }, [focus, show, visible, summary, hasCopied]);
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
@@ -51,7 +58,11 @@ export default function RoboticsPage() {
         Know → Know How → Show → Do on the same engine. Synthetic fixture only. j/k · Enter · f · g · ?
       </p>
 
-      <button type="button" onClick={copySummary} className="sticky top-0 bg-white border rounded p-3 mb-4 text-sm flex gap-4 flex-wrap w-full text-left">
+      <button
+        type="button"
+        onClick={copySummary}
+        className={`sticky top-0 bg-white border rounded p-3 mb-4 text-sm flex gap-4 flex-wrap w-full text-left ${pulse ? "ring-2 ring-amber-400" : ""}`}
+      >
         <span>Winner: {winner?.label}</span>
         <span>ΔΦ vs greedy: {delta}</span>
         <span>{visible.length} of {POLICIES.length} shown</span>
