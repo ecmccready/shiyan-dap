@@ -1400,7 +1400,7 @@ export function lookbackAssetsKey(ev: { key?: unknown; ctrlKey?: unknown; metaKe
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
 /** Pure: parse a clipboard string as an `aethel.roe_lookback.view.v1` snapshot (same shape ⧉ View copies). Returns ok:false with a reason on bad JSON / wrong schema / bad fields. Never throws. */
-export type LookbackParsedView = { show: LookbackRoleFilter; sort: LookbackSort; packsOpen: boolean; jumpsOpen: boolean; expandAll: boolean; focus: { run_id: string | null; expanded: boolean } };
+export type LookbackParsedView = { show: LookbackRoleFilter; sort: LookbackSort; packsOpen: boolean; jumpsOpen: boolean; expandAll: boolean; focus: { run_id: string | null; expanded: boolean }; recentTone: "all" | "green" | "blue" | "amber"; toneSource: "field" | "view_url" | "default" };
 export function parseLookbackViewSnapshot(text: unknown): { ok: true; view: LookbackParsedView } | { ok: false; reason: string } {
   if (typeof text !== "string" || !text.trim()) return { ok: false, reason: "clipboard empty" };
   let o: unknown; try { o = JSON.parse(text); } catch { return { ok: false, reason: "not JSON" }; }
@@ -1412,18 +1412,26 @@ export function parseLookbackViewSnapshot(text: unknown): { ok: true; view: Look
   for (const k of ["packsOpen", "jumpsOpen", "expandAll"]) if (typeof r[k] !== "boolean") return { ok: false, reason: `bad ${k}` };
   const f = r.focus as Record<string, unknown> | null | undefined;
   if (!f || typeof f !== "object" || !(f.run_id === null || typeof f.run_id === "string") || typeof f.expanded !== "boolean") return { ok: false, reason: "bad focus" };
-  return { ok: true, view: { show: r.show as LookbackRoleFilter, sort: r.sort as LookbackSort, packsOpen: r.packsOpen as boolean, jumpsOpen: r.jumpsOpen as boolean, expandAll: r.expandAll as boolean, focus: { run_id: (f.run_id as string | null), expanded: f.expanded as boolean } } };
+  const tn = lookbackSnapshotRecentTone(r);
+  return { ok: true, view: { show: r.show as LookbackRoleFilter, sort: r.sort as LookbackSort, packsOpen: r.packsOpen as boolean, jumpsOpen: r.jumpsOpen as boolean, expandAll: r.expandAll as boolean, focus: { run_id: (f.run_id as string | null), expanded: f.expanded as boolean }, recentTone: tn.tone, toneSource: tn.source } };
+}
+/** Pure: Recent tone from a view snapshot — first-class `recentTone` field wins (all|green|blue|amber); else legacy `view_url` lb_tone=win|agree|empty; else "all". Unknown values soft-fall to the next source. Never throws. */
+export function lookbackSnapshotRecentTone(r: Record<string, unknown> | null | undefined): { tone: "all" | "green" | "blue" | "amber"; source: "field" | "view_url" | "default" } {
+  const ok = ["all", "green", "blue", "amber"] as const;
+  if (r && ok.includes(r.recentTone as typeof ok[number])) return { tone: r.recentTone as typeof ok[number], source: "field" };
+  try { if (r && typeof r.view_url === "string") { const u = new URL(r.view_url).searchParams.get("lb_tone"); const m: Record<string, "green" | "blue" | "amber"> = { win: "green", agree: "blue", empty: "amber" }; if (u && Object.prototype.hasOwnProperty.call(m, u)) return { tone: m[u], source: "view_url" }; } } catch {}
+  return { tone: "all", source: "default" };
 }
 /** Pure: resolve a parsed view against current run ids → concrete state to set. Unknown focus run_id is dropped (focusDropped). */
 export function applyLookbackViewSnapshot(v: LookbackParsedView, runIds: ReadonlyArray<string>) {
   const known = v.focus.run_id != null && runIds.includes(v.focus.run_id);
   const focusRunId = known ? v.focus.run_id : null;
-  return { show: v.show, sort: v.sort, packsOpen: v.packsOpen, jumpsOpen: v.jumpsOpen, expandAll: v.expandAll, focusRunId, expandedRunId: focusRunId && v.focus.expanded ? focusRunId : null, focusDropped: v.focus.run_id != null && !known };
+  return { show: v.show, sort: v.sort, packsOpen: v.packsOpen, jumpsOpen: v.jumpsOpen, expandAll: v.expandAll, focusRunId, expandedRunId: focusRunId && v.focus.expanded ? focusRunId : null, focusDropped: v.focus.run_id != null && !known, recentTone: v.recentTone ?? "all" };
 }
 /** Pure: toast for Apply view — success (emerald) or reject (amber, ⚠ prefix). */
 export function lookbackApplyViewToast(r: { ok: true; applied: ReturnType<typeof applyLookbackViewSnapshot> } | { ok: false; reason: string }): { txt: string; tone: "emerald" | "amber" } {
   if (!r.ok) return { txt: `⚠ Apply view rejected · ${r.reason} — expected ${LOOKBACK_VIEW_SNAPSHOT_SCHEMA}`, tone: "amber" };
-  const a = r.applied; return { txt: `⇩ Applied view · show ${a.show} · sort ${a.sort}${a.focusRunId ? ` · focus ${a.focusRunId}` : a.focusDropped ? " · focus not found" : ""}`, tone: "emerald" };
+  const a = r.applied; return { txt: `⇩ Applied view · show ${a.show} · sort ${a.sort}${a.focusRunId ? ` · focus ${a.focusRunId}` : a.focusDropped ? " · focus not found" : ""}${a.recentTone && a.recentTone !== "all" ? ` · recent ${({ green: "Win", blue: "Agree", amber: "Empty" } as Record<string, string>)[a.recentTone] ?? a.recentTone}` : ""}`, tone: "emerald" };
 }
 /** Pure: `+` presses the sticky ⇩ Apply view chip (`+` was free). Ignored while typing or with Ctrl/⌘/Alt. */
 export function lookbackApplyViewKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
@@ -1760,13 +1768,13 @@ export function lookbackResetViewToast(cleared: number): string {
 // ⧉ View: compact semantic snapshot of the current look-back view (not a raw sessionStorage dump). Display-only.
 export const LOOKBACK_VIEW_SNAPSHOT_SCHEMA = "aethel.roe_lookback.view.v1" as const;
 export const LOOKBACK_COPY_VIEW_PULSE_MS = 1200;
-export type LookbackViewSnapshotInput = { show: string; sort: string; packsOpen: boolean; jumpsOpen: boolean; expandAll: boolean; focusRunId: string | null; expandedRunId: string | null };
+export type LookbackViewSnapshotInput = { show: string; sort: string; packsOpen: boolean; jumpsOpen: boolean; expandAll: boolean; focusRunId: string | null; expandedRunId: string | null; recentTone?: string };
 export function lookbackViewSnapshot(v: LookbackViewSnapshotInput, viewUrl?: string | null) {
-  return { schema: LOOKBACK_VIEW_SNAPSHOT_SCHEMA, show: v.show, sort: v.sort, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, expandAll: !!v.expandAll, focus: { run_id: v.focusRunId ?? null, expanded: v.focusRunId != null && v.expandedRunId === v.focusRunId }, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) };
+  return { schema: LOOKBACK_VIEW_SNAPSHOT_SCHEMA, show: v.show, sort: v.sort, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, expandAll: !!v.expandAll, focus: { run_id: v.focusRunId ?? null, expanded: v.focusRunId != null && v.expandedRunId === v.focusRunId }, recentTone: (["all", "green", "blue", "amber"].includes(v.recentTone ?? "") ? v.recentTone : "all") as string, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) };
 }
-/** Optional view_url = shareable lb_* status URL; Apply view ignores it. */
+/** Optional view_url = shareable lb_* status URL. recentTone is first-class (Apply view reads it directly; view_url lb_tone only as legacy fallback). */
 export function lookbackViewSnapshotJson(v: LookbackViewSnapshotInput, viewUrl?: string | null): string { return JSON.stringify(lookbackViewSnapshot(v, viewUrl), null, 2); }
-export function lookbackCopyViewToast(v: LookbackViewSnapshotInput): string { return `copied view JSON · show ${v.show} · sort ${v.sort}${v.focusRunId ? ` · focus ${v.focusRunId}` : ""}`; }
+export function lookbackCopyViewToast(v: LookbackViewSnapshotInput): string { return `copied view JSON · show ${v.show} · sort ${v.sort}${v.focusRunId ? ` · focus ${v.focusRunId}` : ""}${v.recentTone && v.recentTone !== "all" ? ` · recent ${v.recentTone}` : ""}`; }
 export function lookbackCopyViewShouldPulse(alreadyPulsed: boolean): boolean { return !alreadyPulsed; }
 export function lookbackCopyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_COPY_VIEW_PULSE_MS; }
 
