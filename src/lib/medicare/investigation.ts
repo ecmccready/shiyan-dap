@@ -1615,14 +1615,14 @@ export function medicareCopyAllRowsChip(report: unknown): { show: boolean; label
   const n = JSON.parse(json).count as number; return { show: true, label: `⧉ All ${n} rows`, json, toast: medicareAllRowsToast(json) };
 }
 
-/** Pure: reviewer notes only, as one JSON pack. Unlike 📦 Hand-off (report + evidence + provenance + case brief) and ⧉ Dispositions / y (whole hashed report envelope), this is { schema, kind: "notes", count, of, report_hash (reference), notes[] } where each note = { rank, item_id, status, reviewer, note } for rows with a non-empty trimmed note only. "" when no notes. Never throws. */
-export function medicareNotesJson(report: unknown): string {
+/** Pure: reviewer notes only, as one JSON pack. Unlike 📦 Hand-off (report + evidence + provenance + case brief) and ⧉ Dispositions / y (whole hashed report envelope), this is { schema, kind: "notes", count, of, report_hash (reference), notes[], view_url? (shareable m_* link; omitted unless http(s)) } where each note = { rank, item_id, status, reviewer, note } for rows with a non-empty trimmed note only. "" when no notes. Never throws. */
+export function medicareNotesJson(report: unknown, viewUrl?: string | null): string {
   try {
     const r = report as Partial<InvestigationReport> | null; const es = Array.isArray(r?.entries) ? r!.entries! : [];
     const notes = es.map((e, i) => ({ e, rank: i + 1 })).filter(({ e }) => e && typeof e === "object" && typeof e.item_id === "string" && typeof e.note === "string" && e.note.trim() !== "")
       .map(({ e, rank }) => ({ rank, item_id: e.item_id, status: e.status, reviewer: e.reviewer ?? null, note: (e.note as string).trim() }));
     if (!notes.length) return "";
-    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "notes", count: notes.length, of: es.length, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, notes }, null, 2);
+    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "notes", count: notes.length, of: es.length, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, notes, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return ""; }
 }
 /** Pure: toast text for ⧉ Notes (count read from the copied JSON). */
@@ -1630,8 +1630,8 @@ export function medicareNotesToast(json: unknown): string {
   try { const n = typeof json === "string" && json ? JSON.parse(json).count : null; return typeof n === "number" && n > 0 ? `⧉ Notes → copied ${n} note${n === 1 ? "" : "s"} JSON` : ""; } catch { return ""; }
 }
 /** Pure: sticky "⧉ N notes" chip. Hidden with no non-empty notes. Never throws. */
-export function medicareCopyNotesChip(report: unknown): { show: boolean; label: string; json: string; toast: string } {
-  const json = medicareNotesJson(report); if (!json) return { show: false, label: "", json: "", toast: "" };
+export function medicareCopyNotesChip(report: unknown, viewUrl?: string | null): { show: boolean; label: string; json: string; toast: string } {
+  const json = medicareNotesJson(report, viewUrl); if (!json) return { show: false, label: "", json: "", toast: "" };
   const n = JSON.parse(json).count as number; return { show: true, label: `⧉ ${n} note${n === 1 ? "" : "s"}`, json, toast: medicareNotesToast(json) };
 }
 

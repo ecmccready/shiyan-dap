@@ -1157,6 +1157,9 @@ import { medicareNotesJson, medicareCopyNotesChip, medicareNotesToast } from "..
   assert.equal(o.kind, "notes"); assert.equal(o.count, 2); assert.equal(o.of, rep.entries.length); assert.equal(o.report_hash, rep.report_hash); assert.equal(o.counts, undefined);
   assert.ok(o.notes.every((n: { note: string }) => n.note.trim())); assert.ok(o.notes.some((n: { note: string }) => n.note === "explained by bundling"));
   const ch = medicareCopyNotesChip(rep); assert.equal(ch.label, "⧉ 2 notes"); assert.equal(medicareCopyRowToast("notes", ch.json), ch.toast); assert.equal(ch.toast, "⧉ Notes → copied 2 notes JSON"); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
+  { const vu = "https://x.test/workbench/medicare?m_filter=cleared"; assert.equal(JSON.parse(medicareNotesJson(rep, vu)).view_url, vu); assert.equal(JSON.parse(medicareCopyNotesChip(rep, vu).json).view_url, vu);
+    for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(JSON.parse(medicareNotesJson(rep, bad as never)).view_url, undefined);
+    assert.equal(medicareNotesJson(rep, null), medicareNotesJson(rep), "no view_url = unchanged"); assert.equal(medicareNotesToast(medicareNotesJson(rep, vu)), ch.toast); console.log("notes       -> optional view_url (shareable m_* link); absent when not http(s)"); }
   console.log("sticky ⧉ Notes chip OK"); }
 
 import { medicareStatusesJson, medicareCopyStatusesChip, medicareStatusesToast } from "../src/lib/medicare/investigation";
