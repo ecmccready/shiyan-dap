@@ -416,7 +416,7 @@ console.log("key t       -> adds the next unused quick note to the target row (u
 // 37. ? cheat sheet (pure key map + keymap table).
 assert.deepEqual(dispositionShortcut({ key: "?" }), { kind: "help" }); assert.deepEqual(dispositionShortcut({ key: "Escape" }), { kind: "help_close" });
 assert.equal(dispositionShortcut({ key: "?", targetTag: "INPUT" }), null, "typing ? in a note stays text"); assert.equal(dispositionShortcut({ key: "?", metaKey: true }), null);
-for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(medicareCopyLinkKey({ key: k }) || medicareApplyViewKey({ key: k }) || medicareCopyViewKey({ key: k }) || medicareResetViewKey({ key: k }) || medicareStripToggleKey({ key: k }) !== null || dispositionShortcut({ key: k }) || medicareClearToastsKey({ key: k }, 1) || medicareClearRecentKey({ key: k }, 1) || medicareCopyRecentKey({ key: k }, 1), `sheet key ${k} is live`);
+for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(medicareAuditKey({ key: k }) || medicareCopyLinkKey({ key: k }) || medicareApplyViewKey({ key: k }) || medicareCopyViewKey({ key: k }) || medicareResetViewKey({ key: k }) || medicareStripToggleKey({ key: k }) !== null || dispositionShortcut({ key: k }) || medicareClearToastsKey({ key: k }, 1) || medicareClearRecentKey({ key: k }, 1) || medicareCopyRecentKey({ key: k }, 1), `sheet key ${k} is live`);
 assert.equal(new Set(MEDICARE_KEYMAP.map((r) => r.key)).size, MEDICARE_KEYMAP.length); assert.ok(!MEDICARE_KEYMAP.some((r) => /fraud|misconduct|misdiagnos/i.test(r.does)));
 console.log("key ?       -> toggles the keyboard cheat sheet (every listed key is live); Esc closes");
 // 38. Keyboard action toast (pure text).
@@ -1358,7 +1358,7 @@ console.log("medicare [ / ] Packs/Jumps OK");
   assert.ok(MKM_ST.some((r) => r.key === "-")); assert.ok(!medicareResetViewKey({ key: "-" }));
   const ds = readFileSync(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8"); assert.ok(ds.includes("medicareCopyViewKey(") && ds.includes('[data-medicare-copy-view="1"]'));
   console.log("medicare - copy view key OK"); }
-import { medicareCopyLinkKey, parseMedicareViewSnapshot, applyMedicareViewSnapshot, medicareApplyViewToast, medicareApplyViewKey, medicareViewSnapshotJson as _mvsj, MEDICARE_APPLY_VIEW_EVENT } from "../src/lib/medicare/investigation";
+import { medicareAuditKey, medicareCopyLinkKey, parseMedicareViewSnapshot, applyMedicareViewSnapshot, medicareApplyViewToast, medicareApplyViewKey, medicareViewSnapshotJson as _mvsj, MEDICARE_APPLY_VIEW_EVENT } from "../src/lib/medicare/investigation";
 { // + ⇩ Apply view parses aethel.medicare.view.v1
   const ents = [{ item_id: "a" }, { item_id: "b" }];
   const p = parseMedicareViewSnapshot(_mvsj({ rowFilter: "has_note", packsOpen: true, jumpsOpen: false, keyTarget: "b", entries: ents }));
@@ -1562,3 +1562,10 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   console.log("ok medicare shared live key-target resolve (Know-trail parity)");
 }
 { const fs = require("fs"), path = require("path"); const c = fs.readFileSync(path.join(__dirname, "../src/components/AuditSummaryChip.tsx"), "utf8"); const s = fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8"); assert.ok(c.includes('MEDICARE_AUDIT_CHIP_PULSE_KEY = "aethel.medicare.auditChip.pulsed"') && c.includes("data-first-use-pulse"), "medicare audit chip key"); assert.ok(s.includes("firstUsePulseKey={MEDICARE_AUDIT_CHIP_PULSE_KEY}"), "medicare wires audit chip pulse"); console.log("ok: Medicare Audit summary chip first-use pulse"); }
+
+{ // ` opens Audit summary →
+  assert.ok(medicareAuditKey({ key: "`" })); assert.ok(!medicareAuditKey({ key: "`", targetTag: "INPUT" })); assert.ok(!medicareAuditKey({ key: "`", editable: true })); assert.ok(!medicareAuditKey({ key: "`", ctrlKey: true })); assert.ok(!medicareAuditKey({ key: "`", metaKey: true })); assert.ok(!medicareAuditKey({ key: "`", altKey: true })); assert.ok(!medicareAuditKey({ key: "." })); assert.ok(!medicareAuditKey(null));
+  assert.ok(MEDICARE_KEYMAP.some((r) => r.key === "`" && r.does.includes("/workbench/audit")));
+  const ds = readFileSync(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8"); assert.ok(ds.includes("medicareAuditKey(") && ds.includes(`'[data-audit-summary-chip="medicare"]'`));
+  console.log("ok medicareAuditKey");
+}

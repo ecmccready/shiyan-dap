@@ -574,6 +574,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "-", does: "copy view snapshot JSON — same as clicking sticky ⧉ View (filter, Packs/Jumps, key target); toast + shared first-use pulse (free key, next to 0 Reset)" },
   { key: "0", does: "reset view — same as clicking sticky ↺ Reset view (filter All, Packs/Jumps closed, key target cleared, toast); 0 = back to zero since 1/2/3 set dispositions" },
   { key: "[", does: "toggle Packs ▾ / Packs ▴ — same as clicking the sticky chip (toast on first open only)" },
+  { key: "`", does: "open Audit summary → (/workbench/audit) — same as the sticky Audit summary → chip; parity with look-back `.` (`.` already copies provenance here; ` was free, no Shift)" },
   { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
 ];
 
@@ -1893,6 +1894,11 @@ export function medicareApplyViewShouldPulse(alreadyPulsed: boolean, ok: unknown
 export function medicareApplyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_APPLY_VIEW_PULSE_MS; }
 
 /** Pure: `\\` presses the sticky ⧉ Link chip (copy shareable m_* view URL). Parity with look-back lookbackCopyLinkKey. Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
+/** Pure: ` presses the sticky Audit summary → chip (navigates to /workbench/audit). Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
+export function medicareAuditKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "`" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
+}
 export function medicareCopyLinkKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
   if (!ev || ev.key !== "\\" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));

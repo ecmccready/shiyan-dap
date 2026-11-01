@@ -1,6 +1,6 @@
 "use client";
 
-import { MEDICARE_APPLY_VIEW_EVENT, medicareApplyViewKey, medicareCopyLinkKey } from "@/lib/medicare/investigation";
+import { MEDICARE_APPLY_VIEW_EVENT, medicareApplyViewKey, medicareCopyLinkKey, medicareAuditKey } from "@/lib/medicare/investigation";
 import { MEDICARE_RESET_VIEW_EVENT } from "@/lib/medicare/investigation";
 import { filterAllKey, MEDICARE_FILTER_ALL_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -59,6 +59,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     const on = (ev: KeyboardEvent) => {
       const el = ev.target as HTMLElement | null;
       { const sk = medicareStripToggleKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable }); if (sk) { const b = document.querySelector<HTMLButtonElement>(sk === "packs" ? "[data-medicare-packs-toggle]" : "[data-medicare-jumps-toggle]"); if (b) { ev.preventDefault(); b.click(); return; } } }
+      if (medicareAuditKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable })) { const b = document.querySelector<HTMLAnchorElement>('[data-audit-summary-chip="medicare"]'); if (b) { ev.preventDefault(); b.click(); return; } }
       if (medicareCopyLinkKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable })) { const b = document.querySelector<HTMLButtonElement>('[data-medicare-copy-link="1"]'); if (b) { ev.preventDefault(); b.click(); return; } }
       if (medicareApplyViewKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable })) { const b = document.querySelector<HTMLButtonElement>('[data-medicare-apply-view="1"]'); if (b) { ev.preventDefault(); b.click(); return; } }
       if (medicareCopyViewKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable })) { const b = document.querySelector<HTMLButtonElement>('[data-medicare-copy-view="1"]'); if (b) { ev.preventDefault(); b.click(); return; } }
