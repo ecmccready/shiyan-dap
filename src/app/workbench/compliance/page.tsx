@@ -1,15 +1,11 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import CopyValue from "@/components/CopyValue";
+import { COMPLIANCE_SECTIONS as SECTIONS, buildComplianceInventory } from "@/lib/compliance-inventory";
 
 // Read-only Diagnostics Compliance stub at /workbench/compliance (/workbench/diagnostics is a legacy redirect) (Phase 3, parity with /workbench/audit and /workbench/assets). Static text; no fetch, no writes, no CMS.
 
-const SECTIONS = [
-  { title: "Medicare (Know → Do)", items: ["Provenance, baselines, DQ", "Evidence + investigation", "HITL dispositions"], href: "/workbench/medicare", link: "Medicare workbench" },
-  { title: "Look-back (Know)", items: ["ROE look-back insight", "Gaps, roles, ⑂ divergence"], href: "/workbench/status", link: "Look-back" },
-  { title: "Audit summary (Know)", items: ["Read-only audit catalog", "Inventory JSON"], href: "/workbench/audit", link: "Audit summary" },
-  { title: "Asset map (Do)", items: ["Where assets live", "Inventory JSON"], href: "/workbench/assets", link: "Asset map" },
-  { title: "Marketplace (Do)", items: ["Known peers + capabilities", "View surfaces JSON"], href: "/workbench/marketplace", link: "Marketplace" },
-];
+
 
 export default function CompliancePage() {
   return (
@@ -20,6 +16,9 @@ export default function CompliancePage() {
         <h1 className="text-3xl font-bold mb-3">Where the node&apos;s compliance checks live today</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
           A map of the know / do surfaces a reviewer checks. This page sends, stores and changes nothing.
+        </p>
+        <p className="mb-4 text-sm text-zinc-400">
+          Inventory:<CopyValue value={JSON.stringify(buildComplianceInventory(), null, 2)} label="inventory JSON" toast="Compliance inventory JSON copied" firstUsePulseKey="aethel.compliance.copyInventory.pulsed" />
         </p>
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
           {SECTIONS.map((s) => (
