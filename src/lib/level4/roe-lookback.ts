@@ -1700,3 +1700,15 @@ export function clearLookbackViewSession(store: { removeItem(k: string): void } 
 export function lookbackResetViewToast(cleared: number): string {
   return `↺ View reset — Show All · Sort rank · Packs/Jumps closed · Expand off · focus cleared (${cleared} session key${cleared === 1 ? "" : "s"} cleared)`;
 }
+
+// ⧉ View: compact semantic snapshot of the current look-back view (not a raw sessionStorage dump). Display-only.
+export const LOOKBACK_VIEW_SNAPSHOT_SCHEMA = "aethel.roe_lookback.view.v1" as const;
+export const LOOKBACK_COPY_VIEW_PULSE_MS = 1200;
+export type LookbackViewSnapshotInput = { show: string; sort: string; packsOpen: boolean; jumpsOpen: boolean; expandAll: boolean; focusRunId: string | null; expandedRunId: string | null };
+export function lookbackViewSnapshot(v: LookbackViewSnapshotInput) {
+  return { schema: LOOKBACK_VIEW_SNAPSHOT_SCHEMA, show: v.show, sort: v.sort, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, expandAll: !!v.expandAll, focus: { run_id: v.focusRunId ?? null, expanded: v.focusRunId != null && v.expandedRunId === v.focusRunId } };
+}
+export function lookbackViewSnapshotJson(v: LookbackViewSnapshotInput): string { return JSON.stringify(lookbackViewSnapshot(v), null, 2); }
+export function lookbackCopyViewToast(v: LookbackViewSnapshotInput): string { return `copied view JSON · show ${v.show} · sort ${v.sort}${v.focusRunId ? ` · focus ${v.focusRunId}` : ""}`; }
+export function lookbackCopyViewShouldPulse(alreadyPulsed: boolean): boolean { return !alreadyPulsed; }
+export function lookbackCopyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_COPY_VIEW_PULSE_MS; }
