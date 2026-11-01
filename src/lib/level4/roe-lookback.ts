@@ -187,6 +187,11 @@ export function lookbackDivergence(c: LookbackCompare | null | undefined): { ste
   } catch { return null; }
 }
 
+/** Pure: jump target for the ⑂ divergence chip — the look-back row + 1-based step where it splits from greedy. null when no divergence. */
+export function lookbackDivergenceTarget(c: LookbackCompare | null | undefined): { run_id: string; step: number } | null {
+  try { const dv = lookbackDivergence(c); const id = c?.lookback?.run_id; return dv && typeof id === "string" && id ? { run_id: id, step: dv.step } : null; } catch { return null; }
+}
+
 /** Pure: SVG polyline points for an e series in a w×h box (higher e at top; shared scale via max). "" when fewer than 2 points. */
 export function sparklinePoints(series: unknown, w = 64, h = 16, max?: number): string {
   try {
