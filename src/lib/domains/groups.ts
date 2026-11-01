@@ -1,4 +1,3 @@
-
 export const DOMAIN_GROUPS = [
   {
     name: "Know",
