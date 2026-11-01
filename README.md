@@ -229,6 +229,10 @@ Not yet externally confirmed:
 
 The same text is on `/workbench/offer` and `/workbench/pilot`. How evidence moves from Agent B to a human reviewer before anything is shared: [docs/agent-roles.md](docs/agent-roles.md#external-confirmation-workflow).
 
+## Audit summary
+
+`/workbench/audit` is a read-only Phase 3 enterprise stub listing what an audit/evidence pack can include today: Medicare Know-trail packs (Provenance, Baselines, DQ, Evidence, Investigation), Medicare HITL packs (case brief, hand-off, dispositions, notes, statuses, progress, all rows), look-back insight packs (Compare, Summary, Verdict, Gaps, Roles, All paths, All steps) and shareable view URLs (`lb_*`, `m_*`, `view_url`). Links to `/workbench/medicare`, `/workbench/status`, `/workbench/offer#evidence-packs`, `/workbench/marketplace` and `/workbench/global`; listed under Domains → Do. Static; no fetch, no writes.
+
 ## Evidence and data support
 
 What an acquirer can check today without trusting this repo. Live unless marked directional.
