@@ -1451,3 +1451,10 @@ import { medicareInvestigationJsonWithViewUrl } from "../src/lib/medicare/invest
   for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(medicareInvestigationJsonWithViewUrl(base, bad as never), base);
   assert.equal(medicareInvestigationJsonWithViewUrl("", vu), ""); assert.equal(medicareInvestigationJsonWithViewUrl("not json", vu), "not json"); assert.equal(medicareInvestigationJsonWithViewUrl("[1]", vu), "[1]");
   console.log("investigation -> optional view_url (shareable m_* link); absent when not http(s)"); }
+import { medicareEvidenceJsonWithViewUrl } from "../src/lib/medicare/investigation";
+{ const base = JSON.stringify({ evidence_hash: "e1", items: [] }, null, 2); const vu = "https://x.test/workbench/medicare?m_filter=cleared";
+  const o = JSON.parse(medicareEvidenceJsonWithViewUrl(base, vu)); assert.equal(o.view_url, vu); assert.equal(o.evidence_hash, "e1");
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(medicareEvidenceJsonWithViewUrl(base, bad as never), base);
+  assert.equal(medicareEvidenceJsonWithViewUrl("", vu), ""); assert.equal(medicareEvidenceJsonWithViewUrl("[1]", vu), "[1]");
+  const src = require("node:fs").readFileSync("src/components/CopyMedicareJson.tsx", "utf8"); assert.ok(src.includes('kind === "evidence"') && src.includes("medicareEvidenceJsonWithViewUrl"));
+  console.log("evidence    -> optional view_url (shareable m_* link); absent when not http(s)"); }
