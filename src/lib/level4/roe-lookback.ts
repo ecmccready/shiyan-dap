@@ -1678,3 +1678,19 @@ export function resolveLookbackFocus(saved: LookbackFocusState | null, runIds: r
   if (saved && fallback === "first" && runIds.length) return { focus: runIds[0], open: null };
   return { focus: null, open: null };
 }
+
+/** All look-back sessionStorage keys cleared by the sticky "↺ Reset view" chip (packs, jumps, show, sort, expandAll, focus). */
+export const LOOKBACK_RESET_VIEW_KEYS = [LOOKBACK_PACKS_OPEN_KEY, LOOKBACK_JUMPS_OPEN_KEY, LOOKBACK_SHOW_FILTER_KEY, LOOKBACK_SORT_MODE_KEY, LOOKBACK_EXPAND_ALL_KEY, LOOKBACK_FOCUS_KEY] as const;
+/** UI defaults restored by Reset view. */
+export const LOOKBACK_RESET_VIEW_DEFAULTS = { filter: "all", sort: "rank", packs: false, jumps: false, expandAll: false, focus: null, open: null } as const;
+/** Pure: remove every look-back view key; returns keys removed (empty on missing store). Never throws. */
+export function clearLookbackViewSession(store: { removeItem(k: string): void } | null | undefined): string[] {
+  if (!store) return [];
+  const out: string[] = [];
+  for (const k of LOOKBACK_RESET_VIEW_KEYS) { try { store.removeItem(k); out.push(k); } catch {} }
+  return out;
+}
+/** Pure toast text after Reset view. */
+export function lookbackResetViewToast(cleared: number): string {
+  return `↺ View reset — Show All · Sort rank · Packs/Jumps closed · Expand off · focus cleared (${cleared} session key${cleared === 1 ? "" : "s"} cleared)`;
+}
