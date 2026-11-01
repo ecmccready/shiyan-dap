@@ -1791,6 +1791,11 @@ export function filterLookbackRecentToasts(hist: readonly LookbackToastHistoryEn
   if (f === "green" || f === "blue" || f === "amber") return list.filter((h) => h.tone === f);
   return list;
 }
+/** Pure: toast text for Copy all / sticky Copy recent; filtered copies use chip labels (Win / Agree / Empty), not tone names. */
+export function lookbackCopyRecentToast(n: number, f: LookbackRecentToneFilter | string | null | undefined): string {
+  const lab = f === "green" ? "Win" : f === "blue" ? "Agree" : f === "amber" ? "Empty" : "";
+  return `copied ${n} ${lab ? lab + " " : ""}recent toasts JSON`;
+}
 /** Pure: chip models for the Recent toasts filter row (empty tones hidden except All / active). */
 export function lookbackRecentToneChips(hist: readonly LookbackToastHistoryEntry[] | null | undefined, active: LookbackRecentToneFilter): { tone: LookbackRecentToneFilter; label: string; count: number; active: boolean }[] {
   const c = lookbackRecentToneCounts(hist);
