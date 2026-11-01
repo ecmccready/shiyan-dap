@@ -2024,6 +2024,23 @@ export function medicarePayoff(entries: unknown): { split_rank: number; payoff_r
   } catch { return null; }
 }
 
+/** Pure: jump target for the sticky ↺ chip — payoff row (rank payoff_rank) or first skipped unreviewed row above the split. null when no payoff. */
+export function medicarePayoffTarget(entries: unknown): { item_id: string; rank: number; reason: "payoff" | "first_skipped" } | null {
+  try {
+    const py = medicarePayoff(entries); if (!py || !Array.isArray(entries)) return null;
+    const rows = entries.filter((e): e is ReportEntry => !!e && typeof e === "object" && typeof (e as ReportEntry).item_id === "string");
+    if (py.payoff_rank !== null) { const r = rows[py.payoff_rank - 1]; return r ? { item_id: r.item_id, rank: py.payoff_rank, reason: "payoff" } : null; }
+    const i = rows.slice(0, py.split_rank - 1).findIndex((x) => x.status === "unreviewed");
+    return i < 0 ? null : { item_id: rows[i].item_id, rank: i + 1, reason: "first_skipped" };
+  } catch { return null; }
+}
+
+/** Pure: click copy payload for the sticky ↺ chip (kind:payoff). "" when no payoff. */
+export function medicarePayoffJson(entries: unknown, viewUrl?: string | null): string {
+  const py = medicarePayoff(entries); if (!py) return "";
+  return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "payoff", ...py, target: medicarePayoffTarget(entries), ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}), scope_note: INVESTIGATION_SCOPE_NOTE }, null, 2);
+}
+
 /** Pure: Shift+D copy payload for the sticky ⑂ chip. "" when no divergence. */
 export function medicareDivergenceJson(entries: unknown, viewUrl?: string | null): string {
   const d = medicareDivergence(entries); if (!d) return "";
