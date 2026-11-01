@@ -1776,3 +1776,32 @@ export function writeMedicareRowFilter(store: MedicareStripStore, filter: unknow
   const v = typeof filter === "string" && ROW_FILTER_CYCLE.includes(filter as RowFilter) ? filter : "all";
   try { store.setItem(MEDICARE_ROW_FILTER_KEY, v); return true; } catch { return false; }
 }
+
+/** sessionStorage key for the Medicare key-target row (per-tab). Stored JSON {"item_id": string, "index": number}. */
+export const MEDICARE_KEY_TARGET_KEY = "aethel.medicare.keyTarget";
+/** Pure bounds check: item_id wins if still present; else clamp stored index into [0, ids.length-1]; empty / invalid → null (reset). */
+export function resolveMedicareKeyTarget(saved: unknown, ids: unknown): string | null {
+  try {
+    if (!Array.isArray(ids)) return null;
+    const list = ids.filter((x): x is string => typeof x === "string");
+    if (!list.length || !saved || typeof saved !== "object") return null;
+    const s = saved as { item_id?: unknown; index?: unknown };
+    if (typeof s.item_id === "string" && list.includes(s.item_id)) return s.item_id;
+    if (typeof s.index !== "number" || !Number.isFinite(s.index)) return null;
+    return list[Math.min(list.length - 1, Math.max(0, Math.trunc(s.index)))];
+  } catch { return null; }
+}
+/** Pure read: resolved target id from storage against current ids; missing / malformed / throwing → null. */
+export function readMedicareKeyTarget(store: MedicareStripStore, ids: unknown): string | null {
+  try { const v = store?.getItem(MEDICARE_KEY_TARGET_KEY); if (typeof v !== "string") return null; return resolveMedicareKeyTarget(JSON.parse(v), ids); } catch { return null; }
+}
+/** Pure write: stores {item_id, index}; target not in ids → removes key. Returns false on missing store or throw. */
+export function writeMedicareKeyTarget(store: MedicareStripStore, target: unknown, ids: unknown): boolean {
+  if (!store) return false;
+  try {
+    const list = Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : [];
+    const i = typeof target === "string" ? list.indexOf(target) : -1;
+    if (i < 0) { (store as { removeItem?: (k: string) => void }).removeItem?.(MEDICARE_KEY_TARGET_KEY); return true; }
+    store.setItem(MEDICARE_KEY_TARGET_KEY, JSON.stringify({ item_id: target, index: i })); return true;
+  } catch { return false; }
+}

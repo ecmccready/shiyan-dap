@@ -1,3 +1,4 @@
+import { MEDICARE_KEY_TARGET_KEY, resolveMedicareKeyTarget, readMedicareKeyTarget, writeMedicareKeyTarget } from "../src/lib/medicare/investigation";
 import { MEDICARE_ROW_FILTER_KEY, readMedicareRowFilter, writeMedicareRowFilter } from "../src/lib/medicare/investigation";
 import { readMedicareStripState, writeMedicareStripState, MEDICARE_PACKS_OPEN_KEY, MEDICARE_JUMPS_OPEN_KEY } from "../src/lib/medicare/investigation";
 // Run: npx tsx scripts/check-medicare.ts
@@ -1263,3 +1264,21 @@ console.log("medicare [ / ] Packs/Jumps OK");
   const src = rf(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8");
   assert.ok(src.includes("window.sessionStorage") && !/localStorage[^\n]*RowFilter/.test(src) && src.includes("readMedicareRowFilter(") && src.includes("writeMedicareRowFilter("));
   console.log("ok medicare rowFilter sessionStorage"); }
+
+{ // key-target sessionStorage persistence
+  const ids = ["a", "b", "c"];
+  assert.equal(resolveMedicareKeyTarget({ item_id: "b", index: 0 }, ids), "b");
+  assert.equal(resolveMedicareKeyTarget({ item_id: "zz", index: 9 }, ids), "c");
+  assert.equal(resolveMedicareKeyTarget({ item_id: "zz", index: -4 }, ids), "a");
+  assert.equal(resolveMedicareKeyTarget({ item_id: "zz" }, ids), null);
+  assert.equal(resolveMedicareKeyTarget({ item_id: "a", index: 0 }, []), null);
+  assert.equal(resolveMedicareKeyTarget(null, ids), null);
+  const m = new Map<string, string>(); const st = { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), removeItem: (k: string) => void m.delete(k) };
+  assert.equal(writeMedicareKeyTarget(st, "c", ids), true); assert.deepEqual(JSON.parse(m.get(MEDICARE_KEY_TARGET_KEY)!), { item_id: "c", index: 2 });
+  assert.equal(readMedicareKeyTarget(st, ids), "c"); assert.equal(readMedicareKeyTarget(st, ["x", "y"]), "y");
+  writeMedicareKeyTarget(st, "nope", ids); assert.equal(m.has(MEDICARE_KEY_TARGET_KEY), false);
+  m.set(MEDICARE_KEY_TARGET_KEY, "{bad"); assert.equal(readMedicareKeyTarget(st, ids), null);
+  assert.equal(readMedicareKeyTarget({ getItem: () => { throw new Error("x"); }, setItem: () => {} }, ids), null);
+  assert.equal(writeMedicareKeyTarget(null, "a", ids), false);
+  console.log("ok key-target persistence");
+}
