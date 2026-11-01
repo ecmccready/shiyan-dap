@@ -1774,3 +1774,25 @@ export function lookbackCopyViewPulse(at: number | null, now: number): boolean {
 export const LOOKBACK_APPLY_VIEW_PULSE_MS = 1200;
 export function lookbackApplyViewShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
 export function lookbackApplyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_APPLY_VIEW_PULSE_MS; }
+
+/** Recent-toasts tone filter (tab-local). "all" shows every entry. */
+export type LookbackRecentToneFilter = "all" | LookbackToastHistoryEntry["tone"];
+export const LOOKBACK_RECENT_TONE_FILTERS: readonly LookbackRecentToneFilter[] = ["all", "green", "blue", "amber"];
+const RECENT_TONE_LABEL: Record<LookbackRecentToneFilter, string> = { all: "All", green: "✓ Win", blue: "≈ Agree", amber: "∅ Empty" };
+/** Pure: per-tone counts for the Recent toasts filter chips. */
+export function lookbackRecentToneCounts(hist: readonly LookbackToastHistoryEntry[] | null | undefined): Record<LookbackRecentToneFilter, number> {
+  const out: Record<LookbackRecentToneFilter, number> = { all: 0, green: 0, blue: 0, amber: 0 };
+  for (const h of hist ?? []) { out.all++; if (h && (h.tone === "green" || h.tone === "blue" || h.tone === "amber")) out[h.tone]++; }
+  return out;
+}
+/** Pure: filter Recent toasts by tone; unknown filter → all. */
+export function filterLookbackRecentToasts(hist: readonly LookbackToastHistoryEntry[] | null | undefined, f: LookbackRecentToneFilter | string | null | undefined): LookbackToastHistoryEntry[] {
+  const list = [...(hist ?? [])];
+  if (f === "green" || f === "blue" || f === "amber") return list.filter((h) => h.tone === f);
+  return list;
+}
+/** Pure: chip models for the Recent toasts filter row (empty tones hidden except All / active). */
+export function lookbackRecentToneChips(hist: readonly LookbackToastHistoryEntry[] | null | undefined, active: LookbackRecentToneFilter): { tone: LookbackRecentToneFilter; label: string; count: number; active: boolean }[] {
+  const c = lookbackRecentToneCounts(hist);
+  return LOOKBACK_RECENT_TONE_FILTERS.filter((t) => t === "all" || t === active || c[t] > 0).map((t) => ({ tone: t, label: `${RECENT_TONE_LABEL[t]} ${c[t]}`, count: c[t], active: t === active }));
+}
