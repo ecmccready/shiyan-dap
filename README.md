@@ -604,3 +604,5 @@ The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirr
 
 - Offer page: peer-visible note — Known peers / Copy capabilities JSON advertise lb_* / m_* shareable views + clipboard evidence packs (older peers may omit; soft-compat). Links /workbench/marketplace.
 - Offer: Share/packs note lists all view_url-carrying copies — Medicare Know-trail (Provenance, Baselines, DQ, Evidence, Investigation) and look-back (Summary, Verdict, Gaps, Roles, All paths/steps, Compare), same as Hand-off. Clipboard only; no server writes, no Level 4, no CMS.
+
+- Offer Peer-visible note: Known peers advertise all 17 clipboard evidence packs carrying `view_url`; older peers with shorter lists soft-warn.
