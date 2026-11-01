@@ -1,3 +1,4 @@
+import * as UrlView from "../src/lib/roe-lookback-url";
 import { readFileSync } from "node:fs";
 /** Fixture checks for the inspect-only ROE look-back (aethel.roe.lookback.v1). */
 import assert from "node:assert/strict";
@@ -1031,4 +1032,23 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
   const src = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8");
   assert.ok(src.includes("data-roe-apply-view-pulsing") && src.includes("lookbackApplyViewShouldPulse(avPulsedRef.current, true)"));
   console.log("ok · apply view pulse");
+}
+
+// Shareable view URL (lb_* query)
+{
+  const U = UrlView;
+  assert.deepEqual(U.serializeLookbackUrlView({ show: "all", sort: "rank", packs: false, jumps: false }), {});
+  assert.deepEqual(U.serializeLookbackUrlView({ show: "winners", sort: "dphi", packs: true, jumps: true }), { lb_show: "winners", lb_sort: "dphi", lb_packs: "1", lb_jumps: "1" });
+  assert.deepEqual(U.parseLookbackUrlView("?lb_show=beaten&lb_sort=dphi&lb_packs=1&lb_jumps=0"), { show: "beaten", sort: "dphi", packs: true, jumps: false });
+  assert.deepEqual(U.parseLookbackUrlView("?lb_show=zzz&lb_sort=1&lb_packs=yes&x=1"), {});
+  assert.deepEqual(U.parseLookbackUrlView(""), {}); assert.deepEqual(U.parseLookbackUrlView(null), {});
+  const v = { show: "agree", sort: "rank", packs: false, jumps: true } as const;
+  const href = U.lookbackUrlWithView("https://x.test/workbench/status?foo=1&lb_sort=dphi#h", v);
+  assert.equal(href, "https://x.test/workbench/status?foo=1&lb_show=agree&lb_jumps=1#h");
+  assert.deepEqual(U.parseLookbackUrlView(new URL(href).search), { show: "agree", jumps: true });
+  assert.equal(U.lookbackUrlWithView("https://x.test/a?lb_show=winners", { show: "all", sort: "rank", packs: false, jumps: false }), "https://x.test/a");
+  assert.ok(U.lookbackCopyLinkToast(v).includes("2 params") && U.lookbackCopyLinkToast({ show: "all", sort: "rank", packs: false, jumps: false }).includes("default"));
+  const src = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes('data-roe-summary-copy-link="1"') && src.includes("history.replaceState") && !src.includes("history.pushState") && src.includes("parseLookbackUrlView(window.location.search)"));
+  console.log("ok · view link URL");
 }
