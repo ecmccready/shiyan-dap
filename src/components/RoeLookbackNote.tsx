@@ -8,6 +8,7 @@ import { lookbackUrlWithTone, parseLookbackUrlView, lookbackUrlWithView, lookbac
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import EvidencePacksChip from "@/components/EvidencePacksChip";
 import AuditSummaryChip, { LOOKBACK_AUDIT_CHIP_PULSE_KEY } from "@/components/AuditSummaryChip";
+import ComplianceChip from "@/components/ComplianceChip";
 import AssetMapChip, { LOOKBACK_ASSET_MAP_CHIP_PULSE_KEY } from "@/components/AssetMapChip";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
 import CopyLookbackPath from "@/components/CopyLookbackPath";
@@ -555,6 +556,7 @@ export default function RoeLookbackNote() {
               <EvidencePacksChip scope="lookback" />
               <AuditSummaryChip scope="lookback" firstUsePulseKey={LOOKBACK_AUDIT_CHIP_PULSE_KEY} />
               <AssetMapChip scope="lookback" firstUsePulseKey={LOOKBACK_ASSET_MAP_CHIP_PULSE_KEY} />
+              <ComplianceChip scope="lookback" />
               {lookbackVerdictCopiesCompare(c) ? <button type="button" data-roe-summary-verdict-copy title="Click to copy ⚖ compare pack (same as m)" onClick={() => { const b = document.querySelector<HTMLButtonElement>("[data-copy-roe-compare]"); if (!b || b.disabled) return; b.scrollIntoView({ block: "nearest" }); b.click(); }} className={`cursor-pointer rounded-full px-2 py-0.5 font-bold underline decoration-dotted underline-offset-2 ${m.tone === "win" ? "bg-amber-400 text-black" : m.tone === "agree" ? "bg-sky-400 text-black" : "bg-zinc-700"}`}>{m.verdict} ⚖</button> : <span className={`rounded-full px-2 py-0.5 font-bold ${m.tone === "win" ? "bg-amber-400 text-black" : m.tone === "agree" ? "bg-sky-400 text-black" : "bg-zinc-700"}`}>{m.verdict}</span>}
               {lookbackDeltaECopiesSummary(c) ? <button type="button" data-roe-summary-delta-e-copy title="Click to copy summary JSON (same as g)" onClick={() => void copySum.copy(lookbackSummaryJson(c, cmpViewUrl())).then((ok) => { const txt = lookbackSummaryButtonToast(ok, "delta_e"); if (!txt) return; const at = Date.now(); setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), LOOKBACK_TOAST_MS); })} className="cursor-pointer rounded px-1 underline decoration-dotted underline-offset-2 hover:bg-white/20">+Δe <b>{m.delta_e_gain}</b></button> : <span>+Δe <b>{m.delta_e_gain}</b></span>}
               <span>ΔΦ <b>{fmtDeltaPhi(m.delta_phi)}</b></span>

@@ -11,6 +11,7 @@ import { medicareShareableViewUrl, parseMedicareUrlView, medicareUrlWithView, me
 import { medicareDivergence, medicareDivergenceJson } from "@/lib/medicare/investigation";
 import EvidencePacksChip from "@/components/EvidencePacksChip";
 import AuditSummaryChip, { MEDICARE_AUDIT_CHIP_PULSE_KEY } from "@/components/AuditSummaryChip";
+import ComplianceChip from "@/components/ComplianceChip";
 import AssetMapChip, { MEDICARE_ASSET_MAP_CHIP_PULSE_KEY } from "@/components/AssetMapChip";
 import { medicareDispositionsChip, medicareDispositionsChipShouldPulse, medicareDispositionsChipPulse, medicareDispositionsChipCopiedOk, MEDICARE_DISPOSITIONS_CHIP_PULSE_MS, MEDICARE_DISPOSITIONS_COPIED_EVENT, MEDICARE_HANDOFF_COPIED_EVENT, medicareHandoffChipCopiedOk, medicareHandoffChip, medicareHandoffChipShouldPulse, medicareHandoffChipPulse, MEDICARE_HANDOFF_CHIP_PULSE_MS, MEDICARE_COPY_ROW_TOAST_EVENT, medicareCopyRowChipPulse, medicareCopyRowChipShouldPulse, MEDICARE_COPY_ROW_CHIP_PULSE_MS, MEDICARE_COPY_ROW_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { lastDownChipChanged, firstUpChipChanged, firstUpPulse, firstUpShouldPulse, FIRST_UP_PULSE_MS, MEDICARE_FIRST_UP_PULSE_EVENT } from "@/lib/medicare/investigation";
@@ -374,6 +375,7 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
         <span data-medicare-evidence-packs-sticky="" onMouseDown={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()}><EvidencePacksChip scope="medicare" /></span>
         <span data-medicare-audit-summary-sticky="" onMouseDown={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()}><AuditSummaryChip scope="medicare" firstUsePulseKey={MEDICARE_AUDIT_CHIP_PULSE_KEY} /></span>
         <span data-medicare-asset-map-sticky="" onMouseDown={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()}><AssetMapChip scope="medicare" firstUsePulseKey={MEDICARE_ASSET_MAP_CHIP_PULSE_KEY} /></span>
+        <span data-medicare-compliance-sticky="" onMouseDown={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()}><ComplianceChip scope="medicare" /></span>
         {(() => { const c = medicareCopySecondRowChip(r.entries); if (!c.show) return null; const on = medicareCopyRowChipPulse(cpPulseAt.second, cpPulseNow); return (
           <button type="button" data-medicare-copy-second-row-chip="" data-medicare-row-copied={rowCopied?.txt === c.toast ? "1" : undefined} data-medicare-copy-row-pulsing={on ? "1" : undefined}
             onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); void navigator.clipboard?.writeText(c.json).then(() => { window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_PULSE_EVENT, { detail: { which: "second", json: c.json } })); window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which: "second", json: c.json } })); const at = Date.now(); setRowCopied({ txt: c.toast, at }); window.setTimeout(() => setRowCopied((x) => (x && x.at === at ? null : x)), TOAST_PILL_COPIED_MS); }, () => {}); }}
