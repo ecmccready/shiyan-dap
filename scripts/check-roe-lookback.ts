@@ -894,7 +894,7 @@ if (rankedLookbackRows(c).length) { const vu = "https://x.test/workbench/status?
 { const m = require("../src/lib/evidence-packs-link"); assert.equal(m.EVIDENCE_PACKS_HREF, "/workbench/offer#evidence-packs");
   assert.equal(m.evidencePacksChipLabel("medicare"), "Medicare · Evidence packs →"); assert.equal(m.evidencePacksChipLabel("lookback"), "Evidence packs →");
   console.log("evidencePacksChip OK (→ /workbench/offer#evidence-packs)"); }
-{ const fs = require("fs"), path = require("path"); const c = fs.readFileSync(path.join(__dirname, "../src/components/AuditSummaryChip.tsx"), "utf8"); assert.ok(c.includes('"/workbench/audit"')); const s = fs.readFileSync(path.join(__dirname, "../src/components/RoeLookbackNote.tsx"), "utf8"); assert.ok(s.includes('<AuditSummaryChip scope="lookback" />'));
+{ const fs = require("fs"), path = require("path"); const c = fs.readFileSync(path.join(__dirname, "../src/components/AuditSummaryChip.tsx"), "utf8"); assert.ok(c.includes('"/workbench/audit"')); const s = fs.readFileSync(path.join(__dirname, "../src/components/RoeLookbackNote.tsx"), "utf8"); assert.ok(s.includes('<AuditSummaryChip scope="lookback"'));
   console.log("auditSummaryChip OK (sticky → /workbench/audit)"); }
 
 // Packs ▾/▴ toggle
@@ -1161,3 +1161,4 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
     const nsrc = readFileSync(require("path").join(__dirname, "../src/components/RoeLookbackNote.tsx"), "utf8") as string; assert.ok(nsrc.includes("lookbackShareableViewUrl(window.location.href")); assert.ok(!/cmpViewUrl = \(\) => \{ try \{ return lookbackUrlWithView/.test(nsrc));
     console.log("ok: lookbackShareableViewUrl -> all look-back pack view_urls carry lb_focus / lb_expand"); }
   console.log("url focus   -> lb_focus / lb_expand optional; defaults + invalid omitted; link/apply/reset sync"); }
+{ const fs = require("fs"), path = require("path"); const c = fs.readFileSync(path.join(__dirname, "../src/components/AuditSummaryChip.tsx"), "utf8"); const r = fs.readFileSync(path.join(__dirname, "../src/components/RoeLookbackNote.tsx"), "utf8"); assert.ok(c.includes("aethel.lookback.auditChip.pulsed") && c.includes("firstUsePulseKey") && c.includes("data-first-use-pulse"), "audit chip first-use pulse"); assert.ok(r.includes("firstUsePulseKey={LOOKBACK_AUDIT_CHIP_PULSE_KEY}"), "look-back wires audit chip pulse"); console.log("ok: look-back Audit summary chip first-use pulse"); }
