@@ -1989,3 +1989,21 @@ export function medicareRecentToneKey(ev: { key?: unknown; ctrlKey?: unknown; me
   if (!ev || ev.key !== ":" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
+
+/** Pure: first row where the operator disposition differs from the baseline/default ("unreviewed") — Medicare parity with look-back lookbackDivergence. null when every row is still at the default or input is bad. Review state only; not a finding. */
+export function medicareDivergence(entries: unknown): { rank: number; shared_prefix: number; item_id: string; provider_id: string | null; row_kind: string | null; baseline: "unreviewed"; disposition: DispositionStatus; diverged: number; of: number; label: string } | null {
+  try {
+    if (!Array.isArray(entries)) return null;
+    const rows = entries.filter((e): e is ReportEntry => !!e && typeof e === "object" && typeof (e as ReportEntry).item_id === "string");
+    const i = rows.findIndex((e) => (DISPOSITION_STATUSES as readonly string[]).includes(e.status) && e.status !== "unreviewed");
+    if (i < 0) return null;
+    const e = rows[i]; const rank = i + 1;
+    return { rank, shared_prefix: i, item_id: e.item_id, provider_id: e.provider_id ?? null, row_kind: typeof e.kind === "string" ? e.kind : null, baseline: "unreviewed", disposition: e.status, diverged: rows.filter((x) => x.status !== "unreviewed").length, of: rows.length, label: `⑂ diverge @ #${rank}` };
+  } catch { return null; }
+}
+
+/** Pure: Shift+D copy payload for the sticky ⑂ chip. "" when no divergence. */
+export function medicareDivergenceJson(entries: unknown, viewUrl?: string | null): string {
+  const d = medicareDivergence(entries); if (!d) return "";
+  return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "divergence", ...d, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}), scope_note: INVESTIGATION_SCOPE_NOTE }, null, 2);
+}

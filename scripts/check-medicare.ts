@@ -1,3 +1,4 @@
+import { medicareDivergence as MD, medicareDivergenceJson as MDJ } from "../src/lib/medicare/investigation";
 import * as MedUrlView from "../src/lib/medicare/view-url";
 import * as mvw from "../src/lib/medicare/investigation";
 import { clearMedicareViewSession, medicareResetViewToast, MEDICARE_RESET_VIEW_KEYS, MEDICARE_RESET_VIEW_DEFAULTS } from "../src/lib/medicare/investigation";
@@ -1620,3 +1621,19 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   const a = MedUrlView.medicareUrlWithTone("https://x.test/workbench/medicare?m_filter=unreviewed", "green"); assert.ok(a.includes("m_tone=done") && a.includes("m_filter=unreviewed")); const b = MedUrlView.medicareUrlWithTone(a, "all"); assert.ok(!b.includes("m_tone") && b.includes("m_filter=unreviewed"));
   const src = readFileSync(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8"); assert.ok(src.includes("medicareRecentToneKey(") && src.includes("cycleMedicareRecentTone(") && src.includes("medicareUrlWithTone(window.location.href, recentTone)"), ": wired; m_tone synced by recentTone effect");
   console.log("ok medicareRecentToneKey (:)"); }
+
+// ⑂ divergence: first row where operator disposition differs from the default (unreviewed)
+{
+
+  const row = (id: string, status: string) => ({ item_id: id, kind: "k", transformation: "t", row_index: 0, provider_id: "p" + id, detail: "", row_hash: null, status, reviewer: null, note: null });
+  assert.equal(MD(null), null); assert.equal(MD([]), null);
+  assert.equal(MD([row("a", "unreviewed"), row("b", "unreviewed")]), null, "all default -> null");
+  const d = MD([row("a", "unreviewed"), row("b", "cleared_pattern_only"), row("c", "needs_human_review")])!;
+  assert.equal(d.rank, 2); assert.equal(d.shared_prefix, 1); assert.equal(d.item_id, "b"); assert.equal(d.baseline, "unreviewed"); assert.equal(d.disposition, "cleared_pattern_only"); assert.equal(d.diverged, 2); assert.equal(d.of, 3); assert.equal(d.label, "⑂ diverge @ #2");
+  assert.equal(MDJ([row("a", "unreviewed")]), "");
+  const j = JSON.parse(MDJ([row("a", "needs_human_review")], "https://x/workbench/medicare?m_filter=x")); assert.equal(j.kind, "divergence"); assert.equal(j.rank, 1); assert.ok(j.view_url);
+  assert.equal(JSON.parse(MDJ([row("a", "needs_human_review")], "javascript:1")).view_url, undefined);
+  assert.ok(/Shift\+D/.test(readFileSync("src/components/MedicareStatusChips.tsx", "utf8")) && /data-medicare-divergence/.test(readFileSync("src/components/MedicareStatusChips.tsx", "utf8")));
+  assert.ok(/divergence: dv/.test(readFileSync("src/lib/medicare/case-brief.ts", "utf8")), "hand-off carries divergence when present");
+  console.log("divergence  -> first row off default (unreviewed); sticky ⑂ chip + Shift+D; hand-off pack field when present");
+}
