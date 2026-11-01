@@ -13,7 +13,7 @@ import { MEDICARE_FIRST_UP_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { medicareStripToggleKey, medicareResetViewKey, medicareCopyViewKey } from "@/lib/medicare/investigation";
 import { readMedicareRowFilter, readMedicareKeyTarget, writeMedicareKeyTarget, writeMedicareRowFilter } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
-import { parseMedicareUrlView, resolveMedicareUrlTarget, medicareUrlWithTarget, MEDICARE_URL_TARGET_EVENT } from "@/lib/medicare/view-url";
+import { parseMedicareUrlView, resolveMedicareUrlTarget, medicareUrlWithTarget, MEDICARE_URL_TARGET_EVENT, medicareUrlWithTone, MEDICARE_URL_TONE_EVENT } from "@/lib/medicare/view-url";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
 /** Client-only disposition stub over the synthetic fixture. State lives in this tab; nothing is stored or sent. */
@@ -289,6 +289,11 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const pastToastsRef = useRef(pastToasts); pastToastsRef.current = pastToasts;
   const shownRecentRef = useRef(shownRecent); shownRecentRef.current = shownRecent;
   const recentToneRef = useRef(recentTone); recentToneRef.current = recentTone;
+  // m_tone: URL overrides on mount; chip changes replaceState (no history); Apply link / Apply view / Reset set it via MEDICARE_URL_TONE_EVENT. Missing = all.
+  const mToneReadyRef = useRef(false);
+  useEffect(() => { const t = parseMedicareUrlView(window.location.search).tone; if (t) setRecentTone(t as MedicareRecentToneFilter); }, []);
+  useEffect(() => { if (!mToneReadyRef.current) { mToneReadyRef.current = true; return; } try { const next = medicareUrlWithTone(window.location.href, recentTone); if (next !== window.location.href) window.history.replaceState(window.history.state, "", next); } catch {} }, [recentTone]);
+  useEffect(() => { const on = (cev: Event) => { const d = (cev as CustomEvent<unknown>).detail; setRecentTone(d === "green" || d === "amber" ? d : "all"); }; window.addEventListener(MEDICARE_URL_TONE_EVENT, on); return () => window.removeEventListener(MEDICARE_URL_TONE_EVENT, on); }, []);
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_RECENT_SHOWN_STATE_EVENT, { detail: { count: shownRecent.length, tone: recentTone } })); }, [shownRecent.length, recentTone]);
   useEffect(() => { const on = (cev: Event) => { const txt = medicarePackCopiedToast((cev as CustomEvent<unknown>).detail); if (!txt) return; const at = Date.now(); setToast({ txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); }; window.addEventListener(MEDICARE_PACK_COPIED_EVENT, on); return () => window.removeEventListener(MEDICARE_PACK_COPIED_EVENT, on); }, []);
   useEffect(() => { const mk = (kind: "dispositions" | "handoff") => () => { const p = keyCopyPendingRef.current; const now = Date.now(); if (!medicareKeyCopyPendingOk(p, kind, now) || !p) return; keyCopyPendingRef.current = null; const at = now; setToast({ txt: p.txt, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); }; const d = mk("dispositions"), h = mk("handoff"); window.addEventListener(MKC_DISPOSITIONS_COPIED, d); window.addEventListener(MKC_HANDOFF_COPIED, h); return () => { window.removeEventListener(MKC_DISPOSITIONS_COPIED, d); window.removeEventListener(MKC_HANDOFF_COPIED, h); }; }, []);
