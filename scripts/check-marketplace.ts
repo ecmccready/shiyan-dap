@@ -17,6 +17,7 @@ import { buildGlobalSnapshot, classifyRun, GLOBAL_SNAPSHOT_SCHEMA, SNAPSHOT_NOTE
 import { validateGlobalSnapshot, formatSnapshotReport, SNAPSHOT_VALIDATE_NOTE } from "../src/lib/diagnostics/global-snapshot-validate";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
 import viewSurfacesSample from "../fixtures/marketplace/view-surfaces.sample.json";
+import viewSurfacesLegacy6 from "../fixtures/marketplace/view-surfaces.legacy-6.sample.json";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
 const SEQ = ["mark_boundary", "complete_field", "request_independent_check", "seal_pack"];
@@ -655,5 +656,17 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
   assert.deepEqual(fx, pickViewSurfaces(self), "fixture drifted: regenerate from pickViewSurfaces(self)");
   assert.deepEqual(validateViewSurfaces(fx), { ok: true, errors: [], warnings: [] });
   console.log("view surfaces    -> fixtures/marketplace/view-surfaces.sample.json matches self + validates clean");
+}
+// 27. Legacy six-token fixture: ok (soft-compat), exactly one evidence_packs missing-token warning naming the 12 newer packs.
+{
+  const fx = viewSurfacesLegacy6 as unknown as Record<string, unknown>;
+  const self = buildPeerRegistry(null).peers[0].capabilities as unknown as Record<string, unknown>;
+  assert.deepEqual({ ...fx, evidence_packs: undefined }, { ...pickViewSurfaces(self), evidence_packs: undefined }, "legacy fixture: non-pack fields drifted from self");
+  assert.equal(fx.evidence_packs, "handoff,compare,summary,verdict,progress,statuses");
+  const r = validateViewSurfaces(fx);
+  assert.equal(r.ok, true); assert.deepEqual(r.errors, []);
+  assert.equal(r.warnings.length, 1); assert.ok(r.warnings[0].includes("evidence_packs: missing"), r.warnings[0]);
+  for (const t of ["notes","all_rows","investigation","evidence","provenance","baselines","dq","all_paths","all_steps","gaps","roles","dispositions"]) assert.ok(r.warnings[0].includes(t), t);
+  console.log("view surfaces    -> legacy-6 fixture validates ok with soft-compat missing-token warning");
 }
 console.log("OK");
