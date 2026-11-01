@@ -1,4 +1,4 @@
-import { medicareDivergence as MD, medicareDivergenceJson as MDJ } from "../src/lib/medicare/investigation";
+import { medicareDivergence as MD, medicareDivergenceJson as MDJ, medicarePayoff as MP } from "../src/lib/medicare/investigation";
 import * as MedUrlView from "../src/lib/medicare/view-url";
 import * as mvw from "../src/lib/medicare/investigation";
 import { clearMedicareViewSession, medicareResetViewToast, MEDICARE_RESET_VIEW_KEYS, MEDICARE_RESET_VIEW_DEFAULTS } from "../src/lib/medicare/investigation";
@@ -1632,6 +1632,11 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   assert.equal(d.rank, 2); assert.equal(d.shared_prefix, 1); assert.equal(d.item_id, "b"); assert.equal(d.baseline, "unreviewed"); assert.equal(d.disposition, "cleared_pattern_only"); assert.equal(d.diverged, 2); assert.equal(d.of, 3); assert.equal(d.label, "⑂ diverge @ #2");
   assert.equal(MDJ([row("a", "unreviewed")]), "");
   const j = JSON.parse(MDJ([row("a", "needs_human_review")], "https://x/workbench/medicare?m_filter=x")); assert.equal(j.kind, "divergence"); assert.equal(j.rank, 1); assert.ok(j.view_url);
+  assert.equal(MP([row("a", "unreviewed")]), null);
+  { const p = MP([row("a", "unreviewed"), row("b", "needs_human_review")])!; assert.equal(p.payoff_rank, null); assert.equal(p.skipped, 1); }
+  { const p = MP([row("a", "cleared_pattern_only"), row("b", "needs_human_review"), row("c", "unreviewed")])!; assert.equal(p.payoff_rank, 2); assert.equal(p.rows_to_payoff, 1); assert.equal(p.remaining, 1); }
+  { const p = MP([row("a", "needs_human_review"), row("b", "needs_human_review")])!; assert.equal(p.remaining, 0); assert.ok(p.label.includes("recovered")); }
+  assert.ok(JSON.parse(MDJ([row("a", "needs_human_review")])).payoff);
   assert.equal(JSON.parse(MDJ([row("a", "needs_human_review")], "javascript:1")).view_url, undefined);
   assert.ok(/Shift\+D/.test(readFileSync("src/components/MedicareStatusChips.tsx", "utf8")) && /data-medicare-divergence/.test(readFileSync("src/components/MedicareStatusChips.tsx", "utf8")));
   assert.ok(/divergence: dv/.test(readFileSync("src/lib/medicare/case-brief.ts", "utf8")), "hand-off carries divergence when present");

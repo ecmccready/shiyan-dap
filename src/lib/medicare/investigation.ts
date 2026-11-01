@@ -2008,8 +2008,24 @@ export function medicareDivergence(entries: unknown): { rank: number; shared_pre
   } catch { return null; }
 }
 
+/** Pure: Medicare parity with look-back lookbackPayoff — after the ⑂ split, the recovery point where the review has caught up:
+ *  payoff_rank = length of the leading fully-dispositioned run (rows 1..k all ≠ unreviewed), when it reaches the split rank.
+ *  skipped = unreviewed rows still above the split (the "dip" paid by jumping ahead); remaining = unreviewed rows overall. null when no divergence. Review state only. */
+export function medicarePayoff(entries: unknown): { split_rank: number; payoff_rank: number | null; rows_to_payoff: number | null; skipped: number; remaining: number; of: number; label: string } | null {
+  try {
+    const dv = medicareDivergence(entries); if (!dv || !Array.isArray(entries)) return null;
+    const rows = entries.filter((e): e is ReportEntry => !!e && typeof e === "object" && typeof (e as ReportEntry).item_id === "string");
+    let lead = 0; while (lead < rows.length && rows[lead].status !== "unreviewed") lead++;
+    const pay = lead >= dv.rank ? lead : null;
+    const skipped = rows.slice(0, dv.rank - 1).filter((x) => x.status === "unreviewed").length;
+    const remaining = rows.filter((x) => x.status === "unreviewed").length;
+    const label = pay === null ? `↺ ${skipped} skipped above ⑂ #${dv.rank}` : remaining === 0 ? `↺ recovered · all ${rows.length}` : pay === dv.rank ? `↺ in order @ #${pay}` : `↺ caught up @ #${pay} (+${pay - dv.rank})`;
+    return { split_rank: dv.rank, payoff_rank: pay, rows_to_payoff: pay === null ? null : pay - dv.rank, skipped, remaining, of: rows.length, label };
+  } catch { return null; }
+}
+
 /** Pure: Shift+D copy payload for the sticky ⑂ chip. "" when no divergence. */
 export function medicareDivergenceJson(entries: unknown, viewUrl?: string | null): string {
   const d = medicareDivergence(entries); if (!d) return "";
-  return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "divergence", ...d, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}), scope_note: INVESTIGATION_SCOPE_NOTE }, null, 2);
+  return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "divergence", ...d, payoff: medicarePayoff(entries), ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}), scope_note: INVESTIGATION_SCOPE_NOTE }, null, 2);
 }
