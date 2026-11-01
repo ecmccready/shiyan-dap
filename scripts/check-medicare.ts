@@ -1638,3 +1638,4 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   { const src = readFileSync("src/components/MedicareStatusChips.tsx", "utf8"); assert.ok(/data-medicare-row-diverge-flash/.test(src) && /e\.detail > 0/.test(src), "⑂ chip click jumps/flashes row; Shift+D copy-only"); }
   console.log("divergence  -> first row off default (unreviewed); sticky ⑂ chip + Shift+D; hand-off pack field when present");
 }
+{ const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8"); assert.ok(src.includes('MEDICARE_DIVERGE_CHIP_PULSE_KEY = "aethel.medicare.divergeChip.pulsed"') && src.includes("<DivergeChipButton data-medicare-divergence") && src.includes("data-first-use-pulse={pulsing"), "⑂ diverge chip first-use pulse"); console.log("ok: Medicare ⑂ diverge chip first-use pulse"); }

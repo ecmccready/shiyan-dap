@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { ButtonHTMLAttributes } from "react";
 import { parseMedicareViewSnapshot, applyMedicareViewSnapshot, medicareApplyViewToast, MEDICARE_APPLY_VIEW_EVENT } from "@/lib/medicare/investigation";
 import { clearMedicareViewSession, medicareResetViewToast, MEDICARE_RESET_VIEW_KEYS, MEDICARE_RESET_VIEW_EVENT } from "@/lib/medicare/investigation";
 import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VIEW_PULSE_MS } from "@/lib/medicare/investigation";
@@ -339,7 +340,7 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
             title="Copy the 📦 hand-off pack — same as key h / the 📦 button (Hand-off ready: complete + ≥1 note)"
             className={`rounded-full border-2 border-emerald-300 bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-100 hover:border-white${on ? " ring-4 ring-emerald-300 shadow-[0_0_16px_rgba(110,231,183,0.8)] motion-safe:animate-pulse" : ""}`}>{c.label}</button>
         ) : null; })()}
-        {(() => { const dv = medicareDivergence(r.entries); if (!dv) return null; return <button type="button" data-medicare-divergence={dv.item_id} title={`First row where your disposition differs from the default (unreviewed): #${dv.rank} ${dv.item_id} → ${dv.disposition} (${dv.diverged}/${dv.of} diverged) — click to jump/focus that row and copy divergence JSON (Shift+D copies only). Review state only.`} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); if (e.detail > 0) { /* mouse click: jump/focus divergent row; Shift+D (b.click → detail 0) stays copy-only */ const id = dv.item_id; window.dispatchEvent(new CustomEvent(MEDICARE_TARGET_JUMP_EVENT, { detail: id })); window.setTimeout(() => { const inp = document.querySelector<HTMLInputElement>(`[data-medicare-note="${CSS.escape(id)}"]`); if (!inp) { document.getElementById("medicare-disposition-list")?.scrollIntoView({ behavior: "smooth", block: "start" }); return; } const row = (inp.closest("li,tr") as HTMLElement | null) ?? inp; row.setAttribute("data-medicare-row-diverge-flash", "1"); row.style.outline = "2px solid rgb(232 121 249)"; row.style.outlineOffset = "2px"; window.setTimeout(() => { row.style.outline = ""; row.style.outlineOffset = ""; row.removeAttribute("data-medicare-row-diverge-flash"); }, 1600); inp.scrollIntoView({ behavior: "smooth", block: "center" }); window.setTimeout(() => { if (!inp.disabled) inp.focus({ preventScroll: true }); }, 400); }, 50); } const json = medicareDivergenceJson(r.entries, window.location.href); if (!json) return; void navigator.clipboard?.writeText(json).then(() => window.dispatchEvent(new CustomEvent(MEDICARE_STICKY_JUMP_TOAST_EVENT, { detail: `⑂ Divergence @ #${dv.rank} copied (unreviewed → ${dv.disposition})` })), () => {}); }} className="rounded-full border border-zinc-500 px-3 py-1 text-xs font-mono text-zinc-200 hover:border-white">{dv.label}</button>; })()}
+        {(() => { const dv = medicareDivergence(r.entries); if (!dv) return null; return <DivergeChipButton data-medicare-divergence={dv.item_id} title={`First row where your disposition differs from the default (unreviewed): #${dv.rank} ${dv.item_id} → ${dv.disposition} (${dv.diverged}/${dv.of} diverged) — click to jump/focus that row and copy divergence JSON (Shift+D copies only). Review state only.`} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); if (e.detail > 0) { /* mouse click: jump/focus divergent row; Shift+D (b.click → detail 0) stays copy-only */ const id = dv.item_id; window.dispatchEvent(new CustomEvent(MEDICARE_TARGET_JUMP_EVENT, { detail: id })); window.setTimeout(() => { const inp = document.querySelector<HTMLInputElement>(`[data-medicare-note="${CSS.escape(id)}"]`); if (!inp) { document.getElementById("medicare-disposition-list")?.scrollIntoView({ behavior: "smooth", block: "start" }); return; } const row = (inp.closest("li,tr") as HTMLElement | null) ?? inp; row.setAttribute("data-medicare-row-diverge-flash", "1"); row.style.outline = "2px solid rgb(232 121 249)"; row.style.outlineOffset = "2px"; window.setTimeout(() => { row.style.outline = ""; row.style.outlineOffset = ""; row.removeAttribute("data-medicare-row-diverge-flash"); }, 1600); inp.scrollIntoView({ behavior: "smooth", block: "center" }); window.setTimeout(() => { if (!inp.disabled) inp.focus({ preventScroll: true }); }, 400); }, 50); } const json = medicareDivergenceJson(r.entries, window.location.href); if (!json) return; void navigator.clipboard?.writeText(json).then(() => window.dispatchEvent(new CustomEvent(MEDICARE_STICKY_JUMP_TOAST_EVENT, { detail: `⑂ Divergence @ #${dv.rank} copied (unreviewed → ${dv.disposition})` })), () => {}); }} className="rounded-full border border-zinc-500 px-3 py-1 text-xs font-mono text-zinc-200 hover:border-white">{dv.label}</DivergeChipButton>; })()}
         {([medicareCopyFirstRowChip(r.entries), medicareCopyLastRowChip(r.entries)] as const).map((c, i) => c.show ? (
           <button key={i ? "copy-last" : "copy-first"} type="button" {...{ [i ? "data-medicare-copy-last-row-chip" : "data-medicare-copy-first-row-chip"]: "" }} data-medicare-row-copied={rowCopied?.txt === c.toast ? "1" : undefined} data-medicare-copy-row-pulsing={medicareCopyRowChipPulse(i ? cpPulseAt.last : cpPulseAt.first, cpPulseNow) ? "1" : undefined}
             onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); void navigator.clipboard?.writeText(c.json).then(() => { window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_PULSE_EVENT, { detail: { which: i ? "last" : "first", json: c.json } })); window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which: i ? "last" : "first", json: c.json } })); const at = Date.now(); setRowCopied({ txt: c.toast, at }); window.setTimeout(() => setRowCopied((x) => (x && x.at === at ? null : x)), TOAST_PILL_COPIED_MS); }, () => {}); }}
@@ -469,4 +470,21 @@ export default function MedicareStatusChips({ initial }: { initial: Investigatio
       </div>
     </div>
   );
+}
+
+export const MEDICARE_DIVERGE_CHIP_PULSE_KEY = "aethel.medicare.divergeChip.pulsed";
+
+/** ⑂ diverge chip: pulses once per browser session when it first appears (sessionStorage flag); display-only. */
+function DivergeChipButton({ className, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { "data-medicare-divergence"?: string }) {
+  const [pulsing, setPulsing] = useState(false);
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem(MEDICARE_DIVERGE_CHIP_PULSE_KEY)) return;
+      window.sessionStorage.setItem(MEDICARE_DIVERGE_CHIP_PULSE_KEY, "1");
+    } catch { return; }
+    const on = window.setTimeout(() => setPulsing(true), 0);
+    const off = window.setTimeout(() => setPulsing(false), 1600);
+    return () => { window.clearTimeout(on); window.clearTimeout(off); };
+  }, []);
+  return <button type="button" {...rest} data-first-use-pulse={pulsing ? "on" : undefined} className={(className ?? "") + (pulsing ? " animate-pulse ring-2 ring-zinc-300/70" : "")}>{children}</button>;
 }
