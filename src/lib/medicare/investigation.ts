@@ -567,6 +567,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
   { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (respects Recent tone filter; shares its first-use pulse); no-op with no entries" },
+  { key: ":", does: "cycle Recent toasts tone filter All → Done → Empty → All — same as clicking the Recent tone chips; syncs m_tone in the URL + toast (' / \" copy #2 / #3 rows here, so Shift+; is the next free punctuation; parity with look-back ')" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else collapse Packs \u25b4, else Jumps \u25b4, else clear the top toasts" },
   { key: "\\", does: "copy shareable view link — same as the sticky ⧉ Link chip (m_filter, m_packs, m_jumps; defaults omitted); toast after clipboard success (free key, next to - / + / 0)" },
@@ -1970,4 +1971,21 @@ export function medicareCopyRecentToast(n: number, f: MedicareRecentToneFilter |
 export function medicareRecentToneChips(hist: readonly ToastHistoryEntry[] | null | undefined, active: MedicareRecentToneFilter): { tone: MedicareRecentToneFilter; label: string; count: number; active: boolean }[] {
   const c = medicareRecentToneCounts(hist);
   return MEDICARE_RECENT_TONE_FILTERS.filter((t) => t === "all" || t === active || c[t] > 0).map((t) => ({ tone: t, label: `${MEDICARE_RECENT_TONE_LABEL[t]} ${c[t]}`, count: c[t], active: t === active }));
+}
+
+/** Order for key `:` — Recent toasts tone filter All → Done (green) → Empty (amber) → All. */
+export const MEDICARE_RECENT_TONE_CYCLE: readonly ("all" | "green" | "amber")[] = ["all", "green", "amber"];
+/** Pure: next Recent tone in MEDICARE_RECENT_TONE_CYCLE; unknown input restarts at All → green. Never throws. */
+export function cycleMedicareRecentTone(current: unknown): "all" | "green" | "amber" {
+  const i = MEDICARE_RECENT_TONE_CYCLE.indexOf(current as "all");
+  return MEDICARE_RECENT_TONE_CYCLE[(Math.max(0, i) + 1) % MEDICARE_RECENT_TONE_CYCLE.length];
+}
+/** Pure: toast for key `:` — "Recent tone → Done" etc. */
+export function medicareRecentToneCycleToast(tone: unknown): string {
+  return `Recent tone → ${({ all: "All", green: "Done", amber: "Empty" } as Record<string, string>)[tone as string] ?? "All"}`;
+}
+/** Pure: `:` cycles the Recent tone filter (' and " copy #2/#3 rows on Medicare). Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
+export function medicareRecentToneKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== ":" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
