@@ -1,3 +1,5 @@
+import { clearMedicareViewSession, medicareResetViewToast, MEDICARE_RESET_VIEW_KEYS, MEDICARE_RESET_VIEW_DEFAULTS } from "../src/lib/medicare/investigation";
+import { readFileSync as rfsReset } from "node:fs";
 import { MEDICARE_KEY_TARGET_KEY, resolveMedicareKeyTarget, readMedicareKeyTarget, writeMedicareKeyTarget } from "../src/lib/medicare/investigation";
 import { MEDICARE_ROW_FILTER_KEY, readMedicareRowFilter, writeMedicareRowFilter } from "../src/lib/medicare/investigation";
 import { readMedicareStripState, writeMedicareStripState, MEDICARE_PACKS_OPEN_KEY, MEDICARE_JUMPS_OPEN_KEY } from "../src/lib/medicare/investigation";
@@ -1281,4 +1283,18 @@ console.log("medicare [ / ] Packs/Jumps OK");
   assert.equal(readMedicareKeyTarget({ getItem: () => { throw new Error("x"); }, setItem: () => {} }, ids), null);
   assert.equal(writeMedicareKeyTarget(null, "a", ids), false);
   console.log("ok key-target persistence");
+}
+
+{ // Reset view clears all Medicare session keys
+  assert.deepEqual([...MEDICARE_RESET_VIEW_KEYS], ["aethel.medicare.packsOpen", "aethel.medicare.jumpsOpen", "aethel.medicare.rowFilter", "aethel.medicare.keyTarget"]);
+  assert.equal(MEDICARE_RESET_VIEW_DEFAULTS.filter, null); assert.equal(MEDICARE_RESET_VIEW_DEFAULTS.packs, false);
+  const m = new Map<string, string>(MEDICARE_RESET_VIEW_KEYS.map((k) => [k, "1"])); m.set("other", "x");
+  assert.equal(clearMedicareViewSession({ removeItem: (k: string) => void m.delete(k) }).length, 4); assert.deepEqual([...m.keys()], ["other"]);
+  assert.deepEqual(clearMedicareViewSession(null), []);
+  assert.deepEqual(clearMedicareViewSession({ removeItem: () => { throw new Error("x"); } }), []);
+  assert.ok(medicareResetViewToast(4).includes("4 session keys")); assert.ok(medicareResetViewToast(1).includes("1 session key cleared"));
+  const fs = { readFileSync: rfsReset }; const src = fs.readFileSync("src/components/MedicareStatusChips.tsx", "utf8");
+  assert.ok(src.includes("data-medicare-reset-view") && /clr\(\);[\s\S]*setTimeout\(\(\) => \{ const n = clr\(\)/.test(src));
+  assert.ok(fs.readFileSync("src/components/MedicareDispositionStub.tsx", "utf8").includes("MEDICARE_RESET_VIEW_EVENT"));
+  console.log("ok medicare reset view");
 }

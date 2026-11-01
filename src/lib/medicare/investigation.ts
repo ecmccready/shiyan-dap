@@ -1805,3 +1805,21 @@ export function writeMedicareKeyTarget(store: MedicareStripStore, target: unknow
     store.setItem(MEDICARE_KEY_TARGET_KEY, JSON.stringify({ item_id: target, index: i })); return true;
   } catch { return false; }
 }
+
+/** All Medicare sessionStorage keys cleared by the sticky "↺ Reset view" chip (packs, jumps, rowFilter, keyTarget). */
+export const MEDICARE_RESET_VIEW_KEYS = [MEDICARE_PACKS_OPEN_KEY, MEDICARE_JUMPS_OPEN_KEY, MEDICARE_ROW_FILTER_KEY, MEDICARE_KEY_TARGET_KEY] as const;
+/** UI defaults restored by Reset view. */
+export const MEDICARE_RESET_VIEW_DEFAULTS = { filter: null, packs: false, jumps: false, keyTarget: null } as const;
+/** Window event: sticky strip asks the disposition stub to reset filter (All) + key target (cleared). */
+export const MEDICARE_RESET_VIEW_EVENT = "medicare:reset-view";
+/** Pure: remove every Medicare view key; returns keys removed (empty on missing store). Never throws. */
+export function clearMedicareViewSession(store: { removeItem(k: string): void } | null | undefined): string[] {
+  if (!store) return [];
+  const out: string[] = [];
+  for (const k of MEDICARE_RESET_VIEW_KEYS) { try { store.removeItem(k); out.push(k); } catch {} }
+  return out;
+}
+/** Pure toast text after Reset view. */
+export function medicareResetViewToast(cleared: number): string {
+  return `↺ View reset — filter All · Packs/Jumps closed · key target cleared (${cleared} session key${cleared === 1 ? "" : "s"} cleared)`;
+}

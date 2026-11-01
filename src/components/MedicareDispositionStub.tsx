@@ -1,5 +1,6 @@
 "use client";
 
+import { MEDICARE_RESET_VIEW_EVENT } from "@/lib/medicare/investigation";
 import { filterAllKey, MEDICARE_FILTER_ALL_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
@@ -128,6 +129,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const keyTargetHydratedRef = useRef(false);
   useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readMedicareKeyTarget(st, idsRef.current); if (v) setFocusId(v); keyTargetHydratedRef.current = true; }, []);
   useEffect(() => { if (!keyTargetHydratedRef.current || focusId === null) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeMedicareKeyTarget(st, focusId, idsRef.current); }, [focusId]);
+  useEffect(() => { const on = () => { setFilter(null); setFocusId(null); }; window.addEventListener(MEDICARE_RESET_VIEW_EVENT, on); return () => window.removeEventListener(MEDICARE_RESET_VIEW_EVENT, on); }, []);
   useEffect(() => { if (!rowFilterHydratedRef.current) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeMedicareRowFilter(st, filter); }, [filter]);
   filterRef.current = filter;
   useEffect(() => {
