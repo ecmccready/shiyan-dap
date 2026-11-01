@@ -249,6 +249,8 @@ The same text is on `/workbench/offer` and `/workbench/pilot`. How evidence move
 
 **Assets operator check.** `npx tsx scripts/validate-assets-inventory.ts <file.json>` runs `validateAssetsInventory` on one saved `/workbench/assets` *Copy inventory JSON* pack (5 MB cap; prints `error:` / `warning:` lines; exit 0 ok (warnings allowed), 1 errors or bad JSON, 2 usage/file). Committed sample `fixtures/assets/inventory.sample.json` = `buildAssetsInventory()` (prints OK, exit 0). No network, no writes; well-formed only, not verified or trusted.
 
+**Compliance operator check.** `npx tsx scripts/validate-compliance-inventory.ts <file.json>` runs `validateComplianceInventory` on one saved `/workbench/compliance` *Copy inventory JSON* pack (`aethel.compliance.inventory.v1`; 5 MB cap; prints `error:` / `warning:` lines; exit 0 ok (warnings allowed), 1 errors or bad JSON, 2 usage/file). Committed sample `fixtures/compliance/inventory.sample.json` = `buildComplianceInventory()` (prints OK, exit 0). No network, no writes; well-formed only, not verified or trusted.
+
 **Compliance inventory JSON.** The *Inventory:* copy control on `/workbench/compliance` (first-use pulse, sessionStorage `aethel.compliance.copyInventory.pulsed`) copies the compliance catalog as `aethel.compliance.inventory.v1` (same shape as the assets/audit inventories: `schema`, `path: "/workbench/compliance"`, five `sections` mirroring the page cards, read-only `note`), built by pure `buildComplianceInventory()` and shape-checked by `validateComplianceInventory()` in `src/lib/compliance-inventory.ts`. Covered by `npx tsx scripts/check-compliance.ts`. Clipboard only; no fetch, no writes, no Level 4, no CMS.
 
 ## Evidence and data support

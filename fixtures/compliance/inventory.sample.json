@@ -1,0 +1,53 @@
+{
+  "schema": "aethel.compliance.inventory.v1",
+  "path": "/workbench/compliance",
+  "sections": [
+    {
+      "title": "Medicare (Know → Do)",
+      "href": "/workbench/medicare",
+      "link": "Medicare workbench",
+      "items": [
+        "Provenance, baselines, DQ",
+        "Evidence + investigation",
+        "HITL dispositions"
+      ]
+    },
+    {
+      "title": "Look-back (Know)",
+      "href": "/workbench/status",
+      "link": "Look-back",
+      "items": [
+        "ROE look-back insight",
+        "Gaps, roles, ⑂ divergence"
+      ]
+    },
+    {
+      "title": "Audit summary (Know)",
+      "href": "/workbench/audit",
+      "link": "Audit summary",
+      "items": [
+        "Read-only audit catalog",
+        "Inventory JSON"
+      ]
+    },
+    {
+      "title": "Asset map (Do)",
+      "href": "/workbench/assets",
+      "link": "Asset map",
+      "items": [
+        "Where assets live",
+        "Inventory JSON"
+      ]
+    },
+    {
+      "title": "Marketplace (Do)",
+      "href": "/workbench/marketplace",
+      "link": "Marketplace",
+      "items": [
+        "Known peers + capabilities",
+        "View surfaces JSON"
+      ]
+    }
+  ],
+  "note": "Read-only catalog. Detected pattern ≠ verified conclusion. Medicare data is a synthetic fixture."
+}
