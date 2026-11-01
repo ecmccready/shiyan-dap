@@ -1175,6 +1175,9 @@ import { medicareProgressJson, medicareCopyProgressChip, medicareProgressToast }
   assert.equal(o.kind, "progress"); assert.equal(o.total, rep.entries.length); assert.equal(o.report_hash, rep.report_hash); assert.equal(o.elapsed_ms, 1234);
   assert.equal(JSON.parse(medicareProgressJson(rep)).elapsed_ms, null); assert.equal(typeof o.complete, "boolean"); assert.equal(typeof o.handoff_ready, "boolean"); assert.ok(o.notes >= 1);
   assert.equal(o.rows, undefined); assert.equal(o.entries, undefined); assert.ok(medicareProgressJson(rep).length < medicareStatusesJson(rep).length, "smaller than Statuses");
+  { const vu = "https://x.test/workbench/medicare?m_filter=cleared"; assert.equal(JSON.parse(medicareProgressJson(rep, null, vu)).view_url, vu); assert.equal(JSON.parse(medicareCopyProgressChip(rep, null, vu).json).view_url, vu);
+    for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(JSON.parse(medicareProgressJson(rep, null, bad as never)).view_url, undefined);
+    assert.equal(medicareProgressJson(rep, null, null), medicareProgressJson(rep), "no view_url = unchanged"); console.log("progress    -> optional view_url (shareable m_* link); absent when not http(s)"); }
   const ch = medicareCopyProgressChip(rep); assert.equal(medicareCopyRowToast("progress", ch.json), ch.toast); assert.ok(ch.toast.startsWith("⧉ Progress → copied")); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
   console.log("sticky ⧉ Progress chip OK"); }
 

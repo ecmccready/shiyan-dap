@@ -579,3 +579,4 @@ The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirr
 
 - Offer: hand-off / compare packs include shareable `view_url` (same as ⧉ Link); clipboard only.
 - **Look-back · summary `view_url`:** copying summary JSON (sticky ⧉ Summary chip, Copy summary button, Δe chip, key `g`) now adds an optional `view_url` — the current shareable `/workbench/status` link with `lb_*` params (`lookbackUrlWithView`). Omitted when absent or not http(s); schema/kind unchanged. Pure `lookbackSummaryJson(c, viewUrl)`; `check-roe-lookback` covers it. No Level 4 rewrite, no CMS.
+- **Medicare · ⧉ Progress `view_url`:** copying sticky ⧉ Progress JSON now adds an optional `view_url` — the current shareable `/workbench/medicare` link with `m_*` view params (same as ⧉ Link / hand-off). Omitted when absent or not http(s); `kind: "progress"` unchanged. Pure `medicareProgressJson(…, viewUrl)`; `check-medicare` covers it. No Level 4, no CMS fetch.

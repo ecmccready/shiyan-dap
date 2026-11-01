@@ -1656,15 +1656,15 @@ export function medicareCopyStatusesChip(report: unknown): { show: boolean; labe
   return { show: true, label: "⧉ Statuses", json, toast: medicareStatusesToast(json) };
 }
 
-/** Pure: compact review-progress pack — smaller than ⧉ Statuses (no rows), ⧉ Dispositions / y (whole envelope) and ⧉ Notes (note text). { schema, kind: "progress", reviewed, total, percent, complete, notes, handoff_ready, counts, elapsed_ms (number|null; null when no timer is available), report_hash (reference) }. "" when no rows. Never throws. */
-export function medicareProgressJson(report: unknown, elapsedMs: unknown = null): string {
+/** Pure: compact review-progress pack — smaller than ⧉ Statuses (no rows), ⧉ Dispositions / y (whole envelope) and ⧉ Notes (note text). { schema, kind: "progress", reviewed, total, percent, complete, notes, handoff_ready, counts, elapsed_ms (number|null; null when no timer is available), report_hash (reference), view_url? (shareable m_* link; omitted unless http(s)) }. "" when no rows. Never throws. */
+export function medicareProgressJson(report: unknown, elapsedMs: unknown = null, viewUrl?: string | null): string {
   try {
     const r = report as Partial<InvestigationReport> | null; const es = Array.isArray(r?.entries) ? r!.entries! : [];
     if (!es.length) return "";
     const p = reviewProgress(report);
     const notes = es.filter((e) => e && typeof (e as { note?: unknown }).note === "string" && (e as { note: string }).note.trim()).length;
     const elapsed_ms = typeof elapsedMs === "number" && Number.isFinite(elapsedMs) && elapsedMs >= 0 ? Math.round(elapsedMs) : null;
-    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "progress", reviewed: p.reviewed, total: p.items, percent: p.percent, complete: p.items > 0 && p.reviewed === p.items, notes, handoff_ready: handoffReadyAnnotated(report).ready, counts: p.by_status, elapsed_ms, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null }, null, 2);
+    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "progress", reviewed: p.reviewed, total: p.items, percent: p.percent, complete: p.items > 0 && p.reviewed === p.items, notes, handoff_ready: handoffReadyAnnotated(report).ready, counts: p.by_status, elapsed_ms, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return ""; }
 }
 /** Pure: toast text for ⧉ Progress. */
@@ -1680,8 +1680,8 @@ export function medicareProgressElapsedMs(t: ReviewTimer | null | undefined, now
   } catch { return null; }
 }
 /** Pure: sticky "⧉ Progress" chip. Hidden with no rows. Never throws. */
-export function medicareCopyProgressChip(report: unknown, elapsedMs: unknown = null): { show: boolean; label: string; json: string; toast: string } {
-  const json = medicareProgressJson(report, elapsedMs); if (!json) return { show: false, label: "", json: "", toast: "" };
+export function medicareCopyProgressChip(report: unknown, elapsedMs: unknown = null, viewUrl?: string | null): { show: boolean; label: string; json: string; toast: string } {
+  const json = medicareProgressJson(report, elapsedMs, viewUrl); if (!json) return { show: false, label: "", json: "", toast: "" };
   const o = JSON.parse(json); return { show: true, label: `⧉ Progress ${o.reviewed}/${o.total}`, json, toast: medicareProgressToast(json) };
 }
 
