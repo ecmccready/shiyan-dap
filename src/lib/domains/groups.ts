@@ -60,6 +60,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "Client pipeline", href: "/workbench/client" },
       { label: "Offer", href: "/workbench/offer" },
       { label: "Audit summary", href: "/workbench/audit" },
+      { label: "Asset map", href: "/workbench/assets" },
       { label: "Pilot", href: "/workbench/pilot" },
       { label: "Marketplace", href: "/workbench/marketplace", experience: { reuse: true } },
     ],
