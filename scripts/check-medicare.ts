@@ -1485,3 +1485,25 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   assert.equal(medicareDispositionsJsonWithViewUrl("", vu), ""); assert.equal(medicareDispositionsJsonWithViewUrl("[1]", vu), "[1]");
   const src = require("node:fs").readFileSync("src/components/CopyLiveInvestigation.tsx", "utf8"); assert.ok(src.includes("medicareDispositionsJsonWithViewUrl"));
   console.log("dispositions -> optional view_url (shareable m_* link); absent when not http(s)"); }
+
+// m_target: optional key-target item_id in shareable URL (parity with look-back lb_focus).
+{
+  const U = MedUrlView;
+  assert.deepEqual(U.serializeMedicareUrlView({ filter: null, packs: false, jumps: false, target: "row-2" }), { m_target: "row-2" });
+  assert.deepEqual(U.serializeMedicareUrlView({ filter: null, packs: false, jumps: false, target: null }), {});
+  assert.equal(U.parseMedicareUrlView("m_target=row-2").target, "row-2");
+  assert.equal(U.parseMedicareUrlView("m_target=").target, undefined);
+  assert.equal(U.parseMedicareUrlView("m_target=" + "x".repeat(201)).target, undefined);
+  // absent target keeps existing m_target; explicit null drops it
+  assert.equal(U.medicareUrlWithView("https://x.test/m?m_target=a", { filter: null, packs: true, jumps: false }), "https://x.test/m?m_target=a&m_packs=1");
+  assert.equal(U.medicareUrlWithView("https://x.test/m?m_target=a", { filter: null, packs: false, jumps: false, target: null }), "https://x.test/m");
+  assert.equal(U.medicareUrlWithTarget("https://x.test/m?q=1#h", "b"), "https://x.test/m?q=1&m_target=b#h");
+  assert.equal(U.medicareUrlWithTarget("https://x.test/m?m_target=b", null), "https://x.test/m");
+  assert.equal(U.resolveMedicareUrlTarget("b", ["a", "b"]), "b");
+  assert.equal(U.resolveMedicareUrlTarget("zz", ["a", "b"]), null);
+  assert.deepEqual(U.stripMedicareUrlParams("https://x.test/m?m_target=b&m_filter=has_note"), { href: "https://x.test/m", removed: 2 });
+  assert.equal(U.medicareApplyViewUrl("https://x.test/m?m_target=a", { rowFilter: null, packsOpen: false, jumpsOpen: false, keyTarget: "b" }).href, "https://x.test/m?m_target=b");
+  assert.equal(U.medicareApplyViewUrl("https://x.test/m?m_target=a", { rowFilter: null, packsOpen: false, jumpsOpen: false, keyTarget: null }).href, "https://x.test/m");
+  const lk = U.parseMedicareLinkText("https://x.test/workbench/medicare?m_target=b"); assert.ok(lk.ok && lk.view.target === "b");
+  console.log("ok medicare m_target URL");
+}

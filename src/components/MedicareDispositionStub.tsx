@@ -12,6 +12,7 @@ import { MEDICARE_FIRST_UP_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { medicareStripToggleKey, medicareResetViewKey, medicareCopyViewKey } from "@/lib/medicare/investigation";
 import { readMedicareRowFilter, readMedicareKeyTarget, writeMedicareKeyTarget, writeMedicareRowFilter } from "@/lib/medicare/investigation";
 import { medicareAnchorId } from "@/lib/medicare/case-brief";
+import { parseMedicareUrlView, resolveMedicareUrlTarget, medicareUrlWithTarget, MEDICARE_URL_TARGET_EVENT } from "@/lib/medicare/view-url";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 
 /** Client-only disposition stub over the synthetic fixture. State lives in this tab; nothing is stored or sent. */
@@ -132,7 +133,10 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const rowFilterHydratedRef = useRef(false);
   useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readMedicareRowFilter(st); if (v !== null) setFilter(v); rowFilterHydratedRef.current = true; }, []);
   const keyTargetHydratedRef = useRef(false);
-  useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readMedicareKeyTarget(st, idsRef.current); if (v) setFocusId(v); keyTargetHydratedRef.current = true; }, []);
+  useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readMedicareKeyTarget(st, idsRef.current); if (v) setFocusId(v); try { const ut = resolveMedicareUrlTarget(parseMedicareUrlView(window.location.search).target, idsRef.current); if (ut) setFocusId(ut); } catch {} keyTargetHydratedRef.current = true; }, []);
+  // m_target URL sync: key-target change → replaceState (null keeps URL alone until Reset strips it).
+  useEffect(() => { if (!keyTargetHydratedRef.current || focusId === null) return; try { const next = medicareUrlWithTarget(window.location.href, focusId); if (next !== window.location.href) window.history.replaceState(window.history.state, "", next); } catch {} }, [focusId]);
+  useEffect(() => { const on = (e: Event) => { const t = resolveMedicareUrlTarget((e as CustomEvent<unknown>).detail, idsRef.current); if (t) setFocusId(t); }; window.addEventListener(MEDICARE_URL_TARGET_EVENT, on); return () => window.removeEventListener(MEDICARE_URL_TARGET_EVENT, on); }, []);
   useEffect(() => { if (!keyTargetHydratedRef.current || focusId === null) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeMedicareKeyTarget(st, focusId, idsRef.current); }, [focusId]);
   useEffect(() => { const on = (e: Event) => { const d = (e as CustomEvent<{ rowFilter: RowFilter; keyTarget: string | null }>).detail; if (!d) return; setFilter(d.rowFilter); setFocusId(d.keyTarget); }; window.addEventListener(MEDICARE_APPLY_VIEW_EVENT, on); return () => window.removeEventListener(MEDICARE_APPLY_VIEW_EVENT, on); }, []);
   useEffect(() => { const on = () => { setFilter(null); setFocusId(null); }; window.addEventListener(MEDICARE_RESET_VIEW_EVENT, on); return () => window.removeEventListener(MEDICARE_RESET_VIEW_EVENT, on); }, []);
