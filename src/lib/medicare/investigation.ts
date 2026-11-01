@@ -569,6 +569,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else collapse Packs \u25b4, else Jumps \u25b4, else clear the top toasts" },
+  { key: "\\", does: "copy shareable view link — same as the sticky ⧉ Link chip (m_filter, m_packs, m_jumps; defaults omitted); toast after clipboard success (free key, next to - / + / 0)" },
   { key: "+", does: "⇩ Apply view — read an aethel.medicare.view.v1 snapshot (from ⧉ View) from the clipboard and apply filter, Packs/Jumps, key target; ⚠ toast on wrong schema (free key)" },
   { key: "-", does: "copy view snapshot JSON — same as clicking sticky ⧉ View (filter, Packs/Jumps, key target); toast + shared first-use pulse (free key, next to 0 Reset)" },
   { key: "0", does: "reset view — same as clicking sticky ↺ Reset view (filter All, Packs/Jumps closed, key target cleared, toast); 0 = back to zero since 1/2/3 set dispositions" },
@@ -1889,3 +1890,9 @@ export function medicareApplyViewKey(ev: { key?: unknown; ctrlKey?: unknown; met
 export const MEDICARE_APPLY_VIEW_PULSE_MS = 1200;
 export function medicareApplyViewShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
 export function medicareApplyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_APPLY_VIEW_PULSE_MS; }
+
+/** Pure: `\\` presses the sticky ⧉ Link chip (copy shareable m_* view URL). Parity with look-back lookbackCopyLinkKey. Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
+export function medicareCopyLinkKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "\\" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
+}
