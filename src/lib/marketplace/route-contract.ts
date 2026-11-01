@@ -17,7 +17,7 @@
  */
 import { LISTINGS_SCHEMA, LICENSE_INTENT_PHI_MIN } from "@/lib/marketplace/listings";
 import { validatePeerListingIndex } from "@/lib/marketplace/peer-index";
-import { PEERS_SCHEMA, HANDOFF_PATH_TEMPLATE, SELF_ATTESTATION, GLOBAL_SNAPSHOT_PATH, isValidPeerUrl, type PeerCapabilities } from "@/lib/marketplace/peers";
+import { PEERS_SCHEMA, HANDOFF_PATH_TEMPLATE, SELF_ATTESTATION, GLOBAL_SNAPSHOT_PATH, VIEW_SURFACES, isValidPeerUrl, type PeerCapabilities } from "@/lib/marketplace/peers";
 import { GLOBAL_SNAPSHOT_SCHEMA } from "@/lib/diagnostics/global-snapshot";
 
 export type RouteName = "peers" | "listings";
@@ -55,6 +55,7 @@ function checkCapabilities(c: unknown, at: string, push: (m: string) => void): v
     attestation: SELF_ATTESTATION,
     global_snapshot_schema: GLOBAL_SNAPSHOT_SCHEMA,
     global_snapshot_path: GLOBAL_SNAPSHOT_PATH,
+    ...VIEW_SURFACES,
   };
   for (const k of Object.keys(want)) if (c[k] !== want[k]) push(`${at}.${k}: must equal ${JSON.stringify(want[k])}`);
   for (const k of Object.keys(c)) if (!(k in want)) push(`${at}.${k}: unknown capability`);
@@ -171,6 +172,9 @@ export function validatePeerCapabilities(input: unknown): CapabilitiesResult {
         listings_schema: c.listings_schema, peers_schema: c.peers_schema, handoff_path_template: c.handoff_path_template,
         license_intent_phi_min: c.license_intent_phi_min, read_only: true, writes: "none", cross_node_trust: "none",
         attestation: c.attestation, global_snapshot_schema: c.global_snapshot_schema, global_snapshot_path: c.global_snapshot_path,
+        lookback_view_path: c.lookback_view_path, lookback_view_param_prefix: c.lookback_view_param_prefix,
+        medicare_view_path: c.medicare_view_path, medicare_view_param_prefix: c.medicare_view_param_prefix,
+        evidence_packs: c.evidence_packs, view_surfaces_note: c.view_surfaces_note,
       },
     };
   } catch {

@@ -8,7 +8,7 @@ import {
 import { parseReuseParam, findHighlighted } from "../src/lib/marketplace/listings";
 import { errorSurfaceFor, rankKey, surfaceNote, ERROR_SURFACE_SCHEMA } from "../src/lib/marketplace/error-surface";
 import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/peer";
-import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE } from "../src/lib/marketplace/peers";
+import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE, VIEW_SURFACES } from "../src/lib/marketplace/peers";
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
 import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE, validatePeerCapabilities, formatCapabilitiesReport, CAPABILITIES_NOTE } from "../src/lib/marketplace/route-contract";
@@ -223,7 +223,11 @@ assert.deepEqual(caps, {
   handoff_path_template: "/workbench/autonomous?reuse={run_id}", license_intent_phi_min: LICENSE_INTENT_PHI_MIN,
   read_only: true, writes: "none", cross_node_trust: "none", attestation: "none — self-reported, not third-party attested",
   global_snapshot_schema: "aethel.global.snapshot.v1", global_snapshot_path: "/api/diagnostics/global-snapshot",
+  ...VIEW_SURFACES,
 });
+assert.equal(caps.lookback_view_path, "/workbench/status"); assert.equal(caps.lookback_view_param_prefix, "lb_");
+assert.equal(caps.medicare_view_path, "/workbench/medicare"); assert.equal(caps.medicare_view_param_prefix, "m_");
+assert.equal(caps.evidence_packs, "handoff,compare,summary,verdict,progress,statuses");
 assert.equal(caps.global_snapshot_schema, GLOBAL_SNAPSHOT_SCHEMA);
 assert.equal(caps.listings_schema, "aethel.marketplace.listings.v1"); assert.equal(caps.peers_schema, "aethel.marketplace.peers.v1");
 assert.equal(caps.license_intent_phi_min, 0.01);
@@ -367,6 +371,8 @@ pfail(pm((d) => { d.peers[0].capabilities.license_intent_phi_min = 0.5; }), /lic
 pfail(pm((d) => { d.peers[0].capabilities.extra = 1; }), /unknown capability/, "extra capability");
 pfail(pm((d) => { d.peers[0].capabilities.global_snapshot_path = "/api/other"; }), /global_snapshot_path/, "tampered snapshot path");
 pfail(pm((d) => { delete d.peers[0].capabilities.global_snapshot_schema; }), /global_snapshot_schema/, "missing snapshot schema");
+pfail(pm((d) => { d.peers[0].capabilities.lookback_view_param_prefix = "x_"; }), /lookback_view_param_prefix/, "tampered lb prefix");
+pfail(pm((d) => { delete d.peers[0].capabilities.medicare_view_path; }), /medicare_view_path/, "missing medicare view path");
 pfail(pm((d) => { d.peers[1].index_url = "https://peer.example.org/workbench/marketplace"; }), /null URLs/, "placeholder with URL");
 pfail(pm((d) => { d.peers[1].capabilities = JSON.parse(JSON.stringify(d.peers[0].capabilities)); }), /only the self entry/, "capabilities on a placeholder");
 pfail(pm((d) => { d.peers.reverse(); }), /first entry/, "self not first");
@@ -542,7 +548,7 @@ cfail(pm((d) => { d.schema_version = "x"; }), /schema_version/, "registry wrong 
 cfail(goodIdx(), /looks like a listings index/, "listings index is not capabilities");
 for (const v of [null, [], "x", 5, cyc, proxy, Symbol("s")]) assert.equal(validatePeerCapabilities(v).ok, false);
 for (let i = 0; i < 200; i++) assert.equal(typeof validatePeerCapabilities(junk[i]).ok, "boolean");
-assert.deepEqual(formatCapabilitiesReport(vc2), { lines: [CAPABILITIES_NOTE, "OK: capabilities match (from the peers registry self entry; 10 fields)"], exitCode: 0 });
+assert.deepEqual(formatCapabilitiesReport(vc2), { lines: [CAPABILITIES_NOTE, "OK: capabilities match (from the peers registry self entry; 16 fields)"], exitCode: 0 });
 assert.equal(formatCapabilitiesReport(validatePeerCapabilities({})).exitCode, 1);
 assert.deepEqual(validatePeerCapabilities(peersHttps), validatePeerCapabilities(peersHttps), "pure");
 console.log("capabilities     -> object or registry; exact constants incl. global_snapshot_*; tampered, missing, extra rejected; junk never throws");

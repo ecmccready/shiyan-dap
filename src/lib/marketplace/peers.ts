@@ -21,6 +21,15 @@ export const PEERS_REGISTRY_NOTE =
 
 export const HANDOFF_PATH_TEMPLATE = "/workbench/autonomous?reuse={run_id}";
 export const GLOBAL_SNAPSHOT_PATH = "/api/diagnostics/global-snapshot";
+/** Additive: shareable, read-only view surfaces (URL query state only; packs are clipboard-only, nothing is sent). */
+export const VIEW_SURFACES = {
+  lookback_view_path: "/workbench/status",
+  lookback_view_param_prefix: "lb_",
+  medicare_view_path: "/workbench/medicare",
+  medicare_view_param_prefix: "m_",
+  evidence_packs: "handoff,compare,summary,verdict,progress,statuses",
+  view_surfaces_note: "Shareable view URLs restore display state only (filters, sort, panels). Packs are copied to the local clipboard; this node serves no pack API and stores nothing.",
+} as const;
 export const SELF_ATTESTATION = "none — self-reported, not third-party attested";
 
 /** Self-description of this node (self entry only). Self-reported; it is not verified or attested by anyone. */
@@ -36,6 +45,13 @@ export type PeerCapabilities = {
   /** Additive: read-only Global · misdiagnosis snapshot this node serves. */
   global_snapshot_schema: typeof GLOBAL_SNAPSHOT_SCHEMA;
   global_snapshot_path: string;
+  /** Additive: shareable view surfaces (see VIEW_SURFACES). */
+  lookback_view_path: string;
+  lookback_view_param_prefix: string;
+  medicare_view_path: string;
+  medicare_view_param_prefix: string;
+  evidence_packs: string;
+  view_surfaces_note: string;
 };
 
 export type PeerEntry = {
@@ -93,6 +109,7 @@ export function buildPeerRegistry(origin?: string | null): PeerRegistry {
       attestation: SELF_ATTESTATION,
       global_snapshot_schema: GLOBAL_SNAPSHOT_SCHEMA,
       global_snapshot_path: GLOBAL_SNAPSHOT_PATH,
+      ...VIEW_SURFACES,
     },
   };
   const placeholder = (id: string, name: string): PeerEntry => ({

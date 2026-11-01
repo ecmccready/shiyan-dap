@@ -82,7 +82,10 @@ export default function MarketplacePage() {
                   <p className="text-xs text-zinc-400 mt-1" data-peer-capabilities>
                     This node speaks listings v1 and peers v1; hand-off template{" "}
                     <code>{peer.capabilities.handoff_path_template}</code>; read-only, no cross-node trust, self-reported and not
-                    third-party attested. Global snapshot: <code>{peer.capabilities.global_snapshot_path}</code> (snapshot v1).
+                    third-party attested. Global snapshot: <code>{peer.capabilities.global_snapshot_path}</code> (snapshot v1). Shareable views:{" "}
+                    <code>{peer.capabilities.lookback_view_path}?{peer.capabilities.lookback_view_param_prefix}*</code>,{" "}
+                    <code>{peer.capabilities.medicare_view_path}?{peer.capabilities.medicare_view_param_prefix}*</code>; packs (clipboard only):{" "}
+                    <code>{peer.capabilities.evidence_packs}</code>.
                   </p>
                 ) : null}
                 {peer.capabilities ? (
