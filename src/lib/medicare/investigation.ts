@@ -1596,13 +1596,13 @@ export function unreviewedStickyPulse(startedAt: unknown, now: unknown): boolean
 }
 export function unreviewedStickyToast(target: unknown): string { return typeof target === "string" && target ? `○ ↓ first unreviewed: ${target}` : ""; }
 
-/** Pure: every disposition row as one JSON pack (mirror of look-back ⧉ All paths). Shape differs from y (dispositions) / m (investigation), which copy the whole hashed report envelope (evidence, counts, rejected, report_hash): this is { schema, kind: "all_rows", count, report_hash (reference only), rows[] } where each row = { rank, ...ReportEntry } — same per-row payload as ⧉ #1 / #2 / #3 / Last. "" when no rows. Never throws. */
-export function medicareAllRowsJson(report: unknown): string {
+/** Pure: every disposition row as one JSON pack (mirror of look-back ⧉ All paths). Shape differs from y (dispositions) / m (investigation), which copy the whole hashed report envelope (evidence, counts, rejected, report_hash): this is { schema, kind: "all_rows", count, report_hash (reference only), rows[], view_url? (shareable m_* link; omitted unless http(s)) } where each row = { rank, ...ReportEntry } — same per-row payload as ⧉ #1 / #2 / #3 / Last. "" when no rows. Never throws. */
+export function medicareAllRowsJson(report: unknown, viewUrl?: string | null): string {
   try {
     const r = report as Partial<InvestigationReport> | null; const es = Array.isArray(r?.entries) ? r!.entries! : [];
     const rows = es.filter((e) => e && typeof e === "object" && typeof (e as { item_id?: unknown }).item_id === "string").map((e, i) => ({ rank: i + 1, ...e }));
     if (!rows.length) return "";
-    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "all_rows", count: rows.length, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, rows }, null, 2);
+    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "all_rows", count: rows.length, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, rows, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return ""; }
 }
 /** Pure: toast text for ⧉ All rows (count read from the copied JSON). */
@@ -1610,8 +1610,8 @@ export function medicareAllRowsToast(json: unknown): string {
   try { const n = typeof json === "string" && json ? JSON.parse(json).count : null; return typeof n === "number" && n > 0 ? `⧉ All rows → copied ${n} rows JSON` : ""; } catch { return ""; }
 }
 /** Pure: sticky "⧉ All N rows" chip. Hidden with no rows. Never throws. */
-export function medicareCopyAllRowsChip(report: unknown): { show: boolean; label: string; json: string; toast: string } {
-  const json = medicareAllRowsJson(report); if (!json) return { show: false, label: "", json: "", toast: "" };
+export function medicareCopyAllRowsChip(report: unknown, viewUrl?: string | null): { show: boolean; label: string; json: string; toast: string } {
+  const json = medicareAllRowsJson(report, viewUrl); if (!json) return { show: false, label: "", json: "", toast: "" };
   const n = JSON.parse(json).count as number; return { show: true, label: `⧉ All ${n} rows`, json, toast: medicareAllRowsToast(json) };
 }
 

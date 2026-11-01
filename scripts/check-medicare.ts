@@ -1148,6 +1148,9 @@ import { medicareAllRowsJson, medicareCopyAllRowsChip, medicareAllRowsToast } fr
   assert.equal(o.kind, "all_rows"); assert.equal(o.count, rep.entries.length); assert.equal(o.report_hash, rep.report_hash); assert.equal(o.rows[0].rank, 1);
   assert.deepEqual(o.rows.map((x: { item_id: string }) => x.item_id), rep.entries.map((e) => e.item_id)); assert.equal(o.counts, undefined, "rows only — no report envelope");
   const ch = medicareCopyAllRowsChip(rep); assert.equal(ch.label, `⧉ All ${rep.entries.length} rows`); assert.equal(medicareCopyRowToast("all_rows", ch.json), ch.toast); assert.ok(medicareCopyRowChipShouldPulse(false, ch.json));
+  { const vu = "https://x.test/workbench/medicare?m_filter=cleared"; assert.equal(JSON.parse(medicareAllRowsJson(rep, vu)).view_url, vu); assert.equal(JSON.parse(medicareCopyAllRowsChip(rep, vu).json).view_url, vu);
+    for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(JSON.parse(medicareAllRowsJson(rep, bad as never)).view_url, undefined);
+    assert.equal(medicareAllRowsJson(rep, null), medicareAllRowsJson(rep), "no view_url = unchanged"); assert.equal(medicareAllRowsToast(medicareAllRowsJson(rep, vu)), ch.toast); console.log("all rows    -> optional view_url (shareable m_* link); absent when not http(s)"); }
   console.log("sticky ⧉ All rows chip OK"); }
 
 import { medicareNotesJson, medicareCopyNotesChip, medicareNotesToast } from "../src/lib/medicare/investigation";
