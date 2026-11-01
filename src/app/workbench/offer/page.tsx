@@ -50,7 +50,7 @@ export default function OfferPage() {
             </div>
           </div>
           <p data-offer-strip-ux className="text-zinc-400 text-xs mb-2">
-            <span className="text-white">Uncluttered strips:</span> both sticky strips fold secondary chips under Packs ▾ / Jumps ▾ (keys [ / ]), remember open state, filters and focus for this tab, and ↺ Reset view (key 0) restores defaults. sessionStorage only; no server writes.
+            <span className="text-white">Uncluttered strips:</span> both sticky strips fold secondary chips under Packs ▾ / Jumps ▾ (keys [ / ]), remember open state, filters and focus for this tab, and ↺ Reset view (key 0) restores defaults. Before resetting, sticky ⧉ View (key -) copies a local view snapshot JSON (strip, filter, focus) to the clipboard. sessionStorage + clipboard only; no server writes.
           </p>
           <p className="text-zinc-500 text-xs">
             One click each from the sticky strips; JSON goes to the local clipboard only. Synthetic Medicare fixture, no live CMS fetch. Detected pattern ≠ verified conclusion. Display only; nothing is sent or stored.

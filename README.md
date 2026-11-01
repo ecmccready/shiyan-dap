@@ -557,3 +557,5 @@ The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirr
 - **Medicare · `[` / `]` toggle Packs / Jumps:** `[` toggles **Packs ▾/▴** and `]` toggles **Jumps ▾/▴** — exactly like clicking the sticky chips (same first-use pulse; toast on first open only). Ignored while typing or with Ctrl/⌘/Alt. Listed in the `?` cheat sheet. Pure `medicareStripToggleKey`; checked in `check-medicare`. Additive, display-only; no Level 4 change.
 
 - `/workbench/offer` evidence-packs card notes sticky-strip UX: Packs ▾ / Jumps ▾, tab session remember, ↺ Reset view (key 0) — local clipboard / sessionStorage only, no server writes.
+
+- Offer page: Uncluttered strips note now mentions sticky ⧉ View (key `-`) copying a local view snapshot JSON before ↺ Reset view (key `0`); clipboard + sessionStorage only.
