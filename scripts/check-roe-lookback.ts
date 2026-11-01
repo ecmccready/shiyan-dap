@@ -852,6 +852,9 @@ console.log("Δe copy    -> sticky +Δe click copies summary JSON (same as g)");
     assert.equal(Object.values(o.counts as Record<string, number>).reduce((a, b) => a + b, 0), rows.length); assert.ok(j!.length < lookbackAllPathsJson(c)!.length);
     const ch = lookbackCopyRolesChip(j, rows.length)!; assert.equal(ch.label, `⧉ Roles ${rows.length}`); assert.equal(lookbackCopyChipToast(true, ch.toast), ch.toast); assert.equal(lookbackCopyChipToast(false, ch.toast), null); }
   else assert.equal(j, null);
+  { const vu = "https://x.test/workbench/status?lb_show=winners"; assert.equal(JSON.parse(lookbackRolesJson(c, vu)!).view_url, vu);
+    for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(lookbackRolesJson(c, bad as never), lookbackRolesJson(c), "no view_url = unchanged roles");
+    console.log("roles       -> optional view_url (shareable lb_* link); absent when not http(s)"); }
   console.log(`ok lookbackRolesJson / CopyRolesChip (sticky ⧉ Roles, n=${rows.length})`); }
 { const vu = "https://x.test/workbench/status?lb_show=winners"; assert.equal(JSON.parse(lookbackVerdictJson(c, vu)!).view_url, vu);
   for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(lookbackVerdictJson(c, bad as never), lookbackVerdictJson(c), "no view_url = unchanged verdict");
