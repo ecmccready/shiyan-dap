@@ -1472,3 +1472,10 @@ import { medicareBaselinesJsonWithViewUrl } from "../src/lib/medicare/investigat
   assert.equal(medicareBaselinesJsonWithViewUrl("", vu), ""); assert.equal(medicareBaselinesJsonWithViewUrl("[1]", vu), "[1]");
   const src = require("node:fs").readFileSync("src/components/CopyMedicareJson.tsx", "utf8"); assert.ok(src.includes('kind === "baselines"') && src.includes("medicareBaselinesJsonWithViewUrl"));
   console.log("baselines   -> optional view_url (shareable m_* link); absent when not http(s)"); }
+import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
+{ const base = JSON.stringify({ entries: [{ id: "dq1", ok: true }] }, null, 2); const vu = "https://x.test/workbench/medicare?m_filter=cleared";
+  const o = JSON.parse(medicareDqJsonWithViewUrl(base, vu)); assert.equal(o.view_url, vu); assert.equal(o.entries.length, 1);
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(medicareDqJsonWithViewUrl(base, bad as never), base);
+  assert.equal(medicareDqJsonWithViewUrl("", vu), ""); assert.equal(medicareDqJsonWithViewUrl("[1]", vu), "[1]");
+  const src = require("node:fs").readFileSync("src/components/CopyMedicareJson.tsx", "utf8"); assert.ok(src.includes('kind === "dq"') && src.includes("medicareDqJsonWithViewUrl"));
+  console.log("dq          -> optional view_url (shareable m_* link); absent when not http(s)"); }
