@@ -1,14 +1,10 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import CopyValue from "@/components/CopyValue";
+import { ASSET_SECTIONS as SECTIONS, buildAssetsInventory } from "@/lib/assets-inventory";
 
 // Read-only asset-mapping stub (Phase 3, parity with /workbench/audit). Static text; no fetch, no writes, no CMS.
 
-const SECTIONS = [
-  { title: "Medicare (Know → Show → Do)", href: "/workbench/medicare", link: "Medicare workbench", items: ["Synthetic fixture rows (no live CMS)", "Provenance, baselines, DQ", "Evidence + investigation packs", "HITL dispositions + notes"] },
-  { title: "Look-back insight", href: "/workbench/status", link: "Look-back", items: ["Run paths + steps", "Compare, summary, verdict", "Gaps + roles"] },
-  { title: "Marketplace", href: "/workbench/marketplace", link: "Marketplace", items: ["Φ listings index", "Known peers + capabilities", "View surfaces JSON"] },
-  { title: "Offer", href: "/workbench/offer", link: "Offer", items: ["Evidence packs catalog", "Shareable view URLs (lb_*, m_*)", "Peer-visible note"] },
-];
 
 export default function AssetsPage() {
   return (
@@ -19,6 +15,9 @@ export default function AssetsPage() {
         <h1 className="text-3xl font-bold mb-3">Where the node&apos;s assets live today</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
           A map of the surfaces that produce or show assets. This page sends, stores and changes nothing.
+        </p>
+        <p className="mb-4 text-sm text-zinc-400">
+          Inventory:<CopyValue value={JSON.stringify(buildAssetsInventory(), null, 2)} label="inventory JSON" toast="Asset map inventory JSON copied" firstUsePulseKey="aethel.assets.copyInventory.pulsed" />
         </p>
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
           {SECTIONS.map((s) => (

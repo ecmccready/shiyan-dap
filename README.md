@@ -243,6 +243,8 @@ The same text is on `/workbench/offer` and `/workbench/pilot`. How evidence move
 
 **Operator check.** `npx tsx scripts/validate-audit-inventory.ts <file.json>` runs `validateAuditInventory` on one saved *Copy inventory JSON* pack (5 MB cap; prints `error:` / `warning:` lines; exit 0 ok (warnings allowed), 1 errors or bad JSON, 2 usage/file). Committed sample `fixtures/audit/inventory.sample.json` = `buildAuditInventory()` (prints OK, exit 0). No network, no writes; well-formed only, not verified or trusted.
 
+**Asset map inventory JSON.** The *Inventory:* copy control on `/workbench/assets` (first-use pulse) copies the asset-map catalog as `aethel.assets.inventory.v1` (same shape as the audit inventory: `schema`, `path: "/workbench/assets"`, four `sections` mirroring the page cards, read-only `note`), built by pure `buildAssetsInventory()` and shape-checked by `validateAssetsInventory()` in `src/lib/assets-inventory.ts`. Covered by `npx tsx scripts/check-assets.ts`. Clipboard only; no fetch, no writes, no Level 4, no CMS.
+
 ## Evidence and data support
 
 What an acquirer can check today without trusting this repo. Live unless marked directional.
