@@ -167,8 +167,24 @@ export function lookbackComparePack(c: LookbackCompare | null | undefined, viewU
     const dphi = typeof lb.final_phi === "number" && typeof gr.final_phi === "number" ? Number((lb.final_phi - gr.final_phi).toFixed(4)) : null;
     return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "compare", winner: c.winner, verdict: v.label, verdict_detail: v.detail,
       delta_e_gain: c.delta_e_gain, delta_phi_lookback_vs_greedy: dphi, same_path: lb.run_id === gr.run_id, paths_considered: c.paths_considered,
-      lookback: lb, greedy: gr, note: c.note, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
+      lookback: lb, greedy: gr, divergence: lookbackDivergence(c), note: c.note, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return ""; }
+}
+
+/** Pure: where the look-back winner and the greedy path first choose different actions. null when either is missing or they are the same path. */
+export function lookbackDivergence(c: LookbackCompare | null | undefined): { step: number; shared_prefix: number; lookback_action: string | null; greedy_action: string | null; lookback_e_after: number | null; greedy_e_after: number | null; label: string } | null {
+  try {
+    if (!c || !c.greedy || !c.lookback || c.greedy.run_id === c.lookback.run_id) return null;
+    const lb = c.paths.find((p) => p.run_id === c.lookback!.run_id), gr = c.paths.find((p) => p.run_id === c.greedy!.run_id);
+    if (!lb || !gr) return null;
+    const la = Array.isArray(lb.actions) ? lb.actions : [], ga = Array.isArray(gr.actions) ? gr.actions : [];
+    const n = Math.max(la.length, ga.length); let i = 0;
+    while (i < n && la[i] === ga[i]) i++;
+    if (i >= n) return null;
+    const ea = (p: LookbackPath, k: number) => (Array.isArray(p.e_series) && fin(p.e_series[k + 1]) ? p.e_series[k + 1] : null);
+    const step = i + 1;
+    return { step, shared_prefix: i, lookback_action: la[i] ?? null, greedy_action: ga[i] ?? null, lookback_e_after: ea(lb, i), greedy_e_after: ea(gr, i), label: `⑂ diverge @ step ${step}` };
+  } catch { return null; }
 }
 
 /** Pure: SVG polyline points for an e series in a w×h box (higher e at top; shared scale via max). "" when fewer than 2 points. */
@@ -427,6 +443,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "`", does: "open Audit summary → (/workbench/audit) — same as the sticky Audit summary → chip; jumps from look-back insight to the node-wide audit inventory (same key as Medicare)" },
   { key: ".", does: "open Asset map → (/workbench/assets) — same as the sticky Asset map → chip; jumps from look-back insight to the node-wide asset map" },
   { key: "'", does: "cycle Recent toasts tone filter All → Win → Agree → Empty → All — same as clicking the Recent tone chips; syncs lb_tone in the URL + toast (free key)" },
+  { key: "Shift+D", does: "copy the ⑂ divergence JSON (first step where look-back and greedy pick different actions) — same as the sticky ⑂ diverge chip; no-op when they agree" },
   { key: "?", does: "show / hide this sheet" },
 ];
 /** Pure: key o flips Sort between look-back rank and ΔΦ vs greedy; unknown input goes to "dphi". */
