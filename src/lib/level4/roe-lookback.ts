@@ -402,7 +402,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "=", does: "toggle Show to = Agree rows ↔ All — same as the sticky N agree chip; only when ≥1 agree" },
   { key: "w", does: "toggle Show to ★ Winner rows ↔ All — same as the sticky N winners chip; only when ≥1 winner" },
   { key: "v", does: "toggle Show to the verdict rows (★ Winners / = Agree) ↔ All — only when a verdict exists" },
-  { key: "p", does: "copy Recent toasts JSON — same as sticky ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
+  { key: "p", does: "copy Recent toasts JSON — same as sticky ⧉ Copy recent (respects Recent tone filter; shares its first-use pulse); no-op with no entries" },
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
   { key: "z", does: "focus, expand and scroll to the LAST-ranked sealed path (bottom of the table), Show → All — mirrors 1 / 2 / 3; no-op with <2 paths" },
   { key: "x", does: "copy the TOP-ranked (#1) sealed path JSON regardless of focus or Show filter — no-op with no ranked path" },
