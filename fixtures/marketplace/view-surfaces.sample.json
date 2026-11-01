@@ -1,0 +1,9 @@
+{
+  "schema": "aethel.view_surfaces.v1",
+  "lookback_view_path": "/workbench/status",
+  "lookback_view_param_prefix": "lb_",
+  "medicare_view_path": "/workbench/medicare",
+  "medicare_view_param_prefix": "m_",
+  "evidence_packs": "handoff,compare,summary,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions",
+  "view_surfaces_note": "Shareable view URLs restore display state only (filters, sort, panels). Packs are copied to the local clipboard; this node serves no pack API and stores nothing."
+}

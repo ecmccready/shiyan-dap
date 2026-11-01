@@ -16,6 +16,7 @@ import { parseOperatorOrigin, parseOriginArgs, routeUrls, formatOriginReport, sa
 import { buildGlobalSnapshot, classifyRun, GLOBAL_SNAPSHOT_SCHEMA, SNAPSHOT_NOTE } from "../src/lib/diagnostics/global-snapshot";
 import { validateGlobalSnapshot, formatSnapshotReport, SNAPSHOT_VALIDATE_NOTE } from "../src/lib/diagnostics/global-snapshot-validate";
 import { toLedgerEventShape } from "../src/lib/marketplace/ledger-preview";
+import viewSurfacesSample from "../fixtures/marketplace/view-surfaces.sample.json";
 import type { ExperienceEntry } from "../src/lib/level4/experience-client";
 
 const SEQ = ["mark_boundary", "complete_field", "request_independent_check", "seal_pack"];
@@ -646,5 +647,13 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
   assert.ok(/if \(ok\)[^\n]*\n\s*if \(!pulsedOnce\.current\)/.test(body), "caps pulse gated on ok + once");
   assert.ok(body.includes("data-first-use-pulse") && body.includes("animate-pulse"));
   console.log("capabilities     -> Copy capabilities JSON first-use pulse wired (success only, once per load)");
+}
+// 26. Committed fixture fixtures/marketplace/view-surfaces.sample.json equals pickViewSurfaces(self) and validates clean.
+{
+  const fx = viewSurfacesSample as unknown;
+  const self = buildPeerRegistry(null).peers[0].capabilities as unknown as Record<string, unknown>;
+  assert.deepEqual(fx, pickViewSurfaces(self), "fixture drifted: regenerate from pickViewSurfaces(self)");
+  assert.deepEqual(validateViewSurfaces(fx), { ok: true, errors: [], warnings: [] });
+  console.log("view surfaces    -> fixtures/marketplace/view-surfaces.sample.json matches self + validates clean");
 }
 console.log("OK");

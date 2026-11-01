@@ -302,6 +302,7 @@ git pull origin main
 npm ci
 npx tsx scripts/check-domain-rank.ts   # Domains join/rank (incl. Marketplace in Do) + ?reuse= hand-off, fixtures, no network
 npx tsx scripts/check-marketplace.ts   # listing contract, Δe, threshold, intent, error surface, ranking hook, peer status/link, peer registry, peer index shape validator, route contracts, origin helpers, global snapshot, ?reuse= parsing; prints OK
+npx tsx scripts/validate-view-surfaces.ts fixtures/marketplace/view-surfaces.sample.json   # committed sample = pickViewSurfaces(self VIEW_SURFACES); prints OK, exit 0 (check-marketplace asserts it matches self, no drift)
 npx tsx scripts/validate-view-surfaces.ts /tmp/view-surfaces.json   # optional: shape-check a pasted Copy view surfaces JSON (one file, no network, no writes)
 npx tsx scripts/validate-peer-index.ts /tmp/listings.json   # optional: shape-check a listings JSON you saved by hand (one file, no network, no writes)
 npx tsx scripts/check-route-contract.ts peers /tmp/peers.json   # optional: also `listings /tmp/listings.json`; checks a saved route response has that route's shape (one file, no network, no writes)
