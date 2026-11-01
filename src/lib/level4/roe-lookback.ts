@@ -420,6 +420,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "[", does: "toggle Packs ▾ / Packs ▴ — same as clicking the sticky chip (toast on first open only)" },
   { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
   { key: "*", does: "expand all ↔ collapse all sealed-path step lists — same as the sticky ⊞ Expand all / ⊟ Collapse all chip (shares its first-use pulse); no-op with no sealed paths" },
+  { key: "0", does: "reset view — same as the sticky ↺ Reset view chip (Show All, Sort rank, Packs/Jumps closed, Expand all off, focus cleared, session keys cleared + toast); 0 = back to zero (free key; digits 1–3 jump ranks)" },
   { key: "?", does: "show / hide this sheet" },
 ];
 /** Pure: key o flips Sort between look-back rank and ΔΦ vs greedy; unknown input goes to "dphi". */
@@ -1367,6 +1368,11 @@ export function lookbackExpandAllKey(ev: { key?: unknown; ctrlKey?: unknown; met
   if (!ev || ev.key !== "*" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   if (typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase())) return false;
   return typeof rowCount === "number" && rowCount > 0;
+}
+/** Pure: key 0 presses the sticky ↺ Reset view chip; ignored with ctrl/meta/alt or while typing. */
+export function lookbackResetViewKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "0" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
 /** Pure: first-use pulse fires only on the first expand-all of the session. */
 export function lookbackExpandAllShouldPulse(alreadyPulsed: boolean, action: unknown): boolean { return !alreadyPulsed && action === "expand"; }
