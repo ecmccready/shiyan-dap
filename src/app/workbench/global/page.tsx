@@ -162,6 +162,7 @@ export default function GlobalMisdiagnosisPage() {
           </p>
           <p data-global-audit-link className="text-zinc-400 text-xs">Every pack in one view: <Link className="underline text-cyan-300" href="/workbench/audit">/workbench/audit →</Link></p>
           <p data-global-assets-link className="text-zinc-400 text-xs">Phase 3 asset map: <Link className="underline text-cyan-300" href="/workbench/assets">/workbench/assets →</Link></p>
+          <p data-global-compliance-link className="text-zinc-400 text-xs">Phase 3 diagnostics compliance: <Link className="underline text-cyan-300" href="/workbench/compliance">/workbench/compliance →</Link></p>
         </section>
 
         <section data-global-external-confirmation className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">
