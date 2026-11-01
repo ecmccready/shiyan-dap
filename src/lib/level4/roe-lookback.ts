@@ -1577,14 +1577,14 @@ export function lookbackCopyRolesChip(json: unknown, count?: unknown): { json: s
   try { if (typeof json !== "string" || !json) return null; const n = typeof count === "number" && count > 0 ? count : null; return { json, label: n ? `⧉ Roles ${n}` : "⧉ Roles", toast: `⧉ Roles → copied ${n ?? "all"} path roles JSON` }; } catch { return null; }
 }
 /** Pure: compact verdict-only pack — verdict label/tone, Δe gain, ΔΦ (look-back vs greedy), greedy vs look-back run ids, path counts by role. No per-path rows. Null when no paths. Never throws. */
-export function lookbackVerdictJson(c: LookbackCompare | null | undefined): string | null {
+export function lookbackVerdictJson(c: LookbackCompare | null | undefined, viewUrl?: string | null): string | null {
   try {
     const rows = rankedLookbackRows(c); if (!c || !rows.length) return null;
     const v = lookbackVerdict(c);
     const short: Record<LookbackRowRole, string> = { winner_lookback: "winner", greedy_beaten: "beaten", agree_both: "agree", other: "other" };
     const counts = { winner: 0, beaten: 0, agree: 0, other: 0 } as Record<string, number>; for (const r of rows) counts[short[lookbackRowRole(r, c.winner)]]++;
     const lb = rows.find((r) => r.is_lookback);
-    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "verdict", verdict: v.label, tone: v.tone, winner: c.winner ?? null, delta_e_gain: c.delta_e_gain, delta_phi: lb?.delta_phi_vs_greedy ?? null, greedy_run_id: c.greedy?.run_id ?? null, lookback_run_id: c.lookback?.run_id ?? null, paths: rows.length, counts }, null, 2);
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "verdict", verdict: v.label, tone: v.tone, winner: c.winner ?? null, delta_e_gain: c.delta_e_gain, delta_phi: lb?.delta_phi_vs_greedy ?? null, greedy_run_id: c.greedy?.run_id ?? null, lookback_run_id: c.lookback?.run_id ?? null, paths: rows.length, counts, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return null; }
 }
 /** Pure: sticky "⧉ Verdict" chip — copies the compact verdict-only pack without moving focus. Null without JSON. Never throws. */
