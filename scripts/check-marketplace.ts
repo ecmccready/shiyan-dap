@@ -8,7 +8,7 @@ import {
 import { parseReuseParam, findHighlighted } from "../src/lib/marketplace/listings";
 import { errorSurfaceFor, rankKey, surfaceNote, ERROR_SURFACE_SCHEMA } from "../src/lib/marketplace/error-surface";
 import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/peer";
-import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE, VIEW_SURFACES } from "../src/lib/marketplace/peers";
+import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE, VIEW_SURFACES, pickViewSurfaces, VIEW_SURFACES_SCHEMA } from "../src/lib/marketplace/peers";
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
 import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE, validatePeerCapabilities, formatCapabilitiesReport, CAPABILITIES_NOTE, SOFT_CAPABILITY_KEYS } from "../src/lib/marketplace/route-contract";
@@ -582,5 +582,13 @@ assert.equal(capBad.exitCode, 1); assert.ok(capBad.lines.includes("capabilities:
 const capNoPeers = formatOriginReport(O, [{ route: "peers", status: 503, failure: "expected HTTP 200" }, lOk], { withCapabilities: true });
 assert.equal(capNoPeers.exitCode, 1); assert.ok(capNoPeers.lines.includes("capabilities: not checked — failed"));
 console.log("origin caps      -> --with-capabilities parsing (combinable); no extra URL; ok / tampered / peers unavailable; default unchanged");
+
+// 24. pickViewSurfaces: only VIEW_SURFACES keys + schema; ignores others; omits missing.
+{
+  const self = buildPeerRegistry(null).peers[0].capabilities as unknown as Record<string, unknown>;
+  const vs = pickViewSurfaces(self);
+  assert.deepEqual(vs, { schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES });
+  assert.deepEqual(pickViewSurfaces({ foo: "x", lookback_view_path: "/a", evidence_packs: 3 }), { schema: VIEW_SURFACES_SCHEMA, lookback_view_path: "/a" });
+}
 
 console.log("OK");

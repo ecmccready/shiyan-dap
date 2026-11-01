@@ -30,6 +30,16 @@ export const VIEW_SURFACES = {
   evidence_packs: "handoff,compare,summary,verdict,progress,statuses",
   view_surfaces_note: "Shareable view URLs restore display state only (filters, sort, panels). Packs are copied to the local clipboard; this node serves no pack API and stores nothing.",
 } as const;
+export const VIEW_SURFACES_SCHEMA = "aethel.view_surfaces.v1";
+/** Pure: pick only the VIEW_SURFACES keys from a capabilities object (missing keys omitted). */
+export function pickViewSurfaces(caps: Record<string, unknown>): { schema: string } & Partial<Record<keyof typeof VIEW_SURFACES, string>> {
+  const out: { schema: string } & Partial<Record<keyof typeof VIEW_SURFACES, string>> = { schema: VIEW_SURFACES_SCHEMA };
+  for (const k of Object.keys(VIEW_SURFACES) as (keyof typeof VIEW_SURFACES)[]) {
+    const v = caps[k];
+    if (typeof v === "string") out[k] = v;
+  }
+  return out;
+}
 export const SELF_ATTESTATION = "none — self-reported, not third-party attested";
 
 /** Self-description of this node (self entry only). Self-reported; it is not verified or attested by anyone. */

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import MarketplaceListings from "@/components/MarketplaceListings";
-import { buildPeerRegistry, PEERS_REGISTRY_NOTE, type PeerCapabilities } from "@/lib/marketplace/peers";
+import { useState } from "react";
+import { buildPeerRegistry, pickViewSurfaces, PEERS_REGISTRY_NOTE, type PeerCapabilities } from "@/lib/marketplace/peers";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 
 /** Copies this node's self-reported capabilities (same object as /api/marketplace/peers). Clipboard only; nothing is sent. */
@@ -18,6 +19,30 @@ function CopyCapabilities({ capabilities }: { capabilities: PeerCapabilities }) 
     >
       {copy.status === "copied" ? "Copied ✓" : copy.status === "failed" ? "Copy failed" : "Copy capabilities JSON"}
     </button>
+  );
+}
+
+/** Copies only the shareable view-surface keys as compact schema-versioned JSON. Clipboard only. */
+function CopyViewSurfaces({ capabilities }: { capabilities: PeerCapabilities }) {
+  const copy = useCopy(4000, undefined, "view surfaces");
+  const [toast, setToast] = useState<number | null>(null);
+  return (
+    <span className="relative ml-2 inline-block">
+      <button
+        type="button"
+        data-copy-view-surfaces
+        onClick={async () => {
+          const ok = await copy.copy(JSON.stringify(pickViewSurfaces(capabilities as unknown as Record<string, unknown>)));
+          if (ok) { const at = Date.now(); setToast(at); window.setTimeout(() => setToast((t) => (t === at ? null : t)), 2500); }
+        }}
+        className={`mt-2 inline-flex h-8 items-center rounded-full border border-zinc-600 px-3 text-xs text-zinc-200 hover:border-zinc-400${copiedRing(copy.status)}`}
+      >
+        {copy.status === "copied" ? "Copied ✓" : copy.status === "failed" ? "Copy failed" : "Copy view surfaces JSON"}
+      </button>
+      {toast !== null && copy.status !== "failed" ? (
+        <span role="status" className="absolute left-0 top-full mt-1 whitespace-nowrap rounded bg-zinc-800 px-2 py-1 text-[11px] text-zinc-200">View surfaces JSON copied</span>
+      ) : null}
+    </span>
   );
 }
 
@@ -89,7 +114,10 @@ export default function MarketplacePage() {
                   </p>
                 ) : null}
                 {peer.capabilities ? (
-                  <CopyCapabilities capabilities={peer.capabilities} />
+                  <>
+                    <CopyCapabilities capabilities={peer.capabilities} />
+                    <CopyViewSurfaces capabilities={peer.capabilities} />
+                  </>
                 ) : null}
                 {peer.index_url ? (
                   <p className="text-xs mt-1">
