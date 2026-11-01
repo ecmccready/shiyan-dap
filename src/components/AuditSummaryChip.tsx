@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 export const AUDIT_SUMMARY_HREF = "/workbench/audit";
 export const LOOKBACK_AUDIT_CHIP_PULSE_KEY = "aethel.lookback.auditChip.pulsed";
+export const MEDICARE_AUDIT_CHIP_PULSE_KEY = "aethel.medicare.auditChip.pulsed";
 
 /** Link chip to /workbench/audit (shared by Medicare + look-back sticky strips).
  *  Optional firstUsePulseKey: pulses once per browser session on first mount (sessionStorage flag); display-only. */
