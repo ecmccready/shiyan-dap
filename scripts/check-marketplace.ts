@@ -612,7 +612,11 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
   const self = buildPeerRegistry(null).peers[0].capabilities as unknown as Record<string, unknown>;
   assert.deepEqual(validateViewSurfaces(pickViewSurfaces(self)), { ok: true, errors: [], warnings: [] });
   const part = validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, lookback_view_path: "/a" });
-  assert.equal(part.ok, true); assert.equal(part.warnings.length, 5);
+  assert.equal(part.ok, true); assert.equal(part.warnings.length, 6); assert.ok(part.warnings.includes('lookback_view_path: expected "/workbench/status" (soft-compat)'));
+  { const base = { schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES };
+    assert.deepEqual(validateViewSurfaces({ ...base, lookback_view_path: "/workbench/status/", medicare_view_path: "/workbench/medicare/" }), { ok: true, errors: [], warnings: [] });
+    const odd = validateViewSurfaces({ ...base, medicare_view_path: "/x", lookback_view_param_prefix: "q_", medicare_view_param_prefix: "" });
+    assert.equal(odd.ok, true); assert.equal(odd.errors.length, 0); assert.deepEqual(odd.warnings, ['medicare_view_path: expected "/workbench/medicare" (soft-compat)', 'lookback_view_param_prefix: expected "lb_" (soft-compat)', 'medicare_view_param_prefix: expected "m_" (soft-compat)']); }
   assert.equal(validateViewSurfaces({ ...VIEW_SURFACES, schema: "x" }).ok, false);
   assert.equal(validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES, evidence_packs: 3 }).ok, false);
   for (const bad of [null, [], "s", 1]) assert.equal(validateViewSurfaces(bad).ok, false);
@@ -620,7 +624,7 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
     assert.equal(raw.ok, false); assert.ok(raw.errors.includes("evidence_packs: expected string")); assert.ok(raw.errors.includes("medicare_view_path: expected string"));
     assert.ok(!raw.warnings.some((w) => w.startsWith("evidence_packs")));
     assert.deepEqual(validateViewSurfaces(pickViewSurfacesRaw({ ...VIEW_SURFACES, foo: 1 })), { ok: true, errors: [], warnings: [] }); }
-  console.log("view surfaces    -> validateViewSurfaces: clean / soft warn / bad schema / bad type / non-object");
+  console.log("view surfaces    -> validateViewSurfaces: clean / soft warn / path+prefix mismatch warn / bad schema / bad type / non-object");
 }
 
 console.log("OK");

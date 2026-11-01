@@ -56,6 +56,15 @@ export function validateViewSurfaces(json: unknown): { ok: boolean; errors: stri
     if (!(k in o) || o[k] === undefined) warnings.push(`${k}: missing (soft-compat)`);
     else if (typeof o[k] !== "string") errors.push(`${k}: expected string`);
   }
+  // Soft-compat: present string paths/prefixes that differ from this node's expected values only warn.
+  for (const k of ["lookback_view_path", "medicare_view_path"] as const) {
+    const v = o[k]; if (typeof v !== "string") continue;
+    const want = VIEW_SURFACES[k];
+    if (v !== want && v !== `${want}/`) warnings.push(`${k}: expected "${want}" (soft-compat)`);
+  }
+  for (const k of ["lookback_view_param_prefix", "medicare_view_param_prefix"] as const) {
+    const v = o[k]; if (typeof v === "string" && v !== VIEW_SURFACES[k]) warnings.push(`${k}: expected "${VIEW_SURFACES[k]}" (soft-compat)`);
+  }
   return { ok: errors.length === 0, errors, warnings };
 }
 export const SELF_ATTESTATION = "none — self-reported, not third-party attested";
