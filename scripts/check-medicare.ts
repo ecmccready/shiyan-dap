@@ -1,3 +1,4 @@
+import * as mvw from "../src/lib/medicare/investigation";
 import { clearMedicareViewSession, medicareResetViewToast, MEDICARE_RESET_VIEW_KEYS, MEDICARE_RESET_VIEW_DEFAULTS } from "../src/lib/medicare/investigation";
 import { readFileSync as rfsReset } from "node:fs";
 import { MEDICARE_KEY_TARGET_KEY, resolveMedicareKeyTarget, readMedicareKeyTarget, writeMedicareKeyTarget } from "../src/lib/medicare/investigation";
@@ -1222,8 +1223,8 @@ console.log("medicareJumps toggle OK");
 // Esc collapses Packs ▴ / Jumps ▴ (cheat sheet → Packs → Jumps → toasts)
 { const m = require("../src/lib/medicare/investigation");
   assert.deepEqual([...m.MEDICARE_ESC_ORDER], ["help", "packs", "jumps", "toasts"]);
-  assert.equal(m.medicareEscTarget(true, 2, true, true), "help"); assert.equal(m.medicareEscTarget(false, 2, true, true), "packs"); assert.equal(m.medicareEscTarget(false, 2, false, true), "jumps"); assert.equal(m.medicareEscTarget(false, 2, false, false), "toasts"); assert.equal(m.medicareEscTarget(false, 0, "yes", 1), null);
-  assert.equal(m.medicareEscToast("packs"), "Packs \u25be hidden (Esc)"); assert.equal(m.medicareEscToast("jumps"), "Jumps \u25be hidden (Esc)"); assert.equal(m.medicareEscToast("toasts"), null);
+  assert.equal(mvw.medicareEscTarget(true, 2, true, true), "help"); assert.equal(mvw.medicareEscTarget(false, 2, true, true), "packs"); assert.equal(mvw.medicareEscTarget(false, 2, false, true), "jumps"); assert.equal(mvw.medicareEscTarget(false, 2, false, false), "toasts"); assert.equal(mvw.medicareEscTarget(false, 0, "yes", 1), null);
+  assert.equal(mvw.medicareEscToast("packs"), "Packs \u25be hidden (Esc)"); assert.equal(mvw.medicareEscToast("jumps"), "Jumps \u25be hidden (Esc)"); assert.equal(mvw.medicareEscToast("toasts"), null);
   assert.ok(m.MEDICARE_KEYMAP.some((r: { key: string; does: string }) => r.key === "Escape" && /Packs/.test(r.does) && /Jumps/.test(r.does)));
   const fs = require("fs"), path = require("path"); const sc = fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8"); const ds = fs.readFileSync(path.join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8");
   assert.ok(sc.includes("MEDICARE_STRIP_COLLAPSE_EVENT, on") && sc.includes("medicareEscToast(t)")); assert.ok(ds.includes("stripRef.current.packs, stripRef.current.jumps")); }
@@ -1308,3 +1309,15 @@ console.log("medicare [ / ] Packs/Jumps OK");
   for (const k of ["1", "2", "3"]) assert.ok(dispositionShortcut({ key: k }), `${k} stays a disposition key`);
   const ds = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8"); assert.ok(ds.includes("medicareResetViewKey(") && ds.includes('[data-medicare-reset-view="1"]'));
 }
+
+{ // sticky ⧉ View chip
+  const ents = [{ item_id: "a" }, { item_id: "b" }];
+  assert.deepEqual(mvw.medicareViewSnapshot({ rowFilter: "unreviewed", packsOpen: true, jumpsOpen: false, keyTarget: "b", entries: ents }), { schema: "aethel.medicare.view.v1", rowFilter: "unreviewed", packsOpen: true, jumpsOpen: false, keyTarget: { item_id: "b", index: 1 } });
+  assert.equal(mvw.medicareViewSnapshot({ rowFilter: null, packsOpen: false, jumpsOpen: false, keyTarget: "zz", entries: ents }).keyTarget, null);
+  const j = mvw.medicareViewSnapshotJson({ rowFilter: null, packsOpen: false, jumpsOpen: true, keyTarget: null }); assert.ok(!j.includes("aethel.medicare.packs") && JSON.parse(j).rowFilter === null);
+  assert.ok(mvw.medicareCopyViewToast({ rowFilter: null, packsOpen: false, jumpsOpen: false, keyTarget: "a", entries: ents }).includes("filter All · target a (#1)"));
+  assert.ok(mvw.medicareCopyViewShouldPulse(false) && !mvw.medicareCopyViewShouldPulse(true));
+  assert.ok(mvw.medicareCopyViewPulse(0, mvw.MEDICARE_COPY_VIEW_PULSE_MS - 1) && !mvw.medicareCopyViewPulse(0, mvw.MEDICARE_COPY_VIEW_PULSE_MS) && !mvw.medicareCopyViewPulse(null, 1));
+  const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
+  assert.ok(src.indexOf('data-medicare-copy-view="1"') > 0 && src.indexOf('data-medicare-copy-view="1"') < src.indexOf('data-medicare-reset-view="1"'));
+  console.log("sticky ⧉ View chip OK"); }
