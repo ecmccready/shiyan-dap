@@ -1,5 +1,6 @@
 "use client";
 
+import { MEDICARE_APPLY_VIEW_EVENT, medicareApplyViewKey } from "@/lib/medicare/investigation";
 import { MEDICARE_RESET_VIEW_EVENT } from "@/lib/medicare/investigation";
 import { filterAllKey, MEDICARE_FILTER_ALL_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -57,6 +58,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
     const on = (ev: KeyboardEvent) => {
       const el = ev.target as HTMLElement | null;
       { const sk = medicareStripToggleKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable }); if (sk) { const b = document.querySelector<HTMLButtonElement>(sk === "packs" ? "[data-medicare-packs-toggle]" : "[data-medicare-jumps-toggle]"); if (b) { ev.preventDefault(); b.click(); return; } } }
+      if (medicareApplyViewKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable })) { const b = document.querySelector<HTMLButtonElement>('[data-medicare-apply-view="1"]'); if (b) { ev.preventDefault(); b.click(); return; } }
       if (medicareCopyViewKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable })) { const b = document.querySelector<HTMLButtonElement>('[data-medicare-copy-view="1"]'); if (b) { ev.preventDefault(); b.click(); return; } }
       if (medicareResetViewKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable })) { const b = document.querySelector<HTMLButtonElement>('[data-medicare-reset-view="1"]'); if (b) { ev.preventDefault(); b.click(); return; } }
       { const pk = medicareCopyRecentKey({ key: ev.key, ctrlKey: ev.ctrlKey, metaKey: ev.metaKey, altKey: ev.altKey, targetTag: el?.tagName, editable: el?.isContentEditable }, pastToastsRef.current.length);
@@ -131,6 +133,7 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const keyTargetHydratedRef = useRef(false);
   useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readMedicareKeyTarget(st, idsRef.current); if (v) setFocusId(v); keyTargetHydratedRef.current = true; }, []);
   useEffect(() => { if (!keyTargetHydratedRef.current || focusId === null) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeMedicareKeyTarget(st, focusId, idsRef.current); }, [focusId]);
+  useEffect(() => { const on = (e: Event) => { const d = (e as CustomEvent<{ rowFilter: RowFilter; keyTarget: string | null }>).detail; if (!d) return; setFilter(d.rowFilter); setFocusId(d.keyTarget); }; window.addEventListener(MEDICARE_APPLY_VIEW_EVENT, on); return () => window.removeEventListener(MEDICARE_APPLY_VIEW_EVENT, on); }, []);
   useEffect(() => { const on = () => { setFilter(null); setFocusId(null); }; window.addEventListener(MEDICARE_RESET_VIEW_EVENT, on); return () => window.removeEventListener(MEDICARE_RESET_VIEW_EVENT, on); }, []);
   useEffect(() => { if (!rowFilterHydratedRef.current) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeMedicareRowFilter(st, filter); }, [filter]);
   filterRef.current = filter;

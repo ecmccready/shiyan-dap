@@ -410,7 +410,7 @@ console.log("key t       -> adds the next unused quick note to the target row (u
 // 37. ? cheat sheet (pure key map + keymap table).
 assert.deepEqual(dispositionShortcut({ key: "?" }), { kind: "help" }); assert.deepEqual(dispositionShortcut({ key: "Escape" }), { kind: "help_close" });
 assert.equal(dispositionShortcut({ key: "?", targetTag: "INPUT" }), null, "typing ? in a note stays text"); assert.equal(dispositionShortcut({ key: "?", metaKey: true }), null);
-for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(medicareCopyViewKey({ key: k }) || medicareResetViewKey({ key: k }) || medicareStripToggleKey({ key: k }) !== null || dispositionShortcut({ key: k }) || medicareClearToastsKey({ key: k }, 1) || medicareClearRecentKey({ key: k }, 1) || medicareCopyRecentKey({ key: k }, 1), `sheet key ${k} is live`);
+for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(medicareApplyViewKey({ key: k }) || medicareCopyViewKey({ key: k }) || medicareResetViewKey({ key: k }) || medicareStripToggleKey({ key: k }) !== null || dispositionShortcut({ key: k }) || medicareClearToastsKey({ key: k }, 1) || medicareClearRecentKey({ key: k }, 1) || medicareCopyRecentKey({ key: k }, 1), `sheet key ${k} is live`);
 assert.equal(new Set(MEDICARE_KEYMAP.map((r) => r.key)).size, MEDICARE_KEYMAP.length); assert.ok(!MEDICARE_KEYMAP.some((r) => /fraud|misconduct|misdiagnos/i.test(r.does)));
 console.log("key ?       -> toggles the keyboard cheat sheet (every listed key is live); Esc closes");
 // 38. Keyboard action toast (pure text).
@@ -1330,3 +1330,17 @@ console.log("medicare [ / ] Packs/Jumps OK");
   assert.ok(MKM_ST.some((r) => r.key === "-")); assert.ok(!medicareResetViewKey({ key: "-" }));
   const ds = readFileSync(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8"); assert.ok(ds.includes("medicareCopyViewKey(") && ds.includes('[data-medicare-copy-view="1"]'));
   console.log("medicare - copy view key OK"); }
+import { parseMedicareViewSnapshot, applyMedicareViewSnapshot, medicareApplyViewToast, medicareApplyViewKey, medicareViewSnapshotJson as _mvsj, MEDICARE_APPLY_VIEW_EVENT } from "../src/lib/medicare/investigation";
+{ // + ⇩ Apply view parses aethel.medicare.view.v1
+  const ents = [{ item_id: "a" }, { item_id: "b" }];
+  const p = parseMedicareViewSnapshot(_mvsj({ rowFilter: "has_note", packsOpen: true, jumpsOpen: false, keyTarget: "b", entries: ents }));
+  assert.ok(p.ok); if (p.ok) { const a = applyMedicareViewSnapshot(p.view, ["a", "b"]); assert.deepEqual(a, { rowFilter: "has_note", packsOpen: true, jumpsOpen: false, keyTarget: "b", focusDropped: false }); assert.match(medicareApplyViewToast({ ok: true, applied: a }), /^⇩ Applied view · filter has_note · target b/);
+    const d = applyMedicareViewSnapshot(p.view, ["a"]); assert.equal(d.keyTarget, null); assert.equal(d.focusDropped, true); assert.match(medicareApplyViewToast({ ok: true, applied: d }), /target not found/); }
+  const lb = parseMedicareViewSnapshot(JSON.stringify({ schema: "aethel.roe_lookback.view.v1", show: "all", sort: "rank", packsOpen: false, jumpsOpen: false, expandAll: false, focus: { run_id: null, expanded: false } }));
+  assert.equal(lb.ok, false); assert.match(medicareApplyViewToast(lb as { ok: false; reason: string }), /^⚠ .*wrong schema \(aethel\.roe_lookback\.view\.v1\)/);
+  for (const bad of ["", "nope", "[]", JSON.stringify({ schema: "aethel.medicare.view.v1", rowFilter: "zzz", packsOpen: true, jumpsOpen: true, keyTarget: null }), JSON.stringify({ schema: "aethel.medicare.view.v1", rowFilter: null, packsOpen: 1, jumpsOpen: true, keyTarget: null })]) assert.equal(parseMedicareViewSnapshot(bad).ok, false);
+  assert.equal(medicareApplyViewKey({ key: "+" }), true); assert.equal(medicareApplyViewKey({ key: "+", ctrlKey: true }), false); assert.equal(medicareApplyViewKey({ key: "+", targetTag: "input" }), false); assert.equal(medicareApplyViewKey({ key: "-" }), false);
+  assert.ok(MEDICARE_KEYMAP.some((r) => r.key === "+"));
+  const sc = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8"); const iv = sc.indexOf('data-medicare-copy-view="1"'), ia = sc.indexOf('data-medicare-apply-view="1"'), ir = sc.indexOf('data-medicare-reset-view="1"'); assert.ok(iv > 0 && iv < ia && ia < ir);
+  const ds = readFileSync(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8"); assert.ok(ds.includes("medicareApplyViewKey(") && ds.includes(MEDICARE_APPLY_VIEW_EVENT.slice(0,0)) && ds.includes("MEDICARE_APPLY_VIEW_EVENT"));
+  console.log("medicare + apply view OK"); }

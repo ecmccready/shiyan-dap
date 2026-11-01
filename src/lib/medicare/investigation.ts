@@ -569,6 +569,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else collapse Packs \u25b4, else Jumps \u25b4, else clear the top toasts" },
+  { key: "+", does: "⇩ Apply view — read an aethel.medicare.view.v1 snapshot (from ⧉ View) from the clipboard and apply filter, Packs/Jumps, key target; ⚠ toast on wrong schema (free key)" },
   { key: "-", does: "copy view snapshot JSON — same as clicking sticky ⧉ View (filter, Packs/Jumps, key target); toast + shared first-use pulse (free key, next to 0 Reset)" },
   { key: "0", does: "reset view — same as clicking sticky ↺ Reset view (filter All, Packs/Jumps closed, key target cleared, toast); 0 = back to zero since 1/2/3 set dispositions" },
   { key: "[", does: "toggle Packs ▾ / Packs ▴ — same as clicking the sticky chip (toast on first open only)" },
@@ -1851,3 +1852,35 @@ export function medicareViewSnapshotJson(v: MedicareViewSnapshotInput): string {
 export function medicareCopyViewToast(v: MedicareViewSnapshotInput): string { const s = medicareViewSnapshot(v); return `⧉ View → copied view JSON · filter ${s.rowFilter ?? "All"}${s.keyTarget ? ` · target ${s.keyTarget.item_id} (#${s.keyTarget.index + 1})` : ""}`; }
 export function medicareCopyViewShouldPulse(alreadyPulsed: boolean): boolean { return !alreadyPulsed; }
 export function medicareCopyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_COPY_VIEW_PULSE_MS; }
+
+// ⇩ Apply view: parse a ⧉ View snapshot from the clipboard and apply it. Display-only; pure parse + resolve.
+export const MEDICARE_APPLY_VIEW_EVENT = "medicare:apply-view";
+export type MedicareParsedView = { rowFilter: RowFilter; packsOpen: boolean; jumpsOpen: boolean; keyTarget: string | null };
+/** Pure: parse clipboard text as aethel.medicare.view.v1. Rejects bad JSON / wrong schema (incl. look-back) / bad fields. Never throws. */
+export function parseMedicareViewSnapshot(text: unknown): { ok: true; view: MedicareParsedView } | { ok: false; reason: string } {
+  if (typeof text !== "string" || !text.trim()) return { ok: false, reason: "clipboard empty" };
+  let o: unknown; try { o = JSON.parse(text); } catch { return { ok: false, reason: "not JSON" }; }
+  if (!o || typeof o !== "object" || Array.isArray(o)) return { ok: false, reason: "not a JSON object" };
+  const r = o as Record<string, unknown>;
+  if (r.schema !== MEDICARE_VIEW_SNAPSHOT_SCHEMA) return { ok: false, reason: `wrong schema (${typeof r.schema === "string" ? r.schema.slice(0, 40) : "missing"})` };
+  if (!(r.rowFilter === null || ROW_FILTER_CYCLE.includes(r.rowFilter as RowFilter))) return { ok: false, reason: "bad rowFilter" };
+  for (const k of ["packsOpen", "jumpsOpen"]) if (typeof r[k] !== "boolean") return { ok: false, reason: `bad ${k}` };
+  const t = r.keyTarget as Record<string, unknown> | null | undefined;
+  if (!(t === null || (t && typeof t === "object" && typeof t.item_id === "string"))) return { ok: false, reason: "bad keyTarget" };
+  return { ok: true, view: { rowFilter: r.rowFilter as RowFilter, packsOpen: r.packsOpen as boolean, jumpsOpen: r.jumpsOpen as boolean, keyTarget: t ? (t.item_id as string) : null } };
+}
+/** Pure: resolve parsed view against current rows; unknown keyTarget is dropped (focusDropped). */
+export function applyMedicareViewSnapshot(v: MedicareParsedView, itemIds: ReadonlyArray<string>) {
+  const known = v.keyTarget != null && itemIds.includes(v.keyTarget);
+  return { rowFilter: v.rowFilter, packsOpen: v.packsOpen, jumpsOpen: v.jumpsOpen, keyTarget: known ? v.keyTarget : null, focusDropped: v.keyTarget != null && !known };
+}
+/** Pure: success / ⚠ reject toast text. */
+export function medicareApplyViewToast(r: { ok: true; applied: ReturnType<typeof applyMedicareViewSnapshot> } | { ok: false; reason: string }): string {
+  if (!r.ok) return `⚠ Apply view rejected · ${r.reason} — expected ${MEDICARE_VIEW_SNAPSHOT_SCHEMA}`;
+  const a = r.applied; return `⇩ Applied view · filter ${a.rowFilter ?? "All"}${a.keyTarget ? ` · target ${a.keyTarget}` : a.focusDropped ? " · target not found" : ""}`;
+}
+/** Pure: `+` presses sticky ⇩ Apply view (`+` was free). Ignored while typing or with Ctrl/⌘/Alt. */
+export function medicareApplyViewKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "+" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
+}
