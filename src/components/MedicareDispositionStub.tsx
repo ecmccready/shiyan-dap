@@ -2,6 +2,7 @@
 
 import { MEDICARE_APPLY_VIEW_EVENT, medicareApplyViewKey, medicareCopyLinkKey, medicareAuditKey, medicareAssetsKey } from "@/lib/medicare/investigation";
 import { MEDICARE_RESET_VIEW_EVENT } from "@/lib/medicare/investigation";
+import { medicareRecentToneChips, filterMedicareRecentToasts, type MedicareRecentToneFilter } from "@/lib/medicare/investigation";
 import { filterAllKey, MEDICARE_FILTER_ALL_PULSE_EVENT } from "@/lib/medicare/investigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ProgressBar } from "@/components/MedicareReviewProgress";
@@ -280,6 +281,8 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
   const topKey = topStack.map((t) => medicareToastCopyText(t)).join("\n");
   useEffect(() => { if (topStack.length) setToastHist((h) => pushToastHistory(h, topStack)); }, [topKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const pastToasts = dismissedToastHistory(toastHist, topStack);
+  const [recentTone, setRecentTone] = useState<MedicareRecentToneFilter>("all");
+  const shownRecent = filterMedicareRecentToasts(pastToasts, recentTone);
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_TOASTS_STATE_EVENT, { detail: topStack.length })); }, [topStack.length]);
   const topStackRef = useRef(topStack); topStackRef.current = topStack;
   useEffect(() => { window.dispatchEvent(new CustomEvent(MEDICARE_RECENT_STATE_EVENT, { detail: pastToasts.length })); }, [pastToasts.length]);
@@ -337,14 +340,22 @@ export default function MedicareDispositionStub({ pack, highlight }: { pack: Evi
           <div className="flex items-center justify-between gap-2">
             <p className="text-amber-300 font-semibold uppercase tracking-widest">Recent toasts · last {pastToasts.length} (click to re-copy · 📌 to re-show)</p>
             <div className="flex gap-2">
-            <button type="button" data-medicare-toast-history-copy-all data-medicare-toast-history-copy-all-copied={copyAllAt !== null ? "" : undefined} title="Copy all recent toasts as one JSON pack (this tab)" onClick={() => { void navigator.clipboard?.writeText(medicareToastHistoryJson(pastToasts)).then(() => { const at = Date.now(); setCopyAllAt(at); window.setTimeout(() => setCopyAllAt((x) => (x === at ? null : x)), TOAST_PILL_COPIED_MS); setToast({ txt: `copied ${pastToasts.length} recent toasts JSON`, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); }, () => {}); }}
+            <button type="button" data-medicare-toast-history-copy-all data-medicare-toast-history-copy-all-copied={copyAllAt !== null ? "" : undefined} title="Copy all recent toasts as one JSON pack (this tab)" onClick={() => { void navigator.clipboard?.writeText(medicareToastHistoryJson(shownRecent)).then(() => { const at = Date.now(); setCopyAllAt(at); window.setTimeout(() => setCopyAllAt((x) => (x === at ? null : x)), TOAST_PILL_COPIED_MS); setToast({ txt: `copied ${shownRecent.length} recent toasts JSON`, at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); }, () => {}); }}
               className={copyAllAt !== null ? "rounded-full border border-green-400 bg-green-500 px-3 py-0.5 font-semibold text-black motion-safe:animate-pulse" : "rounded-full border border-amber-300 px-3 py-0.5 font-semibold text-amber-200 hover:bg-amber-300 hover:text-black"}>{medicareCopyAllLabel(copyAllAt, copyAllAt ?? 0)}</button>
             <button type="button" data-medicare-toast-history-clear title="Clear recent toasts (this tab)" onClick={() => setToastHist((h) => clearToastHistory(h, topStack))}
               className="rounded-full border border-amber-300 px-3 py-0.5 font-semibold text-amber-200 hover:bg-amber-300 hover:text-black">Clear</button>
             </div>
           </div>
+          <div data-medicare-toast-history-filters className="flex flex-wrap gap-1">
+            {medicareRecentToneChips(pastToasts, recentTone).map((ch) => (
+              <button key={ch.tone} type="button" data-medicare-toast-history-filter={ch.tone} data-active={ch.active ? "1" : undefined} title={`Show ${ch.tone === "all" ? "all" : ch.tone} recent toasts (this tab) · ⧉ Copy all copies the filtered set`}
+                onClick={() => setRecentTone(ch.tone)}
+                className={`rounded-full border px-2 py-0.5 font-semibold ${ch.active ? "border-amber-300 bg-amber-300 text-black" : "border-zinc-600 text-zinc-300 hover:bg-zinc-700"}`}>{ch.label}</button>
+            ))}
+          </div>
+          {shownRecent.length === 0 && <p data-medicare-toast-history-filter-empty className="text-zinc-400">No {recentTone} toasts — <button type="button" className="underline" onClick={() => setRecentTone("all")}>show all</button></p>}
           <ul className="flex flex-wrap gap-2">
-            {pastToasts.map((h) => (
+            {shownRecent.map((h) => (
               <li key={medicareToastCopyText(h)}>
                 <button type="button" data-medicare-toast-history-item={h.id} title="Copy this toast text again"
                   onClick={() => { const cp = medicareToastCopyText(h); void navigator.clipboard?.writeText(cp).then(() => { const at = Date.now(); setPillCopied({ key: cp, at }); window.setTimeout(() => setPillCopied((x) => (x && x.at === at ? null : x)), TOAST_PILL_COPIED_MS); setToast({ txt: "copied toast text", at }); window.setTimeout(() => setToast((x) => (x && x.at === at ? null : x)), KEY_TOAST_MS); }, () => {}); }}

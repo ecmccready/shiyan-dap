@@ -1933,3 +1933,25 @@ export function medicareDqJsonWithViewUrl(json: string, viewUrl?: string | null)
 
 /** Pure: add optional view_url (shareable m_* link; omitted unless http(s)) to a copied ⧉ Dispositions / y JSON string. Same contract as medicareInvestigationJsonWithViewUrl. Never throws. */
 export function medicareDispositionsJsonWithViewUrl(json: string, viewUrl?: string | null): string { return medicareInvestigationJsonWithViewUrl(json, viewUrl); }
+
+/** Recent-toasts tone filter (tab-local, mirrors look-back). "all" shows every entry. */
+export type MedicareRecentToneFilter = "all" | ToastHistoryEntry["tone"];
+export const MEDICARE_RECENT_TONE_FILTERS: readonly MedicareRecentToneFilter[] = ["all", "green", "amber"];
+const MEDICARE_RECENT_TONE_LABEL: Record<MedicareRecentToneFilter, string> = { all: "All", green: "✓ Done", amber: "∅ Empty" };
+/** Pure: per-tone counts for the Medicare Recent toasts filter chips. */
+export function medicareRecentToneCounts(hist: readonly ToastHistoryEntry[] | null | undefined): Record<MedicareRecentToneFilter, number> {
+  const out: Record<MedicareRecentToneFilter, number> = { all: 0, green: 0, amber: 0 };
+  for (const h of hist ?? []) { if (!h) continue; out.all++; if (h.tone === "green" || h.tone === "amber") out[h.tone]++; }
+  return out;
+}
+/** Pure: filter Medicare Recent toasts by tone; unknown filter → all. Input not mutated. */
+export function filterMedicareRecentToasts(hist: readonly ToastHistoryEntry[] | null | undefined, f: MedicareRecentToneFilter | string | null | undefined): ToastHistoryEntry[] {
+  const list = (hist ?? []).filter(Boolean);
+  if (f === "green" || f === "amber") return list.filter((h) => h.tone === f);
+  return list;
+}
+/** Pure: chip models for the Medicare Recent toasts filter row (empty tones hidden except All / active). */
+export function medicareRecentToneChips(hist: readonly ToastHistoryEntry[] | null | undefined, active: MedicareRecentToneFilter): { tone: MedicareRecentToneFilter; label: string; count: number; active: boolean }[] {
+  const c = medicareRecentToneCounts(hist);
+  return MEDICARE_RECENT_TONE_FILTERS.filter((t) => t === "all" || t === active || c[t] > 0).map((t) => ({ tone: t, label: `${MEDICARE_RECENT_TONE_LABEL[t]} ${c[t]}`, count: c[t], active: t === active }));
+}

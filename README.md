@@ -651,3 +651,4 @@ The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirr
 - Offer page: pack `view_url`s carry reviewer focus (look-back `lb_focus`/`lb_expand`, Medicare `m_target`), matching ⧉ Link. Clipboard/URL only.
 
 - **Audit links:** `/workbench/offer` (Evidence packs) and `/workbench/global` (Shareable views card) link to the read-only `/workbench/audit` summary.
+- **Medicare · Recent toasts tone filter (mirrors look-back):** filter chips above the Recent toasts pills (All · ✓ Done · ∅ Empty, with counts; empty tones hidden unless active; pure `medicareRecentToneCounts` / `filterMedicareRecentToasts` / `medicareRecentToneChips`, `data-medicare-toast-history-filter`); ⧉ Copy all copies only the filtered set; an empty filter shows "No … toasts — show all". Tab-local, display-only, additive.
