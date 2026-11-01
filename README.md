@@ -631,3 +631,5 @@ The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirr
 - **ROE look-back · `lookbackShareableViewUrl` (parity with Medicare):** one pure builder in `src/lib/roe-lookback-url.ts` produces the shareable `/workbench/status` URL from live state (`lb_show` / `lb_sort` / `lb_packs` / `lb_jumps` + `lb_focus` / `lb_expand`; non-http(s) → null). `cmpViewUrl` and ⧉ Link now use it, so ⚖ Compare, ⧉ Summary, Verdict, Gaps, Roles, All paths, All steps and ⧉ View `view_url`s all carry focus + expand consistently. Checked in `check-roe-lookback`. Additive, display-only; no Level 4 change.
 
 - Offer page: pack `view_url`s carry reviewer focus (look-back `lb_focus`/`lb_expand`, Medicare `m_target`), matching ⧉ Link. Clipboard/URL only.
+
+- **Audit links:** `/workbench/offer` (Evidence packs) and `/workbench/global` (Shareable views card) link to the read-only `/workbench/audit` summary.

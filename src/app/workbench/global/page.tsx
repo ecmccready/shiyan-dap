@@ -160,6 +160,7 @@ export default function GlobalMisdiagnosisPage() {
             <Link className="underline" href="/workbench/offer#evidence-packs">evidence packs</Link> and the peer-advertised surfaces on{" "}
             <Link className="underline" href="/workbench/marketplace">/workbench/marketplace</Link>. Read-only links; nothing is sent.
           </p>
+          <p data-global-audit-link className="text-zinc-400 text-xs">Every pack in one view: <Link className="underline text-cyan-300" href="/workbench/audit">/workbench/audit →</Link></p>
         </section>
 
         <section data-global-external-confirmation className="border border-zinc-800 rounded-2xl p-5 text-sm space-y-2">
