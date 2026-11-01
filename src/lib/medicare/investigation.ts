@@ -1952,6 +1952,11 @@ export function filterMedicareRecentToasts(hist: readonly ToastHistoryEntry[] | 
   if (f === "green" || f === "amber") return list.filter((h) => h.tone === f);
   return list;
 }
+/** Pure: toast text for Copy all / sticky Copy recent / p; filtered copies use chip labels (Done / Empty), not tone names. */
+export function medicareCopyRecentToast(n: number, f: MedicareRecentToneFilter | string | null | undefined): string {
+  const lab = f === "green" ? "Done" : f === "amber" ? "Empty" : "";
+  return `copied ${n} ${lab ? lab + " " : ""}recent toasts JSON`;
+}
 /** Pure: chip models for the Medicare Recent toasts filter row (empty tones hidden except All / active). */
 export function medicareRecentToneChips(hist: readonly ToastHistoryEntry[] | null | undefined, active: MedicareRecentToneFilter): { tone: MedicareRecentToneFilter; label: string; count: number; active: boolean }[] {
   const c = medicareRecentToneCounts(hist);
