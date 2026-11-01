@@ -574,3 +574,4 @@ The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirr
 - `/workbench/offer` evidence-packs card notes sticky-strip UX: Packs ▾ / Jumps ▾, tab session remember, ↺ Reset view (key 0) — local clipboard / sessionStorage only, no server writes.
 
 - Offer page: Uncluttered strips note now mentions sticky ⧉ View (key `-`) copying a local view snapshot JSON before ↺ Reset view (key `0`); clipboard + sessionStorage only.
+- **Medicare · hand-off `view_url`:** copying the 📦 hand-off pack (button, sticky 📦 chip, `h`, ⏱ timer) now adds an optional `view_url` — the current shareable `/workbench/medicare` link with `m_*` view params (same as ⧉ Link; `medicareUrlWithView`), covered by `handoff_hash`. Omitted when absent or not http(s); schema stays `aethel.medicare.handoff.v1`, domain `medicare`. Pure `buildHandoffPack(…, viewUrl)`; `check-medicare` covers it. No Level 4, no CMS fetch.

@@ -281,6 +281,11 @@ assert.ok(hp.case_brief_markdown.includes("> Review complete")); assert.ok(verif
 const { handoff_hash, ...hbody } = hp; assert.equal(handoff_hash, contentHash(hbody), "handoff hash recomputes");
 assert.equal(JSON.parse(buildHandoffPack(inv, ev, FIXTURE_PROVENANCE)).progress.complete, false);
 assert.equal(buildHandoffPack(t2, ev, FIXTURE_PROVENANCE), ""); for (const j of [null, "x", {}, cyc]) assert.equal(buildHandoffPack(j, ev, FIXTURE_PROVENANCE), "");
+{ const vu = "https://x.test/workbench/medicare?m_filter=unreviewed&m_packs=1"; const hv = JSON.parse(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, null, vu));
+  assert.equal(hv.view_url, vu); { const { handoff_hash: h2, ...b2 } = hv; assert.equal(h2, contentHash(b2)); }
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(JSON.parse(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, null, bad as never)).view_url, undefined);
+  assert.equal(buildHandoffPack(all3, ev, FIXTURE_PROVENANCE, null, null), buildHandoffPack(all3, ev, FIXTURE_PROVENANCE), "no view_url = unchanged pack"); }
+console.log("hand-off    -> optional view_url (shareable m_* link) inside handoff_hash; absent when not http(s)");
 console.log("hand-off    -> aethel.medicare.handoff.v1: reviewed brief + live report + progress, linked hashes, recomputable handoff_hash");
 // 22. Review timer (pure).
 let tm = { started_at: null as number | null, frozen_at: null as number | null };

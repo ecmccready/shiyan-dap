@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { parseMedicareUrlView, medicareUrlWithView } from "@/lib/medicare/view-url";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { buildHandoffPack, formatReviewedCaseBrief } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
@@ -80,7 +81,7 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
       {...(handoff ? { "data-copy-medicare-handoff": true } : brief ? { "data-copy-medicare-reviewed-brief": true } : { "data-copy-medicare-dispositions": true })}
       data-review-complete={done ? "true" : "false"}
       disabled={!json}
-      onClick={(ev) => { const trusted = ev.isTrusted; void copy.copy(json).then((ok) => { const which = medicareDirectButtonCopyWhich(!!handoff, !!brief, trusted, ok); if (which) window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which, json: "1" } })); const kind = medicareDirectBriefCopyKind(!!handoff, !!brief, trusted, ok); if (kind) window.dispatchEvent(new CustomEvent(MEDICARE_PACK_COPIED_EVENT, { detail: kind })); if (ok && brief && !handoff) window.dispatchEvent(new CustomEvent(MEDICARE_BRIEF_COPIED_EVENT, { detail: { trusted } })); }); }}
+      onClick={(ev) => { const trusted = ev.isTrusted; let out = json; if (handoff && brief) { try { const v = parseMedicareUrlView(window.location.search); out = buildHandoffPack(r, brief.evidence, brief.provenance, timer, medicareUrlWithView(window.location.href, { filter: v.filter ?? null, packs: !!v.packs, jumps: !!v.jumps })) || json; } catch {} } void copy.copy(out).then((ok) => { const which = medicareDirectButtonCopyWhich(!!handoff, !!brief, trusted, ok); if (which) window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which, json: "1" } })); const kind = medicareDirectBriefCopyKind(!!handoff, !!brief, trusted, ok); if (kind) window.dispatchEvent(new CustomEvent(MEDICARE_PACK_COPIED_EVENT, { detail: kind })); if (ok && brief && !handoff) window.dispatchEvent(new CustomEvent(MEDICARE_BRIEF_COPIED_EVENT, { detail: { trusted } })); }); }}
       data-pulse={pulsing ? "true" : undefined}
       data-medicare-handoff-ready-pulse={readyPulsing ? "1" : undefined}
       data-medicare-handoff-copy-pulse={hoCopyPulsing ? "1" : undefined}

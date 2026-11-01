@@ -99,7 +99,7 @@ export const MEDICARE_HANDOFF_SCHEMA = "aethel.medicare.handoff.v1" as const;
  * Pure reviewer hand-off pack: reviewed case brief + live investigation report (current dispositions) + progress,
  * linked to the evidence pack_hash, with a recomputable handoff_hash. "" unless the report verifies and links this pack.
  */
-export function buildHandoffPack(report: unknown, evidence: EvidencePack, provenance: MedicareProvenance, timer?: { elapsed_ms?: unknown; frozen?: unknown } | null): string {
+export function buildHandoffPack(report: unknown, evidence: EvidencePack, provenance: MedicareProvenance, timer?: { elapsed_ms?: unknown; frozen?: unknown } | null, viewUrl?: string | null): string {
   try {
     const brief = formatReviewedCaseBrief(report, evidence, provenance);
     if (!brief) return "";
@@ -112,6 +112,7 @@ export function buildHandoffPack(report: unknown, evidence: EvidencePack, proven
       ...(done.complete && timer && timer.frozen === true && typeof timer.elapsed_ms === "number" && Number.isFinite(timer.elapsed_ms) && timer.elapsed_ms >= 0
         ? { review_time: { elapsed_ms: Math.round(timer.elapsed_ms), elapsed: formatElapsed(timer.elapsed_ms), basis: "tab-local timer from first disposition to Review complete" } }
         : {}),
+      ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}),
     };
     return JSON.stringify({ ...body, handoff_hash: contentHash(body) }, null, 2);
   } catch { return ""; }
