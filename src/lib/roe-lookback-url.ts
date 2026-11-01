@@ -74,3 +74,8 @@ export function lookbackApplyLinkToast(r: LookbackApplyLinkResult | { ok: false;
   if (!r.ok) return `⚠ Apply link rejected · ${r.reason} — expected ${LOOKBACK_LINK_PATH}?lb_*`;
   return `⇩ applied view link · ${r.n} param${r.n === 1 ? "" : "s"}${r.view.show ? ` · show ${r.view.show}` : ""}${r.view.sort ? ` · sort ${r.view.sort}` : ""}`;
 }
+
+/** ⇩ Apply link first-use pulse: once per page load, only after a successful apply (never on reject). */
+export const LOOKBACK_APPLY_LINK_PULSE_MS = 1200;
+export function lookbackApplyLinkShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
+export function lookbackApplyLinkPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_APPLY_LINK_PULSE_MS; }

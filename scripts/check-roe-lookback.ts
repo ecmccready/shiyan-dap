@@ -1102,3 +1102,11 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
   assert.ok(src.includes('data-roe-summary-apply-link="1"') && src.includes("parseLookbackLinkText(txt)"));
   console.log("ok · apply link");
 }
+{ // ⇩ Apply link first-use pulse
+  const S = UrlView.lookbackApplyLinkShouldPulse, Pu = UrlView.lookbackApplyLinkPulse, MS = UrlView.LOOKBACK_APPLY_LINK_PULSE_MS;
+  assert.ok(S(false, true) && !S(true, true) && !S(false, false) && !S(false, undefined));
+  assert.ok(Pu(1000, 1500) && !Pu(1000, 1000 + MS) && !Pu(null, 5) && !Pu(1000, 900));
+  const src = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes("data-roe-apply-link-pulsing") && src.includes("lookbackApplyLinkShouldPulse(alPulsedRef.current, true)"));
+  console.log("ok · apply link pulse");
+}
