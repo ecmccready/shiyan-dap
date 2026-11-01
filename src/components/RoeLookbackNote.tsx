@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { readLookbackStripState, writeLookbackStripState, lookbackJumpsChip, lookbackJumpsToggle, lookbackJumpsPulse, LOOKBACK_JUMPS_PULSE_MS, lookbackPacksChip, lookbackPacksToggle, lookbackPacksPulse, LOOKBACK_PACKS_PULSE_MS, lookbackSummaryButtonToast } from "@/lib/level4/roe-lookback";
+import { readLookbackViewState, writeLookbackViewState, readLookbackStripState, writeLookbackStripState, lookbackJumpsChip, lookbackJumpsToggle, lookbackJumpsPulse, LOOKBACK_JUMPS_PULSE_MS, lookbackPacksChip, lookbackPacksToggle, lookbackPacksPulse, LOOKBACK_PACKS_PULSE_MS, lookbackSummaryButtonToast } from "@/lib/level4/roe-lookback";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import EvidencePacksChip from "@/components/EvidencePacksChip";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
@@ -47,6 +47,9 @@ export default function RoeLookbackNote() {
   useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readLookbackStripState(st); if (v.packs) { packsEverRef.current = true; setPacksOpen(true); } if (v.jumps) { jumpsEverRef.current = true; setJumpsOpen(true); } stripHydratedRef.current = true; }, []);
   useEffect(() => { if (!stripHydratedRef.current) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeLookbackStripState(st, "packs", packsOpen); writeLookbackStripState(st, "jumps", jumpsOpen); }, [packsOpen, jumpsOpen]);
   const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
+  const viewHydratedRef = useRef(false);
+  useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readLookbackViewState(st); setRoleFilter(v.filter); setSortBy(v.sort); viewHydratedRef.current = true; }, []);
+  useEffect(() => { if (!viewHydratedRef.current) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeLookbackViewState(st, "filter", roleFilter); writeLookbackViewState(st, "sort", sortBy); }, [roleFilter, sortBy]);
   const [focusRow, setFocusRow] = useState<string | null>(null);
   const focusPulsedRef = useRef(false);
   const [focusPulseAt, setFocusPulseAt] = useState<number | null>(null);

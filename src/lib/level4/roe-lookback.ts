@@ -1623,3 +1623,21 @@ export function writeLookbackStripState(store: LookbackStripStore, which: "packs
   if (!store) return false;
   try { store.setItem(which === "packs" ? LOOKBACK_PACKS_OPEN_KEY : LOOKBACK_JUMPS_OPEN_KEY, open === true ? "1" : "0"); return true; } catch { return false; }
 }
+
+/** sessionStorage keys for look-back Show filter + Sort mode (per-tab; no localStorage). */
+export const LOOKBACK_SHOW_FILTER_KEY = "aethel.lookback.showFilter";
+export const LOOKBACK_SORT_MODE_KEY = "aethel.lookback.sortMode";
+const LOOKBACK_VIEW_FILTERS: readonly LookbackRoleFilter[] = ["all", "winners", "beaten", "agree"];
+const LOOKBACK_VIEW_SORTS: readonly LookbackSort[] = ["rank", "dphi"];
+/** Pure read: { filter, sort } validated against enums; missing / invalid / throwing → defaults ("all", "rank"). */
+export function readLookbackViewState(store: LookbackStripStore): { filter: LookbackRoleFilter; sort: LookbackSort } {
+  const get = (k: string) => { try { return store?.getItem(k) ?? null; } catch { return null; } };
+  const f = get(LOOKBACK_SHOW_FILTER_KEY), s = get(LOOKBACK_SORT_MODE_KEY);
+  return { filter: LOOKBACK_VIEW_FILTERS.includes(f as LookbackRoleFilter) ? (f as LookbackRoleFilter) : "all", sort: LOOKBACK_VIEW_SORTS.includes(s as LookbackSort) ? (s as LookbackSort) : "rank" };
+}
+/** Pure write: stores validated value (invalid → default); false on missing store or throw. */
+export function writeLookbackViewState(store: LookbackStripStore, which: "filter" | "sort", value: unknown): boolean {
+  if (!store) return false;
+  const v = which === "filter" ? (LOOKBACK_VIEW_FILTERS.includes(value as LookbackRoleFilter) ? value as string : "all") : (LOOKBACK_VIEW_SORTS.includes(value as LookbackSort) ? value as string : "rank");
+  try { store.setItem(which === "filter" ? LOOKBACK_SHOW_FILTER_KEY : LOOKBACK_SORT_MODE_KEY, v); return true; } catch { return false; }
+}
