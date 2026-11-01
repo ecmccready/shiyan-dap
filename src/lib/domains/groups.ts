@@ -2,37 +2,37 @@ export const DOMAIN_GROUPS = [
   {
     name: "Know",
     entries: [
-      { label: "Diagnostics", path: "/workbench/diagnostic" },
-      { label: "Safety", path: "/workbench/safety" },
-      { label: "Global · misdiagnosis", path: "/workbench/global" },
-      { label: "Medicare · Public Data Intelligence", path: "/workbench/medicare" },
-      { label: "Level 4 status", path: "/workbench/status" },
-      { label: "Long-horizon robotics policies", path: "/workbench/robotics" },
+      { label: "Diagnostics", href: "/workbench/diagnostic" },
+      { label: "Safety", href: "/workbench/safety" },
+      { label: "Global · misdiagnosis", href: "/workbench/global" },
+      { label: "Medicare · Public Data Intelligence", href: "/workbench/medicare" },
+      { label: "Level 4 status", href: "/workbench/status" },
+      { label: "Long-horizon robotics policies", href: "/workbench/robotics" },
     ],
   },
   {
     name: "Know How",
     entries: [
-      { label: "Loop · closed loop", path: "/loop" },
-      { label: "Level 4 run", path: "/workbench/autonomous" },
-      { label: "ROE · Reciprocal Optimization Engine", path: "/workbench/autonomous?roe_drive=1" },
+      { label: "Loop · closed loop", href: "/loop" },
+      { label: "Level 4 run", href: "/workbench/autonomous" },
+      { label: "ROE · Reciprocal Optimization Engine", href: "/workbench/autonomous?roe_drive=1" },
     ],
   },
   {
     name: "Show",
     entries: [
-      { label: "Proof", path: "/workbench/proof" },
-      { label: "Result", path: "/workbench/result" },
-      { label: "History", path: "/workbench/history" },
+      { label: "Proof", href: "/workbench/proof" },
+      { label: "Result", href: "/workbench/result" },
+      { label: "History", href: "/workbench/history" },
     ],
   },
   {
     name: "Do",
     entries: [
-      { label: "Start a durable run", path: "/workbench#guided-run" },
-      { label: "Offer", path: "/workbench/offer" },
-      { label: "Pilot", path: "/workbench/pilot" },
-      { label: "Marketplace", path: "/workbench/marketplace" },
+      { label: "Start a durable run", href: "/workbench#guided-run" },
+      { label: "Offer", href: "/workbench/offer" },
+      { label: "Pilot", href: "/workbench/pilot" },
+      { label: "Marketplace", href: "/workbench/marketplace" },
     ],
   },
 ];
