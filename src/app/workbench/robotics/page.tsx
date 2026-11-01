@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const POLICIES = [
   { id: "pol_a", label: "Look-back winner", steps: 12, delta_phi: 0.041, role: "winner" as const },
@@ -11,17 +11,34 @@ const POLICIES = [
 export default function RoboticsPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [show, setShow] = useState<"all" | "winner" | "beaten" | "greedy">("all");
+  const [focus, setFocus] = useState(0);
 
   const visible = POLICIES.filter((p) => show === "all" || p.role === show);
   const winner = POLICIES.find((p) => p.role === "winner");
   const greedy = POLICIES.find((p) => p.role === "greedy");
   const delta = winner && greedy ? (winner.delta_phi - greedy.delta_phi).toFixed(3) : "—";
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement) return;
+      if (e.key === "j") setFocus((f) => Math.min(f + 1, visible.length - 1));
+      if (e.key === "k") setFocus((f) => Math.max(f - 1, 0));
+      if (e.key === "Enter") setExpanded(visible[focus]?.id ?? null);
+      if (e.key === "f") {
+        const order = ["all", "winner", "beaten", "greedy"] as const;
+        setShow(order[(order.indexOf(show) + 1) % order.length]);
+      }
+      if (e.key === "?") alert("j/k move · Enter expand · f cycle Show");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focus, show, visible]);
+
   return (
     <main className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-semibold mb-2">Long-horizon robotics policies</h1>
       <p className="text-sm text-neutral-500 mb-4">
-        Know → Know How → Show → Do on the same engine. Synthetic fixture only.
+        Know → Know How → Show → Do on the same engine. Synthetic fixture only. j/k · Enter · f · ?
       </p>
 
       <div className="sticky top-0 bg-white border rounded p-3 mb-4 text-sm flex gap-4 flex-wrap">
@@ -39,8 +56,8 @@ export default function RoboticsPage() {
       </div>
 
       <div className="border rounded">
-        {visible.map((p) => (
-          <div key={p.id} className="border-b last:border-b-0">
+        {visible.map((p, i) => (
+          <div key={p.id} className={`border-b last:border-b-0 ${i === focus ? "bg-amber-50" : ""}`}>
             <button type="button" className="w-full text-left p-3 flex justify-between" onClick={() => setExpanded(expanded === p.id ? null : p.id)}>
               <span>{p.label}</span>
               <span>ΔΦ {p.delta_phi.toFixed(3)} · {p.steps} steps</span>
