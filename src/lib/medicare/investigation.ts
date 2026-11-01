@@ -569,6 +569,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else collapse Packs \u25b4, else Jumps \u25b4, else clear the top toasts" },
+  { key: "0", does: "reset view — same as clicking sticky ↺ Reset view (filter All, Packs/Jumps closed, key target cleared, toast); 0 = back to zero since 1/2/3 set dispositions" },
   { key: "[", does: "toggle Packs ▾ / Packs ▴ — same as clicking the sticky chip (toast on first open only)" },
   { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
 ];
@@ -1747,6 +1748,11 @@ export function medicareStripToggleKey(ev: { key?: unknown; ctrlKey?: unknown; m
   if (!ev || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return null;
   if (typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase())) return null;
   return ev.key === "[" ? "packs" : ev.key === "]" ? "jumps" : null;
+}
+/** Pure: key 0 presses the sticky ↺ Reset view chip ("back to zero"; 1/2/3 are disposition keys). Ignored with ctrl/meta/alt or while typing. */
+export function medicareResetViewKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "0" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
 
 /** sessionStorage keys for the Medicare sticky strip (per-tab; no localStorage, no cross-tab). */

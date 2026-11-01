@@ -409,7 +409,7 @@ console.log("key t       -> adds the next unused quick note to the target row (u
 // 37. ? cheat sheet (pure key map + keymap table).
 assert.deepEqual(dispositionShortcut({ key: "?" }), { kind: "help" }); assert.deepEqual(dispositionShortcut({ key: "Escape" }), { kind: "help_close" });
 assert.equal(dispositionShortcut({ key: "?", targetTag: "INPUT" }), null, "typing ? in a note stays text"); assert.equal(dispositionShortcut({ key: "?", metaKey: true }), null);
-for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(medicareStripToggleKey({ key: k }) !== null || dispositionShortcut({ key: k }) || medicareClearToastsKey({ key: k }, 1) || medicareClearRecentKey({ key: k }, 1) || medicareCopyRecentKey({ key: k }, 1), `sheet key ${k} is live`);
+for (const row of MEDICARE_KEYMAP) for (const k of row.key.split(" / ")) assert.ok(medicareResetViewKey({ key: k }) || medicareStripToggleKey({ key: k }) !== null || dispositionShortcut({ key: k }) || medicareClearToastsKey({ key: k }, 1) || medicareClearRecentKey({ key: k }, 1) || medicareCopyRecentKey({ key: k }, 1), `sheet key ${k} is live`);
 assert.equal(new Set(MEDICARE_KEYMAP.map((r) => r.key)).size, MEDICARE_KEYMAP.length); assert.ok(!MEDICARE_KEYMAP.some((r) => /fraud|misconduct|misdiagnos/i.test(r.does)));
 console.log("key ?       -> toggles the keyboard cheat sheet (every listed key is live); Esc closes");
 // 38. Keyboard action toast (pure text).
@@ -1229,7 +1229,7 @@ console.log("medicareJumps toggle OK");
   assert.ok(sc.includes("MEDICARE_STRIP_COLLAPSE_EVENT, on") && sc.includes("medicareEscToast(t)")); assert.ok(ds.includes("stripRef.current.packs, stripRef.current.jumps")); }
 console.log("medicare Esc Packs/Jumps OK");
 
-import { medicareStripToggleKey, MEDICARE_KEYMAP as MKM_ST } from "../src/lib/medicare/investigation";
+import { medicareStripToggleKey, medicareResetViewKey, MEDICARE_KEYMAP as MKM_ST } from "../src/lib/medicare/investigation";
 { const f = medicareStripToggleKey;
   assert.equal(f({ key: "[" }), "packs"); assert.equal(f({ key: "]" }), "jumps"); assert.equal(f({ key: "x" }), null);
   assert.equal(f({ key: "[", ctrlKey: true }), null); assert.equal(f({ key: "]", metaKey: true }), null); assert.equal(f({ key: "]", targetTag: "textarea" }), null); assert.equal(f({ key: "[", editable: true }), null); assert.equal(f(null), null);
@@ -1297,4 +1297,14 @@ console.log("medicare [ / ] Packs/Jumps OK");
   assert.ok(src.includes("data-medicare-reset-view") && /clr\(\);[\s\S]*setTimeout\(\(\) => \{ const n = clr\(\)/.test(src));
   assert.ok(fs.readFileSync("src/components/MedicareDispositionStub.tsx", "utf8").includes("MEDICARE_RESET_VIEW_EVENT"));
   console.log("ok medicare reset view");
+}
+
+{ // key 0 presses sticky Reset view
+  const f = medicareResetViewKey;
+  assert.equal(f({ key: "0" }), true); assert.equal(f({ key: "1" }), false); assert.equal(f(null), false);
+  assert.equal(f({ key: "0", ctrlKey: true }), false); assert.equal(f({ key: "0", metaKey: true }), false); assert.equal(f({ key: "0", altKey: true }), false);
+  assert.equal(f({ key: "0", targetTag: "textarea" }), false); assert.equal(f({ key: "0", targetTag: "INPUT" }), false); assert.equal(f({ key: "0", editable: true }), false);
+  assert.ok(MKM_ST.some((r) => r.key === "0"));
+  for (const k of ["1", "2", "3"]) assert.ok(dispositionShortcut({ key: k }), `${k} stays a disposition key`);
+  const ds = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareDispositionStub.tsx"), "utf8"); assert.ok(ds.includes("medicareResetViewKey(") && ds.includes('[data-medicare-reset-view="1"]'));
 }
