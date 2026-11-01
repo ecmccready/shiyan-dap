@@ -1479,3 +1479,9 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   assert.equal(medicareDqJsonWithViewUrl("", vu), ""); assert.equal(medicareDqJsonWithViewUrl("[1]", vu), "[1]");
   const src = require("node:fs").readFileSync("src/components/CopyMedicareJson.tsx", "utf8"); assert.ok(src.includes('kind === "dq"') && src.includes("medicareDqJsonWithViewUrl"));
   console.log("dq          -> optional view_url (shareable m_* link); absent when not http(s)"); }
+{ const { medicareDispositionsJsonWithViewUrl } = require("../src/lib/medicare/investigation"); const vu = "https://x.test/workbench/medicare?m_filter=cleared"; const base = JSON.stringify({ report_hash: "h", entries: [1] });
+  const o = JSON.parse(medicareDispositionsJsonWithViewUrl(base, vu)); assert.equal(o.view_url, vu); assert.equal(o.report_hash, "h");
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(medicareDispositionsJsonWithViewUrl(base, bad as never), base);
+  assert.equal(medicareDispositionsJsonWithViewUrl("", vu), ""); assert.equal(medicareDispositionsJsonWithViewUrl("[1]", vu), "[1]");
+  const src = require("node:fs").readFileSync("src/components/CopyLiveInvestigation.tsx", "utf8"); assert.ok(src.includes("medicareDispositionsJsonWithViewUrl"));
+  console.log("dispositions -> optional view_url (shareable m_* link); absent when not http(s)"); }
