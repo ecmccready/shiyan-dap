@@ -1908,3 +1908,6 @@ export function medicareInvestigationJsonWithViewUrl(json: string, viewUrl?: str
 
 /** Pure: add optional view_url (shareable m_* link; omitted unless http(s)) to a copied ⧉ Evidence pack JSON string. Same contract as medicareInvestigationJsonWithViewUrl. Never throws. */
 export function medicareEvidenceJsonWithViewUrl(json: string, viewUrl?: string | null): string { return medicareInvestigationJsonWithViewUrl(json, viewUrl); }
+
+/** Pure: add optional view_url (shareable m_* link; omitted unless http(s)) to a copied ⧉ Provenance JSON string. Same contract as medicareInvestigationJsonWithViewUrl. Never throws. */
+export function medicareProvenanceJsonWithViewUrl(json: string, viewUrl?: string | null): string { return medicareInvestigationJsonWithViewUrl(json, viewUrl); }
