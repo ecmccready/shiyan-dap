@@ -1221,6 +1221,8 @@ import { topCandidateStickyChip, topCandidateStickyChanged, topCandidateStickyPu
 { const m = require("../src/lib/evidence-packs-link"); assert.equal(m.EVIDENCE_PACKS_HREF, "/workbench/offer#evidence-packs");
   assert.equal(m.evidencePacksChipLabel("medicare"), "Medicare · Evidence packs →"); assert.equal(m.evidencePacksChipLabel("lookback"), "Evidence packs →");
   console.log("evidencePacksChip OK (→ /workbench/offer#evidence-packs)"); }
+{ const fs = require("fs"), path = require("path"); const c = fs.readFileSync(path.join(__dirname, "../src/components/AuditSummaryChip.tsx"), "utf8"); assert.ok(c.includes('"/workbench/audit"')); const s = fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8"); assert.ok(s.includes('<AuditSummaryChip scope="medicare" />'));
+  console.log("auditSummaryChip OK (sticky → /workbench/audit)"); }
 { const src = require("fs").readFileSync(require("path").join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8");
   assert.ok(src.includes('data-medicare-evidence-packs-sticky') && src.includes('<EvidencePacksChip scope="medicare" />'));
   const pg = require("fs").readFileSync(require("path").join(__dirname, "../src/app/workbench/medicare/page.tsx"), "utf8"); assert.ok(pg.includes('<EvidencePacksChip scope="medicare" />'));

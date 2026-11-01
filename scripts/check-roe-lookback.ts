@@ -894,6 +894,8 @@ if (rankedLookbackRows(c).length) { const vu = "https://x.test/workbench/status?
 { const m = require("../src/lib/evidence-packs-link"); assert.equal(m.EVIDENCE_PACKS_HREF, "/workbench/offer#evidence-packs");
   assert.equal(m.evidencePacksChipLabel("medicare"), "Medicare · Evidence packs →"); assert.equal(m.evidencePacksChipLabel("lookback"), "Evidence packs →");
   console.log("evidencePacksChip OK (→ /workbench/offer#evidence-packs)"); }
+{ const fs = require("fs"), path = require("path"); const c = fs.readFileSync(path.join(__dirname, "../src/components/AuditSummaryChip.tsx"), "utf8"); assert.ok(c.includes('"/workbench/audit"')); const s = fs.readFileSync(path.join(__dirname, "../src/components/RoeLookbackNote.tsx"), "utf8"); assert.ok(s.includes('<AuditSummaryChip scope="lookback" />'));
+  console.log("auditSummaryChip OK (sticky → /workbench/audit)"); }
 
 // Packs ▾/▴ toggle
 assert.deepEqual([...LOOKBACK_PACKS_HIDDEN], ["All paths", "All steps", "Roles", "Gaps", "Verdict", "Summary"]);
