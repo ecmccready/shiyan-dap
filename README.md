@@ -238,6 +238,8 @@ The same text is on `/workbench/offer` and `/workbench/pilot`. How evidence move
 
 **Validate an inventory pack.** Pure `validateAuditInventory(json)` in `src/lib/audit-inventory.ts` (same shape as `validateViewSurfaces`: returns `{ok, errors, warnings}`, never throws). Hard errors: non-object, wrong `schema`, non-string `path`/`note`, `sections` not an array, a section that is not an object, non-string `title`/`href`/`link`, or `items` not an array of strings. Soft warnings (still `ok`): missing `path`, `note` or a section `link`, `path` other than `/workbench/audit`, empty `sections` or empty `items`. Covered in `npx tsx scripts/check-audit.ts`. No fetch, no writes, no Level 4, no CMS.
 
+**Operator check.** `npx tsx scripts/validate-audit-inventory.ts <file.json>` runs `validateAuditInventory` on one saved *Copy inventory JSON* pack (5 MB cap; prints `error:` / `warning:` lines; exit 0 ok (warnings allowed), 1 errors or bad JSON, 2 usage/file). Committed sample `fixtures/audit/inventory.sample.json` = `buildAuditInventory()` (prints OK, exit 0). No network, no writes; well-formed only, not verified or trusted.
+
 ## Evidence and data support
 
 What an acquirer can check today without trusting this repo. Live unless marked directional.
