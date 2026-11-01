@@ -566,7 +566,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "v", does: "review complete: toggle rows-with-notes ↔ All (same as review done → ✎)" },
   { key: "d", does: "dismiss all top toasts at once — same as ✕ Clear all / N toasts chip; Recent kept; no-op with none showing" },
   { key: "e", does: "clear Recent toasts history — same as N recent ✕ / Recent → Clear; live toasts kept; no-op with no entries" },
-  { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (shares its first-use pulse); no-op with no entries" },
+  { key: "p", does: "copy Recent toasts JSON — same as Win strip ⧉ Copy recent (respects Recent tone filter; shares its first-use pulse); no-op with no entries" },
   { key: "?", does: "show / hide this sheet (Esc closes)" },
   { key: "Escape", does: "close this sheet first, else collapse Packs \u25b4, else Jumps \u25b4, else clear the top toasts" },
   { key: "\\", does: "copy shareable view link — same as the sticky ⧉ Link chip (m_filter, m_packs, m_jumps; defaults omitted); toast after clipboard success (free key, next to - / + / 0)" },
@@ -938,6 +938,8 @@ export function medicareToastsChip(stack: readonly unknown[] | number | null | u
 }
 
 export const MEDICARE_RECENT_STATE_EVENT = "medicare:recent-state";
+/** Tone-filtered Recent set state ({ count, tone }) — sticky ⧉ Copy recent / p copy exactly what Recent → ⧉ Copy all copies. */
+export const MEDICARE_RECENT_SHOWN_STATE_EVENT = "medicare:recent-shown-state";
 export const MEDICARE_RECENT_CLEAR_EVENT = "medicare:recent-clear";
 /** Pure: Win-strip "N recent ✕" chip while Recent toasts has entries; click = Clear (same as Recent → Clear). Mirrors lookbackRecentChip. Never throws. */
 export function medicareRecentChip(history: readonly unknown[] | number | null | undefined): { show: boolean; label: string } {
