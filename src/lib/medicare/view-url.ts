@@ -76,3 +76,7 @@ export function medicareApplyLinkToast(r: MedicareApplyLinkResult | { ok: false;
 export const MEDICARE_APPLY_LINK_PULSE_MS = 1200;
 export function medicareApplyLinkShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
 export function medicareApplyLinkPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_APPLY_LINK_PULSE_MS; }
+/** ⧉ Link first-use pulse: once per page load, only after a successful URL copy (never on clipboard fail). */
+export const MEDICARE_COPY_LINK_PULSE_MS = 1200;
+export function medicareCopyLinkShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
+export function medicareCopyLinkPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_COPY_LINK_PULSE_MS; }
