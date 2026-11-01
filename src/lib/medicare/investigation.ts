@@ -1763,3 +1763,16 @@ export function writeMedicareStripState(store: MedicareStripStore, which: "packs
   if (!store) return false;
   try { store.setItem(which === "packs" ? MEDICARE_PACKS_OPEN_KEY : MEDICARE_JUMPS_OPEN_KEY, open === true ? "1" : "0"); return true; } catch { return false; }
 }
+
+/** sessionStorage key for the Medicare row filter (per-tab; no localStorage). Stored "all" | status | "has_note". */
+export const MEDICARE_ROW_FILTER_KEY = "aethel.medicare.rowFilter";
+/** Pure read: validated RowFilter from a Storage-like object; missing / invalid / throwing → null (All). */
+export function readMedicareRowFilter(store: MedicareStripStore): RowFilter {
+  try { const v = store?.getItem(MEDICARE_ROW_FILTER_KEY); if (typeof v !== "string" || v === "all") return null; return ROW_FILTER_CYCLE.includes(v as RowFilter) ? (v as RowFilter) : null; } catch { return null; }
+}
+/** Pure write: stores the filter ("all" for null); invalid → "all"; returns false on missing store or throw. */
+export function writeMedicareRowFilter(store: MedicareStripStore, filter: unknown): boolean {
+  if (!store) return false;
+  const v = typeof filter === "string" && ROW_FILTER_CYCLE.includes(filter as RowFilter) ? filter : "all";
+  try { store.setItem(MEDICARE_ROW_FILTER_KEY, v); return true; } catch { return false; }
+}

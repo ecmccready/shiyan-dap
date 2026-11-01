@@ -1,3 +1,4 @@
+import { MEDICARE_ROW_FILTER_KEY, readMedicareRowFilter, writeMedicareRowFilter } from "../src/lib/medicare/investigation";
 import { readMedicareStripState, writeMedicareStripState, MEDICARE_PACKS_OPEN_KEY, MEDICARE_JUMPS_OPEN_KEY } from "../src/lib/medicare/investigation";
 // Run: npx tsx scripts/check-medicare.ts
 // Pure checks for the Medicare vertical: provenance hash, domain isolation, deterministic DQ check (no network, no writes).
@@ -1246,3 +1247,19 @@ console.log("medicare [ / ] Packs/Jumps OK");
   const src = rf(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
   assert.ok(src.includes("window.sessionStorage") && !/localStorage[^\n]*(StripState|OPEN_KEY)/.test(src) && src.includes("readMedicareStripState(") && src.includes("writeMedicareStripState("));
   console.log("ok medicare strip sessionStorage"); }
+
+// sessionStorage persistence for Medicare row filter
+{ const rf = readFileSync; 
+  assert.equal(MEDICARE_ROW_FILTER_KEY, "aethel.medicare.rowFilter");
+  const m = new Map<string, string>(); const st = { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => { m.set(k, v); } };
+  assert.equal(readMedicareRowFilter(st), null); assert.equal(readMedicareRowFilter(null), null);
+  for (const f of ["unreviewed", "needs_human_review", "cleared_pattern_only", "has_note"]) { assert.equal(writeMedicareRowFilter(st, f), true); assert.equal(readMedicareRowFilter(st), f); }
+  writeMedicareRowFilter(st, null); assert.equal(m.get(MEDICARE_ROW_FILTER_KEY), "all"); assert.equal(readMedicareRowFilter(st), null);
+  writeMedicareRowFilter(st, "bogus"); assert.equal(readMedicareRowFilter(st), null);
+  m.set(MEDICARE_ROW_FILTER_KEY, "evil"); assert.equal(readMedicareRowFilter(st), null);
+  assert.equal(writeMedicareRowFilter(null, "has_note"), false);
+  const bad = { getItem: () => { throw new Error("x"); }, setItem: () => { throw new Error("x"); } };
+  assert.equal(readMedicareRowFilter(bad), null); assert.equal(writeMedicareRowFilter(bad, "unreviewed"), false);
+  const src = rf(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes("window.sessionStorage") && !/localStorage[^\n]*RowFilter/.test(src) && src.includes("readMedicareRowFilter(") && src.includes("writeMedicareRowFilter("));
+  console.log("ok medicare rowFilter sessionStorage"); }
