@@ -69,6 +69,7 @@ Domain rules stay isolated. The engine does not change when a new vertical is ad
 - Long-horizon robotics policies is the second commercial case. It applies the same ranking and evidence pattern to a synthetic policy fixture at `/workbench/robotics`.
 - Long-horizon robotics policies at `/workbench/robotics` ranks synthetic policies by retrospective ΔΦ, with the same Show filter and expandable evidence rows used on the look-back surface.
 - Long-horizon robotics policies at `/workbench/robotics` shows a sticky summary (winner, ΔΦ vs greedy, shown count) and the same Show filter used on the look-back surface.
+- Long-horizon robotics policies at `/workbench/robotics` supports j/k navigation, Enter to expand, and f to cycle the Show filter — the same keyboard pattern used on the look-back surface.
 
 ## Level 4
 
