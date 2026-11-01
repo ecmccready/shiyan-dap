@@ -466,6 +466,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: ",", does: "open Compliance → (/workbench/compliance) — same as the sticky Compliance → chip; jumps from look-back insight to Diagnostics Compliance (free key, next to . Asset map)" },
   { key: ".", does: "open Asset map → (/workbench/assets) — same as the sticky Asset map → chip; jumps from look-back insight to the node-wide asset map" },
   { key: "'", does: "cycle Recent toasts tone filter All → Win → Agree → Empty → All — same as clicking the Recent tone chips; syncs lb_tone in the URL + toast (free key)" },
+  { key: "Shift+P", does: "copy the ↺ payoff JSON (where look-back meets/overtakes greedy after the ⑂ split) — same JSON as the ↺ payoff chip but no jump; no-op when there is no split" },
   { key: "Shift+D", does: "copy the ⑂ divergence JSON (first step where look-back and greedy pick different actions) — same as the sticky ⑂ diverge chip; no-op when they agree" },
   { key: "?", does: "show / hide this sheet" },
 ];
