@@ -1608,3 +1608,18 @@ export function lookbackStripToggleKey(ev: { key?: unknown; ctrlKey?: unknown; m
   if (typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase())) return null;
   return ev.key === "[" ? "packs" : ev.key === "]" ? "jumps" : null;
 }
+
+/** sessionStorage keys for the look-back sticky strip (per-tab; no localStorage, no cross-tab). */
+export const LOOKBACK_PACKS_OPEN_KEY = "aethel.lookback.packsOpen";
+export const LOOKBACK_JUMPS_OPEN_KEY = "aethel.lookback.jumpsOpen";
+type LookbackStripStore = { getItem(k: string): string | null; setItem(k: string, v: string): void } | null | undefined;
+/** Pure read: { packs, jumps } from a Storage-like object; missing / bad / throwing → false. */
+export function readLookbackStripState(store: LookbackStripStore): { packs: boolean; jumps: boolean } {
+  const get = (k: string) => { try { return store?.getItem(k) === "1"; } catch { return false; } };
+  return { packs: get(LOOKBACK_PACKS_OPEN_KEY), jumps: get(LOOKBACK_JUMPS_OPEN_KEY) };
+}
+/** Pure write: stores "1"/"0" for one strip; returns false on missing store or throw (quota / privacy mode). */
+export function writeLookbackStripState(store: LookbackStripStore, which: "packs" | "jumps", open: unknown): boolean {
+  if (!store) return false;
+  try { store.setItem(which === "packs" ? LOOKBACK_PACKS_OPEN_KEY : LOOKBACK_JUMPS_OPEN_KEY, open === true ? "1" : "0"); return true; } catch { return false; }
+}

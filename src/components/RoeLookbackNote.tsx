@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { lookbackJumpsChip, lookbackJumpsToggle, lookbackJumpsPulse, LOOKBACK_JUMPS_PULSE_MS, lookbackPacksChip, lookbackPacksToggle, lookbackPacksPulse, LOOKBACK_PACKS_PULSE_MS, lookbackSummaryButtonToast } from "@/lib/level4/roe-lookback";
+import { readLookbackStripState, writeLookbackStripState, lookbackJumpsChip, lookbackJumpsToggle, lookbackJumpsPulse, LOOKBACK_JUMPS_PULSE_MS, lookbackPacksChip, lookbackPacksToggle, lookbackPacksPulse, LOOKBACK_PACKS_PULSE_MS, lookbackSummaryButtonToast } from "@/lib/level4/roe-lookback";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import EvidencePacksChip from "@/components/EvidencePacksChip";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
@@ -43,6 +43,9 @@ export default function RoeLookbackNote() {
   allOpenRef.current = allOpen;
   const packsOpenRef = useRef(false); packsOpenRef.current = packsOpen;
   const jumpsOpenRef = useRef(false); jumpsOpenRef.current = jumpsOpen;
+  const stripHydratedRef = useRef(false);
+  useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readLookbackStripState(st); if (v.packs) { packsEverRef.current = true; setPacksOpen(true); } if (v.jumps) { jumpsEverRef.current = true; setJumpsOpen(true); } stripHydratedRef.current = true; }, []);
+  useEffect(() => { if (!stripHydratedRef.current) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeLookbackStripState(st, "packs", packsOpen); writeLookbackStripState(st, "jumps", jumpsOpen); }, [packsOpen, jumpsOpen]);
   const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
   const [focusRow, setFocusRow] = useState<string | null>(null);
   const focusPulsedRef = useRef(false);
