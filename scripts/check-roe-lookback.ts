@@ -845,6 +845,9 @@ console.log("Δe copy    -> sticky +Δe click copies summary JSON (same as g)");
     const ch = lookbackCopyAllPathsChip(j, rows.length)!; assert.equal(ch.label, `⧉ All ${rows.length} paths`); assert.equal(lookbackCopyChipToast(true, ch.toast), ch.toast); assert.equal(lookbackCopyChipToast(false, ch.toast), null); }
   else assert.equal(j, null);
   console.log(`ok lookbackAllPathsJson / CopyAllPathsChip (sticky ⧉ All paths, n=${rows.length})`); }
+if (rankedLookbackRows(c).length) { const vu = "https://x.test/workbench/status?lb_show=winners"; assert.equal(JSON.parse(lookbackAllPathsJson(c, vu)!).view_url, vu);
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(lookbackAllPathsJson(c, bad as never), lookbackAllPathsJson(c), "no view_url = unchanged all_paths");
+  console.log("all_paths   -> optional view_url (shareable lb_* link); absent when not http(s)"); }
 { assert.equal(lookbackRolesJson(null), null); assert.equal(lookbackCopyRolesChip(null), null); assert.equal(lookbackCopyRolesChip(""), null);
   const j = lookbackRolesJson(c); const rows = rankedLookbackRows(c);
   if (rows.length) { assert.ok(j); const o = JSON.parse(j!); assert.equal(o.kind, "roles"); assert.equal(o.count, rows.length); assert.deepEqual(o.roles.map((p: { run_id: string }) => p.run_id), rows.map((r) => r.run_id));

@@ -1537,12 +1537,12 @@ export function lookbackMinPhiJumpPulse(pulseAt: unknown, now: unknown): boolean
   const d = now - pulseAt; return d >= 0 && d < LOOKBACK_MIN_PHI_JUMP_PULSE_MS;
 }
 /** Pure: all ranked sealed paths as one JSON pack (rank order; each entry = lookbackPathJson payload). Null when no paths. Never throws. */
-export function lookbackAllPathsJson(c: LookbackCompare | null | undefined): string | null {
+export function lookbackAllPathsJson(c: LookbackCompare | null | undefined, viewUrl?: string | null): string | null {
   try {
     const rows = rankedLookbackRows(c); if (!c || !rows.length) return null;
     const paths = rows.map((r) => { try { return JSON.parse(lookbackPathJson(r, c.winner)); } catch { return null; } }).filter(Boolean);
     if (!paths.length) return null;
-    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "all_paths", count: paths.length, greedy: c.greedy?.run_id ?? null, winner: c.winner ?? null, paths, note: ROE_LOOKBACK_NOTE }, null, 2);
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "all_paths", count: paths.length, greedy: c.greedy?.run_id ?? null, winner: c.winner ?? null, paths, note: ROE_LOOKBACK_NOTE, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return null; }
 }
 /** Pure: sticky "⧉ All paths" chip — copies every sealed path JSON without moving focus. Null without JSON. Never throws. */
