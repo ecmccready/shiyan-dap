@@ -1090,3 +1090,15 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
   const srcL = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8"); assert.ok(srcL.includes("lookbackCopyLinkKey(") && srcL.includes(`'[data-roe-summary-copy-link="1"]'`));
   console.log("ok lookback \\\\ copy link key");
 }
+
+{ // ⇩ Apply link (clipboard URL → lb_*)
+  const P = UrlView.parseLookbackLinkText;
+  const ok = P("https://x.test/workbench/status?lb_show=beaten&lb_jumps=1&x=2");
+  assert.ok(ok.ok && ok.n === 2 && ok.view.show === "beaten" && ok.view.jumps === true);
+  assert.ok(P(" https://x.test/workbench/status/?lb_sort=dphi ").ok);
+  for (const [t, r] of [["not a url", "not a URL"], ["javascript:alert(1)", "not a URL"], ["https://x.test/workbench/medicare?lb_show=all", "wrong path"], ["https://x.test/workbench/status?lb_show=zzz", "no valid lb_*"], ["", "clipboard empty"]] as const) { const x = P(t); assert.ok(!x.ok && x.reason.includes(r), t); }
+  assert.ok(UrlView.lookbackApplyLinkToast(ok).includes("2 params") && UrlView.lookbackApplyLinkToast({ ok: false, reason: "not a URL" }).startsWith("⚠"));
+  const src = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes('data-roe-summary-apply-link="1"') && src.includes("parseLookbackLinkText(txt)"));
+  console.log("ok · apply link");
+}

@@ -53,3 +53,24 @@ export function lookbackApplyViewUrl(href: string, a: { show: LookbackRoleFilter
   const next = lookbackUrlWithView(href, { show: a.show, sort: a.sort, packs: a.packsOpen, jumps: a.jumpsOpen });
   return { href: next, changed: next !== href };
 }
+
+export const LOOKBACK_LINK_PATH = "/workbench/status";
+export type LookbackApplyLinkResult = { ok: true; view: Partial<LookbackUrlView>; n: number } | { ok: false; reason: string };
+
+/** Pure: parse clipboard text as a ⧉ Link URL for /workbench/status and extract valid lb_* fields. Rejects non-URL, wrong path, or no valid lb_*. Never throws. */
+export function parseLookbackLinkText(text: unknown, path: string = LOOKBACK_LINK_PATH): LookbackApplyLinkResult {
+  if (typeof text !== "string" || !text.trim()) return { ok: false, reason: "clipboard empty" };
+  let u: URL;
+  try { u = new URL(text.trim()); } catch { return { ok: false, reason: "not a URL" }; }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return { ok: false, reason: "not a URL" };
+  if (u.pathname.replace(/\/+$/, "") !== path) return { ok: false, reason: `wrong path ${u.pathname}` };
+  const view = parseLookbackUrlView(u.searchParams);
+  const n = Object.keys(view).length;
+  if (!n) return { ok: false, reason: "no valid lb_* params" };
+  return { ok: true, view, n };
+}
+
+export function lookbackApplyLinkToast(r: LookbackApplyLinkResult | { ok: false; reason: string }): string {
+  if (!r.ok) return `⚠ Apply link rejected · ${r.reason} — expected ${LOOKBACK_LINK_PATH}?lb_*`;
+  return `⇩ applied view link · ${r.n} param${r.n === 1 ? "" : "s"}${r.view.show ? ` · show ${r.view.show}` : ""}${r.view.sort ? ` · sort ${r.view.sort}` : ""}`;
+}
