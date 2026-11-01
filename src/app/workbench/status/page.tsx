@@ -1,31 +1,35 @@
-"use client";
+ "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function MedicarePage() {
-  const [rows, setRows] = useState<any[]>([]);
+export default function StatusPage() {
+  const [paths, setPaths] = useState<any[]>([]);
   const [lastPulse, setLastPulse] = useState(false);
 
-  const jumpToLast = () => {
-    if (!rows.length) return;
-    const last = rows[rows.length - 1];
-    // reuse existing z-key jump
-    document.getElementById(`row-${last.id}`)?.scrollIntoView({ behavior: "smooth" });
+  useEffect(() => {
+    // existing load logic stays
+  }, []);
+
+  const focusLast = () => {
+    if (!paths.length) return;
+    const last = paths[paths.length - 1];
+    // reuse existing z-key focus + expand + scroll
+    document.getElementById(`path-${last.id}`)?.scrollIntoView({ behavior: "smooth" });
     setLastPulse(true);
     setTimeout(() => setLastPulse(false), 1200);
   };
 
   return (
     <div>
-      {/* existing Win strip */}
-      <div className="win-strip">
+      {/* existing sticky strip */}
+      <div className="sticky-summary">
         {/* existing chips */}
-        {rows.length > 0 && (
+        {paths.length > 0 && (
           <button
             type="button"
-            onClick={jumpToLast}
+            onClick={focusLast}
             className={lastPulse ? "pulse" : ""}
-            data-medicare-last
+            data-roe-summary-last
           >
             Last ↓
           </button>
