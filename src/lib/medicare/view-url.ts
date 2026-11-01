@@ -36,3 +36,11 @@ export function medicareCopyLinkToast(v: MedicareUrlView): string {
   const n = Object.keys(serializeMedicareUrlView(v)).length;
   return n ? `🔗 copied view link · ${n} param${n === 1 ? "" : "s"} · filter ${v.filter ?? "all"}` : "🔗 copied view link · default view (no params)";
 }
+
+/** Pure: href with every m_* key removed (other params + hash kept); `removed` = count stripped. */
+export function stripMedicareUrlParams(href: string): { href: string; removed: number } {
+  const u = new URL(href);
+  let removed = 0;
+  for (const k of MEDICARE_URL_KEYS) if (u.searchParams.has(k)) { removed++; u.searchParams.delete(k); }
+  return { href: removed ? u.toString() : href, removed };
+}

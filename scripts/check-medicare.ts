@@ -1371,3 +1371,12 @@ import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VI
   assert.ok(src.indexOf('data-medicare-copy-link="1"') < src.indexOf('data-medicare-apply-view="1"'));
   console.log("ok · medicare view link URL");
 }
+
+{ // Reset view strips m_* from URL
+  const r = MedUrlView.stripMedicareUrlParams("https://x.test/workbench/medicare?a=1&m_filter=has_note&m_packs=1&m_jumps=1#h");
+  assert.equal(r.removed, 3); assert.equal(r.href, "https://x.test/workbench/medicare?a=1#h");
+  const d = MedUrlView.stripMedicareUrlParams("https://x.test/workbench/medicare?a=1"); assert.equal(d.removed, 0); assert.equal(d.href, "https://x.test/workbench/medicare?a=1");
+  const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes("stripMedicareUrlParams(window.location.href)") && src.includes("link cleared"));
+  console.log("ok · reset view strips m_* URL");
+}
