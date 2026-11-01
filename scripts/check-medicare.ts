@@ -567,7 +567,7 @@ console.log("restore -> 📌 on a Recent toasts pill re-shows it as a live top t
   for (const bad of [null, undefined, "", "javascript:alert(1)", "/workbench/medicare", 3 as unknown as string]) assert.equal(caseBriefWithViewUrl("# Brief", bad), "# Brief");
   assert.equal(caseBriefWithViewUrl("", "https://x.test"), "");
   const src = require("node:fs").readFileSync("src/components/CopyLiveInvestigation.tsx", "utf8");
-  assert.ok(src.includes("caseBriefWithViewUrl(json, medicareUrlWithView("), "brief button wires view_url");
+  assert.ok(src.includes("caseBriefWithViewUrl(json, medicareShareableViewUrl("), "brief button wires view_url");
   console.log("case brief  -> copy appends optional view_url (button / o / sticky chip share the button)"); }
 console.log("OK");
 { const h = [{ id: "complete" as const, text: "A", tone: "green" as const }, { id: "empty_filter" as const, text: "B", tone: "amber" as const }, { id: "handoff_ready" as const, text: "C", tone: "green" as const }];
@@ -1523,4 +1523,17 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   assert.equal(U.medicareApplyViewUrl("https://x.test/m?m_target=a", { rowFilter: null, packsOpen: false, jumpsOpen: false, keyTarget: null }).href, "https://x.test/m");
   const lk = U.parseMedicareLinkText("https://x.test/workbench/medicare?m_target=b"); assert.ok(lk.ok && lk.view.target === "b");
   console.log("ok medicare m_target URL");
+}
+
+// Shared view_url helper: case brief / hand-off / dispositions carry m_target from current key target.
+{
+  const U = MedUrlView;
+  assert.equal(U.medicareShareableViewUrl("https://x.test/workbench/medicare?m_filter=has_note", "row-2"), "https://x.test/workbench/medicare?m_filter=has_note&m_target=row-2");
+  assert.equal(U.medicareShareableViewUrl("https://x.test/workbench/medicare?m_target=old&m_packs=1", "new"), "https://x.test/workbench/medicare?m_packs=1&m_target=new");
+  assert.equal(U.medicareShareableViewUrl("https://x.test/workbench/medicare?m_target=stale", null), "https://x.test/workbench/medicare");
+  assert.equal(U.medicareShareableViewUrl("not a url", "a"), null);
+  const s = readFileSync(new URL("../src/components/CopyLiveInvestigation.tsx", import.meta.url), "utf8");
+  assert.equal(s.split("medicareShareableViewUrl(window.location.href, liveKeyTarget(r))").length - 1, 3, "brief/handoff/dispositions use shared helper");
+  assert.ok(!s.includes("medicareUrlWithView(window.location.href"), "no filter-only view_url left");
+  console.log("ok medicare shareable view_url m_target (brief/handoff/dispositions)");
 }

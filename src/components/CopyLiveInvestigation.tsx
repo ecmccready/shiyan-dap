@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { parseMedicareUrlView, medicareUrlWithView } from "@/lib/medicare/view-url";
+import { parseMedicareUrlView, medicareShareableViewUrl, resolveMedicareUrlTarget } from "@/lib/medicare/view-url";
+import { readMedicareKeyTarget } from "@/lib/medicare/investigation";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import { buildHandoffPack, formatReviewedCaseBrief, caseBriefWithViewUrl } from "@/lib/medicare/case-brief";
 import type { EvidencePack } from "@/lib/medicare/evidence";
 import type { MedicareProvenance } from "@/lib/medicare/provenance";
 import { medicareDirectButtonCopyWhich, medicareDirectBriefCopyKind, MEDICARE_PACK_COPIED_EVENT, MEDICARE_BRIEF_COPIED_EVENT, MEDICARE_COPY_ROW_TOAST_EVENT, handoffReadyAnnotated, handoffPackReadyPulse, HANDOFF_PACK_READY_PULSE_MS, MEDICARE_HANDOFF_FOCUS_EVENT, MEDICARE_HANDOFF_COPIED_EVENT, MEDICARE_DISPOSITIONS_COPIED_EVENT, HANDOFF_PULSE_MS, handoffPulseActive, MEDICARE_TIMER_EVENT, currentDispositionsJson, medicareDispositionsJsonWithViewUrl, dispositionsCopyPulse, DISPOSITIONS_COPY_PULSE_MS, handoffCopyPulse, HANDOFF_COPY_PULSE_MS, MEDICARE_REPORT_EVENT, reviewCompletion, reviewProgress, type InvestigationReport } from "@/lib/medicare/investigation";
+
+/** Current key target (sessionStorage, else URL m_target) resolved against report rows — feeds m_target into shareable view_url. */
+function liveKeyTarget(r: { entries?: { item_id: string }[] } | undefined): string | null {
+  const ids = (r?.entries ?? []).map((e) => e.item_id); let st: Storage | null = null; try { st = window.sessionStorage; } catch {}
+  try { return readMedicareKeyTarget(st, ids) ?? resolveMedicareUrlTarget(parseMedicareUrlView(window.location.search).target, ids); } catch { return null; }
+}
 
 /** Copies the live investigation report (current statuses + report_hash). With `report` it is controlled; otherwise it follows the stub's tab-local event. */
 export default function CopyLiveInvestigation({ report, initial, brief, handoff }: { report?: InvestigationReport; initial?: InvestigationReport; brief?: { evidence: EvidencePack; provenance: MedicareProvenance }; handoff?: boolean }) {
@@ -81,7 +88,7 @@ export default function CopyLiveInvestigation({ report, initial, brief, handoff 
       {...(handoff ? { "data-copy-medicare-handoff": true } : brief ? { "data-copy-medicare-reviewed-brief": true } : { "data-copy-medicare-dispositions": true })}
       data-review-complete={done ? "true" : "false"}
       disabled={!json}
-      onClick={(ev) => { const trusted = ev.isTrusted; let out = json; if (handoff && brief) { try { const v = parseMedicareUrlView(window.location.search); out = buildHandoffPack(r, brief.evidence, brief.provenance, timer, medicareUrlWithView(window.location.href, { filter: v.filter ?? null, packs: !!v.packs, jumps: !!v.jumps })) || json; } catch {} } else if (brief && !handoff) { try { const v = parseMedicareUrlView(window.location.search); out = caseBriefWithViewUrl(json, medicareUrlWithView(window.location.href, { filter: v.filter ?? null, packs: !!v.packs, jumps: !!v.jumps })) || json; } catch {} } else if (!handoff && !brief) { try { const v = parseMedicareUrlView(window.location.search); out = medicareDispositionsJsonWithViewUrl(json, medicareUrlWithView(window.location.href, { filter: v.filter ?? null, packs: !!v.packs, jumps: !!v.jumps })) || json; } catch {} } void copy.copy(out).then((ok) => { const which = medicareDirectButtonCopyWhich(!!handoff, !!brief, trusted, ok); if (which) window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which, json: "1" } })); const kind = medicareDirectBriefCopyKind(!!handoff, !!brief, trusted, ok); if (kind) window.dispatchEvent(new CustomEvent(MEDICARE_PACK_COPIED_EVENT, { detail: kind })); if (ok && brief && !handoff) window.dispatchEvent(new CustomEvent(MEDICARE_BRIEF_COPIED_EVENT, { detail: { trusted } })); }); }}
+      onClick={(ev) => { const trusted = ev.isTrusted; let out = json; if (handoff && brief) { try { out = buildHandoffPack(r, brief.evidence, brief.provenance, timer, medicareShareableViewUrl(window.location.href, liveKeyTarget(r))) || json; } catch {} } else if (brief && !handoff) { try { out = caseBriefWithViewUrl(json, medicareShareableViewUrl(window.location.href, liveKeyTarget(r))) || json; } catch {} } else if (!handoff && !brief) { try { out = medicareDispositionsJsonWithViewUrl(json, medicareShareableViewUrl(window.location.href, liveKeyTarget(r))) || json; } catch {} } void copy.copy(out).then((ok) => { const which = medicareDirectButtonCopyWhich(!!handoff, !!brief, trusted, ok); if (which) window.dispatchEvent(new CustomEvent(MEDICARE_COPY_ROW_TOAST_EVENT, { detail: { which, json: "1" } })); const kind = medicareDirectBriefCopyKind(!!handoff, !!brief, trusted, ok); if (kind) window.dispatchEvent(new CustomEvent(MEDICARE_PACK_COPIED_EVENT, { detail: kind })); if (ok && brief && !handoff) window.dispatchEvent(new CustomEvent(MEDICARE_BRIEF_COPIED_EVENT, { detail: { trusted } })); }); }}
       data-pulse={pulsing ? "true" : undefined}
       data-medicare-handoff-ready-pulse={readyPulsing ? "1" : undefined}
       data-medicare-handoff-copy-pulse={hoCopyPulsing ? "1" : undefined}

@@ -103,3 +103,9 @@ export const MEDICARE_URL_TARGET_EVENT = "medicare:url-target";
 export const MEDICARE_RESET_VIEW_PULSE_MS = 1200;
 export function medicareResetViewShouldPulse(alreadyPulsed: boolean, changed: unknown): boolean { return !alreadyPulsed && typeof changed === "number" && Number.isFinite(changed) && changed > 0; }
 export function medicareResetViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_RESET_VIEW_PULSE_MS; }
+
+/** Pure: full shareable /workbench/medicare URL from current view state — m_filter/m_packs/m_jumps parsed from href plus m_target = current key target
+ *  (same as ⧉ Link / ⧉ View). `keyTarget` null/invalid → m_target dropped (never a stale URL target). Used by case brief, 📦 Hand-off, ⧉ Dispositions. Never throws (bad href → null). */
+export function medicareShareableViewUrl(href: string, keyTarget: string | null | undefined): string | null {
+  try { const v = parseMedicareUrlView(new URL(href).search); return medicareUrlWithView(href, { filter: v.filter ?? null, packs: !!v.packs, jumps: !!v.jumps, target: keyTarget ?? null }); } catch { return null; }
+}
