@@ -230,7 +230,7 @@ assert.deepEqual(caps, {
 });
 assert.equal(caps.lookback_view_path, "/workbench/status"); assert.equal(caps.lookback_view_param_prefix, "lb_");
 assert.equal(caps.medicare_view_path, "/workbench/medicare"); assert.equal(caps.medicare_view_param_prefix, "m_");
-assert.equal(caps.evidence_packs, "handoff,compare,summary,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief,divergence");
+assert.equal(caps.evidence_packs, "handoff,compare,summary,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief,divergence,payoff");
 assert.equal(caps.global_snapshot_schema, GLOBAL_SNAPSHOT_SCHEMA);
 assert.equal(caps.listings_schema, "aethel.marketplace.listings.v1"); assert.equal(caps.peers_schema, "aethel.marketplace.peers.v1");
 assert.equal(caps.license_intent_phi_min, 0.01);
@@ -628,11 +628,11 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
     assert.ok(!raw.warnings.some((w) => w.startsWith("evidence_packs")));
     assert.deepEqual(validateViewSurfaces(pickViewSurfacesRaw({ ...VIEW_SURFACES, foo: 1 })), { ok: true, errors: [], warnings: [] }); }
   { const base = { schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES };
-    assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: "roles,gaps,all_steps,all_paths,dq,baselines,provenance,evidence,investigation,all_rows,notes,statuses, progress,verdict,summary,compare,handoff,dispositions,case_brief,divergence,extra" }), { ok: true, errors: [], warnings: [] });
-    assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: "handoff,summary,foo" }), { ok: true, errors: [], warnings: ["evidence_packs: missing compare,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief,divergence (soft-compat)"] });
+    assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: "roles,gaps,all_steps,all_paths,dq,baselines,provenance,evidence,investigation,all_rows,notes,statuses, progress,verdict,summary,compare,handoff,dispositions,case_brief,divergence,payoff,extra" }), { ok: true, errors: [], warnings: [] });
+    assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: "handoff,summary,foo" }), { ok: true, errors: [], warnings: ["evidence_packs: missing compare,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief,divergence,payoff (soft-compat)"] });
     assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: "" }), { ok: true, errors: [], warnings: ["evidence_packs: empty (soft-compat)"] });
     assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: " , " }).warnings, ["evidence_packs: empty (soft-compat)"]); }
-  assert.deepEqual(validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES, evidence_packs: "handoff,compare,summary,verdict,progress,statuses" }), { ok: true, errors: [], warnings: ["evidence_packs: missing notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief,divergence (soft-compat)"] });
+  assert.deepEqual(validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES, evidence_packs: "handoff,compare,summary,verdict,progress,statuses" }), { ok: true, errors: [], warnings: ["evidence_packs: missing notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief,divergence,payoff (soft-compat)"] });
   console.log("view surfaces    -> validateViewSurfaces: clean / soft warn / path+prefix mismatch warn / evidence_packs token warn / bad schema / bad type / non-object");
 }
 
@@ -681,10 +681,14 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
   console.log("view surfaces    -> bad-schema fixture fails hard (ok false, schema error)");
 }
 // 29. case_brief is the 19th advertised pack; an 18-token (pre-case_brief) list soft-warns only.
-{ assert.equal(VIEW_SURFACES.evidence_packs.split(",").length, 20);
-  const r = validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES, evidence_packs: VIEW_SURFACES.evidence_packs.replace(",divergence", "") });
+{ const r = validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES, evidence_packs: VIEW_SURFACES.evidence_packs.replace(",divergence", "") });
   assert.deepEqual(r, { ok: true, errors: [], warnings: ["evidence_packs: missing divergence (soft-compat)"] });
-  console.log("view surfaces    -> 20 packs incl. divergence; 19-token list soft-warns"); }
+  console.log("view surfaces    -> 20-token list (pre-payoff) still names divergence"); }
+// 30. payoff is the 21st advertised pack (↺ field in look-back ⚖ Compare + Medicare 📦 Hand-off + ⑂ divergence packs); a 20-token list soft-warns only.
+{ assert.equal(VIEW_SURFACES.evidence_packs.split(",").length, 21); assert.ok(VIEW_SURFACES.evidence_packs.endsWith(",payoff"));
+  const r = validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES, evidence_packs: VIEW_SURFACES.evidence_packs.replace(",payoff", "") });
+  assert.deepEqual(r, { ok: true, errors: [], warnings: ["evidence_packs: missing payoff (soft-compat)"] });
+  console.log("view surfaces    -> 21 packs incl. payoff; 20-token list soft-warns"); }
 console.log("OK");
 // 26. audit_summary_path: soft-compat view surface (missing / wrong path only warn).
 {

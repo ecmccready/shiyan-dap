@@ -27,7 +27,7 @@ export const VIEW_SURFACES = {
   lookback_view_param_prefix: "lb_",
   medicare_view_path: "/workbench/medicare",
   medicare_view_param_prefix: "m_",
-  evidence_packs: "handoff,compare,summary,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief,divergence",
+  evidence_packs: "handoff,compare,summary,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief,divergence,payoff",
   audit_summary_path: "/workbench/audit",
   asset_map_path: "/workbench/assets",
   compliance_path: "/workbench/compliance",
