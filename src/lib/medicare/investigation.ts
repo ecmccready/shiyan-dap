@@ -575,6 +575,7 @@ export const MEDICARE_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "0", does: "reset view — same as clicking sticky ↺ Reset view (filter All, Packs/Jumps closed, key target cleared, toast); 0 = back to zero since 1/2/3 set dispositions" },
   { key: "[", does: "toggle Packs ▾ / Packs ▴ — same as clicking the sticky chip (toast on first open only)" },
   { key: "`", does: "open Audit summary → (/workbench/audit) — same as the sticky Audit summary → chip; parity with look-back `.` (`.` already copies provenance here; ` was free, no Shift)" },
+  { key: "=", does: "open Asset map → (/workbench/assets) — same as the sticky Asset map → chip; parity with look-back `.` (`.` / `,` / `/` already copy provenance / baselines / DQ here; = was free, no Shift)" },
   { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
 ];
 
@@ -1897,6 +1898,11 @@ export function medicareApplyViewPulse(at: number | null, now: number): boolean 
 /** Pure: ` presses the sticky Audit summary → chip (navigates to /workbench/audit). Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
 export function medicareAuditKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
   if (!ev || ev.key !== "`" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
+}
+/** Pure: `=` presses the sticky Asset map → chip (navigates to /workbench/assets); parity with look-back lookbackAssetsKey (`.`). `.` copies provenance and `,` / `/` copy baselines / DQ here, so the free no-Shift `=` (next to `-` / `0`) is used. Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
+export function medicareAssetsKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "=" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
 export function medicareCopyLinkKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
