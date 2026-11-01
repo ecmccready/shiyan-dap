@@ -1641,3 +1641,15 @@ export function writeLookbackViewState(store: LookbackStripStore, which: "filter
   const v = which === "filter" ? (LOOKBACK_VIEW_FILTERS.includes(value as LookbackRoleFilter) ? value as string : "all") : (LOOKBACK_VIEW_SORTS.includes(value as LookbackSort) ? value as string : "rank");
   try { store.setItem(which === "filter" ? LOOKBACK_SHOW_FILTER_KEY : LOOKBACK_SORT_MODE_KEY, v); return true; } catch { return false; }
 }
+
+/** sessionStorage key for look-back Expand all (per-tab; no localStorage). Stored "1" | "0". */
+export const LOOKBACK_EXPAND_ALL_KEY = "aethel.lookback.expandAll";
+/** Pure read: true only when stored "1"; missing / invalid / throwing → false. */
+export function readLookbackExpandAll(store: LookbackStripStore): boolean {
+  try { return store?.getItem(LOOKBACK_EXPAND_ALL_KEY) === "1"; } catch { return false; }
+}
+/** Pure write: "1" when value === true else "0"; false on missing store or throw. */
+export function writeLookbackExpandAll(store: LookbackStripStore, value: unknown): boolean {
+  if (!store) return false;
+  try { store.setItem(LOOKBACK_EXPAND_ALL_KEY, value === true ? "1" : "0"); return true; } catch { return false; }
+}

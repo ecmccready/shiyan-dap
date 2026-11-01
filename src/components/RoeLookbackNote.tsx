@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { readLookbackViewState, writeLookbackViewState, readLookbackStripState, writeLookbackStripState, lookbackJumpsChip, lookbackJumpsToggle, lookbackJumpsPulse, LOOKBACK_JUMPS_PULSE_MS, lookbackPacksChip, lookbackPacksToggle, lookbackPacksPulse, LOOKBACK_PACKS_PULSE_MS, lookbackSummaryButtonToast } from "@/lib/level4/roe-lookback";
+import { readLookbackExpandAll, writeLookbackExpandAll, readLookbackViewState, writeLookbackViewState, readLookbackStripState, writeLookbackStripState, lookbackJumpsChip, lookbackJumpsToggle, lookbackJumpsPulse, LOOKBACK_JUMPS_PULSE_MS, lookbackPacksChip, lookbackPacksToggle, lookbackPacksPulse, LOOKBACK_PACKS_PULSE_MS, lookbackSummaryButtonToast } from "@/lib/level4/roe-lookback";
 import { useCopy, copiedRing } from "@/lib/use-copy";
 import EvidencePacksChip from "@/components/EvidencePacksChip";
 import { loadExperienceServer } from "@/lib/level4/experience-client";
@@ -49,6 +49,9 @@ export default function RoeLookbackNote() {
   const [roleFilter, setRoleFilter] = useState<LookbackRoleFilter>("all");
   const viewHydratedRef = useRef(false);
   useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} const v = readLookbackViewState(st); setRoleFilter(v.filter); setSortBy(v.sort); viewHydratedRef.current = true; }, []);
+  const expandHydratedRef = useRef(false);
+  useEffect(() => { let st: Storage | null = null; try { st = window.sessionStorage; } catch {} if (readLookbackExpandAll(st)) setAllOpen(true); expandHydratedRef.current = true; }, []);
+  useEffect(() => { if (!expandHydratedRef.current) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeLookbackExpandAll(st, allOpen); }, [allOpen]);
   useEffect(() => { if (!viewHydratedRef.current) return; let st: Storage | null = null; try { st = window.sessionStorage; } catch {} writeLookbackViewState(st, "filter", roleFilter); writeLookbackViewState(st, "sort", sortBy); }, [roleFilter, sortBy]);
   const [focusRow, setFocusRow] = useState<string | null>(null);
   const focusPulsedRef = useRef(false);
