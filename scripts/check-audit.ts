@@ -43,3 +43,12 @@ for (const bad of [null, 1, "x", []]) assert.equal(validateAuditInventory(bad).o
 { const v = validateAuditInventory({ ...buildAuditInventory(), path: "/elsewhere", sections: [] }); assert.ok(v.ok); assert.ok(v.warnings.includes('path: expected "/workbench/audit" (soft-compat)')); assert.ok(v.warnings.includes("sections: empty")); }
 { const v = validateAuditInventory({ ...buildAuditInventory(), sections: [{ title: "t", href: "/h", link: "l", items: [] }] }); assert.ok(v.ok); assert.ok(v.warnings.includes("sections[0].items: empty")); }
 console.log("check-audit: OK (schema, 4 sections, titles/hrefs, items, purity, JSON round-trip, validateAuditInventory)");
+
+// First-use pulse wiring on /workbench/audit Copy inventory JSON (static source check)
+import { readFileSync } from "node:fs";
+{
+  const page = readFileSync(new URL("../src/app/workbench/audit/page.tsx", import.meta.url), "utf8");
+  assert.ok(page.includes('firstUsePulseKey="aethel.audit.copyInventory.pulsed"'), "audit Copy inventory JSON has first-use pulse key");
+  const cv = readFileSync(new URL("../src/components/CopyValue.tsx", import.meta.url), "utf8");
+  assert.ok(cv.includes("sessionStorage") && cv.includes("data-first-use-pulse"), "CopyValue supports first-use pulse");
+}

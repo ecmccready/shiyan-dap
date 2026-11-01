@@ -16,7 +16,7 @@ export default function AuditPage() {
           A summary of the packs the node already produces. Each is copied locally from its page; this page sends, stores and changes nothing.
         </p>
         <p className="mb-4 text-sm text-zinc-400">
-          Inventory:<CopyValue value={JSON.stringify(buildAuditInventory(), null, 2)} label="inventory JSON" toast="Audit inventory JSON copied" />
+          Inventory:<CopyValue value={JSON.stringify(buildAuditInventory(), null, 2)} label="inventory JSON" toast="Audit inventory JSON copied" firstUsePulseKey="aethel.audit.copyInventory.pulsed" />
         </p>
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
           {SECTIONS.map((s) => (
