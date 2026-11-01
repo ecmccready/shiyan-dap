@@ -1380,3 +1380,15 @@ import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VI
   assert.ok(src.includes("stripMedicareUrlParams(window.location.href)") && src.includes("link cleared"));
   console.log("ok · reset view strips m_* URL");
 }
+{
+  const a = MedUrlView.medicareApplyViewUrl("https://x.test/workbench/medicare?a=1&m_filter=unreviewed#h", { rowFilter: "needs_human_review", packsOpen: true, jumpsOpen: false });
+  assert.ok(a.changed); const u = new URL(a.href);
+  assert.equal(u.searchParams.get("m_filter"), "needs_human_review"); assert.equal(u.searchParams.get("m_packs"), "1"); assert.equal(u.searchParams.get("m_jumps"), null); assert.equal(u.searchParams.get("a"), "1"); assert.equal(u.hash, "#h");
+  const d = MedUrlView.medicareApplyViewUrl("https://x.test/m?a=1&m_filter=has_note&m_jumps=1", { rowFilter: null, packsOpen: false, jumpsOpen: false });
+  assert.equal(new URL(d.href).search, "?a=1");
+  const same = MedUrlView.medicareApplyViewUrl("https://x.test/m?m_filter=has_note", { rowFilter: "has_note", packsOpen: false, jumpsOpen: false });
+  assert.equal(same.changed, false);
+  const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
+  const i = src.indexOf("medicareApplyViewUrl(window.location.href, a)"); assert.ok(i > 0 && i > src.indexOf("if (!p.ok) { say(medicareApplyViewToast(p)); return; }"));
+  console.log("ok · medicare apply view syncs m_* URL (rejects leave URL)");
+}

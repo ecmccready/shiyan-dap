@@ -44,3 +44,9 @@ export function stripMedicareUrlParams(href: string): { href: string; removed: n
   for (const k of MEDICARE_URL_KEYS) if (u.searchParams.has(k)) { removed++; u.searchParams.delete(k); }
   return { href: removed ? u.toString() : href, removed };
 }
+
+/** Pure: href to replaceState after a successful ⇩ Apply view (m_* = applied view, defaults omitted); `changed` false → leave URL alone. */
+export function medicareApplyViewUrl(href: string, a: { rowFilter: RowFilter; packsOpen: boolean; jumpsOpen: boolean }): { href: string; changed: boolean } {
+  const next = medicareUrlWithView(href, { filter: a.rowFilter, packs: a.packsOpen, jumps: a.jumpsOpen });
+  return { href: next, changed: next !== href };
+}
