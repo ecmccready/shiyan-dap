@@ -1750,3 +1750,8 @@ export function lookbackViewSnapshotJson(v: LookbackViewSnapshotInput): string {
 export function lookbackCopyViewToast(v: LookbackViewSnapshotInput): string { return `copied view JSON · show ${v.show} · sort ${v.sort}${v.focusRunId ? ` · focus ${v.focusRunId}` : ""}`; }
 export function lookbackCopyViewShouldPulse(alreadyPulsed: boolean): boolean { return !alreadyPulsed; }
 export function lookbackCopyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_COPY_VIEW_PULSE_MS; }
+
+/** Pure: first-use pulse on the sticky ⇩ Apply view chip — only after a successful apply, once per page load (never on reject). */
+export const LOOKBACK_APPLY_VIEW_PULSE_MS = 1200;
+export function lookbackApplyViewShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
+export function lookbackApplyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_APPLY_VIEW_PULSE_MS; }
