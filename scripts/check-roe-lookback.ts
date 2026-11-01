@@ -1061,3 +1061,15 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
   assert.ok(src.includes("stripLookbackUrlParams(window.location.href)") && src.includes("link cleared"));
   console.log("ok · reset view strips lb_* URL");
 }
+{
+  const a = UrlView.lookbackApplyViewUrl("https://x.test/workbench/status?a=1&lb_show=beaten#h", { show: "winners", sort: "dphi", packsOpen: true, jumpsOpen: false });
+  assert.ok(a.changed); const u = new URL(a.href);
+  assert.equal(u.searchParams.get("lb_show"), "winners"); assert.equal(u.searchParams.get("lb_sort"), "dphi"); assert.equal(u.searchParams.get("lb_packs"), "1"); assert.equal(u.searchParams.get("lb_jumps"), null); assert.equal(u.searchParams.get("a"), "1"); assert.equal(u.hash, "#h");
+  const d = UrlView.lookbackApplyViewUrl("https://x.test/s?a=1&lb_show=winners", { show: "all", sort: "rank", packsOpen: false, jumpsOpen: false });
+  assert.equal(new URL(d.href).search, "?a=1");
+  const same = UrlView.lookbackApplyViewUrl("https://x.test/s?lb_show=agree", { show: "agree", sort: "rank", packsOpen: false, jumpsOpen: false });
+  assert.equal(same.changed, false);
+  const src = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8");
+  const i = src.indexOf("lookbackApplyViewUrl(window.location.href, a)"); assert.ok(i > 0 && i > src.indexOf("if (!p.ok) { say(lookbackApplyViewToast(p)); return; }"));
+  console.log("ok · apply view syncs lb_* URL (rejects leave URL)");
+}

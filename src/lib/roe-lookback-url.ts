@@ -47,3 +47,9 @@ export function stripLookbackUrlParams(href: string): { href: string; removed: n
   for (const k of LOOKBACK_URL_KEYS) if (u.searchParams.has(k)) { removed++; u.searchParams.delete(k); }
   return { href: removed ? u.toString() : href, removed };
 }
+
+/** Pure: href to replaceState after a successful ⇩ Apply view (lb_* = applied view, defaults omitted); `changed` false → leave URL alone. */
+export function lookbackApplyViewUrl(href: string, a: { show: LookbackRoleFilter; sort: LookbackSort; packsOpen: boolean; jumpsOpen: boolean }): { href: string; changed: boolean } {
+  const next = lookbackUrlWithView(href, { show: a.show, sort: a.sort, packs: a.packsOpen, jumps: a.jumpsOpen });
+  return { href: next, changed: next !== href };
+}
