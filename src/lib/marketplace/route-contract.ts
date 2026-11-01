@@ -42,7 +42,10 @@ function selfUrlOk(v: string): boolean {
   return (u.protocol === "https:" || u.protocol === "http:") && !u.username && !u.password && !u.search && !u.hash && !!u.hostname;
 }
 
-function checkCapabilities(c: unknown, at: string, push: (m: string) => void): void {
+/** Soft-compat: VIEW_SURFACES keys (added in d58304d) may be missing on older deploys — a warning, not an error. */
+export const SOFT_CAPABILITY_KEYS: readonly string[] = Object.keys(VIEW_SURFACES);
+
+function checkCapabilities(c: unknown, at: string, push: (m: string) => void, warn: (m: string) => void = () => {}): void {
   if (!isObj(c)) { push(`${at}: must be an object`); return; }
   const want: Obj = {
     listings_schema: LISTINGS_SCHEMA,
@@ -57,7 +60,10 @@ function checkCapabilities(c: unknown, at: string, push: (m: string) => void): v
     global_snapshot_path: GLOBAL_SNAPSHOT_PATH,
     ...VIEW_SURFACES,
   };
-  for (const k of Object.keys(want)) if (c[k] !== want[k]) push(`${at}.${k}: must equal ${JSON.stringify(want[k])}`);
+  for (const k of Object.keys(want)) {
+    if (c[k] === undefined && SOFT_CAPABILITY_KEYS.includes(k)) { warn(`${at}.${k}: missing (older deploy? view surfaces are optional)`); continue; }
+    if (c[k] !== want[k]) push(`${at}.${k}: must equal ${JSON.stringify(want[k])}`);
+  }
   for (const k of Object.keys(c)) if (!(k in want)) push(`${at}.${k}: unknown capability`);
 }
 
@@ -92,7 +98,7 @@ function checkPeers(input: unknown): RouteContractResult {
         if (isStr(p[k]) && !selfUrlOk(p[k] as string)) push(`${at}.${k}: must be a relative path or an http(s) URL without credentials, query or fragment`);
       }
       if (p.capabilities === undefined) warnings.push("self has no capabilities object");
-      else checkCapabilities(p.capabilities, `${at}.capabilities`, push);
+      else checkCapabilities(p.capabilities, `${at}.capabilities`, push, (m) => warnings.push(m));
     } else {
       if (p.id === input.self_id) push(`${at}.id: only the first entry may be self_id`);
       if (p.role === "self") push(`${at}.role: only the first entry may have role "self"`);
@@ -140,7 +146,9 @@ export function formatRouteContractReport(route: RouteName, result: RouteContrac
 export const CAPABILITIES_NOTE =
   "Shape check only: matching capabilities are self-reported by the node, not verified, attested or trusted.";
 
-export type CapabilitiesResult = { ok: true; capabilities: PeerCapabilities; source: "capabilities" | "registry" } | { ok: false; errors: string[] };
+type ViewKey = keyof typeof VIEW_SURFACES;
+export type CheckedCapabilities = Omit<PeerCapabilities, ViewKey> & Partial<Pick<PeerCapabilities, ViewKey>>;
+export type CapabilitiesResult = { ok: true; capabilities: CheckedCapabilities; source: "capabilities" | "registry"; warnings: string[] } | { ok: false; errors: string[] };
 
 /**
  * Check a self capabilities object against this node's exact constants (pure, never throws). Accepts either the
@@ -162,21 +170,20 @@ export function validatePeerCapabilities(input: unknown): CapabilitiesResult {
     }
     const errors: string[] = [];
     const push = (m: string) => { if (errors.length < ROUTE_CONTRACT_MAX_ERRORS) errors.push(m); };
-    checkCapabilities(caps, "capabilities", push);
+    const warnings: string[] = [];
+    checkCapabilities(caps, "capabilities", push, (m) => warnings.push(m));
     if (errors.length > 0) return { ok: false, errors };
     const c = caps as PeerCapabilities;
-    return {
-      ok: true,
-      source,
-      capabilities: {
+    const out: Record<string, unknown> = {
         listings_schema: c.listings_schema, peers_schema: c.peers_schema, handoff_path_template: c.handoff_path_template,
         license_intent_phi_min: c.license_intent_phi_min, read_only: true, writes: "none", cross_node_trust: "none",
         attestation: c.attestation, global_snapshot_schema: c.global_snapshot_schema, global_snapshot_path: c.global_snapshot_path,
         lookback_view_path: c.lookback_view_path, lookback_view_param_prefix: c.lookback_view_param_prefix,
         medicare_view_path: c.medicare_view_path, medicare_view_param_prefix: c.medicare_view_param_prefix,
         evidence_packs: c.evidence_packs, view_surfaces_note: c.view_surfaces_note,
-      },
     };
+    for (const k of SOFT_CAPABILITY_KEYS) if (out[k] === undefined) delete out[k];
+    return { ok: true, source, capabilities: out as CheckedCapabilities, warnings };
   } catch {
     return { ok: false, errors: ["capabilities: could not be read safely"] };
   }
@@ -187,6 +194,7 @@ export function formatCapabilitiesReport(result: CapabilitiesResult): { lines: s
   const lines = [CAPABILITIES_NOTE];
   if (result.ok) {
     lines.push(`OK: capabilities match (${result.source === "registry" ? "from the peers registry self entry" : "capabilities object"}; ${Object.keys(result.capabilities).length} fields)`);
+    for (const w of result.warnings) lines.push(`warning: ${w}`);
     return { lines, exitCode: 0 };
   }
   for (const e of result.errors) lines.push(`error: ${e}`);

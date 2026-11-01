@@ -11,7 +11,7 @@ import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/p
 import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE, VIEW_SURFACES } from "../src/lib/marketplace/peers";
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
-import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE, validatePeerCapabilities, formatCapabilitiesReport, CAPABILITIES_NOTE } from "../src/lib/marketplace/route-contract";
+import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE, validatePeerCapabilities, formatCapabilitiesReport, CAPABILITIES_NOTE, SOFT_CAPABILITY_KEYS } from "../src/lib/marketplace/route-contract";
 import { parseOperatorOrigin, parseOriginArgs, routeUrls, formatOriginReport, safeSnippet, ORIGIN_NOTE, ORIGIN_NOTE_WITH_SNAPSHOT, type RouteProbe } from "../src/lib/marketplace/origin-check";
 import { buildGlobalSnapshot, classifyRun, GLOBAL_SNAPSHOT_SCHEMA, SNAPSHOT_NOTE } from "../src/lib/diagnostics/global-snapshot";
 import { validateGlobalSnapshot, formatSnapshotReport, SNAPSHOT_VALIDATE_NOTE } from "../src/lib/diagnostics/global-snapshot-validate";
@@ -372,7 +372,7 @@ pfail(pm((d) => { d.peers[0].capabilities.extra = 1; }), /unknown capability/, "
 pfail(pm((d) => { d.peers[0].capabilities.global_snapshot_path = "/api/other"; }), /global_snapshot_path/, "tampered snapshot path");
 pfail(pm((d) => { delete d.peers[0].capabilities.global_snapshot_schema; }), /global_snapshot_schema/, "missing snapshot schema");
 pfail(pm((d) => { d.peers[0].capabilities.lookback_view_param_prefix = "x_"; }), /lookback_view_param_prefix/, "tampered lb prefix");
-pfail(pm((d) => { delete d.peers[0].capabilities.medicare_view_path; }), /medicare_view_path/, "missing medicare view path");
+{ const r = checkRouteContract("peers", pm((d) => { delete d.peers[0].capabilities.medicare_view_path; })); assert.equal(r.ok, true, "missing medicare view path is a soft-compat warning"); if (r.ok) assert.ok(r.warnings.some((w) => /medicare_view_path: missing/.test(w))); }
 pfail(pm((d) => { d.peers[1].index_url = "https://peer.example.org/workbench/marketplace"; }), /null URLs/, "placeholder with URL");
 pfail(pm((d) => { d.peers[1].capabilities = JSON.parse(JSON.stringify(d.peers[0].capabilities)); }), /only the self entry/, "capabilities on a placeholder");
 pfail(pm((d) => { d.peers.reverse(); }), /first entry/, "self not first");
@@ -531,7 +531,7 @@ console.log("origin snapshot  -> --with-snapshot parsing; two URLs by default, t
 // 23. Self capabilities validator (pure): a capabilities object or a full peers registry.
 const capsObj = (): J => JSON.parse(JSON.stringify(peersHttps.peers[0].capabilities));
 const vc1 = validatePeerCapabilities(capsObj());
-assert.equal(vc1.ok, true); if (vc1.ok) { assert.equal(vc1.source, "capabilities"); assert.deepEqual(vc1.capabilities, capsObj()); }
+assert.equal(vc1.ok, true); if (vc1.ok) { assert.equal(vc1.source, "capabilities"); assert.deepEqual(vc1.capabilities, capsObj()); assert.deepEqual(vc1.warnings, []); }
 const vc2 = validatePeerCapabilities(peersHttps);
 assert.equal(vc2.ok, true); if (vc2.ok) { assert.equal(vc2.source, "registry"); assert.equal(vc2.capabilities.global_snapshot_path, "/api/diagnostics/global-snapshot"); }
 assert.equal(validatePeerCapabilities(peersLocal).ok, true, "localhost registry ok");
@@ -551,6 +551,19 @@ for (let i = 0; i < 200; i++) assert.equal(typeof validatePeerCapabilities(junk[
 assert.deepEqual(formatCapabilitiesReport(vc2), { lines: [CAPABILITIES_NOTE, "OK: capabilities match (from the peers registry self entry; 16 fields)"], exitCode: 0 });
 assert.equal(formatCapabilitiesReport(validatePeerCapabilities({})).exitCode, 1);
 assert.deepEqual(validatePeerCapabilities(peersHttps), validatePeerCapabilities(peersHttps), "pure");
+// 23b. Soft-compat: pre-d58304d capabilities (no VIEW_SURFACES keys) pass with warnings; wrong values still fail.
+const oldCaps = cm((d) => { for (const k of SOFT_CAPABILITY_KEYS) delete d[k]; });
+const vOld = validatePeerCapabilities(oldCaps);
+assert.equal(vOld.ok, true, "pre-d58304d capabilities pass"); if (vOld.ok) { assert.equal(vOld.warnings.length, 6); assert.equal(Object.keys(vOld.capabilities).length, 10); assert.ok(vOld.warnings.every((w) => /missing/.test(w))); }
+const fOld = formatCapabilitiesReport(vOld); assert.equal(fOld.exitCode, 0); assert.equal(fOld.lines.filter((l) => l.startsWith("warning:")).length, 6);
+const vOneMissing = validatePeerCapabilities(cm((d) => { delete d.evidence_packs; })); assert.equal(vOneMissing.ok, true); if (vOneMissing.ok) assert.deepEqual(vOneMissing.warnings, ["capabilities.evidence_packs: missing (older deploy? view surfaces are optional)"]);
+const oldReg = pm((d) => { for (const k of SOFT_CAPABILITY_KEYS) delete d.peers[0].capabilities[k]; });
+assert.equal(validatePeerCapabilities(oldReg).ok, true, "older registry passes");
+const oldPeers = checkRouteContract("peers", oldReg); assert.equal(oldPeers.ok, true); if (oldPeers.ok) assert.equal(oldPeers.warnings.length, 6);
+cfail(cm((d) => { d.lookback_view_param_prefix = "x_"; }), /lookback_view_param_prefix/, "present but wrong view field still fails");
+cfail(cm((d) => { delete d.listings_schema; }), /listings_schema/, "original required field still hard");
+assert.equal(SOFT_CAPABILITY_KEYS.length, 6); assert.equal(Object.keys(capsObj()).length, 16, "self still advertises all 16");
+console.log("capabilities     -> soft-compat: missing view surfaces warn (pre-d58304d ok), wrong values / original fields still fail");
 console.log("capabilities     -> object or registry; exact constants incl. global_snapshot_*; tampered, missing, extra rejected; junk never throws");
 
 // 24. --with-capabilities on the origin check (pure; reads the peers JSON already fetched, no extra request).

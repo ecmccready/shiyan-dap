@@ -121,7 +121,7 @@ export function formatOriginReport(origin: string, probes: RouteProbe[], opts: {
       lines.push("capabilities: not checked — failed", "  error: no usable peers response to read capabilities from");
     } else {
       const c = validatePeerCapabilities(p.json);
-      if (c.ok) lines.push("capabilities: from peers — OK: self capabilities match");
+      if (c.ok) { lines.push("capabilities: from peers — OK: self capabilities match"); for (const w of c.warnings) lines.push(`  warning: ${w}`); }
       else { failed++; lines.push("capabilities: from peers — check failed"); for (const e of c.errors) lines.push(`  error: ${e}`); }
     }
     const total = ROUTES.length + 1;
