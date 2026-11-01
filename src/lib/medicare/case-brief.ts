@@ -117,3 +117,11 @@ export function buildHandoffPack(report: unknown, evidence: EvidencePack, proven
     return JSON.stringify({ ...body, handoff_hash: contentHash(body) }, null, 2);
   } catch { return ""; }
 }
+
+/** Pure: append optional view_url (shareable m_* link; omitted unless http(s)) to a copied case brief (markdown). Returns `brief` unchanged when empty or viewUrl invalid. Never throws. */
+export function caseBriefWithViewUrl(brief: string, viewUrl?: string | null): string {
+  try {
+    if (typeof brief !== "string" || !brief || typeof viewUrl !== "string" || !/^https?:\/\//.test(viewUrl)) return typeof brief === "string" ? brief : "";
+    return `${brief.replace(/\s+$/, "")}\n\nview_url: ${viewUrl}\n`;
+  } catch { return typeof brief === "string" ? brief : ""; }
+}

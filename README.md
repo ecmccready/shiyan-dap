@@ -618,3 +618,5 @@ The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirr
 - Offer Peer-visible note: Known peers advertise all 18 clipboard evidence packs carrying `view_url` (incl. `dispositions`); older peers with shorter lists soft-warn.
 - Medicare ⧉ Dispositions / `y` / Copy dispositions JSON: adds optional `view_url` (current shareable `m_*` link; omitted unless http(s)) via pure `medicareDispositionsJsonWithViewUrl`; clipboard only.
 - Medicare shareable view URL also carries the key target: `m_target=<item_id>` (omitted when none). Applied on mount when the row exists (unknown/invalid ignored), synced via replaceState on j/k/click, included in ⧉ Link / pack `view_url`, restored by ⇩ Apply link / ⇩ Apply view, stripped by ↺ Reset view. Parity with look-back `lb_focus`.
+
+- **Medicare · case brief `view_url`:** copying the case brief (button, `o`, or the sticky chip — all press the same button) appends `view_url: <shareable m_* link>` to the markdown, omitted unless http(s) (pure `caseBriefWithViewUrl`). Peer `evidence_packs` now advertises **19** packs (adds `case_brief`); older 18-token lists soft-warn only. Clipboard only; nothing sent.

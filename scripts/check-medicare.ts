@@ -561,6 +561,14 @@ console.log("clear all -> with 1+ stacked top toasts a ✕ Clear all N (Esc) con
   assert.equal(restoreMedicareToast({ id: "bogus", text: "x" }, []), null); assert.equal(restoreMedicareToast({ id: "complete", text: " " }, []), null); assert.equal(restoreMedicareToast(null, null), null);
   const st = medicareToastStack({ complete: e.text }); assert.equal(dismissedToastHistory(pushToastHistory([], st), st).length, 0, "restored toast leaves the strip while live"); }
 console.log("restore -> 📌 on a Recent toasts pill re-shows it as a live top toast (same slot/timer), no-op if already showing");
+{ // case brief copy: optional view_url (m_* link; omitted unless http(s))
+  const { caseBriefWithViewUrl } = require("../src/lib/medicare/case-brief");
+  assert.equal(caseBriefWithViewUrl("# Brief\n", "https://x.test/workbench/medicare?m_filter=has_note"), "# Brief\n\nview_url: https://x.test/workbench/medicare?m_filter=has_note\n");
+  for (const bad of [null, undefined, "", "javascript:alert(1)", "/workbench/medicare", 3 as unknown as string]) assert.equal(caseBriefWithViewUrl("# Brief", bad), "# Brief");
+  assert.equal(caseBriefWithViewUrl("", "https://x.test"), "");
+  const src = require("node:fs").readFileSync("src/components/CopyLiveInvestigation.tsx", "utf8");
+  assert.ok(src.includes("caseBriefWithViewUrl(json, medicareUrlWithView("), "brief button wires view_url");
+  console.log("case brief  -> copy appends optional view_url (button / o / sticky chip share the button)"); }
 console.log("OK");
 { const h = [{ id: "complete" as const, text: "A", tone: "green" as const }, { id: "empty_filter" as const, text: "B", tone: "amber" as const }, { id: "handoff_ready" as const, text: "C", tone: "green" as const }];
   assert.deepEqual(removeToastHistoryEntry(h, h[1]).map((x) => x.text), ["A", "C"], "remove one keeps order");

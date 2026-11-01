@@ -27,7 +27,7 @@ export const VIEW_SURFACES = {
   lookback_view_param_prefix: "lb_",
   medicare_view_path: "/workbench/medicare",
   medicare_view_param_prefix: "m_",
-  evidence_packs: "handoff,compare,summary,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions",
+  evidence_packs: "handoff,compare,summary,verdict,progress,statuses,notes,all_rows,investigation,evidence,provenance,baselines,dq,all_paths,all_steps,gaps,roles,dispositions,case_brief",
   view_surfaces_note: "Shareable view URLs restore display state only (filters, sort, panels). Packs are copied to the local clipboard; this node serves no pack API and stores nothing.",
 } as const;
 export const VIEW_SURFACES_SCHEMA = "aethel.view_surfaces.v1";
