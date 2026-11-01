@@ -234,6 +234,8 @@ The same text is on `/workbench/offer` and `/workbench/pilot`. How evidence move
 
 `/workbench/audit` is a read-only Phase 3 enterprise stub listing what an audit/evidence pack can include today: Medicare Know-trail packs (Provenance, Baselines, DQ, Evidence, Investigation), Medicare HITL packs (case brief, hand-off, dispositions, notes, statuses, progress, all rows), look-back insight packs (Compare, Summary, Verdict, Gaps, Roles, All paths, All steps) and shareable view URLs (`lb_*`, `m_*`, `view_url`). Links to `/workbench/medicare`, `/workbench/status`, `/workbench/offer#evidence-packs`, `/workbench/marketplace` and `/workbench/global`; listed under Domains → Do. Static; no fetch, no writes.
 
+**Copy inventory JSON.** The *Inventory:* copy control on `/workbench/audit` copies the static catalog as `aethel.audit.inventory.v1` JSON (`schema`, `path: "/workbench/audit"`, four `sections` with `title`/`href`/`link`/`items`, and a read-only `note`), built by the pure `buildAuditInventory()` in `src/lib/audit-inventory.ts`. Covered by `npx tsx scripts/check-audit.ts`. Clipboard only; no fetch, no writes, no Level 4, no CMS.
+
 ## Evidence and data support
 
 What an acquirer can check today without trusting this repo. Live unless marked directional.
