@@ -40,6 +40,7 @@ export default function OfferPage() {
         <section id="evidence-packs" data-offer-evidence-packs className="border border-zinc-800 rounded-2xl p-5 mb-8 text-sm text-zinc-300">
           <p className="text-emerald-400 text-xs uppercase tracking-widest mb-2">Evidence packs a reviewer can copy today</p>
           <p data-offer-audit-link className="text-zinc-400 text-xs mb-2">Want the whole inventory in one place? <Link className="underline text-cyan-300" href="/workbench/audit">See the audit summary →</Link> (read-only).</p>
+          <p data-offer-assets-link className="text-zinc-400 text-xs mb-2">Need the Phase 3 asset map? <Link className="underline text-cyan-300" href="/workbench/assets">See the asset map →</Link> (read-only).</p>
           <div className="grid sm:grid-cols-2 gap-4 mb-3">
             <div>
               <p className="text-white mb-1"><Link className="underline" href="/workbench/medicare">Medicare · HITL review →</Link></p>
