@@ -1635,15 +1635,15 @@ export function medicareCopyNotesChip(report: unknown): { show: boolean; label: 
   const n = JSON.parse(json).count as number; return { show: true, label: `⧉ ${n} note${n === 1 ? "" : "s"}`, json, toast: medicareNotesToast(json) };
 }
 
-/** Pure: compact status-mix pack. Unlike ⧉ Notes (reviewer rationale), ⧉ All rows (full ReportEntry per row) and ⧉ Dispositions / y (whole hashed report envelope), this is { schema, kind: "statuses", count, report_hash (reference), counts{per DISPOSITION_STATUSES}, rows[{ rank, item_id, status }] } — no notes, reviewer, evidence or other hashes. "" when no rows. Never throws. */
-export function medicareStatusesJson(report: unknown): string {
+/** Pure: compact status-mix pack. Unlike ⧉ Notes (reviewer rationale), ⧉ All rows (full ReportEntry per row) and ⧉ Dispositions / y (whole hashed report envelope), this is { schema, kind: "statuses", count, report_hash (reference), counts{per DISPOSITION_STATUSES}, rows[{ rank, item_id, status }], view_url? (shareable m_* link; omitted unless http(s)) } — no notes, reviewer, evidence or other hashes. "" when no rows. Never throws. */
+export function medicareStatusesJson(report: unknown, viewUrl?: string | null): string {
   try {
     const r = report as Partial<InvestigationReport> | null; const es = Array.isArray(r?.entries) ? r!.entries! : [];
     const rows = es.map((e, i) => ({ e, rank: i + 1 })).filter(({ e }) => e && typeof e === "object" && typeof e.item_id === "string")
       .map(({ e, rank }) => ({ rank, item_id: e.item_id, status: (DISPOSITION_STATUSES as readonly string[]).includes(e.status) ? e.status : "unreviewed" }));
     if (!rows.length) return "";
     const counts = Object.fromEntries(DISPOSITION_STATUSES.map((st) => [st, rows.filter((x) => x.status === st).length]));
-    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "statuses", count: rows.length, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, counts, rows }, null, 2);
+    return JSON.stringify({ schema: MEDICARE_INVESTIGATION_SCHEMA, kind: "statuses", count: rows.length, report_hash: typeof r?.report_hash === "string" ? r.report_hash : null, counts, rows, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return ""; }
 }
 /** Pure: toast text for ⧉ Statuses (count read from the copied JSON). */
@@ -1651,8 +1651,8 @@ export function medicareStatusesToast(json: unknown): string {
   try { const n = typeof json === "string" && json ? JSON.parse(json).count : null; return typeof n === "number" && n > 0 ? `⧉ Statuses → copied ${n}-row status mix JSON` : ""; } catch { return ""; }
 }
 /** Pure: sticky "⧉ Statuses" chip. Hidden with no rows. Never throws. */
-export function medicareCopyStatusesChip(report: unknown): { show: boolean; label: string; json: string; toast: string } {
-  const json = medicareStatusesJson(report); if (!json) return { show: false, label: "", json: "", toast: "" };
+export function medicareCopyStatusesChip(report: unknown, viewUrl?: string | null): { show: boolean; label: string; json: string; toast: string } {
+  const json = medicareStatusesJson(report, viewUrl); if (!json) return { show: false, label: "", json: "", toast: "" };
   return { show: true, label: "⧉ Statuses", json, toast: medicareStatusesToast(json) };
 }
 
