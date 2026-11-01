@@ -1,6 +1,5 @@
+
 export const DOMAIN_GROUPS = [
-  // Keep every existing group exactly as it is today.
-  // Example shape (replace with your real groups):
   {
     name: "Know",
     entries: [
@@ -9,6 +8,7 @@ export const DOMAIN_GROUPS = [
       { label: "Global · misdiagnosis", path: "/workbench/global" },
       { label: "Medicare · Public Data Intelligence", path: "/workbench/medicare" },
       { label: "Level 4 status", path: "/workbench/status" },
+      { label: "Long-horizon robotics policies", path: "/workbench/robotics" },
     ],
   },
   {
@@ -36,14 +36,6 @@ export const DOMAIN_GROUPS = [
       { label: "Marketplace", path: "/workbench/marketplace" },
     ],
   },
-  // New macro — additive only
-  {
-    name: "Physical systems",
-    entries: [
-      { label: "Long-horizon robotics policies", path: "/workbench/robotics" },
-    ],
-  },
 ];
 
-// This must stay an array. The /ab page iterates it.
 export const DOMAIN_ITEMS = DOMAIN_GROUPS.flatMap((g) => g.entries);
