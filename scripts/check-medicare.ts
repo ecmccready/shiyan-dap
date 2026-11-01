@@ -1530,6 +1530,10 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   const U = MedUrlView;
   assert.equal(U.medicareShareableViewUrl("https://x.test/workbench/medicare?m_filter=has_note", "row-2"), "https://x.test/workbench/medicare?m_filter=has_note&m_target=row-2");
   assert.equal(U.medicareShareableViewUrl("https://x.test/workbench/medicare?m_target=old&m_packs=1", "new"), "https://x.test/workbench/medicare?m_packs=1&m_target=new");
+  { const fs = require("node:fs") as typeof import("node:fs"); const chips = fs.readFileSync("src/components/MedicareStatusChips.tsx", "utf8"); const cmj = fs.readFileSync("src/components/CopyMedicareJson.tsx", "utf8");
+    assert.equal((chips.match(/vu = medicareShareableViewUrl\(window\.location\.href, keyTarget\)/g) ?? []).length, 4, "all_rows/notes/statuses/progress view_url include m_target");
+    assert.ok(!/vu = medicareUrlWithView\(window\.location\.href, \{ filter: v\.filter/.test(chips), "no pack chip drops m_target");
+    assert.ok(cmj.includes("medicareShareableViewUrl(window.location.href,") && !cmj.includes("medicareUrlWithView("), "Know-trail packs view_url include m_target"); }
   assert.equal(U.medicareShareableViewUrl("https://x.test/workbench/medicare?m_target=stale", null), "https://x.test/workbench/medicare");
   assert.equal(U.medicareShareableViewUrl("not a url", "a"), null);
   const s = readFileSync(new URL("../src/components/CopyLiveInvestigation.tsx", import.meta.url), "utf8");
