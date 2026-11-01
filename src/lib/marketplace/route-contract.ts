@@ -180,7 +180,7 @@ export function validatePeerCapabilities(input: unknown): CapabilitiesResult {
         attestation: c.attestation, global_snapshot_schema: c.global_snapshot_schema, global_snapshot_path: c.global_snapshot_path,
         lookback_view_path: c.lookback_view_path, lookback_view_param_prefix: c.lookback_view_param_prefix,
         medicare_view_path: c.medicare_view_path, medicare_view_param_prefix: c.medicare_view_param_prefix,
-        evidence_packs: c.evidence_packs, view_surfaces_note: c.view_surfaces_note,
+        evidence_packs: c.evidence_packs, audit_summary_path: c.audit_summary_path, view_surfaces_note: c.view_surfaces_note,
     };
     for (const k of SOFT_CAPABILITY_KEYS) if (out[k] === undefined) delete out[k];
     return { ok: true, source, capabilities: out as CheckedCapabilities, warnings };

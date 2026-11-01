@@ -122,6 +122,9 @@ export default function MarketplacePage() {
                     <code>{peer.capabilities.lookback_view_path}?{peer.capabilities.lookback_view_param_prefix}*</code>,{" "}
                     <code>{peer.capabilities.medicare_view_path}?{peer.capabilities.medicare_view_param_prefix}*</code>; {peer.capabilities.evidence_packs.split(",").filter(Boolean).length} packs carry view_url (clipboard only):{" "}
                     <code className="break-words">{peer.capabilities.evidence_packs.split(",").join(", ")}</code>.
+                    {peer.capabilities.audit_summary_path ? (
+                      <> Audit summary: <a className="underline" href={peer.capabilities.audit_summary_path}><code>{peer.capabilities.audit_summary_path}</code></a> (read-only).</>
+                    ) : null}
                   </p>
                 ) : null}
                 {peer.capabilities ? (
