@@ -109,8 +109,8 @@ export default function MarketplacePage() {
                     <code>{peer.capabilities.handoff_path_template}</code>; read-only, no cross-node trust, self-reported and not
                     third-party attested. Global snapshot: <code>{peer.capabilities.global_snapshot_path}</code> (snapshot v1). Shareable views:{" "}
                     <code>{peer.capabilities.lookback_view_path}?{peer.capabilities.lookback_view_param_prefix}*</code>,{" "}
-                    <code>{peer.capabilities.medicare_view_path}?{peer.capabilities.medicare_view_param_prefix}*</code>; packs (clipboard only):{" "}
-                    <code>{peer.capabilities.evidence_packs}</code>.
+                    <code>{peer.capabilities.medicare_view_path}?{peer.capabilities.medicare_view_param_prefix}*</code>; {peer.capabilities.evidence_packs.split(",").filter(Boolean).length} packs carry view_url (clipboard only):{" "}
+                    <code className="break-words">{peer.capabilities.evidence_packs.split(",").join(", ")}</code>.
                   </p>
                 ) : null}
                 {peer.capabilities ? (
