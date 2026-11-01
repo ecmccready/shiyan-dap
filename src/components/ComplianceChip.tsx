@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 export const COMPLIANCE_HREF = "/workbench/compliance";
 export const LOOKBACK_COMPLIANCE_CHIP_PULSE_KEY = "aethel.lookback.complianceChip.pulsed";
+export const MEDICARE_COMPLIANCE_CHIP_PULSE_KEY = "aethel.medicare.complianceChip.pulsed";
 
 /** Link chip to /workbench/compliance (Diagnostics Compliance) (shared by Medicare + look-back sticky strips).
  *  Optional firstUsePulseKey: pulses once per browser session on first mount (sessionStorage flag); display-only. */
