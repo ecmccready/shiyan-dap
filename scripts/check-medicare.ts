@@ -1406,7 +1406,7 @@ import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VI
   const same = MedUrlView.medicareApplyViewUrl("https://x.test/m?m_filter=has_note", { rowFilter: "has_note", packsOpen: false, jumpsOpen: false });
   assert.equal(same.changed, false);
   const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
-  const i = src.indexOf("medicareApplyViewUrl(window.location.href, a)"); assert.ok(i > 0 && i > src.indexOf("if (!p.ok) { say(medicareApplyViewToast(p)); return; }"));
+  const i = src.indexOf("medicareApplyViewUrl(window.location.href, { ...a, keyTarget: a.keyTarget ?? null })"); assert.ok(i > 0 && i > src.indexOf("if (!p.ok) { say(medicareApplyViewToast(p)); return; }"));
   console.log("ok · medicare apply view syncs m_* URL (rejects leave URL)");
 }
 
