@@ -65,6 +65,13 @@ export function validateViewSurfaces(json: unknown): { ok: boolean; errors: stri
   for (const k of ["lookback_view_param_prefix", "medicare_view_param_prefix"] as const) {
     const v = o[k]; if (typeof v === "string" && v !== VIEW_SURFACES[k]) warnings.push(`${k}: expected "${VIEW_SURFACES[k]}" (soft-compat)`);
   }
+  { const v = o.evidence_packs;
+    if (typeof v === "string") {
+      const have = new Set(v.split(",").map((t) => t.trim()).filter(Boolean));
+      if (have.size === 0) warnings.push("evidence_packs: empty (soft-compat)");
+      else { const miss = VIEW_SURFACES.evidence_packs.split(",").filter((t) => !have.has(t));
+        if (miss.length) warnings.push(`evidence_packs: missing ${miss.join(",")} (soft-compat)`); }
+    } }
   return { ok: errors.length === 0, errors, warnings };
 }
 export const SELF_ATTESTATION = "none — self-reported, not third-party attested";

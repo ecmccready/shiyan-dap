@@ -624,7 +624,12 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
     assert.equal(raw.ok, false); assert.ok(raw.errors.includes("evidence_packs: expected string")); assert.ok(raw.errors.includes("medicare_view_path: expected string"));
     assert.ok(!raw.warnings.some((w) => w.startsWith("evidence_packs")));
     assert.deepEqual(validateViewSurfaces(pickViewSurfacesRaw({ ...VIEW_SURFACES, foo: 1 })), { ok: true, errors: [], warnings: [] }); }
-  console.log("view surfaces    -> validateViewSurfaces: clean / soft warn / path+prefix mismatch warn / bad schema / bad type / non-object");
+  { const base = { schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES };
+    assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: "statuses, progress,verdict,summary,compare,handoff,extra" }), { ok: true, errors: [], warnings: [] });
+    assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: "handoff,summary,foo" }), { ok: true, errors: [], warnings: ["evidence_packs: missing compare,verdict,progress,statuses (soft-compat)"] });
+    assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: "" }), { ok: true, errors: [], warnings: ["evidence_packs: empty (soft-compat)"] });
+    assert.deepEqual(validateViewSurfaces({ ...base, evidence_packs: " , " }).warnings, ["evidence_packs: empty (soft-compat)"]); }
+  console.log("view surfaces    -> validateViewSurfaces: clean / soft warn / path+prefix mismatch warn / evidence_packs token warn / bad schema / bad type / non-object");
 }
 
 console.log("OK");
