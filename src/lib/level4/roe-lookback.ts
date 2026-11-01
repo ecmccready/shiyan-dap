@@ -421,6 +421,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
   { key: "*", does: "expand all ↔ collapse all sealed-path step lists — same as the sticky ⊞ Expand all / ⊟ Collapse all chip (shares its first-use pulse); no-op with no sealed paths" },
   { key: "+", does: "⇩ Apply view — read an aethel.roe_lookback.view.v1 snapshot from the clipboard and apply it" },
+  { key: "\\", does: "copy shareable view link — same as the sticky ⧉ Link chip (lb_show, lb_sort, lb_packs, lb_jumps; defaults omitted); toast after clipboard success (free key)" },
   { key: "-", does: "copy view snapshot JSON — same as the sticky ⧉ View chip (show, sort, packs/jumps, expand all, focus); toast + shared first-use pulse (free key)" },
   { key: "0", does: "reset view — same as the sticky ↺ Reset view chip (Show All, Sort rank, Packs/Jumps closed, Expand all off, focus cleared, session keys cleared + toast); 0 = back to zero (free key; digits 1–3 jump ranks)" },
   { key: "?", does: "show / hide this sheet" },
@@ -1379,6 +1380,11 @@ export function lookbackResetViewKey(ev: { key?: unknown; ctrlKey?: unknown; met
 /** Pure: `-` presses the sticky ⧉ View chip (copy view snapshot JSON). `-` was free; reads as "snapshot / dash off a copy". Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
 export function lookbackCopyViewKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
   if (!ev || ev.key !== "-" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
+}
+/** Pure: `\\` presses the sticky ⧉ Link chip (copy shareable lb_* view URL). Chosen as the first truly free key near the view cluster: unshifted (unlike `_` = Shift+`-` or `|` = Shift+`\\`, so no layout/Shift ambiguity with `-`), and unused by any look-back shortcut. Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
+export function lookbackCopyLinkKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "\\" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
 /** Pure: parse a clipboard string as an `aethel.roe_lookback.view.v1` snapshot (same shape ⧉ View copies). Returns ok:false with a reason on bad JSON / wrong schema / bad fields. Never throws. */
