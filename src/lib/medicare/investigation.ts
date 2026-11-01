@@ -1884,3 +1884,8 @@ export function medicareApplyViewKey(ev: { key?: unknown; ctrlKey?: unknown; met
   if (!ev || ev.key !== "+" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
+
+/** Pure: first-use pulse on the sticky ⇩ Apply view chip — only after a successful apply, once per page load (never on reject). */
+export const MEDICARE_APPLY_VIEW_PULSE_MS = 1200;
+export function medicareApplyViewShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
+export function medicareApplyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_APPLY_VIEW_PULSE_MS; }

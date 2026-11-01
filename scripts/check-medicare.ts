@@ -1344,3 +1344,9 @@ import { parseMedicareViewSnapshot, applyMedicareViewSnapshot, medicareApplyView
   const sc = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8"); const iv = sc.indexOf('data-medicare-copy-view="1"'), ia = sc.indexOf('data-medicare-apply-view="1"'), ir = sc.indexOf('data-medicare-reset-view="1"'); assert.ok(iv > 0 && iv < ia && ia < ir);
   const ds = readFileSync(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8"); assert.ok(ds.includes("medicareApplyViewKey(") && ds.includes(MEDICARE_APPLY_VIEW_EVENT.slice(0,0)) && ds.includes("MEDICARE_APPLY_VIEW_EVENT"));
   console.log("medicare + apply view OK"); }
+
+import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VIEW_PULSE_MS } from "../src/lib/medicare/investigation";
+{ assert.equal(medicareApplyViewShouldPulse(false, true), true); assert.equal(medicareApplyViewShouldPulse(true, true), false); assert.equal(medicareApplyViewShouldPulse(false, false), false);
+  assert.ok(medicareApplyViewPulse(0, MEDICARE_APPLY_VIEW_PULSE_MS - 1) && !medicareApplyViewPulse(0, MEDICARE_APPLY_VIEW_PULSE_MS) && !medicareApplyViewPulse(null, 1));
+  const sc = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8"); assert.ok(sc.includes("data-medicare-apply-view-pulsing") && sc.includes("medicareApplyViewShouldPulse(avPulsedRef.current, true)"));
+  console.log("medicare apply view pulse OK"); }
