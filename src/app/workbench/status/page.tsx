@@ -1,12 +1,37 @@
-import type { Metadata } from "next";
-import StatusDashboard from "./StatusDashboard";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Level 4 status | Aethel Node",
-  description:
-    "Review durable guided-start counts, verified experience, recent runs, and measured outcomes.",
-};
+import { useState } from "react";
 
-export default function StatusPage() {
-  return <StatusDashboard />;
+export default function MedicarePage() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [lastPulse, setLastPulse] = useState(false);
+
+  const jumpToLast = () => {
+    if (!rows.length) return;
+    const last = rows[rows.length - 1];
+    // reuse existing z-key jump
+    document.getElementById(`row-${last.id}`)?.scrollIntoView({ behavior: "smooth" });
+    setLastPulse(true);
+    setTimeout(() => setLastPulse(false), 1200);
+  };
+
+  return (
+    <div>
+      {/* existing Win strip */}
+      <div className="win-strip">
+        {/* existing chips */}
+        {rows.length > 0 && (
+          <button
+            type="button"
+            onClick={jumpToLast}
+            className={lastPulse ? "pulse" : ""}
+            data-medicare-last
+          >
+            Last ↓
+          </button>
+        )}
+      </div>
+      {/* existing table */}
+    </div>
+  );
 }
