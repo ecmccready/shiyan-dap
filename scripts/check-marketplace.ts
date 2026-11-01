@@ -507,9 +507,9 @@ assert.deepEqual(validateGlobalSnapshot(gsJ()), validateGlobalSnapshot(gsJ()), "
 console.log("snapshot shape   -> valid and empty ok; schema, counts, run_id, duplicate, status, dates rejected; unknown fields dropped; junk never throws");
 
 // 22. Optional third path for the origin check: --with-snapshot (pure helpers; default behavior unchanged).
-assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app"]), { origin: O, withSnapshot: false, withCapabilities: false });
-assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app/", "--with-snapshot"]), { origin: O, withSnapshot: true, withCapabilities: false });
-assert.deepEqual(parseOriginArgs(["--with-snapshot", "http://localhost:3000"]), { origin: "http://localhost:3000", withSnapshot: true, withCapabilities: false });
+assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app"]), { origin: O, withSnapshot: false, withCapabilities: false, withViewSurfaces: false });
+assert.deepEqual(parseOriginArgs(["https://shiyan-dap.vercel.app/", "--with-snapshot"]), { origin: O, withSnapshot: true, withCapabilities: false, withViewSurfaces: false });
+assert.deepEqual(parseOriginArgs(["--with-snapshot", "http://localhost:3000"]), { origin: "http://localhost:3000", withSnapshot: true, withCapabilities: false, withViewSurfaces: false });
 for (const bad of [[], ["--with-snapshot"], ["--with-snapshot", "--with-snapshot"], [O, O], [O, "--other"], [O, "--with-snapshot", "x"], ["http://example.com", "--with-snapshot"], [O, 5], null, "x"]) assert.equal(parseOriginArgs(bad), null, JSON.stringify(bad));
 assert.deepEqual(routeUrls(O), { peers: `${O}/api/marketplace/peers`, listings: `${O}/api/marketplace/listings` }, "flag off: two routes");
 assert.deepEqual(routeUrls(O, true), { peers: `${O}/api/marketplace/peers`, listings: `${O}/api/marketplace/listings`, snapshot: `${O}/api/diagnostics/global-snapshot` }, "flag on: three");
@@ -567,21 +567,37 @@ console.log("capabilities     -> soft-compat: missing view surfaces warn (pre-d5
 console.log("capabilities     -> object or registry; exact constants incl. global_snapshot_*; tampered, missing, extra rejected; junk never throws");
 
 // 24. --with-capabilities on the origin check (pure; reads the peers JSON already fetched, no extra request).
-assert.deepEqual(parseOriginArgs([O, "--with-capabilities"]), { origin: O, withSnapshot: false, withCapabilities: true });
-assert.deepEqual(parseOriginArgs(["--with-capabilities", O, "--with-snapshot"]), { origin: O, withSnapshot: true, withCapabilities: true });
+assert.deepEqual(parseOriginArgs([O, "--with-capabilities"]), { origin: O, withSnapshot: false, withCapabilities: true, withViewSurfaces: false });
+assert.deepEqual(parseOriginArgs(["--with-capabilities", O, "--with-snapshot"]), { origin: O, withSnapshot: true, withCapabilities: true, withViewSurfaces: false });
 for (const bad of [[O, "--with-capabilities", "--with-capabilities"], [O, "--with-snapshot", "--with-capabilities", "x"], ["--with-capabilities", "--with-snapshot"]]) assert.equal(parseOriginArgs(bad), null, JSON.stringify(bad));
 assert.deepEqual(routeUrls(O, true), { peers: `${O}/api/marketplace/peers`, listings: `${O}/api/marketplace/listings`, snapshot: `${O}/api/diagnostics/global-snapshot` }, "capabilities adds no URL");
 assert.deepEqual(formatOriginReport(O, [pOk, lOk]), all, "default unchanged");
-const both = formatOriginReport(O, [pOk, lOk, snapOk], { withSnapshot: true, withCapabilities: true });
+const both = formatOriginReport(O, [pOk, lOk, snapOk], { withSnapshot: true, withCapabilities: true, withViewSurfaces: false });
 assert.equal(both.exitCode, 0); assert.equal(both.lines[0], ORIGIN_NOTE_WITH_SNAPSHOT);
 assert.deepEqual(both.lines.slice(-2), ["capabilities: from peers — OK: self capabilities match", `Summary: all 4 checks hold at ${O}`]);
-const capOnly = formatOriginReport(O, [pOk, lOk], { withCapabilities: true });
+const capOnly = formatOriginReport(O, [pOk, lOk], { withCapabilities: true, withViewSurfaces: false });
 assert.equal(capOnly.exitCode, 0); assert.equal(capOnly.lines.at(-1), `Summary: all 3 checks hold at ${O}`);
-const capBad = formatOriginReport(O, [{ route: "peers", status: 200, json: pm((d) => { d.peers[0].capabilities.writes = "some"; }) }, lOk], { withCapabilities: true });
+const capBad = formatOriginReport(O, [{ route: "peers", status: 200, json: pm((d) => { d.peers[0].capabilities.writes = "some"; }) }, lOk], { withCapabilities: true, withViewSurfaces: false });
 assert.equal(capBad.exitCode, 1); assert.ok(capBad.lines.includes("capabilities: from peers — check failed")); assert.ok(capBad.lines.at(-1)!.startsWith("Summary: 2 of 3 checks failed"), "contract and capabilities both fail");
-const capNoPeers = formatOriginReport(O, [{ route: "peers", status: 503, failure: "expected HTTP 200" }, lOk], { withCapabilities: true });
+const capNoPeers = formatOriginReport(O, [{ route: "peers", status: 503, failure: "expected HTTP 200" }, lOk], { withCapabilities: true, withViewSurfaces: false });
 assert.equal(capNoPeers.exitCode, 1); assert.ok(capNoPeers.lines.includes("capabilities: not checked — failed"));
 console.log("origin caps      -> --with-capabilities parsing (combinable); no extra URL; ok / tampered / peers unavailable; default unchanged");
+
+// 25. --with-view-surfaces on the origin check (pure; picks VIEW_SURFACES from peers self capabilities, no extra request).
+assert.deepEqual(parseOriginArgs([O, "--with-view-surfaces"]), { origin: O, withSnapshot: false, withCapabilities: false, withViewSurfaces: true });
+assert.deepEqual(parseOriginArgs(["--with-view-surfaces", O, "--with-snapshot", "--with-capabilities"]), { origin: O, withSnapshot: true, withCapabilities: true, withViewSurfaces: true });
+for (const bad of [[O, "--with-view-surfaces", "--with-view-surfaces"], ["--with-view-surfaces"], [O, "--with-view-surfaces", "--with-snapshot", "--with-capabilities", "x"]]) assert.equal(parseOriginArgs(bad), null, JSON.stringify(bad));
+const vsOk = formatOriginReport(O, [pOk, lOk], { withViewSurfaces: true });
+assert.equal(vsOk.exitCode, 0); assert.deepEqual(vsOk.lines.slice(-2), ["view surfaces: from peers self — OK: aethel.view_surfaces.v1 shape holds", `Summary: all 3 checks hold at ${O}`]);
+const vsAll = formatOriginReport(O, [pOk, lOk, snapOk], { withSnapshot: true, withCapabilities: true, withViewSurfaces: true });
+assert.equal(vsAll.exitCode, 0); assert.equal(vsAll.lines.at(-1), `Summary: all 5 checks hold at ${O}`);
+const vsOld = formatOriginReport(O, [{ route: "peers", status: 200, json: pm((d) => { delete d.peers[0].capabilities.medicare_view_path; }) }, lOk], { withViewSurfaces: true });
+assert.ok(vsOld.lines.includes("  warning: medicare_view_path: missing (soft-compat)"), "older peer JSON warns");
+assert.ok(vsOld.lines.includes("view surfaces: from peers self — OK: aethel.view_surfaces.v1 shape holds"));
+const vsNo = formatOriginReport(O, [{ route: "peers", status: 503, failure: "expected HTTP 200" }, lOk], { withViewSurfaces: true });
+assert.equal(vsNo.exitCode, 1); assert.ok(vsNo.lines.includes("view surfaces: not checked — failed"));
+assert.deepEqual(formatOriginReport(O, [pOk, lOk]), all, "default unchanged");
+console.log("origin views     -> --with-view-surfaces parsing (combinable); no extra URL; ok / soft-missing warn / peers unavailable; default unchanged");
 
 // 24. pickViewSurfaces: only VIEW_SURFACES keys + schema; ignores others; omits missing.
 {

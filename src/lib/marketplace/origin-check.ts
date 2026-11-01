@@ -13,12 +13,15 @@
 import { checkRouteContract, type RouteName } from "@/lib/marketplace/route-contract";
 import { validateGlobalSnapshot } from "@/lib/diagnostics/global-snapshot-validate";
 import { validatePeerCapabilities } from "@/lib/marketplace/route-contract";
+import { pickViewSurfaces, validateViewSurfaces } from "@/lib/marketplace/peers";
 
 /** The optional third path, only with --with-snapshot. */
 export type ProbeRoute = RouteName | "snapshot";
 export const WITH_SNAPSHOT_FLAG = "--with-snapshot";
 /** Optional: also check the self capabilities inside the peers response (no extra request). */
 export const WITH_CAPABILITIES_FLAG = "--with-capabilities";
+/** Optional: also pick VIEW_SURFACES from the self capabilities in the peers response and run validateViewSurfaces (no extra request; missing = warning). */
+export const WITH_VIEW_SURFACES_FLAG = "--with-view-surfaces";
 
 export const ORIGIN_NOTE =
   "Shape check only: a passing route contract means well-formed and the right route's content, not verified, attested or trusted. GET only, two fixed paths, no redirects followed.";
@@ -47,16 +50,17 @@ export function routeUrls(origin: string, withSnapshot = false): { peers: string
   return withSnapshot ? { ...base, snapshot: `${origin}/api/diagnostics/global-snapshot` } : base;
 }
 
-/** CLI args: exactly one origin, plus optional --with-snapshot and --with-capabilities (each at most once, any order). Null otherwise. */
-export function parseOriginArgs(args: unknown): { origin: string; withSnapshot: boolean; withCapabilities: boolean } | null {
-  if (!Array.isArray(args) || args.length < 1 || args.length > 3 || !args.every((a) => typeof a === "string")) return null;
-  const isFlag = (a: string) => a === WITH_SNAPSHOT_FLAG || a === WITH_CAPABILITIES_FLAG;
+/** CLI args: exactly one origin, plus optional --with-snapshot, --with-capabilities and --with-view-surfaces (each at most once, any order). Null otherwise. */
+export function parseOriginArgs(args: unknown): { origin: string; withSnapshot: boolean; withCapabilities: boolean; withViewSurfaces: boolean } | null {
+  if (!Array.isArray(args) || args.length < 1 || args.length > 4 || !args.every((a) => typeof a === "string")) return null;
+  const isFlag = (a: string) => a === WITH_SNAPSHOT_FLAG || a === WITH_CAPABILITIES_FLAG || a === WITH_VIEW_SURFACES_FLAG;
+  const views = args.filter((a) => a === WITH_VIEW_SURFACES_FLAG).length;
   const snap = args.filter((a) => a === WITH_SNAPSHOT_FLAG).length;
   const caps = args.filter((a) => a === WITH_CAPABILITIES_FLAG).length;
   const rest = args.filter((a) => !isFlag(a));
-  if (rest.length !== 1 || snap > 1 || caps > 1) return null;
+  if (rest.length !== 1 || snap > 1 || caps > 1 || views > 1) return null;
   const origin = parseOperatorOrigin(rest[0]);
-  return origin ? { origin, withSnapshot: snap === 1, withCapabilities: caps === 1 } : null;
+  return origin ? { origin, withSnapshot: snap === 1, withCapabilities: caps === 1, withViewSurfaces: views === 1 } : null;
 }
 
 /** Remote text made safe to print: control characters become spaces, then it is cut to `max` characters. */
@@ -84,7 +88,7 @@ export type RouteProbe = {
  * With `{ withCapabilities: true }`: one more block that runs validatePeerCapabilities on the peers JSON already fetched
  * (no extra request); the summary then counts checks instead of routes.
  */
-export function formatOriginReport(origin: string, probes: RouteProbe[], opts: { withSnapshot?: boolean; withCapabilities?: boolean } = {}): { lines: string[]; exitCode: 0 | 1 } {
+export function formatOriginReport(origin: string, probes: RouteProbe[], opts: { withSnapshot?: boolean; withCapabilities?: boolean; withViewSurfaces?: boolean } = {}): { lines: string[]; exitCode: 0 | 1 } {
   const ROUTES: ProbeRoute[] = opts.withSnapshot ? ["peers", "listings", "snapshot"] : ["peers", "listings"];
   const lines: string[] = [opts.withSnapshot ? ORIGIN_NOTE_WITH_SNAPSHOT : ORIGIN_NOTE, `Origin: ${origin}`];
   let failed = 0;
@@ -114,6 +118,7 @@ export function formatOriginReport(origin: string, probes: RouteProbe[], opts: {
       for (const e of r.errors) lines.push(`  error: ${e}`);
     }
   }
+  const extra = (opts.withCapabilities ? 1 : 0) + (opts.withViewSurfaces ? 1 : 0);
   if (opts.withCapabilities) {
     const p = probes.find((x) => x.route === "peers");
     if (!p || p.failure || p.status !== 200) {
@@ -124,7 +129,23 @@ export function formatOriginReport(origin: string, probes: RouteProbe[], opts: {
       if (c.ok) { lines.push("capabilities: from peers — OK: self capabilities match"); for (const w of c.warnings) lines.push(`  warning: ${w}`); }
       else { failed++; lines.push("capabilities: from peers — check failed"); for (const e of c.errors) lines.push(`  error: ${e}`); }
     }
-    const total = ROUTES.length + 1;
+  }
+  if (opts.withViewSurfaces) {
+    const p = probes.find((x) => x.route === "peers");
+    const peers = p && !p.failure && p.status === 200 && p.json && typeof p.json === "object" ? (p.json as { peers?: unknown }).peers : undefined;
+    const self = Array.isArray(peers) ? peers.find((x) => x && typeof x === "object" && (x as { id?: unknown }).id === "self") as { capabilities?: unknown } | undefined : undefined;
+    const caps = self && self.capabilities && typeof self.capabilities === "object" && !Array.isArray(self.capabilities) ? self.capabilities as Record<string, unknown> : null;
+    if (!caps) {
+      failed++;
+      lines.push("view surfaces: not checked — failed", "  error: no self capabilities in a usable peers response");
+    } else {
+      const v = validateViewSurfaces(pickViewSurfaces(caps));
+      if (v.ok) { lines.push("view surfaces: from peers self — OK: aethel.view_surfaces.v1 shape holds"); for (const w of v.warnings) lines.push(`  warning: ${w}`); }
+      else { failed++; lines.push("view surfaces: from peers self — check failed"); for (const e of v.errors) lines.push(`  error: ${e}`); }
+    }
+  }
+  if (extra > 0) {
+    const total = ROUTES.length + extra;
     lines.push(failed === 0 ? `Summary: all ${total} checks hold at ${origin}` : `Summary: ${failed} of ${total} checks failed at ${origin}`);
     return { lines, exitCode: failed === 0 ? 0 : 1 };
   }
