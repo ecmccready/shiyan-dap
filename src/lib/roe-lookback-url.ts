@@ -108,3 +108,8 @@ export function lookbackResetViewPulse(at: number | null, now: number): boolean 
 export function lookbackShareableViewUrl(href: string, s: { show: LookbackRoleFilter; sort: LookbackSort; packsOpen: boolean; jumpsOpen: boolean; focusRunId?: string | null; expandAll?: boolean; recentTone?: string }): string | null {
   try { const u = new URL(href); if (u.protocol !== "http:" && u.protocol !== "https:") return null; return lookbackUrlWithView(href, { show: s.show, sort: s.sort, packs: !!s.packsOpen, jumps: !!s.jumpsOpen, focus: s.focusRunId ?? null, expand: !!s.expandAll, tone: s.recentTone as LookbackUrlTone }); } catch { return null; }
 }
+
+/** Pure: set only lb_tone on href (all → removed); other params untouched. Bad href → unchanged. Never throws. */
+export function lookbackUrlWithTone(href: string, tone: unknown): { href: string; changed: boolean } {
+  try { const u = new URL(href); const t = lookbackToneToUrl(tone as LookbackUrlTone); if (t) u.searchParams.set("lb_tone", t); else u.searchParams.delete("lb_tone"); const next = u.toString(); return { href: next, changed: next !== href }; } catch { return { href, changed: false }; }
+}
