@@ -1846,22 +1846,31 @@ export function medicareResetViewToast(cleared: number): string {
 // ⧉ View: compact semantic snapshot of the current Medicare view (not a raw sessionStorage dump). Display-only.
 export const MEDICARE_VIEW_SNAPSHOT_SCHEMA = "aethel.medicare.view.v1" as const;
 export const MEDICARE_COPY_VIEW_PULSE_MS = 1200;
-export type MedicareViewSnapshotInput = { rowFilter: string | null; packsOpen: boolean; jumpsOpen: boolean; keyTarget: string | null; entries?: ReadonlyArray<{ item_id: string }> | null };
+export type MedicareViewSnapshotInput = { rowFilter: string | null; packsOpen: boolean; jumpsOpen: boolean; keyTarget: string | null; entries?: ReadonlyArray<{ item_id: string }> | null; recentTone?: string };
 /** Pure: compact view JSON; keyTarget resolved to {item_id, index} (index -1 → null target). Never throws. */
 export function medicareViewSnapshot(v: MedicareViewSnapshotInput, viewUrl?: string | null) {
   const ids = Array.isArray(v.entries) ? v.entries.map((e) => e?.item_id) : [];
   const i = v.keyTarget ? ids.indexOf(v.keyTarget) : -1;
-  return { schema: MEDICARE_VIEW_SNAPSHOT_SCHEMA, rowFilter: v.rowFilter ?? null, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, keyTarget: i >= 0 ? { item_id: v.keyTarget as string, index: i } : null, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) };
+  return { schema: MEDICARE_VIEW_SNAPSHOT_SCHEMA, rowFilter: v.rowFilter ?? null, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, keyTarget: i >= 0 ? { item_id: v.keyTarget as string, index: i } : null, recentTone: (["all", "green", "amber"].includes(v.recentTone ?? "") ? v.recentTone : "all") as string, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) };
 }
-/** Optional view_url = shareable m_* medicare URL (incl. m_target); Apply view ignores it. */
+/** Optional view_url = shareable m_* medicare URL (incl. m_target). recentTone is first-class (Apply view reads it directly; view_url m_tone only as legacy fallback). */
 export function medicareViewSnapshotJson(v: MedicareViewSnapshotInput, viewUrl?: string | null): string { return JSON.stringify(medicareViewSnapshot(v, viewUrl), null, 2); }
-export function medicareCopyViewToast(v: MedicareViewSnapshotInput): string { const s = medicareViewSnapshot(v); return `⧉ View → copied view JSON · filter ${s.rowFilter ?? "All"}${s.keyTarget ? ` · target ${s.keyTarget.item_id} (#${s.keyTarget.index + 1})` : ""}`; }
+export function medicareCopyViewToast(v: MedicareViewSnapshotInput): string { const s = medicareViewSnapshot(v); return `⧉ View → copied view JSON · filter ${s.rowFilter ?? "All"}${s.keyTarget ? ` · target ${s.keyTarget.item_id} (#${s.keyTarget.index + 1})` : ""}${s.recentTone !== "all" ? ` · recent ${MEDICARE_TONE_LABEL[s.recentTone] ?? s.recentTone}` : ""}`; }
+/** Chip labels for Recent tone (never raw colour names in toasts). */
+export const MEDICARE_TONE_LABEL: Record<string, string> = { green: "Done", amber: "Empty" };
 export function medicareCopyViewShouldPulse(alreadyPulsed: boolean): boolean { return !alreadyPulsed; }
 export function medicareCopyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_COPY_VIEW_PULSE_MS; }
 
 // ⇩ Apply view: parse a ⧉ View snapshot from the clipboard and apply it. Display-only; pure parse + resolve.
 export const MEDICARE_APPLY_VIEW_EVENT = "medicare:apply-view";
-export type MedicareParsedView = { rowFilter: RowFilter; packsOpen: boolean; jumpsOpen: boolean; keyTarget: string | null };
+export type MedicareParsedView = { rowFilter: RowFilter; packsOpen: boolean; jumpsOpen: boolean; keyTarget: string | null; recentTone?: "all" | "green" | "amber"; toneSource?: "field" | "view_url" | "default" };
+/** Pure: Recent tone from a view snapshot — first-class `recentTone` (all|green|amber) wins; else legacy view_url m_tone=done|empty; else "all". Unknown soft-falls. Never throws. */
+export function medicareSnapshotRecentTone(r: Record<string, unknown> | null | undefined): { tone: "all" | "green" | "amber"; source: "field" | "view_url" | "default" } {
+  const ok = ["all", "green", "amber"] as const;
+  if (r && ok.includes(r.recentTone as typeof ok[number])) return { tone: r.recentTone as typeof ok[number], source: "field" };
+  try { if (r && typeof r.view_url === "string") { const u = new URL(r.view_url).searchParams.get("m_tone"); const m: Record<string, "green" | "amber"> = { done: "green", empty: "amber" }; if (u && Object.prototype.hasOwnProperty.call(m, u)) return { tone: m[u], source: "view_url" }; } } catch {}
+  return { tone: "all", source: "default" };
+}
 /** Pure: parse clipboard text as aethel.medicare.view.v1. Rejects bad JSON / wrong schema (incl. look-back) / bad fields. Never throws. */
 export function parseMedicareViewSnapshot(text: unknown): { ok: true; view: MedicareParsedView } | { ok: false; reason: string } {
   if (typeof text !== "string" || !text.trim()) return { ok: false, reason: "clipboard empty" };
@@ -1873,17 +1882,17 @@ export function parseMedicareViewSnapshot(text: unknown): { ok: true; view: Medi
   for (const k of ["packsOpen", "jumpsOpen"]) if (typeof r[k] !== "boolean") return { ok: false, reason: `bad ${k}` };
   const t = r.keyTarget as Record<string, unknown> | null | undefined;
   if (!(t === null || (t && typeof t === "object" && typeof t.item_id === "string"))) return { ok: false, reason: "bad keyTarget" };
-  return { ok: true, view: { rowFilter: r.rowFilter as RowFilter, packsOpen: r.packsOpen as boolean, jumpsOpen: r.jumpsOpen as boolean, keyTarget: t ? (t.item_id as string) : null } };
+  return { ok: true, view: { rowFilter: r.rowFilter as RowFilter, packsOpen: r.packsOpen as boolean, jumpsOpen: r.jumpsOpen as boolean, keyTarget: t ? (t.item_id as string) : null, ...(() => { const tn = medicareSnapshotRecentTone(r); return { recentTone: tn.tone, toneSource: tn.source }; })() } };
 }
 /** Pure: resolve parsed view against current rows; unknown keyTarget is dropped (focusDropped). */
 export function applyMedicareViewSnapshot(v: MedicareParsedView, itemIds: ReadonlyArray<string>) {
   const known = v.keyTarget != null && itemIds.includes(v.keyTarget);
-  return { rowFilter: v.rowFilter, packsOpen: v.packsOpen, jumpsOpen: v.jumpsOpen, keyTarget: known ? v.keyTarget : null, focusDropped: v.keyTarget != null && !known };
+  return { rowFilter: v.rowFilter, packsOpen: v.packsOpen, jumpsOpen: v.jumpsOpen, keyTarget: known ? v.keyTarget : null, focusDropped: v.keyTarget != null && !known, recentTone: v.recentTone ?? "all" };
 }
 /** Pure: success / ⚠ reject toast text. */
 export function medicareApplyViewToast(r: { ok: true; applied: ReturnType<typeof applyMedicareViewSnapshot> } | { ok: false; reason: string }): string {
   if (!r.ok) return `⚠ Apply view rejected · ${r.reason} — expected ${MEDICARE_VIEW_SNAPSHOT_SCHEMA}`;
-  const a = r.applied; return `⇩ Applied view · filter ${a.rowFilter ?? "All"}${a.keyTarget ? ` · target ${a.keyTarget}` : a.focusDropped ? " · target not found" : ""}`;
+  const a = r.applied; return `⇩ Applied view · filter ${a.rowFilter ?? "All"}${a.keyTarget ? ` · target ${a.keyTarget}` : a.focusDropped ? " · target not found" : ""}${a.recentTone !== "all" ? ` · recent ${MEDICARE_TONE_LABEL[a.recentTone] ?? a.recentTone}` : ""}`;
 }
 /** Pure: `+` presses sticky ⇩ Apply view (`+` was free). Ignored while typing or with Ctrl/⌘/Alt. */
 export function medicareApplyViewKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
