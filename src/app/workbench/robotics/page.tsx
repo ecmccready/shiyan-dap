@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ export default function RoboticsPage() {
   const [copied, setCopied] = useState(false);
   const [pulse, setPulse] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   const visible = POLICIES.filter((p) => show === "all" || p.role === show);
   const winner = POLICIES.find((p) => p.role === "winner");
@@ -26,12 +28,14 @@ export default function RoboticsPage() {
   const copySummary = async () => {
     await navigator.clipboard.writeText(summary);
     setCopied(true);
+    setToast("Summary copied");
     if (!hasCopied) {
       setPulse(true);
       setHasCopied(true);
       setTimeout(() => setPulse(false), 1200);
     }
     setTimeout(() => setCopied(false), 1200);
+    setTimeout(() => setToast(null), 2400);
   };
 
   useEffect(() => {
@@ -57,6 +61,12 @@ export default function RoboticsPage() {
       <p className="text-sm text-neutral-500 mb-4">
         Know → Know How → Show → Do on the same engine. Synthetic fixture only. j/k · Enter · f · g · ?
       </p>
+
+      {toast && (
+        <div className="fixed bottom-4 right-4 bg-neutral-900 text-white text-sm px-3 py-2 rounded">
+          {toast}
+        </div>
+      )}
 
       <button
         type="button"
