@@ -1438,6 +1438,14 @@ import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VI
   assert.ok(src.includes("data-medicare-apply-link-pulsing") && src.includes("medicareApplyLinkShouldPulse(alPulsedRef.current, true)"));
   console.log("ok · medicare apply link pulse");
 }
+{ // ↺ Reset view first-use pulse
+  const S = MedUrlView.medicareResetViewShouldPulse, Pu = MedUrlView.medicareResetViewPulse, MS = MedUrlView.MEDICARE_RESET_VIEW_PULSE_MS;
+  assert.ok(S(false, 1) && S(false, 4) && !S(true, 3) && !S(false, 0) && !S(false, undefined) && !S(false, NaN) && !S(false, "2"));
+  assert.ok(Pu(1000, 1500) && !Pu(1000, 1000 + MS) && !Pu(null, 5) && !Pu(1000, 900));
+  const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes("data-medicare-reset-view-pulsing") && src.includes("medicareResetViewShouldPulse(rvPulsedRef.current, rvCleared + mStripped)"));
+  console.log("ok · medicare reset view pulse");
+}
 { // ⧉ Link first-use pulse
   const S = MedUrlView.medicareCopyLinkShouldPulse, Pu = MedUrlView.medicareCopyLinkPulse, MS = MedUrlView.MEDICARE_COPY_LINK_PULSE_MS;
   assert.ok(S(false, true) && !S(true, true) && !S(false, false) && !S(false, undefined));

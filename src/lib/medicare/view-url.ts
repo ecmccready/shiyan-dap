@@ -98,3 +98,8 @@ export function medicareUrlWithTarget(href: string, target: string | null | unde
 export function resolveMedicareUrlTarget(target: unknown, ids: readonly string[]): string | null { const t = medicareUrlTarget(target); return t && ids.includes(t) ? t : null; }
 /** Event: ⇩ Apply link carried m_target → disposition list focuses it if the row exists. */
 export const MEDICARE_URL_TARGET_EVENT = "medicare:url-target";
+
+/** ↺ Reset view first-use pulse: once per page load, only after a reset that actually changed something (session keys cleared or m_* stripped). */
+export const MEDICARE_RESET_VIEW_PULSE_MS = 1200;
+export function medicareResetViewShouldPulse(alreadyPulsed: boolean, changed: unknown): boolean { return !alreadyPulsed && typeof changed === "number" && Number.isFinite(changed) && changed > 0; }
+export function medicareResetViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_RESET_VIEW_PULSE_MS; }
