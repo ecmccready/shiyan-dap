@@ -603,3 +603,4 @@ The Medicare sticky strip now has a **Jumps ▾** chip (default collapsed), mirr
 - **Medicare · ⧉ DQ `view_url`:** copying ⧉ DQ JSON (sticky chip, `/` key or the Copy DQ JSON button) now adds an optional `view_url` — the current shareable `/workbench/medicare` link with `m_*` params. Omitted when absent or not http(s); otherwise the JSON is unchanged. Clipboard only; no server writes.
 
 - Offer page: peer-visible note — Known peers / Copy capabilities JSON advertise lb_* / m_* shareable views + clipboard evidence packs (older peers may omit; soft-compat). Links /workbench/marketplace.
+- Offer: Share/packs note lists all view_url-carrying copies — Medicare Know-trail (Provenance, Baselines, DQ, Evidence, Investigation) and look-back (Summary, Verdict, Gaps, Roles, All paths/steps, Compare), same as Hand-off. Clipboard only; no server writes, no Level 4, no CMS.
