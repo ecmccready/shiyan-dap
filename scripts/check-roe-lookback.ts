@@ -1151,4 +1151,11 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
   assert.equal(U.lookbackApplyViewUrl("https://x.test/workbench/status", { show: "all", sort: "rank", packsOpen: false, jumpsOpen: false, focusRunId: "p1", expandAll: true }).href, "https://x.test/workbench/status?lb_focus=p1&lb_expand=1");
   const r = U.parseLookbackLinkText("https://x.test/workbench/status?lb_focus=p1"); assert.ok(r.ok && r.view.focus === "p1");
   assert.match(U.lookbackApplyLinkToast(r), /focus p1/);
+  { const st = { show: "winners" as const, sort: "dphi" as const, packsOpen: true, jumpsOpen: false, focusRunId: "p1", expandAll: true };
+    const su = U.lookbackShareableViewUrl("https://x.test/workbench/status?lb_focus=old&k=1#h", st)!; const sp = new URL(su).searchParams;
+    assert.equal(sp.get("lb_focus"), "p1"); assert.equal(sp.get("lb_expand"), "1"); assert.equal(sp.get("lb_show"), "winners"); assert.equal(sp.get("lb_sort"), "dphi"); assert.equal(sp.get("lb_packs"), "1"); assert.equal(sp.get("k"), "1");
+    assert.equal(U.lookbackShareableViewUrl("https://x.test/workbench/status", { ...st, focusRunId: "<x>", expandAll: false })!.includes("lb_focus"), false);
+    assert.equal(U.lookbackShareableViewUrl("ftp://x/workbench/status", st), null); assert.equal(U.lookbackShareableViewUrl("nope", st), null);
+    const nsrc = readFileSync(require("path").join(__dirname, "../src/components/RoeLookbackNote.tsx"), "utf8") as string; assert.ok(nsrc.includes("lookbackShareableViewUrl(window.location.href")); assert.ok(!/cmpViewUrl = \(\) => \{ try \{ return lookbackUrlWithView/.test(nsrc));
+    console.log("ok: lookbackShareableViewUrl -> all look-back pack view_urls carry lb_focus / lb_expand"); }
   console.log("url focus   -> lb_focus / lb_expand optional; defaults + invalid omitted; link/apply/reset sync"); }

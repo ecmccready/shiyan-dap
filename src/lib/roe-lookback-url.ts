@@ -93,3 +93,10 @@ export function lookbackApplyLinkPulse(at: number | null, now: number): boolean 
 export const LOOKBACK_RESET_VIEW_PULSE_MS = 1200;
 export function lookbackResetViewShouldPulse(alreadyPulsed: boolean, changed: unknown): boolean { return !alreadyPulsed && typeof changed === "number" && Number.isFinite(changed) && changed > 0; }
 export function lookbackResetViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_RESET_VIEW_PULSE_MS; }
+
+/** Pure: full shareable /workbench/status URL from current look-back state (parity with medicareShareableViewUrl) — lb_show/lb_sort/lb_packs/lb_jumps
+ *  plus lb_focus (focusRunId, invalid dropped) and lb_expand (expandAll). Single builder for ⧉ Link and every pack view_url
+ *  (Compare/Summary/Verdict/Gaps/Roles/All paths/All steps/⧉ View). Non-http(s) or bad href → null. Never throws. */
+export function lookbackShareableViewUrl(href: string, s: { show: LookbackRoleFilter; sort: LookbackSort; packsOpen: boolean; jumpsOpen: boolean; focusRunId?: string | null; expandAll?: boolean }): string | null {
+  try { const u = new URL(href); if (u.protocol !== "http:" && u.protocol !== "https:") return null; return lookbackUrlWithView(href, { show: s.show, sort: s.sort, packs: !!s.packsOpen, jumps: !!s.jumpsOpen, focus: s.focusRunId ?? null, expand: !!s.expandAll }); } catch { return null; }
+}
