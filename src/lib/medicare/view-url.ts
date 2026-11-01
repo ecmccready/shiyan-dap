@@ -71,3 +71,8 @@ export function medicareApplyLinkToast(r: MedicareApplyLinkResult | { ok: false;
   if (!r.ok) return `⚠ Apply link rejected · ${r.reason} — expected ${MEDICARE_LINK_PATH}?m_*`;
   return `⇩ applied view link · ${r.n} param${r.n === 1 ? "" : "s"}${r.view.filter !== undefined ? ` · filter ${r.view.filter ?? "all"}` : ""}`;
 }
+
+/** ⇩ Apply link first-use pulse: once per page load, only after a successful apply (never on reject). */
+export const MEDICARE_APPLY_LINK_PULSE_MS = 1200;
+export function medicareApplyLinkShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
+export function medicareApplyLinkPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < MEDICARE_APPLY_LINK_PULSE_MS; }

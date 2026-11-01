@@ -1423,3 +1423,11 @@ import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VI
   assert.ok(src.includes('data-medicare-apply-link="1"') && src.includes("parseMedicareLinkText(txt)"));
   console.log("ok · medicare apply link");
 }
+{ // ⇩ Apply link first-use pulse
+  const S = MedUrlView.medicareApplyLinkShouldPulse, Pu = MedUrlView.medicareApplyLinkPulse, MS = MedUrlView.MEDICARE_APPLY_LINK_PULSE_MS;
+  assert.ok(S(false, true) && !S(true, true) && !S(false, false) && !S(false, undefined));
+  assert.ok(Pu(1000, 1500) && !Pu(1000, 1000 + MS) && !Pu(null, 5) && !Pu(1000, 900));
+  const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes("data-medicare-apply-link-pulsing") && src.includes("medicareApplyLinkShouldPulse(alPulsedRef.current, true)"));
+  console.log("ok · medicare apply link pulse");
+}
