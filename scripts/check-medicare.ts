@@ -1635,5 +1635,6 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   assert.equal(JSON.parse(MDJ([row("a", "needs_human_review")], "javascript:1")).view_url, undefined);
   assert.ok(/Shift\+D/.test(readFileSync("src/components/MedicareStatusChips.tsx", "utf8")) && /data-medicare-divergence/.test(readFileSync("src/components/MedicareStatusChips.tsx", "utf8")));
   assert.ok(/divergence: dv/.test(readFileSync("src/lib/medicare/case-brief.ts", "utf8")), "hand-off carries divergence when present");
+  { const src = readFileSync("src/components/MedicareStatusChips.tsx", "utf8"); assert.ok(/data-medicare-row-diverge-flash/.test(src) && /e\.detail > 0/.test(src), "⑂ chip click jumps/flashes row; Shift+D copy-only"); }
   console.log("divergence  -> first row off default (unreviewed); sticky ⑂ chip + Shift+D; hand-off pack field when present");
 }
