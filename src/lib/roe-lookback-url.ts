@@ -78,4 +78,7 @@ export function lookbackApplyLinkToast(r: LookbackApplyLinkResult | { ok: false;
 /** ⇩ Apply link first-use pulse: once per page load, only after a successful apply (never on reject). */
 export const LOOKBACK_APPLY_LINK_PULSE_MS = 1200;
 export function lookbackApplyLinkShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
+export const LOOKBACK_COPY_LINK_PULSE_MS = 1200;
+export function lookbackCopyLinkShouldPulse(alreadyPulsed: boolean, ok: unknown): boolean { return !alreadyPulsed && ok === true; }
+export function lookbackCopyLinkPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_COPY_LINK_PULSE_MS; }
 export function lookbackApplyLinkPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_APPLY_LINK_PULSE_MS; }
