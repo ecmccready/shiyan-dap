@@ -1411,3 +1411,15 @@ import { medicareApplyViewShouldPulse, medicareApplyViewPulse, MEDICARE_APPLY_VI
   const ds = readFileSync(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8"); assert.ok(ds.includes("medicareCopyLinkKey(") && ds.includes(`'[data-medicare-copy-link="1"]'`));
   console.log("ok medicare \\\\ copy link key");
 }
+
+{ // ⇩ Apply link (clipboard URL → m_*)
+  const P = MedUrlView.parseMedicareLinkText;
+  const ok = P("https://x.test/workbench/medicare?m_filter=unreviewed&m_jumps=1&x=2");
+  assert.ok(ok.ok && ok.n === 2 && ok.view.filter === "unreviewed" && ok.view.jumps === true);
+  const all = P(" https://x.test/workbench/medicare/?m_filter=all "); assert.ok(all.ok && all.view.filter === null);
+  for (const [t, r] of [["not a url", "not a URL"], ["javascript:alert(1)", "not a URL"], ["https://x.test/workbench/status?m_filter=all", "wrong path"], ["https://x.test/workbench/medicare?m_filter=zzz", "no valid m_*"], ["", "clipboard empty"]] as const) { const x = P(t); assert.ok(!x.ok && x.reason.includes(r), t); }
+  assert.ok(MedUrlView.medicareApplyLinkToast(ok).includes("2 params") && MedUrlView.medicareApplyLinkToast({ ok: false, reason: "not a URL" }).startsWith("⚠"));
+  const src = readFileSync(new URL("../src/components/MedicareStatusChips.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes('data-medicare-apply-link="1"') && src.includes("parseMedicareLinkText(txt)"));
+  console.log("ok · medicare apply link");
+}

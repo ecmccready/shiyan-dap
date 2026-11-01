@@ -50,3 +50,24 @@ export function medicareApplyViewUrl(href: string, a: { rowFilter: RowFilter; pa
   const next = medicareUrlWithView(href, { filter: a.rowFilter, packs: a.packsOpen, jumps: a.jumpsOpen });
   return { href: next, changed: next !== href };
 }
+
+export const MEDICARE_LINK_PATH = "/workbench/medicare";
+export type MedicareApplyLinkResult = { ok: true; view: Partial<MedicareUrlView>; n: number } | { ok: false; reason: string };
+
+/** Pure: parse clipboard text as a ⧉ Link URL for /workbench/medicare and extract valid m_* fields. Rejects non-URL, wrong path, or no valid m_*. Never throws. */
+export function parseMedicareLinkText(text: unknown, path: string = MEDICARE_LINK_PATH): MedicareApplyLinkResult {
+  if (typeof text !== "string" || !text.trim()) return { ok: false, reason: "clipboard empty" };
+  let u: URL;
+  try { u = new URL(text.trim()); } catch { return { ok: false, reason: "not a URL" }; }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return { ok: false, reason: "not a URL" };
+  if (u.pathname.replace(/\/+$/, "") !== path) return { ok: false, reason: `wrong path ${u.pathname}` };
+  const view = parseMedicareUrlView(u.searchParams);
+  const n = Object.keys(view).length;
+  if (!n) return { ok: false, reason: "no valid m_* params" };
+  return { ok: true, view, n };
+}
+
+export function medicareApplyLinkToast(r: MedicareApplyLinkResult | { ok: false; reason: string }): string {
+  if (!r.ok) return `⚠ Apply link rejected · ${r.reason} — expected ${MEDICARE_LINK_PATH}?m_*`;
+  return `⇩ applied view link · ${r.n} param${r.n === 1 ? "" : "s"}${r.view.filter !== undefined ? ` · filter ${r.view.filter ?? "all"}` : ""}`;
+}
