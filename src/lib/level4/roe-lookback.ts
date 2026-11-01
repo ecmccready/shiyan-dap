@@ -1749,10 +1749,11 @@ export function lookbackResetViewToast(cleared: number): string {
 export const LOOKBACK_VIEW_SNAPSHOT_SCHEMA = "aethel.roe_lookback.view.v1" as const;
 export const LOOKBACK_COPY_VIEW_PULSE_MS = 1200;
 export type LookbackViewSnapshotInput = { show: string; sort: string; packsOpen: boolean; jumpsOpen: boolean; expandAll: boolean; focusRunId: string | null; expandedRunId: string | null };
-export function lookbackViewSnapshot(v: LookbackViewSnapshotInput) {
-  return { schema: LOOKBACK_VIEW_SNAPSHOT_SCHEMA, show: v.show, sort: v.sort, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, expandAll: !!v.expandAll, focus: { run_id: v.focusRunId ?? null, expanded: v.focusRunId != null && v.expandedRunId === v.focusRunId } };
+export function lookbackViewSnapshot(v: LookbackViewSnapshotInput, viewUrl?: string | null) {
+  return { schema: LOOKBACK_VIEW_SNAPSHOT_SCHEMA, show: v.show, sort: v.sort, packsOpen: !!v.packsOpen, jumpsOpen: !!v.jumpsOpen, expandAll: !!v.expandAll, focus: { run_id: v.focusRunId ?? null, expanded: v.focusRunId != null && v.expandedRunId === v.focusRunId }, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) };
 }
-export function lookbackViewSnapshotJson(v: LookbackViewSnapshotInput): string { return JSON.stringify(lookbackViewSnapshot(v), null, 2); }
+/** Optional view_url = shareable lb_* status URL; Apply view ignores it. */
+export function lookbackViewSnapshotJson(v: LookbackViewSnapshotInput, viewUrl?: string | null): string { return JSON.stringify(lookbackViewSnapshot(v, viewUrl), null, 2); }
 export function lookbackCopyViewToast(v: LookbackViewSnapshotInput): string { return `copied view JSON · show ${v.show} · sort ${v.sort}${v.focusRunId ? ` · focus ${v.focusRunId}` : ""}`; }
 export function lookbackCopyViewShouldPulse(alreadyPulsed: boolean): boolean { return !alreadyPulsed; }
 export function lookbackCopyViewPulse(at: number | null, now: number): boolean { return at != null && now - at >= 0 && now - at < LOOKBACK_COPY_VIEW_PULSE_MS; }

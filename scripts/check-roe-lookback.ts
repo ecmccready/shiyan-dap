@@ -1015,6 +1015,7 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
   assert.equal(lookbackCopyViewPulse(100, 100 + LOOKBACK_COPY_VIEW_PULSE_MS - 1), true); assert.equal(lookbackCopyViewPulse(100, 100 + LOOKBACK_COPY_VIEW_PULSE_MS), false); assert.equal(lookbackCopyViewPulse(null, 5), false);
   const src2 = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8");
   assert.ok(src2.includes("data-roe-summary-copy-view") && src2.includes("lookbackViewSnapshotJson(") && src2.indexOf("data-roe-summary-copy-view=\"1\"") < src2.indexOf("<button type=\"button\" data-roe-summary-reset-view"));
+  { const u = "https://x.test/workbench/status?lb_show=winners&lb_focus=r1&lb_expand=1"; const sj = JSON.parse(lookbackViewSnapshotJson(vi, u)); assert.equal(sj.view_url, u); assert.ok(!("view_url" in JSON.parse(lookbackViewSnapshotJson(vi, "ftp://x")))); assert.ok(!("view_url" in JSON.parse(lookbackViewSnapshotJson(vi, null)))); assert.ok(src2.includes("lookbackViewSnapshotJson(vi, cmpViewUrl())")); const ap = parseLookbackViewSnapshot(lookbackViewSnapshotJson({ ...vi, sort: "dphi" }, u)); assert.ok(ap.ok); console.log("ok: look-back ⧉ View view_url"); }
   console.log("ok: look-back ⧉ View snapshot");
 }
 
