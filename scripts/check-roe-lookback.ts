@@ -1052,3 +1052,12 @@ console.log("check-roe-lookback: Esc order help → toasts → Packs ▴ → Jum
   assert.ok(src.includes('data-roe-summary-copy-link="1"') && src.includes("history.replaceState") && !src.includes("history.pushState") && src.includes("parseLookbackUrlView(window.location.search)"));
   console.log("ok · view link URL");
 }
+
+{ // Reset view strips lb_* from URL
+  const r = UrlView.stripLookbackUrlParams("https://x.test/workbench/status?a=1&lb_show=winners&lb_packs=1#h");
+  assert.equal(r.removed, 2); assert.equal(r.href, "https://x.test/workbench/status?a=1#h");
+  const d = UrlView.stripLookbackUrlParams("https://x.test/workbench/status?a=1"); assert.equal(d.removed, 0); assert.equal(d.href, "https://x.test/workbench/status?a=1");
+  const src = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8");
+  assert.ok(src.includes("stripLookbackUrlParams(window.location.href)") && src.includes("link cleared"));
+  console.log("ok · reset view strips lb_* URL");
+}

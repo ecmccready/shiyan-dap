@@ -39,3 +39,11 @@ export function lookbackCopyLinkToast(v: LookbackUrlView): string {
   const n = Object.keys(serializeLookbackUrlView(v)).length;
   return n ? `🔗 copied view link · ${n} param${n === 1 ? "" : "s"} · show ${v.show} · sort ${v.sort}` : "🔗 copied view link · default view (no params)";
 }
+
+/** Pure: href with every lb_* key removed (other params + hash kept); `removed` = count stripped. */
+export function stripLookbackUrlParams(href: string): { href: string; removed: number } {
+  const u = new URL(href);
+  let removed = 0;
+  for (const k of LOOKBACK_URL_KEYS) if (u.searchParams.has(k)) { removed++; u.searchParams.delete(k); }
+  return { href: removed ? u.toString() : href, removed };
+}
