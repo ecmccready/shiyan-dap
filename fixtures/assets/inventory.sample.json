@@ -1,0 +1,48 @@
+{
+  "schema": "aethel.assets.inventory.v1",
+  "path": "/workbench/assets",
+  "sections": [
+    {
+      "title": "Medicare (Know → Show → Do)",
+      "href": "/workbench/medicare",
+      "link": "Medicare workbench",
+      "items": [
+        "Synthetic fixture rows (no live CMS)",
+        "Provenance, baselines, DQ",
+        "Evidence + investigation packs",
+        "HITL dispositions + notes"
+      ]
+    },
+    {
+      "title": "Look-back insight",
+      "href": "/workbench/status",
+      "link": "Look-back",
+      "items": [
+        "Run paths + steps",
+        "Compare, summary, verdict",
+        "Gaps + roles"
+      ]
+    },
+    {
+      "title": "Marketplace",
+      "href": "/workbench/marketplace",
+      "link": "Marketplace",
+      "items": [
+        "Φ listings index",
+        "Known peers + capabilities",
+        "View surfaces JSON"
+      ]
+    },
+    {
+      "title": "Offer",
+      "href": "/workbench/offer",
+      "link": "Offer",
+      "items": [
+        "Evidence packs catalog",
+        "Shareable view URLs (lb_*, m_*)",
+        "Peer-visible note"
+      ]
+    }
+  ],
+  "note": "Read-only catalog. Detected pattern ≠ verified conclusion. Medicare data is a synthetic fixture."
+}
