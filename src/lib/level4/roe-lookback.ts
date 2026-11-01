@@ -1592,14 +1592,14 @@ export function lookbackCopyVerdictChip(json: unknown): { json: string; label: s
   try { if (typeof json !== "string" || !json) return null; return { json, label: "⧉ Verdict", toast: "⧉ Verdict → copied verdict JSON" }; } catch { return null; }
 }
 /** Pure: compact ΔΦ-vs-greedy leaderboard — paths sorted by ΔΦ desc (ties: rank asc), each { rank, run_id, role, delta_phi_vs_greedy, phi }. No steps, flags, counts or note — smaller than Roles / All paths. Null when no paths. Never throws. */
-export function lookbackGapsJson(c: LookbackCompare | null | undefined): string | null {
+export function lookbackGapsJson(c: LookbackCompare | null | undefined, viewUrl?: string | null): string | null {
   try {
     const rows = rankedLookbackRows(c); if (!c || !rows.length) return null;
     const short: Record<LookbackRowRole, string> = { winner_lookback: "winner", greedy_beaten: "beaten", agree_both: "agree", other: "other" };
     const num = (x: unknown) => (typeof x === "number" && Number.isFinite(x) ? x : null);
     const gaps = rows.map((r) => ({ rank: r.rank, run_id: r.run_id, role: short[lookbackRowRole(r, c.winner)], delta_phi_vs_greedy: num(r.delta_phi_vs_greedy), phi: num(r.final_phi) }))
       .sort((a, b) => (b.delta_phi_vs_greedy ?? -Infinity) - (a.delta_phi_vs_greedy ?? -Infinity) || a.rank - b.rank);
-    return JSON.stringify({ kind: "gaps", greedy: c.greedy?.run_id ?? null, gaps });
+    return JSON.stringify({ kind: "gaps", greedy: c.greedy?.run_id ?? null, gaps, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) });
   } catch { return null; }
 }
 /** Pure: sticky "⧉ Gaps" chip — copies the ΔΦ-vs-greedy leaderboard without moving focus. Null without JSON. Never throws. */

@@ -856,6 +856,9 @@ console.log("Δe copy    -> sticky +Δe click copies summary JSON (same as g)");
 { const vu = "https://x.test/workbench/status?lb_show=winners"; assert.equal(JSON.parse(lookbackVerdictJson(c, vu)!).view_url, vu);
   for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(lookbackVerdictJson(c, bad as never), lookbackVerdictJson(c), "no view_url = unchanged verdict");
   console.log("verdict     -> optional view_url (shareable lb_* link); absent when not http(s)"); }
+{ const vu = "https://x.test/workbench/status?lb_show=winners"; assert.equal(JSON.parse(lookbackGapsJson(c, vu)!).view_url, vu);
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(lookbackGapsJson(c, bad as never), lookbackGapsJson(c), "no view_url = unchanged gaps");
+  console.log("gaps        -> optional view_url (shareable lb_* link); absent when not http(s)"); }
 { assert.equal(lookbackVerdictJson(null), null); assert.equal(lookbackCopyVerdictChip(null), null); assert.equal(lookbackCopyVerdictChip(""), null);
   const j = lookbackVerdictJson(c); const rows = rankedLookbackRows(c);
   if (rows.length) { assert.ok(j); const o = JSON.parse(j!); assert.equal(o.kind, "verdict"); assert.equal(o.verdict, lookbackVerdict(c).label); assert.equal(o.delta_e_gain, c.delta_e_gain); assert.equal(o.greedy_run_id, c.greedy?.run_id ?? null); assert.equal(o.lookback_run_id, c.lookback?.run_id ?? null); assert.equal(o.paths, rows.length);
