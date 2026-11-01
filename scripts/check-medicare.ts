@@ -1569,3 +1569,5 @@ import { medicareDqJsonWithViewUrl } from "../src/lib/medicare/investigation";
   const ds = readFileSync(new URL("../src/components/MedicareDispositionStub.tsx", import.meta.url), "utf8"); assert.ok(ds.includes("medicareAuditKey(") && ds.includes(`'[data-audit-summary-chip="medicare"]'`));
   console.log("ok medicareAuditKey");
 }
+
+{ const fs = require("fs"), path = require("path"); const c = fs.readFileSync(path.join(__dirname, "../src/components/AssetMapChip.tsx"), "utf8"); const s = fs.readFileSync(path.join(__dirname, "../src/components/MedicareStatusChips.tsx"), "utf8"); assert.ok(c.includes('"/workbench/assets"') && c.includes("teal"), "asset map chip"); assert.ok(s.includes('<AssetMapChip scope="medicare" />'), "Medicare wires asset map chip"); console.log("ok: Medicare Asset map chip"); }

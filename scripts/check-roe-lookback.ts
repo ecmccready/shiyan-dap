@@ -1168,3 +1168,5 @@ assert.ok(lookbackAuditKey({ key: "`" })); assert.ok(!lookbackAuditKey({ key: "`
 { const src = readFileSync(new URL("../src/components/RoeLookbackNote.tsx", import.meta.url), "utf8"); assert.ok(src.includes("lookbackAuditKey(") && src.includes(`'[data-audit-summary-chip="lookback"]'`)); }
 assert.ok(LOOKBACK_KEYMAP.some((r) => r.key === "`"));
 console.log("ok lookbackAuditKey");
+
+{ const fs = require("fs"), path = require("path"); const c = fs.readFileSync(path.join(__dirname, "../src/components/AssetMapChip.tsx"), "utf8"); const s = fs.readFileSync(path.join(__dirname, "../src/components/RoeLookbackNote.tsx"), "utf8"); assert.ok(c.includes('"/workbench/assets"') && c.includes("teal"), "asset map chip"); assert.ok(s.includes('<AssetMapChip scope="lookback" />'), "look-back wires asset map chip"); console.log("ok: look-back Asset map chip"); }
