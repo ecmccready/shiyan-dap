@@ -32,6 +32,9 @@ export default function OfferPage() {
           <p className="mb-2">
             First concrete case: <Link className="underline text-emerald-400" href="/workbench/medicare">Medicare · Public Data Intelligence</Link> (SI-operated, synthetic fixture today, no live CMS fetch).
           </p>
+          <p className="mb-2">
+            Second case: <Link className="underline text-emerald-400" href="/workbench/robotics">Long-horizon robotics policies</Link> (synthetic fixture, same four-stage graph and look-back ranking).
+          </p>
           <p className="text-zinc-500 text-xs">
             Detected pattern ≠ verified conclusion: findings are inputs for human review, not fraud, misconduct or clinical findings. Commercial licensing available from the owner. Display only; nothing is sent or stored.
           </p>
@@ -106,28 +109,6 @@ export default function OfferPage() {
         <p className="text-zinc-400 text-sm mb-4">
           Read-only views of the off-chain micro-ledger, live today: an asset map (each asset&apos;s creation domain, latest domain, latest audit status and event timeline) and an audit summary (event counts by domain, signature status and settlement rail, assets with a passed audit, and the current Merkle root, which is not anchored on-chain). Audit results come from a heuristic mock scan, not a third-party attestation. Nothing here is settled or revenue.
         </p>
-        <nav className="flex flex-wrap gap-4 text-sm mb-8">
-          <Link className="underline" href="/workbench/workspace">Workspace (Assets and Audit summary)</Link>
-          <a className="underline" href="/api/v1/ledger/assets">Asset map (JSON)</a>
-          <a className="underline" href="/api/v1/audit/summary">Audit summary (JSON)</a>
-        </nav>
-
-        <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-300 mb-8">
-          <p className="mb-3">
-            Developmental stack is the product. Public packs are the proof. Client reference is the next plant.
-            Exported Runs are inspectable on History. Verified sequences are listed on the Marketplace.
-          </p>
-          <p className="text-zinc-500 text-xs">
-            Not a diagnosis. No PHI. Not revenue until a client settles. A lower error score is necessary but not sufficient. Healthcare diagnostics remains a higher-risk, later vertical.
-          </p>
-        </section>
-
-        <nav className="flex flex-wrap gap-4 text-sm mt-8">
-          <Link className="underline" href="/workbench">Workbench</Link>
-          <Link className="underline" href="/workbench/network">Actor network</Link>
-          <Link className="underline" href="/workbench/compare">Peer proof</Link>
-          <Link className="underline" href="/workbench/review">Review</Link>
-        </nav>
       </main>
     </div>
   );
