@@ -40,6 +40,12 @@ export function pickViewSurfaces(caps: Record<string, unknown>): { schema: strin
   }
   return out;
 }
+/** Pure (check path): like pickViewSurfaces but keeps present VIEW_SURFACES keys with their raw value/type, so validateViewSurfaces hard-fails a present non-string instead of warning it as missing. */
+export function pickViewSurfacesRaw(caps: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { schema: VIEW_SURFACES_SCHEMA };
+  for (const k of Object.keys(VIEW_SURFACES)) if (k in caps && caps[k] !== undefined) out[k] = caps[k];
+  return out;
+}
 /** Pure: shape check for an `aethel.view_surfaces.v1` object. Wrong schema / non-object / non-string field = error; missing field = warning. No fetch, no writes. */
 export function validateViewSurfaces(json: unknown): { ok: boolean; errors: string[]; warnings: string[] } {
   const errors: string[] = []; const warnings: string[] = [];

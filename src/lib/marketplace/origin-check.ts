@@ -13,7 +13,7 @@
 import { checkRouteContract, type RouteName } from "@/lib/marketplace/route-contract";
 import { validateGlobalSnapshot } from "@/lib/diagnostics/global-snapshot-validate";
 import { validatePeerCapabilities } from "@/lib/marketplace/route-contract";
-import { pickViewSurfaces, validateViewSurfaces } from "@/lib/marketplace/peers";
+import { pickViewSurfacesRaw, validateViewSurfaces } from "@/lib/marketplace/peers";
 
 /** The optional third path, only with --with-snapshot. */
 export type ProbeRoute = RouteName | "snapshot";
@@ -139,7 +139,7 @@ export function formatOriginReport(origin: string, probes: RouteProbe[], opts: {
       failed++;
       lines.push("view surfaces: not checked — failed", "  error: no self capabilities in a usable peers response");
     } else {
-      const v = validateViewSurfaces(pickViewSurfaces(caps));
+      const v = validateViewSurfaces(pickViewSurfacesRaw(caps));
       if (v.ok) { lines.push("view surfaces: from peers self — OK: aethel.view_surfaces.v1 shape holds"); for (const w of v.warnings) lines.push(`  warning: ${w}`); }
       else { failed++; lines.push("view surfaces: from peers self — check failed"); for (const e of v.errors) lines.push(`  error: ${e}`); }
     }

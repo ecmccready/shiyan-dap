@@ -8,7 +8,7 @@ import {
 import { parseReuseParam, findHighlighted } from "../src/lib/marketplace/listings";
 import { errorSurfaceFor, rankKey, surfaceNote, ERROR_SURFACE_SCHEMA } from "../src/lib/marketplace/error-surface";
 import { peerStatus, peerHandoffUrl, PEERS_NOTE } from "../src/lib/marketplace/peer";
-import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE, VIEW_SURFACES, pickViewSurfaces, validateViewSurfaces, VIEW_SURFACES_SCHEMA } from "../src/lib/marketplace/peers";
+import { buildPeerRegistry, isValidPeerUrl, normalizeOrigin, PEERS_SCHEMA, PEERS_REGISTRY_NOTE, PLACEHOLDER_NOTE, VIEW_SURFACES, pickViewSurfaces, pickViewSurfacesRaw, validateViewSurfaces, VIEW_SURFACES_SCHEMA } from "../src/lib/marketplace/peers";
 import { validatePeerListingIndex, validatePeerIndexSource, PEER_INDEX_NOTE } from "../src/lib/marketplace/peer-index";
 import { formatPeerIndexReport } from "../src/lib/marketplace/peer-index-report";
 import { checkRouteContract, formatRouteContractReport, ROUTE_CONTRACT_NOTE, validatePeerCapabilities, formatCapabilitiesReport, CAPABILITIES_NOTE, SOFT_CAPABILITY_KEYS } from "../src/lib/marketplace/route-contract";
@@ -616,6 +616,10 @@ console.log("origin views     -> --with-view-surfaces parsing (combinable); no e
   assert.equal(validateViewSurfaces({ ...VIEW_SURFACES, schema: "x" }).ok, false);
   assert.equal(validateViewSurfaces({ schema: VIEW_SURFACES_SCHEMA, ...VIEW_SURFACES, evidence_packs: 3 }).ok, false);
   for (const bad of [null, [], "s", 1]) assert.equal(validateViewSurfaces(bad).ok, false);
+  { const raw = validateViewSurfaces(pickViewSurfacesRaw({ ...VIEW_SURFACES, evidence_packs: 3, medicare_view_path: null }));
+    assert.equal(raw.ok, false); assert.ok(raw.errors.includes("evidence_packs: expected string")); assert.ok(raw.errors.includes("medicare_view_path: expected string"));
+    assert.ok(!raw.warnings.some((w) => w.startsWith("evidence_packs")));
+    assert.deepEqual(validateViewSurfaces(pickViewSurfacesRaw({ ...VIEW_SURFACES, foo: 1 })), { ok: true, errors: [], warnings: [] }); }
   console.log("view surfaces    -> validateViewSurfaces: clean / soft warn / bad schema / bad type / non-object");
 }
 
