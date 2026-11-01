@@ -420,6 +420,7 @@ export const LOOKBACK_KEYMAP: readonly { key: string; does: string }[] = [
   { key: "[", does: "toggle Packs ▾ / Packs ▴ — same as clicking the sticky chip (toast on first open only)" },
   { key: "]", does: "toggle Jumps ▾ / Jumps ▴ — same as clicking the sticky chip (toast on first open only)" },
   { key: "*", does: "expand all ↔ collapse all sealed-path step lists — same as the sticky ⊞ Expand all / ⊟ Collapse all chip (shares its first-use pulse); no-op with no sealed paths" },
+  { key: "+", does: "⇩ Apply view — read an aethel.roe_lookback.view.v1 snapshot from the clipboard and apply it" },
   { key: "-", does: "copy view snapshot JSON — same as the sticky ⧉ View chip (show, sort, packs/jumps, expand all, focus); toast + shared first-use pulse (free key)" },
   { key: "0", does: "reset view — same as the sticky ↺ Reset view chip (Show All, Sort rank, Packs/Jumps closed, Expand all off, focus cleared, session keys cleared + toast); 0 = back to zero (free key; digits 1–3 jump ranks)" },
   { key: "?", does: "show / hide this sheet" },
@@ -1378,6 +1379,37 @@ export function lookbackResetViewKey(ev: { key?: unknown; ctrlKey?: unknown; met
 /** Pure: `-` presses the sticky ⧉ View chip (copy view snapshot JSON). `-` was free; reads as "snapshot / dash off a copy". Ignored while typing or with Ctrl/⌘/Alt. Never throws. */
 export function lookbackCopyViewKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
   if (!ev || ev.key !== "-" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
+  return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
+}
+/** Pure: parse a clipboard string as an `aethel.roe_lookback.view.v1` snapshot (same shape ⧉ View copies). Returns ok:false with a reason on bad JSON / wrong schema / bad fields. Never throws. */
+export type LookbackParsedView = { show: LookbackRoleFilter; sort: LookbackSort; packsOpen: boolean; jumpsOpen: boolean; expandAll: boolean; focus: { run_id: string | null; expanded: boolean } };
+export function parseLookbackViewSnapshot(text: unknown): { ok: true; view: LookbackParsedView } | { ok: false; reason: string } {
+  if (typeof text !== "string" || !text.trim()) return { ok: false, reason: "clipboard empty" };
+  let o: unknown; try { o = JSON.parse(text); } catch { return { ok: false, reason: "not JSON" }; }
+  if (!o || typeof o !== "object" || Array.isArray(o)) return { ok: false, reason: "not a JSON object" };
+  const r = o as Record<string, unknown>;
+  if (r.schema !== LOOKBACK_VIEW_SNAPSHOT_SCHEMA) return { ok: false, reason: `wrong schema (${typeof r.schema === "string" ? r.schema.slice(0, 40) : "missing"})` };
+  if (!LOOKBACK_VIEW_FILTERS.includes(r.show as LookbackRoleFilter)) return { ok: false, reason: "bad show" };
+  if (!LOOKBACK_VIEW_SORTS.includes(r.sort as LookbackSort)) return { ok: false, reason: "bad sort" };
+  for (const k of ["packsOpen", "jumpsOpen", "expandAll"]) if (typeof r[k] !== "boolean") return { ok: false, reason: `bad ${k}` };
+  const f = r.focus as Record<string, unknown> | null | undefined;
+  if (!f || typeof f !== "object" || !(f.run_id === null || typeof f.run_id === "string") || typeof f.expanded !== "boolean") return { ok: false, reason: "bad focus" };
+  return { ok: true, view: { show: r.show as LookbackRoleFilter, sort: r.sort as LookbackSort, packsOpen: r.packsOpen as boolean, jumpsOpen: r.jumpsOpen as boolean, expandAll: r.expandAll as boolean, focus: { run_id: (f.run_id as string | null), expanded: f.expanded as boolean } } };
+}
+/** Pure: resolve a parsed view against current run ids → concrete state to set. Unknown focus run_id is dropped (focusDropped). */
+export function applyLookbackViewSnapshot(v: LookbackParsedView, runIds: ReadonlyArray<string>) {
+  const known = v.focus.run_id != null && runIds.includes(v.focus.run_id);
+  const focusRunId = known ? v.focus.run_id : null;
+  return { show: v.show, sort: v.sort, packsOpen: v.packsOpen, jumpsOpen: v.jumpsOpen, expandAll: v.expandAll, focusRunId, expandedRunId: focusRunId && v.focus.expanded ? focusRunId : null, focusDropped: v.focus.run_id != null && !known };
+}
+/** Pure: toast for Apply view — success (emerald) or reject (amber, ⚠ prefix). */
+export function lookbackApplyViewToast(r: { ok: true; applied: ReturnType<typeof applyLookbackViewSnapshot> } | { ok: false; reason: string }): { txt: string; tone: "emerald" | "amber" } {
+  if (!r.ok) return { txt: `⚠ Apply view rejected · ${r.reason} — expected ${LOOKBACK_VIEW_SNAPSHOT_SCHEMA}`, tone: "amber" };
+  const a = r.applied; return { txt: `⇩ Applied view · show ${a.show} · sort ${a.sort}${a.focusRunId ? ` · focus ${a.focusRunId}` : a.focusDropped ? " · focus not found" : ""}`, tone: "emerald" };
+}
+/** Pure: `+` presses the sticky ⇩ Apply view chip (`+` was free). Ignored while typing or with Ctrl/⌘/Alt. */
+export function lookbackApplyViewKey(ev: { key?: unknown; ctrlKey?: unknown; metaKey?: unknown; altKey?: unknown; targetTag?: unknown; editable?: unknown } | null | undefined): boolean {
+  if (!ev || ev.key !== "+" || ev.ctrlKey || ev.metaKey || ev.altKey || ev.editable) return false;
   return !(typeof ev.targetTag === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(ev.targetTag.toUpperCase()));
 }
 /** Pure: first-use pulse fires only on the first expand-all of the session. */
