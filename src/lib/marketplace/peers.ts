@@ -40,6 +40,18 @@ export function pickViewSurfaces(caps: Record<string, unknown>): { schema: strin
   }
   return out;
 }
+/** Pure: shape check for an `aethel.view_surfaces.v1` object. Wrong schema / non-object / non-string field = error; missing field = warning. No fetch, no writes. */
+export function validateViewSurfaces(json: unknown): { ok: boolean; errors: string[]; warnings: string[] } {
+  const errors: string[] = []; const warnings: string[] = [];
+  if (!json || typeof json !== "object" || Array.isArray(json)) return { ok: false, errors: ["view surfaces: expected a JSON object"], warnings };
+  const o = json as Record<string, unknown>;
+  if (o.schema !== VIEW_SURFACES_SCHEMA) errors.push(`schema: expected "${VIEW_SURFACES_SCHEMA}"`);
+  for (const k of Object.keys(VIEW_SURFACES)) {
+    if (!(k in o) || o[k] === undefined) warnings.push(`${k}: missing (soft-compat)`);
+    else if (typeof o[k] !== "string") errors.push(`${k}: expected string`);
+  }
+  return { ok: errors.length === 0, errors, warnings };
+}
 export const SELF_ATTESTATION = "none — self-reported, not third-party attested";
 
 /** Self-description of this node (self entry only). Self-reported; it is not verified or attested by anyone. */
