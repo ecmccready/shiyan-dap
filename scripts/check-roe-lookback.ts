@@ -888,6 +888,9 @@ if (rankedLookbackRows(c).length) { const vu = "https://x.test/workbench/status?
     const ch = lookbackCopyAllStepsChip(j, rows.length)!; assert.equal(ch.label, `⧉ All ${rows.length} steps`); assert.equal(lookbackCopyChipToast(true, ch.toast), ch.toast); assert.equal(lookbackCopyChipToast(false, ch.toast), null); }
   else assert.equal(j, null);
   console.log(`ok lookbackAllStepsJson / CopyAllStepsChip (sticky ⧉ All steps, n=${rows.length})`); }
+if (rankedLookbackRows(c).length) { const vu = "https://x.test/workbench/status?lb_show=winners"; assert.equal(JSON.parse(lookbackAllStepsJson(c, vu)!).view_url, vu);
+  for (const bad of [null, undefined, "", "javascript:x", "/rel"]) assert.equal(lookbackAllStepsJson(c, bad as never), lookbackAllStepsJson(c), "no view_url = unchanged all_steps");
+  console.log("all_steps   -> optional view_url (shareable lb_* link); absent when not http(s)"); }
 { const m = require("../src/lib/evidence-packs-link"); assert.equal(m.EVIDENCE_PACKS_HREF, "/workbench/offer#evidence-packs");
   assert.equal(m.evidencePacksChipLabel("medicare"), "Medicare · Evidence packs →"); assert.equal(m.evidencePacksChipLabel("lookback"), "Evidence packs →");
   console.log("evidencePacksChip OK (→ /workbench/offer#evidence-packs)"); }

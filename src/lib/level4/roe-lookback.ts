@@ -1550,12 +1550,12 @@ export function lookbackCopyAllPathsChip(json: unknown, count?: unknown): { json
   try { if (typeof json !== "string" || !json) return null; const n = typeof count === "number" && count > 0 ? count : null; return { json, label: n ? `⧉ All ${n} paths` : "⧉ All paths", toast: `⧉ All paths → copied ${n ?? "all"} sealed paths JSON` }; } catch { return null; }
 }
 /** Pure: every ranked sealed path's steps (same per-path payload as ⧉ TOP/Last/Greedy/#2/#3 steps) as one JSON pack, rank order. Null when no paths. Never throws. */
-export function lookbackAllStepsJson(c: LookbackCompare | null | undefined): string | null {
+export function lookbackAllStepsJson(c: LookbackCompare | null | undefined, viewUrl?: string | null): string | null {
   try {
     const rows = rankedLookbackRows(c); if (!c || !rows.length) return null;
     const paths = rows.map((r) => { try { const j = pathStepsJson(r); return j ? JSON.parse(j) : null; } catch { return null; } }).filter(Boolean);
     if (!paths.length) return null;
-    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "all_steps", count: paths.length, greedy: c.greedy?.run_id ?? null, winner: c.winner ?? null, paths, note: ROE_LOOKBACK_NOTE }, null, 2);
+    return JSON.stringify({ schema: ROE_LOOKBACK_SCHEMA, kind: "all_steps", count: paths.length, greedy: c.greedy?.run_id ?? null, winner: c.winner ?? null, paths, note: ROE_LOOKBACK_NOTE, ...(typeof viewUrl === "string" && /^https?:\/\//.test(viewUrl) ? { view_url: viewUrl } : {}) }, null, 2);
   } catch { return null; }
 }
 /** Pure: sticky "⧉ All steps" chip — copies every sealed path's steps JSON without expanding or moving focus. Null without JSON. Never throws. */
