@@ -67,6 +67,7 @@ Domain rules stay isolated. The engine does not change when a new vertical is ad
 
 - Medicare · Public Data Intelligence is the first named vertical under Global · misdiagnosis. It turns raw public CMS data into a source-linked investigation finding with human review.
 - Long-horizon robotics policies is the second commercial case. It applies the same ranking and evidence pattern to a synthetic policy fixture at `/workbench/robotics`.
+- Long-horizon robotics policies at `/workbench/robotics` ranks synthetic policies by retrospective ΔΦ, with the same Show filter and expandable evidence rows used on the look-back surface.
 
 ## Level 4
 
