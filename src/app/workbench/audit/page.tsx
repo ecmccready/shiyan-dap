@@ -1,33 +1,9 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import CopyValue from "@/components/CopyValue";
+import { AUDIT_SECTIONS as SECTIONS, buildAuditInventory } from "@/lib/audit-inventory";
 
 // Read-only audit summary (Phase 3 enterprise stub). Static text; no fetch, no writes, no CMS.
-const SECTIONS: { title: string; href: string; link: string; items: string[] }[] = [
-  {
-    title: "Medicare Know-trail packs",
-    href: "/workbench/medicare",
-    link: "Medicare · Public Data Intelligence",
-    items: ["⧉ Provenance", "⧉ Baselines", "⧉ DQ", "⧉ Evidence", "⧉ Investigation"],
-  },
-  {
-    title: "Medicare HITL packs",
-    href: "/workbench/medicare",
-    link: "Medicare review",
-    items: ["Case brief", "📦 Hand-off pack", "⧉ Dispositions", "⧉ Notes", "⧉ Statuses", "⧉ Progress", "⧉ All N rows"],
-  },
-  {
-    title: "Look-back insight packs",
-    href: "/workbench/status",
-    link: "Status · look-back",
-    items: ["⚖ Compare pack", "⧉ Summary", "⧉ Verdict", "⧉ Gaps", "⧉ Roles", "⧉ All N paths", "⧉ All N steps"],
-  },
-  {
-    title: "Shareable view URLs",
-    href: "/workbench/offer#evidence-packs",
-    link: "Offer · evidence packs",
-    items: ["Every pack carries view_url", "Look-back: lb_* (incl. lb_focus / lb_expand)", "Medicare: m_* (incl. m_target)", "⧉ View / ⇩ Apply view / ⇩ Apply link"],
-  },
-];
 
 export default function AuditPage() {
   return (
@@ -38,6 +14,9 @@ export default function AuditPage() {
         <h1 className="text-3xl font-bold mb-3">What an audit / evidence pack can include today</h1>
         <p className="text-zinc-400 max-w-2xl mb-8">
           A summary of the packs the node already produces. Each is copied locally from its page; this page sends, stores and changes nothing.
+        </p>
+        <p className="mb-4 text-sm text-zinc-400">
+          Inventory:<CopyValue value={JSON.stringify(buildAuditInventory(), null, 2)} label="inventory JSON" toast="Audit inventory JSON copied" />
         </p>
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
           {SECTIONS.map((s) => (
