@@ -90,3 +90,19 @@ export function runExperiment(seeds: number[] = [42, 17, 7]): Experiment {
 export function evidencePack(exp: Experiment): string {
   return JSON.stringify(exp, null, 2);
 }
+
+export function verifyPack(json: string): { ok: boolean; reason?: string } {
+  try {
+    const parsed = JSON.parse(json) as Experiment;
+    const withoutHash = { ...parsed };
+    delete (withoutHash as { pack_hash?: string }).pack_hash;
+    const recomputed = hash(withoutHash);
+    if (recomputed !== parsed.pack_hash) return { ok: false, reason: "hash mismatch" };
+    if (!parsed.comparison || parsed.comparison.delta_phi_advantage <= 0) {
+      return { ok: false, reason: "look-back did not beat greedy" };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "invalid json" };
+  }
+}
