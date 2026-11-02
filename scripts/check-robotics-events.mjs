@@ -5,6 +5,7 @@
  * Run: node scripts/check-robotics-events.mjs <events.jsonl>
  */
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 
 const SCHEMA_VERSION = "aethel.robotics.event.v1";
 const HASH_RE = /^sha256:[a-fA-F0-9]{64}$/;
@@ -16,6 +17,19 @@ const POLICY_FAMILIES = new Set(["lookback", "greedy", "other"]);
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const nonEmpty = (value) => typeof value === "string" && value.trim().length > 0;
 const onlyKeys = (value, keys) => Object.keys(value).filter((key) => !keys.includes(key));
+const canonicalize = (value) => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (isObject(value)) return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalize(value[key])]));
+  return value;
+};
+
+// SHA-256 over canonical JSON with integrity.record_hash omitted.
+export function calculateRoboticsRecordHash(event) {
+  const payload = structuredClone(event);
+  if (isObject(payload.integrity)) delete payload.integrity.record_hash;
+  const canonical = JSON.stringify(canonicalize(payload));
+  return "sha256:" + createHash("sha256").update(canonical, "utf8").digest("hex");
+}
 
 export function validateRoboticsEventStream(events) {
   const errors = [];
@@ -83,6 +97,7 @@ export function validateRoboticsEventStream(events) {
       if (extra.length) fail(`integrity: unknown properties ${extra.join(", ")}`);
       if (!HASH_RE.test(event.integrity.previous_hash ?? "")) fail("integrity.previous_hash: expected sha256 digest");
       if (!HASH_RE.test(event.integrity.record_hash ?? "")) fail("integrity.record_hash: expected sha256 digest");
+      else if (calculateRoboticsRecordHash(event) !== event.integrity.record_hash) fail("integrity.record_hash: digest verification failed");
     }
 
     if (nonEmpty(event.run_id) && nonEmpty(event.episode_id) && Number.isSafeInteger(event.seq) && Number.isSafeInteger(event.monotonic_ns)) {
