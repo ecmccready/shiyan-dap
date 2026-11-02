@@ -36,7 +36,7 @@ test("accepts a well-formed, linked episode", () => {
     integrity: { previous_hash: first.integrity.record_hash, record_hash: hash("2") },
   });
   const result = validateRoboticsEventStream([first, second]);
-  assert.equal(result.ok, true, result.errors.join("\\n"));
+  assert.equal(result.ok, true, result.errors.join("\n"));
   assert.equal(result.eventCount, 2);
   assert.equal(result.episodeCount, 1);
 });
@@ -71,7 +71,7 @@ test("rejects command evidence without a safe authorized state", () => {
 });
 
 test("parses JSONL and reports malformed lines", () => {
-  const parsed = parseRoboticsJsonl(`${JSON.stringify(event())}\\nnot-json\\n`);
+  const parsed = parseRoboticsJsonl(`${JSON.stringify(event())}\nnot-json\n`);
   assert.equal(parsed.events.length, 1);
   assert.deepEqual(parsed.errors, ["line 2: invalid JSON"]);
 });
