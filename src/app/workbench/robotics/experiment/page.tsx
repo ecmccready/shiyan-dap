@@ -8,8 +8,15 @@ export default function RoboticsExperimentPage() {
   const [copied, setCopied] = useState(false);
   const [verifyInput, setVerifyInput] = useState("");
   const [verifyResult, setVerifyResult] = useState<{ ok: boolean; reason?: string } | null>(null);
+  const [seedInput, setSeedInput] = useState("42,17,7");
 
-  const run = () => setExp(runExperiment());
+  const run = () => {
+    const seeds = seedInput
+      .split(",")
+      .map((s) => parseInt(s.trim(), 10))
+      .filter((n) => !Number.isNaN(n));
+    setExp(runExperiment(seeds.length ? seeds : undefined));
+  };
 
   const download = () => {
     if (!exp) return;
@@ -38,7 +45,13 @@ export default function RoboticsExperimentPage() {
         Deterministic simulator. Repeated look-back vs greedy trials. Content-hashed evidence pack with ROE comparison. Real robot control remains outside the engine.
       </p>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 items-center">
+        <input
+          className="border rounded px-2 py-1 text-sm w-40"
+          value={seedInput}
+          onChange={(e) => setSeedInput(e.target.value)}
+          placeholder="seeds, e.g. 42,17,7"
+        />
         <button type="button" onClick={run} className="border rounded px-3 py-1 text-sm">Run experiment</button>
         {exp && (
           <>
