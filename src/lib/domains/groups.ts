@@ -12,6 +12,8 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "Long-horizon robotics policies", href: "/workbench/robotics" },
       { label: "Robotics benchmark", href: "/workbench/robotics/benchmark" },
       { label: "Robotics value", href: "/workbench/robotics/value" },
+      { label: "Robotics experiment", href: "/workbench/robotics/experiment" },
+      { label: "Robotics experiment", href: "/workbench/robotics/experiment" },
     ],
   },
   {
