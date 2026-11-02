@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseRoboticsJsonl, validateRoboticsEventStream } from "./check-robotics-events.mjs";
+import { calculateRoboticsRecordHash, parseRoboticsJsonl, validateRoboticsEventStream } from "./check-robotics-events.mjs";
 
 const hash = (digit) => `sha256:${digit.repeat(64)}`;
-const event = (overrides = {}) => ({
+const event = (overrides = {}) => {\n  const value = ({
   schema_version: "aethel.robotics.event.v1",
   run_id: "run-test",
   episode_id: "episode-test",
@@ -29,7 +29,7 @@ test("accepts a well-formed, linked episode", () => {
     stage: "show",
     event_type: "measurement",
     state_ref: undefined,
-    integrity: { previous_hash: hash("1"), record_hash: hash("2") },
+    integrity: { previous_hash: first.integrity.record_hash, record_hash: hash("2") },
   });
   const result = validateRoboticsEventStream([first, second]);
   assert.equal(result.ok, true, result.errors.join("\n"));
