@@ -10,6 +10,8 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "Medicare · Public Data Intelligence", href: "/workbench/medicare" },
       { label: "Level 4 status", href: "/workbench/status" },
       { label: "Long-horizon robotics policies", href: "/workbench/robotics" },
+      { label: "Robotics benchmark", href: "/workbench/robotics/benchmark" },
+
     ],
   },
   {

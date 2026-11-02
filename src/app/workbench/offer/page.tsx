@@ -1,3 +1,4 @@
+
 "use client";
 
 import WhatYouGet from "@/components/WhatYouGet";
@@ -35,6 +36,9 @@ export default function OfferPage() {
           <p className="mb-2">
             Second case: <Link className="underline text-emerald-400" href="/workbench/robotics">Long-horizon robotics policies</Link> (synthetic fixture, same four-stage graph and look-back ranking).
           </p>
+          <p className="mb-2">
+          Persistent-autonomy benchmark: <Link className="underline text-emerald-400" href="/workbench/robotics/benchmark">Long-horizon robotics protocol</Link> (synthetic protocol; measures predicted-vs-actual, intervention rate, and look-back vs greedy).
+            </p>
           <p className="text-zinc-500 text-xs">
             Detected pattern ≠ verified conclusion: findings are inputs for human review, not fraud, misconduct or clinical findings. Commercial licensing available from the owner. Display only; nothing is sent or stored.
           </p>
