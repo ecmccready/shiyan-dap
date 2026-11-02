@@ -14,12 +14,22 @@ export type Trial = {
   hash: string;
 };
 
+export type Comparison = {
+  lookback_avg_delta_phi: number;
+  greedy_avg_delta_phi: number;
+  delta_phi_advantage: number;
+  lookback_avg_interventions: number;
+  greedy_avg_interventions: number;
+  intervention_reduction: number;
+};
+
 export type Experiment = {
   robot: string;
   task: string;
   environment: string;
   starting_state: string;
   trials: Trial[];
+  comparison: Comparison;
   pack_hash: string;
   generated_at: string;
 };
@@ -43,6 +53,10 @@ function runTrial(policy: Policy, seed: number): Omit<Trial, "hash"> {
   };
 }
 
+function avg(xs: number[]): number {
+  return xs.reduce((s, n) => s + n, 0) / xs.length;
+}
+
 export function runExperiment(seeds: number[] = [42, 17, 7]): Experiment {
   const trials: Trial[] = [];
   for (const seed of seeds) {
@@ -51,12 +65,23 @@ export function runExperiment(seeds: number[] = [42, 17, 7]): Experiment {
       trials.push({ ...raw, hash: hash(raw) });
     }
   }
+  const lookback = trials.filter((t) => t.policy === "look-back");
+  const greedy = trials.filter((t) => t.policy === "greedy");
+  const comparison: Comparison = {
+    lookback_avg_delta_phi: +avg(lookback.map((t) => t.delta_phi)).toFixed(3),
+    greedy_avg_delta_phi: +avg(greedy.map((t) => t.delta_phi)).toFixed(3),
+    delta_phi_advantage: +avg(lookback.map((t) => t.delta_phi)).toFixed(3) - +avg(greedy.map((t) => t.delta_phi)).toFixed(3),
+    lookback_avg_interventions: +avg(lookback.map((t) => t.interventions)).toFixed(2),
+    greedy_avg_interventions: +avg(greedy.map((t) => t.interventions)).toFixed(2),
+    intervention_reduction: +avg(greedy.map((t) => t.interventions)).toFixed(2) - +avg(lookback.map((t) => t.interventions)).toFixed(2),
+  };
   const pack = {
     robot: "sim-humanoid-v1",
     task: "long-horizon loco-manipulation",
     environment: "warehouse-aisle-3",
     starting_state: "seeded-pose-A",
     trials,
+    comparison,
     generated_at: new Date().toISOString(),
   };
   return { ...pack, pack_hash: hash(pack) };

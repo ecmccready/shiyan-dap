@@ -31,7 +31,7 @@ export default function RoboticsExperimentPage() {
     <main className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-semibold mb-2">Persistent-autonomy experiment runner</h1>
       <p className="text-sm text-neutral-500 mb-4">
-        Deterministic simulator. Repeated look-back vs greedy trials. Content-hashed evidence pack. Real robot control remains outside the engine.
+        Deterministic simulator. Repeated look-back vs greedy trials. Content-hashed evidence pack with ROE comparison. Real robot control remains outside the engine.
       </p>
 
       <div className="flex gap-2 mb-4">
@@ -46,11 +46,16 @@ export default function RoboticsExperimentPage() {
 
       {exp && (
         <>
-          <div className="text-sm mb-4">
+          <div className="text-sm mb-4 border rounded p-3">
             <div>Robot: {exp.robot}</div>
             <div>Task: {exp.task}</div>
             <div>Environment: {exp.environment}</div>
             <div>Pack hash: {exp.pack_hash}</div>
+            <div className="mt-2 font-medium">ROE comparison</div>
+            <div>Look-back avg ΔΦ: {exp.comparison.lookback_avg_delta_phi}</div>
+            <div>Greedy avg ΔΦ: {exp.comparison.greedy_avg_delta_phi}</div>
+            <div>ΔΦ advantage: {exp.comparison.delta_phi_advantage}</div>
+            <div>Intervention reduction: {exp.comparison.intervention_reduction}</div>
           </div>
           <div className="border rounded">
             {exp.trials.map((t) => (
