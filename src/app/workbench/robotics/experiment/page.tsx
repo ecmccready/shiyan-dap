@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { runExperiment, evidencePack, type Experiment } from "@/lib/robotics/experiment-runner";
+import { runExperiment, evidencePack, verifyPack, type Experiment } from "@/lib/robotics/experiment-runner";
 
 export default function RoboticsExperimentPage() {
   const [exp, setExp] = useState<Experiment | null>(null);
   const [copied, setCopied] = useState(false);
+  const [verifyInput, setVerifyInput] = useState("");
+  const [verifyResult, setVerifyResult] = useState<{ ok: boolean; reason?: string } | null>(null);
 
   const run = () => setExp(runExperiment());
 
@@ -26,6 +28,8 @@ export default function RoboticsExperimentPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
   };
+
+  const verify = () => setVerifyResult(verifyPack(verifyInput));
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
@@ -57,7 +61,7 @@ export default function RoboticsExperimentPage() {
             <div>ΔΦ advantage: {exp.comparison.delta_phi_advantage}</div>
             <div>Intervention reduction: {exp.comparison.intervention_reduction}</div>
           </div>
-          <div className="border rounded">
+          <div className="border rounded mb-4">
             {exp.trials.map((t) => (
               <div key={t.id} className="border-b last:border-b-0 p-3 text-sm">
                 <div className="flex justify-between">
@@ -70,6 +74,23 @@ export default function RoboticsExperimentPage() {
           </div>
         </>
       )}
+
+      <section className="border rounded p-3">
+        <h2 className="font-medium text-sm mb-2">Verify a pack</h2>
+        <textarea
+          className="w-full border rounded p-2 text-xs font-mono mb-2"
+          rows={6}
+          placeholder="Paste an evidence pack JSON here"
+          value={verifyInput}
+          onChange={(e) => setVerifyInput(e.target.value)}
+        />
+        <button type="button" onClick={verify} className="border rounded px-3 py-1 text-sm">Verify</button>
+        {verifyResult && (
+          <div className={`mt-2 text-sm ${verifyResult.ok ? "text-emerald-600" : "text-red-600"}`}>
+            {verifyResult.ok ? "Verified" : `Failed: ${verifyResult.reason}`}
+          </div>
+        )}
+      </section>
     </main>
   );
 }
