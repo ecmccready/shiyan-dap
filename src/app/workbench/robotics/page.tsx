@@ -104,7 +104,3 @@ export default function RoboticsPage() {
     </main>
   );
 }
-
-
-
-
