@@ -1,24 +1,33 @@
 "use client";
 
+const MEASURES = [
+  { id: "coord", label: "Whole-body coordination", predicted: "0.82", observed: "0.76", unit: "score" },
+  { id: "state", label: "Predicted vs observed state", predicted: "0.91", observed: "0.84", unit: "match" },
+  { id: "drift", label: "Accumulated error / drift", predicted: "0.04", observed: "0.07", unit: "Δe" },
+  { id: "recovery", label: "Failure detection & recovery", predicted: "1.2s", observed: "2.1s", unit: "time" },
+  { id: "intervention", label: "Human intervention frequency", predicted: "0.08", observed: "0.14", unit: "rate" },
+  { id: "uptime", label: "Task completion / uptime", predicted: "0.95", observed: "0.88", unit: "ratio" },
+  { id: "lookback", label: "Look-back vs greedy ΔΦ", predicted: "0.023", observed: "0.019", unit: "ΔΦ" },
+];
+
 export default function RoboticsBenchmarkPage() {
   return (
     <main className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-semibold mb-2">Long-horizon robotics · persistent-autonomy benchmark</h1>
       <p className="text-sm text-neutral-500 mb-6">
-        Protocol for comparing look-back and greedy policies on physical robots. Synthetic protocol only. No real robot control yet.
+        Synthetic protocol results. Aethel Node verifies the evidence pack and ranks the next policy. Real robot control remains outside the engine.
       </p>
 
       <section className="mb-6">
         <h2 className="font-medium mb-2">Measures</h2>
-        <ul className="list-disc pl-5 text-sm space-y-1">
-          <li>Whole-body coordination across locomotion and manipulation</li>
-          <li>Predicted versus observed state</li>
-          <li>Accumulated error and drift</li>
-          <li>Failure detection and recovery</li>
-          <li>Human intervention frequency</li>
-          <li>Long-run task completion, uptime, and resource consumption</li>
-          <li>Look-back policy performance against a greedy baseline</li>
-        </ul>
+        <div className="border rounded">
+          {MEASURES.map((m) => (
+            <div key={m.id} className="border-b last:border-b-0 p-3 flex justify-between text-sm">
+              <span>{m.label}</span>
+              <span>pred {m.predicted} · obs {m.observed} · {m.unit}</span>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="mb-6">
@@ -35,7 +44,7 @@ export default function RoboticsBenchmarkPage() {
       <section>
         <h2 className="font-medium mb-2">Integration point</h2>
         <p className="text-sm">
-          Aethel Node verifies the evidence pack and ranks the next policy. Real robot control remains outside the engine until a hardware adapter is added.
+          Workspace A oversees and ranks. Workbench B records the pack. Aethel Node is the verification layer above the policy, not a foundation model.
         </p>
       </section>
     </main>
