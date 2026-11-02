@@ -41,6 +41,9 @@ export default function OfferPage() {
           <p className="mb-2">
             Value summary: <Link className="underline text-emerald-400" href="/workbench/robotics/value">Long-horizon robotics value</Link> (shareable reference for customer acquisition).
           </p>
+          <p className="mb-2">
+            Experiment runner: <Link className="underline text-emerald-400" href="/workbench/robotics/experiment">Persistent-autonomy experiment</Link> (deterministic simulator, repeated trials, downloadable evidence pack).
+          </p>
           <p className="text-zinc-500 text-xs">
             Detected pattern ≠ verified conclusion: findings are inputs for human review, not fraud, misconduct or clinical findings. Commercial licensing available from the owner. Display only; nothing is sent or stored.
           </p>
