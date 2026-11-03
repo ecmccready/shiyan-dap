@@ -55,9 +55,36 @@ const FIXTURE: Opportunity[] = [
   },
 ];
 
+function pack(o: Opportunity): string {
+  return JSON.stringify(
+    {
+      schema: "aethel.acquisition.opportunity.v1",
+      id: o.id,
+      recipient: o.recipient,
+      organization: o.organization,
+      problem: o.problem,
+      evidence_hash: o.evidence_hash,
+      originating_run: o.originating_run,
+      contact_date: o.contact_date,
+      response: o.response,
+      next_action: o.next_action,
+      stage: o.stage,
+    },
+    null,
+    2
+  );
+}
+
 export default function AcquisitionPage() {
   const [filter, setFilter] = useState<"all" | Opportunity["stage"]>("all");
+  const [copied, setCopied] = useState<string | null>(null);
   const shown = filter === "all" ? FIXTURE : FIXTURE.filter((o) => o.stage === filter);
+
+  const copy = async (o: Opportunity) => {
+    await navigator.clipboard.writeText(pack(o));
+    setCopied(o.id);
+    setTimeout(() => setCopied(null), 1200);
+  };
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
@@ -99,6 +126,13 @@ export default function AcquisitionPage() {
             <div className="text-xs mt-1">
               Response: {o.response} · Next: {o.next_action}
             </div>
+            <button
+              type="button"
+              onClick={() => copy(o)}
+              className="mt-2 border rounded px-2 py-1 text-xs"
+            >
+              {copied === o.id ? "Copied" : "Copy opportunity"}
+            </button>
           </div>
         ))}
       </div>
