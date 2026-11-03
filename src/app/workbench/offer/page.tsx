@@ -47,6 +47,9 @@ export default function OfferPage() {
           <p className="mb-2 text-xs text-zinc-400">
             A reviewer can open the experiment, change seeds, run look-back versus greedy, download a content-hashed pack, and paste it back to verify the hash. Synthetic fixture today. Real robot control remains outside the engine.
           </p>
+          <p className="mb-2">
+            Acquisition: <Link className="underline text-emerald-400" href="/workbench/acquisition">Acquisition Intelligence</Link> (synthetic opportunities, each linked to an evidence-pack hash and originating run).
+          </p>
           <p className="text-zinc-500 text-xs">
             Detected pattern ≠ verified conclusion: findings are inputs for human review, not fraud, misconduct or clinical findings. Commercial licensing available from the owner. Display only; nothing is sent or stored.
           </p>
