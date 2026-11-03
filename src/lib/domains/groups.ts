@@ -13,6 +13,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "Robotics benchmark", href: "/workbench/robotics/benchmark" },
       { label: "Robotics value", href: "/workbench/robotics/value" },
       { label: "Robotics experiment", href: "/workbench/robotics/experiment" },
+      { label: "Acquisition", href: "/workbench/acquisition" },
     ],
   },
   {
