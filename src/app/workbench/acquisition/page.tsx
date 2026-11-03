@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 type Opportunity = {
@@ -78,10 +78,18 @@ function pack(o: Opportunity): string {
 export default function AcquisitionPage() {
   const [filter, setFilter] = useState<"all" | Opportunity["stage"]>("all");
   const [copied, setCopied] = useState<string | null>(null);
+  const [lastHash, setLastHash] = useState<string | null>(null);
   const shown = filter === "all" ? FIXTURE : FIXTURE.filter((o) => o.stage === filter);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setLastHash(sessionStorage.getItem("aethel.lastExperimentHash"));
+    }
+  }, []);
+
   const copy = async (o: Opportunity) => {
-    await navigator.clipboard.writeText(pack(o));
+    const withHash = lastHash ? { ...o, evidence_hash: lastHash } : o;
+    await navigator.clipboard.writeText(pack(withHash));
     setCopied(o.id);
     setTimeout(() => setCopied(null), 1200);
   };
@@ -92,6 +100,15 @@ export default function AcquisitionPage() {
       <p className="text-sm text-neutral-500 mb-4">
         Synthetic fixture. Display only. Every opportunity references an evidence-pack hash and originating run. Real contact tracking remains outside the engine.
       </p>
+
+      {lastHash && (
+        <div className="text-xs mb-3 border rounded p-2">
+          Last experiment hash: {lastHash} ·{" "}
+          <Link href="/workbench/robotics/experiment" className="underline">
+            originating run
+          </Link>
+        </div>
+      )}
 
       <div className="flex gap-2 mb-4 text-sm">
         {(["all", "identified", "presented", "engaged", "pilot", "measured"] as const).map((s) => (
@@ -118,7 +135,7 @@ export default function AcquisitionPage() {
               Recipient: {o.recipient} · Contact: {o.contact_date}
             </div>
             <div className="text-xs mt-1">
-              Evidence: {o.evidence_hash} ·{" "}
+              Evidence: {lastHash || o.evidence_hash} ·{" "}
               <Link href={o.originating_run} className="underline">
                 originating run
               </Link>

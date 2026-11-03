@@ -15,7 +15,12 @@ export default function RoboticsExperimentPage() {
       .split(",")
       .map((s) => parseInt(s.trim(), 10))
       .filter((n) => !Number.isNaN(n));
-    setExp(runExperiment(seeds.length ? seeds : undefined));
+    const result = runExperiment(seeds.length ? seeds : undefined);
+    setExp(result);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("aethel.lastExperimentHash", result.pack_hash);
+      sessionStorage.setItem("aethel.lastExperimentPack", evidencePack(result));
+    }
   };
 
   const download = () => {
