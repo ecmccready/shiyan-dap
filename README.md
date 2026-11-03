@@ -1,4 +1,3 @@
-
 # Aethel Node
 
 Aethel Node turns a declared goal into a bounded run, measures the result against evidence, and keeps only the experience that qualifies for reuse.
@@ -30,6 +29,9 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Know | Medicare · Public Data Intelligence | /workbench/medicare |
 | Know | Level 4 status | /workbench/status |
 | Know | Long-horizon robotics policies | /workbench/robotics |
+| Know | Robotics benchmark | /workbench/robotics/benchmark |
+| Know | Robotics value | /workbench/robotics/value |
+| Know | Robotics experiment | /workbench/robotics/experiment |
 | Know How | Loop · closed loop | /loop |
 | Know How | Level 4 run | /workbench/autonomous |
 | Know How | ROE · Reciprocal Optimization Engine | /workbench/autonomous?roe_drive=1 |
@@ -40,7 +42,6 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Do | Offer | /workbench/offer |
 | Do | Pilot | /workbench/pilot |
 | Do | Marketplace | /workbench/marketplace |
-| Physical systems | Long-horizon robotics policies | /workbench/robotics |
 
 The dropdown is also a read-only view of the verified-experience store. After load it fetches eligible records once and annotates the best Φ on relevant entries. Choosing Level 4 run opens the reuse hand-off when the record passes the same gates as the durable feed.
 
@@ -68,10 +69,9 @@ Domain rules stay isolated. The engine does not change when a new vertical is ad
 
 - Medicare · Public Data Intelligence is the first named vertical under Global · misdiagnosis. It turns raw public CMS data into a source-linked investigation finding with human review.
 - Long-horizon robotics policies is the second commercial case. It applies the same ranking and evidence pattern to a synthetic policy fixture at `/workbench/robotics`.
-- Long-horizon robotics policies at `/workbench/robotics` ranks synthetic policies by retrospective ΔΦ, with the same Show filter and expandable evidence rows used on the look-back surface.
-- Long-horizon robotics policies at `/workbench/robotics` shows a sticky summary (winner, ΔΦ vs greedy, shown count) and the same Show filter used on the look-back surface.
-- Long-horizon robotics policies at `/workbench/robotics` supports j/k navigation, Enter to expand, and f to cycle the Show filter — the same keyboard pattern used on the look-back surface.
-- Long-horizon robotics policies at `/workbench/robotics` pulses the sticky summary on the first copy (`g` or click), matching the look-back surface.
+- Persistent-autonomy benchmark at `/workbench/robotics/benchmark` lists the protocol measures (predicted-vs-observed, drift, recovery, interventions, look-back vs greedy).
+- Value summary at `/workbench/robotics/value` is the shareable reference for customer acquisition.
+- Experiment runner at `/workbench/robotics/experiment` is a deterministic simulator. A reviewer can change seeds, run look-back versus greedy, download a content-hashed evidence pack, and paste it back to verify the hash. Synthetic fixture today. Real robot control remains outside the engine.
 
 ## Level 4
 
@@ -84,3 +84,4 @@ git pull origin main
 npm ci
 npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
+npx tsx scripts/check-robotics-experiment.ts
