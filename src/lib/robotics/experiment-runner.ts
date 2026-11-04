@@ -47,17 +47,27 @@ const round = (n: number, places = 3): number => {
 };
 
 function runTrial(policy: Policy, seed: number): Omit<Trial, "hash"> {
-  const base = policy === "look-back" ? 0.023 : 0.011;
+  const scenario = seed % 3;
+  const lookbackDelta = scenario === 0 ? 0.023 : scenario === 1 ? 0.010 : 0.016;
+  const greedyDelta = scenario === 0 ? 0.011 : scenario === 1 ? 0.018 : 0.016;
+  const base = policy === "look-back" ? lookbackDelta : greedyDelta;
   const noise = ((seed % 7) - 3) * 0.001;
+  const lookbackInterventions = scenario === 0 ? 1 + (seed % 2) : scenario === 1 ? 4 + (seed % 3) : 2 + (seed % 2);
+  const greedyInterventions = scenario === 0 ? 4 + (seed % 3) : scenario === 1 ? 1 + (seed % 2) : 2 + (seed % 2);
+  const interventions = policy === "look-back" ? lookbackInterventions : greedyInterventions;
+  const coordinationDelta = scenario === 0 ? 0.06 : scenario === 1 ? -0.04 : 0;
+  const driftDelta = scenario === 0 ? -0.03 : scenario === 1 ? 0.02 : 0;
+  const recoveryDelta = scenario === 0 ? -0.9 : scenario === 1 ? 0.6 : 0;
+  const direction = policy === "look-back" ? 1 : -1;
   return {
     id: `${policy}-${seed}`,
     policy,
     seed,
     delta_phi: round(base + noise),
-    interventions: policy === "look-back" ? 1 + (seed % 2) : 4 + (seed % 3),
-    coordination: round(0.82 - (policy === "greedy" ? 0.06 : 0) + noise),
-    drift: round(0.04 + (policy === "greedy" ? 0.03 : 0) + Math.abs(noise)),
-    recovery_s: round(1.2 + (policy === "greedy" ? 0.9 : 0) + Math.abs(noise) * 10, 2),
+    interventions,
+    coordination: round(0.76 + (scenario === 2 ? 0 : direction * coordinationDelta) + noise),
+    drift: round(0.055 + (scenario === 2 ? 0 : direction * driftDelta) + Math.abs(noise)),
+    recovery_s: round(1.65 + (scenario === 2 ? 0 : direction * recoveryDelta) + Math.abs(noise) * 10, 2),
   };
 }
 
