@@ -32,6 +32,7 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Know | Robotics benchmark | /workbench/robotics/benchmark |
 | Know | Robotics value | /workbench/robotics/value |
 | Know | Robotics experiment | /workbench/robotics/experiment |
+| Know | Robotics policies | /workbench/robotics/policies |
 | Know How | Loop · closed loop | /loop |
 | Know How | Level 4 run | /workbench/autonomous |
 | Know How | ROE · Reciprocal Optimization Engine | /workbench/autonomous?roe_drive=1 |
@@ -42,6 +43,7 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Do | Offer | /workbench/offer |
 | Do | Pilot | /workbench/pilot |
 | Do | Marketplace | /workbench/marketplace |
+| Do | Acquisition Intelligence | /workbench/acquisition |
 
 The dropdown is also a read-only view of the verified-experience store. After load it fetches eligible records once and annotates the best Φ on relevant entries. Choosing Level 4 run opens the reuse hand-off when the record passes the same gates as the durable feed.
 
@@ -72,6 +74,8 @@ Domain rules stay isolated. The engine does not change when a new vertical is ad
 - Persistent-autonomy benchmark at `/workbench/robotics/benchmark` lists the protocol measures (predicted-vs-observed, drift, recovery, interventions, look-back vs greedy).
 - Value summary at `/workbench/robotics/value` is the shareable reference for customer acquisition.
 - Experiment runner at `/workbench/robotics/experiment` is a deterministic simulator. A reviewer can change seeds, run look-back versus greedy, download a content-hashed evidence pack, and paste it back to verify the hash. Synthetic fixture today. Real robot control remains outside the engine.
+- Policies page at `/workbench/robotics/policies` describes the look-back and greedy policies under identical conditions.
+- Acquisition Intelligence at `/workbench/acquisition` lists synthetic opportunities. Each links to an evidence-pack hash and the originating run. Copy opportunity exports a shareable JSON pack.
 
 ## Level 4
 
