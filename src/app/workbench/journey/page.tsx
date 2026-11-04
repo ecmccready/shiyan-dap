@@ -108,7 +108,7 @@ export default function CustomerProofJourneyPage() {
         <section className="rounded-2xl border border-zinc-800 p-5 sm:p-6">
           <p className="text-xs uppercase tracking-widest text-emerald-400">Live engine · endogenous evidence</p>
           <h2 className="mt-1 text-xl font-semibold">Your existing Level 4 experience store</h2>
-          <p className="mt-2 text-sm text-zinc-400">This reads the actual durable experience API used by the Workbench. It is separate from the synthetic robotics demonstration below.</p>
+          <p className="mt-2 text-sm text-zinc-400">This reads the actual durable experience API used by the Workbench. It is separate from the synthetic robotics demonstration below. A hash detects changes to a pack; it does not identify its author or provide an independent signature or attestation.</p>
           {coreRecords === null ? (
             <p className="mt-4 text-sm text-zinc-500">{coreError || "Reading recorded experience…"}</p>
           ) : (
