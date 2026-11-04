@@ -20,6 +20,7 @@ export default function OfferPage() {
         </p>
 
         <div className="mb-6"><JourneyNote /></div>
+        <p className="mb-6 text-sm text-zinc-300">Start with the <Link className="underline text-emerald-400" href="/workbench/journey">end-to-end proof journey</Link>: run, measure, verify, and record a human disposition before any acquisition activity.</p>
 
         <section id="pilot-proposition" data-offer-pilot-proposition className="border border-emerald-800 bg-emerald-950/30 rounded-2xl p-5 mb-8 text-sm text-zinc-300">
           <p className="text-emerald-400 text-xs uppercase tracking-widest mb-2">Pilot proposition · Know → Know How → Show → Do</p>

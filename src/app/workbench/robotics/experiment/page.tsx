@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { runExperiment, evidencePack, verifyPack, type Experiment } from "@/lib/robotics/experiment-runner";
 
+const EXPERIMENT_HASH_KEY = "aethel.lastExperimentHash";
+
 export default function ExperimentPage() {
   const [seedInput, setSeedInput] = useState("42,17,7");
   const [exp, setExp] = useState<Experiment | null>(null);
@@ -17,8 +19,13 @@ export default function ExperimentPage() {
     const result = runExperiment(seeds.length ? seeds : undefined);
     setExp(result);
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("aethel.lastExperimentHash", result.pack_hash);
-      sessionStorage.setItem("aethel.lastExperimentPack", evidencePack(result));
+      try {
+        window.localStorage.setItem(EXPERIMENT_HASH_KEY, result.pack_hash);
+        window.sessionStorage.setItem(EXPERIMENT_HASH_KEY, result.pack_hash);
+        window.sessionStorage.setItem("aethel.lastExperimentPack", evidencePack(result));
+      } catch {
+        // The experiment result remains usable even when browser storage is unavailable.
+      }
     }
   };
 
