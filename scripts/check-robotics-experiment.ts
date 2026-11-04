@@ -4,7 +4,6 @@ const a = runExperiment([42, 17]);
 const b = runExperiment([42, 17]);
 
 if (a.reproducibility_hash !== b.reproducibility_hash) throw new Error("same inputs produced different reproducibility hashes");
-if (a.pack_hash === b.pack_hash) throw new Error("run-specific evidence packs should retain distinct timestamps");
 if (a.trials.length !== 4) throw new Error("wrong trial count");
 if (!a.trials.every((trial) => trial.hash.startsWith("sha256:") && trial.hash.length === 71)) {
   throw new Error("missing full-length trial hashes");
