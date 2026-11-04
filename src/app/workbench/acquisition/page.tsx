@@ -78,13 +78,12 @@ function pack(o: Opportunity): string {
 export default function AcquisitionPage() {
   const [filter, setFilter] = useState<"all" | Opportunity["stage"]>("all");
   const [copied, setCopied] = useState<string | null>(null);
-  const [lastHash, setLastHash] = useState<string | null>("sha256:test-banner-visible");
+  const [lastHash, setLastHash] = useState<string | null>(null);
   const shown = filter === "all" ? FIXTURE : FIXTURE.filter((o) => o.stage === filter);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = sessionStorage.getItem("aethel.lastExperimentHash");
-      if (stored) setLastHash(stored);
+      setLastHash(sessionStorage.getItem("aethel.lastExperimentHash"));
     }
   }, []);
 
