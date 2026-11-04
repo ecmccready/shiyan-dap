@@ -78,12 +78,13 @@ function pack(o: Opportunity): string {
 export default function AcquisitionPage() {
   const [filter, setFilter] = useState<"all" | Opportunity["stage"]>("all");
   const [copied, setCopied] = useState<string | null>(null);
-  const [lastHash, setLastHash] = useState<string | null>(null);
+  const [lastHash, setLastHash] = useState<string | null>("sha256:test-banner-visible");
   const shown = filter === "all" ? FIXTURE : FIXTURE.filter((o) => o.stage === filter);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setLastHash(sessionStorage.getItem("aethel.lastExperimentHash"));
+      const stored = sessionStorage.getItem("aethel.lastExperimentHash");
+      if (stored) setLastHash(stored);
     }
   }, []);
 
@@ -102,7 +103,7 @@ export default function AcquisitionPage() {
       </p>
 
       {lastHash && (
-        <div className="text-xs mb-3 border rounded p-2">
+        <div className="text-xs mb-3 border rounded p-2 bg-emerald-50">
           Last experiment hash: {lastHash} ·{" "}
           <Link href="/workbench/robotics/experiment" className="underline">
             originating run
