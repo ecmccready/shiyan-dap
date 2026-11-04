@@ -8,6 +8,7 @@ import { evidencePack, runExperiment, verifyPack, type Experiment } from "@/lib/
 const KEY = "aethel.customer-proof-journey.v1";
 type Review = { decision: "accept" | "reject" | "defer"; rationale: string; reviewed_at: string; pack_hash: string };
 type Saved = { pack: Experiment; review?: Review };
+type CoreExperience = { run_id: string; iteration: number; e: number | null; phi?: number | null; eligible: boolean; state?: string; verified_at: string };
 
 export default function CustomerProofJourneyPage() {
   const [seeds, setSeeds] = useState("42,17,7");
@@ -16,6 +17,8 @@ export default function CustomerProofJourneyPage() {
   const [rationale, setRationale] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [coreRecords, setCoreRecords] = useState<CoreExperience[] | null>(null);
+  const [coreError, setCoreError] = useState("");
 
   useEffect(() => {
     try {
@@ -24,7 +27,23 @@ export default function CustomerProofJourneyPage() {
     } catch {
       setError("Could not restore this browser's locally saved journey.");
     }
+    fetch("/api/level4/experience", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error(response.status === 503 ? "Experience store is not configured." : `Experience store returned ${response.status}.`);
+        return response.json();
+      })
+      .then((data: unknown) => {
+        if (!Array.isArray(data)) throw new Error("Experience store returned an unexpected response.");
+        setCoreRecords(data as CoreExperience[]);
+      })
+      .catch((cause) => setCoreError(cause instanceof Error ? cause.message : "Could not read engine experience."));
   }, []);
+
+  const latestCore = useMemo(() => {
+    const byRun = new Map<string, CoreExperience>();
+    for (const row of coreRecords ?? []) byRun.set(row.run_id, row);
+    return Array.from(byRun.values()).reverse().slice(0, 8);
+  }, [coreRecords]);
 
   const verification = useMemo(() => saved ? verifyPack(evidencePack(saved.pack)) : null, [saved]);
 
@@ -85,6 +104,44 @@ export default function CustomerProofJourneyPage() {
           <p className="text-zinc-300">Declare an objective. Run comparable actions. Measure the outcome. Verify the evidence. Record a human decision. Reuse only what survives the checks.</p>
           <p className="text-sm text-zinc-500">This first end-to-end journey uses a deterministic synthetic robotics fixture. It demonstrates the product workflow, not physical robot performance, independent validation or customer value.</p>
         </header>
+
+        <section className="rounded-2xl border border-zinc-800 p-5 sm:p-6">
+          <p className="text-xs uppercase tracking-widest text-emerald-400">Live engine · endogenous evidence</p>
+          <h2 className="mt-1 text-xl font-semibold">Your existing Level 4 experience store</h2>
+          <p className="mt-2 text-sm text-zinc-400">This reads the actual durable experience API used by the Workbench. It is separate from the synthetic robotics demonstration below.</p>
+          {coreRecords === null ? (
+            <p className="mt-4 text-sm text-zinc-500">{coreError || "Reading recorded experience…"}</p>
+          ) : (
+            <>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-lg bg-zinc-900 p-3"><p className="text-xs text-zinc-500">Recorded steps</p><p className="mt-1 text-2xl font-semibold">{coreRecords.length}</p></div>
+                <div className="rounded-lg bg-zinc-900 p-3"><p className="text-xs text-zinc-500">Latest eligible runs</p><p className="mt-1 text-2xl font-semibold">{latestCore.filter((row) => row.eligible).length}</p></div>
+                <div className="rounded-lg bg-zinc-900 p-3"><p className="text-xs text-zinc-500">Latest rejected / ineligible</p><p className="mt-1 text-2xl font-semibold">{latestCore.filter((row) => !row.eligible).length}</p></div>
+              </div>
+              {latestCore.length ? (
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="text-zinc-500"><tr><th className="py-2 pr-3">Run</th><th className="pr-3">Iteration</th><th className="pr-3">Error e</th><th className="pr-3">Φ</th><th className="pr-3">Eligibility</th><th>Replay</th></tr></thead>
+                    <tbody>{latestCore.map((row) => (
+                      <tr key={row.run_id} className="border-t border-zinc-800">
+                        <td className="py-2 pr-3 font-mono">{row.run_id}</td><td className="pr-3">{row.iteration}</td>
+                        <td className="pr-3">{typeof row.e === "number" ? row.e.toFixed(3) : "n/a"}</td>
+                        <td className="pr-3">{typeof row.phi === "number" ? row.phi.toFixed(3) : "n/a"}</td>
+                        <td className={row.eligible ? "pr-3 text-emerald-300" : "pr-3 text-amber-300"}>{row.eligible ? "Eligible" : "Not eligible"}</td>
+                        <td><a className="underline" href={`/api/level4/verify?run_id=${encodeURIComponent(row.run_id)}`} target="_blank" rel="noreferrer">Verify ↗</a></td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+              ) : <p className="mt-4 text-sm text-zinc-500">No durable experience records are currently available.</p>}
+            </>
+          )}
+          <div className="mt-4 flex flex-wrap gap-4 text-sm">
+            <Link href="/workbench/status" className="underline">Open Level 4 status</Link>
+            <Link href="/workbench/global" className="underline">Open global misdiagnosis view</Link>
+          </div>
+          {coreError && <p className="mt-3 text-xs text-amber-300">{coreError}</p>}
+        </section>
 
         <section className="grid gap-3 sm:grid-cols-4">
           {[
