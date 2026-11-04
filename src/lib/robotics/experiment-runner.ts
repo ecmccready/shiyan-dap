@@ -164,6 +164,13 @@ export function verifyPack(json: string): Verification {
       return { ok: false, reason: "invalid seed list" };
     }
     if (parsed.trials.length !== parsed.seeds.length * 2) return { ok: false, reason: "trial count does not match seed list" };
+    if (typeof parsed.generated_at !== "string" || !Number.isFinite(Date.parse(parsed.generated_at))) {
+      return { ok: false, reason: "invalid generation timestamp" };
+    }
+    if (typeof parsed.pack_hash !== "string" || parsed.pack_hash.length !== 71 ||
+        typeof parsed.reproducibility_hash !== "string" || parsed.reproducibility_hash.length !== 71) {
+      return { ok: false, reason: "missing full-length SHA-256 fingerprint" };
+    }
 
     const expectedIds = new Set<string>();
     for (const seed of parsed.seeds) {
@@ -171,6 +178,14 @@ export function verifyPack(json: string): Verification {
       expectedIds.add(`greedy-${seed}`);
     }
     for (const trial of parsed.trials) {
+      if (trial.policy !== "look-back" && trial.policy !== "greedy") return { ok: false, reason: "invalid policy label" };
+      if (!parsed.seeds.includes(trial.seed) || trial.id !== `${trial.policy}-${trial.seed}`) {
+        return { ok: false, reason: "trial identity does not match its declared seed and policy" };
+      }
+      if (![trial.delta_phi, trial.interventions, trial.coordination, trial.drift, trial.recovery_s].every(Number.isFinite)) {
+        return { ok: false, reason: "trial contains non-finite measurements" };
+      }
+      if (typeof trial.hash !== "string" || trial.hash.length !== 71) return { ok: false, reason: "invalid trial hash format" };
       if (!expectedIds.delete(trial.id)) return { ok: false, reason: "unexpected or duplicate trial" };
       const { hash: trialHash, ...trialBody } = trial;
       if (digest(trialBody) !== trialHash) return { ok: false, reason: `trial hash mismatch: ${trial.id}` };
