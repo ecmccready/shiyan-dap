@@ -39,8 +39,8 @@ export default function ExperimentPage() {
   };
 
   const verify = () => {
-    const ok = verifyPack(verifyInput);
-    setVerifyResult(ok ? "Valid" : "Invalid");
+    const res = verifyPack(verifyInput);
+    setVerifyResult(res.ok ? "Valid" : `Invalid: ${res.reason}`);
   };
 
   return (
@@ -79,10 +79,10 @@ export default function ExperimentPage() {
           <div>Environment: {exp.environment}</div>
           <div>Pack hash: {exp.pack_hash}</div>
           <div className="mt-2 font-medium">ROE comparison</div>
-          <div>Look-back avg ΔΦ: {exp.roe.lookback_avg.toFixed(3)}</div>
-          <div>Greedy avg ΔΦ: {exp.roe.greedy_avg.toFixed(3)}</div>
-          <div>ΔΦ advantage: {exp.roe.advantage}</div>
-          <div>Intervention reduction: {exp.roe.intervention_reduction.toFixed(2)}</div>
+          <div>Look-back avg ΔΦ: {exp.comparison.lookback_avg_delta_phi.toFixed(3)}</div>
+          <div>Greedy avg ΔΦ: {exp.comparison.greedy_avg_delta_phi.toFixed(3)}</div>
+          <div>ΔΦ advantage: {exp.comparison.delta_phi_advantage.toFixed(3)}</div>
+          <div>Intervention reduction: {exp.comparison.intervention_reduction.toFixed(2)}</div>
         </div>
       )}
 
