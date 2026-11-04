@@ -16,8 +16,16 @@ const tampered = JSON.parse(evidencePack(a));
 tampered.trials[0].interventions += 1;
 if (verifyPack(JSON.stringify(tampered)).ok) throw new Error("tampered evidence passed verification");
 
-const honestNegative = runExperiment([3]);
-if (!verifyPack(evidencePack(honestNegative)).ok) throw new Error("valid evidence must verify regardless of outcome");
+const greedyWins = runExperiment([7]);
+const greedyVerification = verifyPack(evidencePack(greedyWins));
+if (!greedyVerification.ok || greedyVerification.outcome !== "greedy-better") {
+  throw new Error("valid evidence must verify when greedy wins");
+}
+const tied = runExperiment([17]);
+const tieVerification = verifyPack(evidencePack(tied));
+if (!tieVerification.ok || tieVerification.outcome !== "tie") {
+  throw new Error("valid evidence must verify when policies tie");
+}
 
 let rejectedInvalidSeeds = false;
 try {
