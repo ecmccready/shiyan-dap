@@ -73,7 +73,7 @@ export default function ExperimentPage() {
       </div>
 
       {exp && (
-        <div className="border rounded p-3 text-sm mb-4">
+        <div className="border rounded p-3 text-sm mb-4 bg-emerald-50">
           <div>Robot: {exp.robot}</div>
           <div>Task: {exp.task}</div>
           <div>Environment: {exp.environment}</div>
