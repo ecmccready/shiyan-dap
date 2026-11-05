@@ -13,7 +13,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "Robotics benchmark", href: "/workbench/robotics/benchmark" },
       { label: "Robotics value", href: "/workbench/robotics/value" },
       { label: "Robotics experiment", href: "/workbench/robotics/experiment" },
-      { label: "Acquisition", href: "/workbench/acquisition" },
+      { label: "Robotics policies", href: "/workbench/robotics/policies" },
     ],
   },
   {
@@ -21,7 +21,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
     items: [
       { label: "Loop · closed loop", href: "/loop" },
       { label: "Level 4 run", href: "/workbench/autonomous", experience: { reuse: true } },
-      { label: "ROE · Reciprocal Optimization Engine", href: "/workbench/autonomous?roe_drive=1", experience: { selector: "roe_step_aware" } },
+      { label: "ROE · Reciprocal Optimization Engine", href: "/workbench/autonomous?roe_drive=1" },
     ],
   },
   {
@@ -36,6 +36,11 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
     label: "Do",
     items: [
       { label: "End-to-end proof journey", href: "/workbench/journey" },
+      { label: "Customer opportunity", href: "/workbench/opportunity" },
+      { label: "Acquisition agent", href: "/workbench/acquisition" },
+      { label: "Proof contract", href: "/workbench/contract" },
+      { label: "Workbench execution", href: "/workbench/execute" },
+      { label: "Authoritative evidence", href: "/workbench/evidence" },
       { label: "Start a durable run", href: "/workbench#guided-run" },
       { label: "Offer", href: "/workbench/offer" },
       { label: "Pilot", href: "/workbench/pilot" },
