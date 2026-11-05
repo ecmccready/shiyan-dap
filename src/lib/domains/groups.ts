@@ -35,6 +35,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
   {
     label: "Do",
     items: [
+      { label: "End-to-end proof journey", href: "/workbench/journey" },
       { label: "Start a durable run", href: "/workbench#guided-run" },
       { label: "Offer", href: "/workbench/offer" },
       { label: "Pilot", href: "/workbench/pilot" },
@@ -43,4 +44,4 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
   },
 ];
 
-export const DOMAIN_ITEMS = DOMAIN_GROUPS.flatMap((g) => g.items);
+export const DOMAIN_ITEMS = DOMAIN_GROUPS.flatMap((group) => group.items);

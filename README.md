@@ -41,6 +41,7 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Show | History | /workbench/history |
 | Do | Start a durable run | /workbench#guided-run |
 | Do | Offer | /workbench/offer |
+| Do | Proof journey | /workbench/journey |
 | Do | Pilot | /workbench/pilot |
 | Do | Marketplace | /workbench/marketplace |
 | Do | Acquisition Intelligence | /workbench/acquisition |
@@ -55,6 +56,17 @@ The closed loop is kept. Aethel Node commercializes it without replacing it.
 - Workbench B runs the bounded sequence.
 - Z is measured and e is scored.
 - ROE uses verified experience to inform the next action.
+
+## Endogenous commercial loop
+
+Aethel Node observes itself (recorded runs, outcomes, errors).  
+ROE evaluates experience (what worked, what failed, what should be reused).  
+Evidence becomes a product asset (reproducible, inspectable, customer-relevant proof).  
+Customer experience (problem, evidence, result, value).  
+Acquisition agent (evidence-backed discovery and approved outreach).  
+
+New customer outcomes feed the next optimization cycle.  
+The proof journey at `/workbench/journey` is the front door. Acquisition remains gated until the five evidence conditions are met.
 
 ## Four-stage graph
 

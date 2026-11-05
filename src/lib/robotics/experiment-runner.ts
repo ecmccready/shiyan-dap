@@ -24,85 +24,192 @@ export type Comparison = {
 };
 
 export type Experiment = {
+  schema: "aethel.robotics.experiment.v2";
+  algorithm_version: "synthetic-lookback-greedy.v2";
   robot: string;
   task: string;
   environment: string;
   starting_state: string;
+  seeds: number[];
   trials: Trial[];
   comparison: Comparison;
+  reproducibility_hash: string;
   pack_hash: string;
   generated_at: string;
 };
 
-function hash(obj: unknown): string {
-  return "sha256:" + createHash("sha256").update(JSON.stringify(obj)).digest("hex").slice(0, 16);
-}
+const digest = (value: unknown): string =>
+  "sha256:" + createHash("sha256").update(JSON.stringify(value)).digest("hex");
+
+const round = (n: number, places = 3): number => {
+  const scale = 10 ** places;
+  return Math.round((n + Number.EPSILON) * scale) / scale;
+};
 
 function runTrial(policy: Policy, seed: number): Omit<Trial, "hash"> {
-  const base = policy === "look-back" ? 0.023 : 0.011;
+  const scenario = seed % 3;
+  const lookbackDelta = scenario === 0 ? 0.023 : scenario === 1 ? 0.010 : 0.016;
+  const greedyDelta = scenario === 0 ? 0.011 : scenario === 1 ? 0.018 : 0.016;
+  const base = policy === "look-back" ? lookbackDelta : greedyDelta;
   const noise = ((seed % 7) - 3) * 0.001;
+  const lookbackInterventions = scenario === 0 ? 1 + (seed % 2) : scenario === 1 ? 4 + (seed % 3) : 2 + (seed % 2);
+  const greedyInterventions = scenario === 0 ? 4 + (seed % 3) : scenario === 1 ? 1 + (seed % 2) : 2 + (seed % 2);
+  const interventions = policy === "look-back" ? lookbackInterventions : greedyInterventions;
+  const coordinationDelta = scenario === 0 ? 0.06 : scenario === 1 ? -0.04 : 0;
+  const driftDelta = scenario === 0 ? -0.03 : scenario === 1 ? 0.02 : 0;
+  const recoveryDelta = scenario === 0 ? -0.9 : scenario === 1 ? 0.6 : 0;
+  const direction = policy === "look-back" ? 1 : -1;
   return {
     id: `${policy}-${seed}`,
     policy,
     seed,
-    delta_phi: +(base + noise).toFixed(3),
-    interventions: policy === "look-back" ? 1 + (seed % 2) : 4 + (seed % 3),
-    coordination: +(0.82 - (policy === "greedy" ? 0.06 : 0) + noise).toFixed(3),
-    drift: +(0.04 + (policy === "greedy" ? 0.03 : 0) + Math.abs(noise)).toFixed(3),
-    recovery_s: +(1.2 + (policy === "greedy" ? 0.9 : 0) + Math.abs(noise) * 10).toFixed(2),
+    delta_phi: round(base + noise),
+    interventions,
+    coordination: round(0.76 + (scenario === 2 ? 0 : direction * coordinationDelta) + noise),
+    drift: round(0.055 + (scenario === 2 ? 0 : direction * driftDelta) + Math.abs(noise)),
+    recovery_s: round(1.65 + (scenario === 2 ? 0 : direction * recoveryDelta) + Math.abs(noise) * 10, 2),
   };
 }
 
-function avg(xs: number[]): number {
-  return xs.reduce((s, n) => s + n, 0) / xs.length;
+function average(values: number[]): number {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function compare(trials: Trial[]): Comparison {
+  const lookback = trials.filter((trial) => trial.policy === "look-back");
+  const greedy = trials.filter((trial) => trial.policy === "greedy");
+  if (!lookback.length || lookback.length !== greedy.length) {
+    throw new Error("Evidence requires paired look-back and greedy trials.");
+  }
+  const lookbackPhi = round(average(lookback.map((trial) => trial.delta_phi)));
+  const greedyPhi = round(average(greedy.map((trial) => trial.delta_phi)));
+  const lookbackInterventions = round(average(lookback.map((trial) => trial.interventions)), 2);
+  const greedyInterventions = round(average(greedy.map((trial) => trial.interventions)), 2);
+  return {
+    lookback_avg_delta_phi: lookbackPhi,
+    greedy_avg_delta_phi: greedyPhi,
+    delta_phi_advantage: round(lookbackPhi - greedyPhi),
+    lookback_avg_interventions: lookbackInterventions,
+    greedy_avg_interventions: greedyInterventions,
+    intervention_reduction: round(greedyInterventions - lookbackInterventions, 2),
+  };
+}
+
+function reproducibilityPayload(exp: Omit<Experiment, "pack_hash" | "reproducibility_hash" | "generated_at">) {
+  return {
+    schema: exp.schema,
+    algorithm_version: exp.algorithm_version,
+    robot: exp.robot,
+    task: exp.task,
+    environment: exp.environment,
+    starting_state: exp.starting_state,
+    seeds: exp.seeds,
+    trials: exp.trials,
+    comparison: exp.comparison,
+  };
 }
 
 export function runExperiment(seeds: number[] = [42, 17, 7]): Experiment {
+  if (!Array.isArray(seeds) || seeds.length < 1 || seeds.length > 100) {
+    throw new Error("Provide between 1 and 100 trial seeds.");
+  }
+  if (seeds.some((seed) => !Number.isSafeInteger(seed) || seed < 0) || new Set(seeds).size !== seeds.length) {
+    throw new Error("Seeds must be unique, non-negative safe integers.");
+  }
+
   const trials: Trial[] = [];
   for (const seed of seeds) {
     for (const policy of ["look-back", "greedy"] as Policy[]) {
       const raw = runTrial(policy, seed);
-      trials.push({ ...raw, hash: hash(raw) });
+      trials.push({ ...raw, hash: digest(raw) });
     }
   }
-  const lookback = trials.filter((t) => t.policy === "look-back");
-  const greedy = trials.filter((t) => t.policy === "greedy");
-  const comparison: Comparison = {
-    lookback_avg_delta_phi: +avg(lookback.map((t) => t.delta_phi)).toFixed(3),
-    greedy_avg_delta_phi: +avg(greedy.map((t) => t.delta_phi)).toFixed(3),
-    delta_phi_advantage: +avg(lookback.map((t) => t.delta_phi)).toFixed(3) - +avg(greedy.map((t) => t.delta_phi)).toFixed(3),
-    lookback_avg_interventions: +avg(lookback.map((t) => t.interventions)).toFixed(2),
-    greedy_avg_interventions: +avg(greedy.map((t) => t.interventions)).toFixed(2),
-    intervention_reduction: +avg(greedy.map((t) => t.interventions)).toFixed(2) - +avg(lookback.map((t) => t.interventions)).toFixed(2),
-  };
-  const pack = {
+
+  const base = {
+    schema: "aethel.robotics.experiment.v2" as const,
+    algorithm_version: "synthetic-lookback-greedy.v2" as const,
     robot: "sim-humanoid-v1",
     task: "long-horizon loco-manipulation",
     environment: "warehouse-aisle-3",
     starting_state: "seeded-pose-A",
+    seeds: [...seeds],
     trials,
-    comparison,
-    generated_at: new Date().toISOString(),
+    comparison: compare(trials),
   };
-  return { ...pack, pack_hash: hash(pack) };
+  const reproducibility_hash = digest(reproducibilityPayload(base));
+  const unsigned = { ...base, reproducibility_hash, generated_at: new Date().toISOString() };
+  return { ...unsigned, pack_hash: digest(unsigned) };
 }
 
 export function evidencePack(exp: Experiment): string {
   return JSON.stringify(exp, null, 2);
 }
 
-export function verifyPack(json: string): { ok: boolean; reason?: string } {
+export type Verification = {
+  ok: boolean;
+  reason?: string;
+  outcome?: "look-back-better" | "greedy-better" | "tie";
+  pack_hash?: string;
+};
+
+export function verifyPack(json: string): Verification {
   try {
     const parsed = JSON.parse(json) as Experiment;
-    const withoutHash = { ...parsed };
-    delete (withoutHash as { pack_hash?: string }).pack_hash;
-    const recomputed = hash(withoutHash);
-    if (recomputed !== parsed.pack_hash) return { ok: false, reason: "hash mismatch" };
-    if (!parsed.comparison || parsed.comparison.delta_phi_advantage <= 0) {
-      return { ok: false, reason: "look-back did not beat greedy" };
+    if (parsed.schema !== "aethel.robotics.experiment.v2") return { ok: false, reason: "unsupported schema" };
+    if (parsed.algorithm_version !== "synthetic-lookback-greedy.v2") return { ok: false, reason: "unsupported algorithm version" };
+    if (!Array.isArray(parsed.seeds) || !Array.isArray(parsed.trials) || parsed.seeds.length < 1) {
+      return { ok: false, reason: "missing paired trial data" };
     }
-    return { ok: true };
-  } catch {
-    return { ok: false, reason: "invalid json" };
+    if (parsed.seeds.some((seed) => !Number.isSafeInteger(seed) || seed < 0) || new Set(parsed.seeds).size !== parsed.seeds.length) {
+      return { ok: false, reason: "invalid seed list" };
+    }
+    if (parsed.trials.length !== parsed.seeds.length * 2) return { ok: false, reason: "trial count does not match seed list" };
+    if (typeof parsed.generated_at !== "string" || !Number.isFinite(Date.parse(parsed.generated_at))) {
+      return { ok: false, reason: "invalid generation timestamp" };
+    }
+    if (typeof parsed.pack_hash !== "string" || parsed.pack_hash.length !== 71 ||
+        typeof parsed.reproducibility_hash !== "string" || parsed.reproducibility_hash.length !== 71) {
+      return { ok: false, reason: "missing full-length SHA-256 fingerprint" };
+    }
+
+    const expectedIds = new Set<string>();
+    for (const seed of parsed.seeds) {
+      expectedIds.add(`look-back-${seed}`);
+      expectedIds.add(`greedy-${seed}`);
+    }
+    for (const trial of parsed.trials) {
+      if (trial.policy !== "look-back" && trial.policy !== "greedy") return { ok: false, reason: "invalid policy label" };
+      if (!parsed.seeds.includes(trial.seed) || trial.id !== `${trial.policy}-${trial.seed}`) {
+        return { ok: false, reason: "trial identity does not match its declared seed and policy" };
+      }
+      if (![trial.delta_phi, trial.interventions, trial.coordination, trial.drift, trial.recovery_s].every(Number.isFinite)) {
+        return { ok: false, reason: "trial contains non-finite measurements" };
+      }
+      if (typeof trial.hash !== "string" || trial.hash.length !== 71) return { ok: false, reason: "invalid trial hash format" };
+      if (!expectedIds.delete(trial.id)) return { ok: false, reason: "unexpected or duplicate trial" };
+      const { hash: trialHash, ...trialBody } = trial;
+      if (digest(trialBody) !== trialHash) return { ok: false, reason: `trial hash mismatch: ${trial.id}` };
+    }
+    if (expectedIds.size) return { ok: false, reason: "missing paired trial" };
+
+    const recomputedComparison = compare(parsed.trials);
+    if (JSON.stringify(recomputedComparison) !== JSON.stringify(parsed.comparison)) {
+      return { ok: false, reason: "comparison does not match trial data" };
+    }
+
+    const { pack_hash, reproducibility_hash, generated_at, ...base } = parsed;
+    const expectedReproducibility = digest(reproducibilityPayload(base));
+    if (expectedReproducibility !== reproducibility_hash) return { ok: false, reason: "reproducibility hash mismatch" };
+    const unsigned = { ...base, reproducibility_hash, generated_at };
+    if (digest(unsigned) !== pack_hash) return { ok: false, reason: "pack hash mismatch" };
+
+    const advantage = recomputedComparison.delta_phi_advantage;
+    return {
+      ok: true,
+      outcome: advantage > 0 ? "look-back-better" : advantage < 0 ? "greedy-better" : "tie",
+      pack_hash,
+    };
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : "invalid evidence JSON" };
   }
 }
