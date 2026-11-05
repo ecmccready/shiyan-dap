@@ -1,60 +1,57 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
-
-const STEP = {
-  y: "request_independent_check",
-  z: "missing handoff named, not sealed",
-  e: 0.216,
-};
+import React from "react";
 
 export default function ExecutePage() {
-  const [done, setDone] = useState(false);
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Execute" />
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <p className="text-xs uppercase tracking-[0.18em] text-emerald-400">One action</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">B executes the named y. It does not seal.</h1>
-        <p className="mt-4 text-sm leading-6 text-zinc-400">
-          The proposal was request_independent_check. This page runs that step from the sealed sequence and stops. seal_pack is the drop. This step is not.
+      <main className="max-w-3xl mx-auto px-6 py-16">
+        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-4">
+          Aethel Node · Workbench Execution
         </p>
-        <dl className="mt-8 divide-y divide-zinc-800 rounded-3xl border border-zinc-800 text-sm">
-          <Row k="y" v={STEP.y} />
-          <Row k="z" v={done ? STEP.z : "not measured"} />
-          <Row k="e" v={done ? String(STEP.e) : "—"} />
-          <Row k="Δe" v={done ? "0 on this step" : "—"} />
-          <Row k="Φ" v="not claimed" />
-        </dl>
-        <button
-          onClick={() => setDone(true)}
-          disabled={done}
-          className="mt-5 h-11 rounded-full bg-emerald-500 px-5 text-sm font-medium text-black disabled:opacity-40"
-        >
-          {done ? "Executed" : "Execute y"}
-        </button>
-        <p className="mt-4 text-sm text-amber-200">
-          {done
-            ? "z returned. e is 0.216, the cold final on this pack. The edge is not closed. Not an error win."
-            : "No z yet. A named y is not a result. Self() does not read this page."}
-        </p>
-        <nav className="mt-8 flex flex-wrap gap-4 text-sm text-zinc-400">
-          <Link className="underline" href="/workbench/propose">Proposal</Link>
-          <Link className="underline" href="/workbench/dependencies">Dependencies</Link>
-          <Link className="underline" href="/workbench/proof">Safety proof</Link>
-        </nav>
-      </main>
-    </div>
-  );
-}
 
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
-      <dt className="text-xs uppercase tracking-wider text-zinc-500">{k}</dt>
-      <dd className="text-zinc-200 sm:col-span-2">{v}</dd>
+        <h1 className="text-4xl font-semibold mb-6">Connect and run</h1>
+
+        <p className="text-zinc-300 mb-10">
+          Execution is bound to the proof contract. Global produces traceable diagnostic evidence. Developer runs acceptance tests against the connected repository and compares baseline versus regression.
+        </p>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950">
+            <h2 className="font-semibold mb-3">Global</h2>
+            <p className="text-sm text-zinc-400 mb-4">
+              Investigate a defined diagnostic problem and produce source-linked, reviewable evidence.
+            </p>
+            <ul className="text-sm space-y-1 text-zinc-300">
+              <li>Defined problem</li>
+              <li>Traceable findings</li>
+              <li>Human review disposition</li>
+            </ul>
+          </div>
+
+          <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950">
+            <h2 className="font-semibold mb-3">Developer</h2>
+            <p className="text-sm text-zinc-400 mb-4">
+              Connect the repository, define acceptance tests, run TDD, and compare results.
+            </p>
+            <ul className="text-sm space-y-1 text-zinc-300">
+              <li>Repository: github.com/ecmccready/shiyan-dap</li>
+              <li>Acceptance tests defined</li>
+              <li>Baseline vs regression</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 border-t border-zinc-800 pt-6">
+          <p className="text-sm text-zinc-400">
+            Both paths record inputs, outputs, versions, timestamps and provenance. Evidence is persisted server-side and available for independent verification.
+          </p>
+        </div>
+
+        <p className="text-xs text-zinc-500 mt-10">
+          Front door: /workbench/journey
+        </p>
+      </main>
     </div>
   );
 }
