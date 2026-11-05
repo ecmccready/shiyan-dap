@@ -41,6 +41,7 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Show | History | /workbench/history |
 | Do | Start a durable run | /workbench#guided-run |
 | Do | Offer | /workbench/offer |
+| Do | Proof journey | /workbench/journey |
 | Do | Pilot | /workbench/pilot |
 | Do | Marketplace | /workbench/marketplace |
 | Do | Acquisition Intelligence | /workbench/acquisition |
@@ -55,6 +56,17 @@ The closed loop is kept. Aethel Node commercializes it without replacing it.
 - Workbench B runs the bounded sequence.
 - Z is measured and e is scored.
 - ROE uses verified experience to inform the next action.
+
+## Endogenous commercial loop
+
+Aethel Node observes itself (recorded runs, outcomes, errors).  
+ROE evaluates experience (what worked, what failed, what should be reused).  
+Evidence becomes a product asset (reproducible, inspectable, customer-relevant proof).  
+Customer experience (problem, evidence, result, value).  
+Acquisition agent (evidence-backed discovery and approved outreach).  
+
+New customer outcomes feed the next optimization cycle.  
+The proof journey at `/workbench/journey` is the front door. Acquisition remains gated until the five evidence conditions are met.
 
 ## Four-stage graph
 
@@ -89,12 +101,3 @@ npm ci
 npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
-
-## End-to-end proof journey
-
-- Customer-facing journey: `/workbench/journey`, available from Domains → Do → End-to-end proof journey.
-- The guided flow joins Know → Know How → Show → Do: declare a bounded experiment, compare paired policies, verify evidence integrity, and record a human disposition.
-- Robotics evidence schema v2 separates a reproducibility fingerprint (stable for identical inputs) from the run-specific evidence-pack hash (includes generation time). Trial hashes use full SHA-256.
-- Verification recomputes each trial hash, paired-trial structure, aggregate metrics, reproducibility fingerprint, and complete pack hash. Integrity verification is separate from outcome: a valid pack can report look-back better, greedy better, or a tie.
-- The journey also reads the existing durable Level 4 experience API and links each recorded run to its public replay-verification endpoint. If the store is unavailable, the page reports that state rather than inventing records. The robotics runner remains a deterministic synthetic fixture. Journey review state is stored in the current browser only. It does not establish physical performance, independent attestation, customer acceptance, revenue, or persistent server-side customer records.
-- Acquisition remains gated until non-synthetic customer-relevant evidence, reproducibility, independent review, a measured customer outcome, and explicit owner approval are present. No automated outreach is enabled.
