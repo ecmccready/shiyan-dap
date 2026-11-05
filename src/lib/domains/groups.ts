@@ -35,6 +35,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
   {
     label: "Do",
     items: [
+      { label: "Proof-to-Payment Engine", href: "/workbench/engine" },
       { label: "End-to-end proof journey", href: "/workbench/journey" },
       { label: "Customer opportunity", href: "/workbench/opportunity" },
       { label: "Acquisition agent", href: "/workbench/acquisition" },
