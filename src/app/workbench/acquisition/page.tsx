@@ -1,74 +1,93 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 
-const GATES = [
-  { id: 1, label: "Non-synthetic source observations" },
-  { id: 2, label: "Reproducible improvement against a declared baseline" },
-  { id: 3, label: "Independent review" },
-  { id: 4, label: "Measured customer outcome" },
-  { id: 5, label: "Owner authorization" },
+const FIXTURE = [
+  {
+    id: "opp-1",
+    prospect: "Robotics lead",
+    organization: "Tesla Optimus",
+    problem: "Long-horizon task reliability and intervention reduction",
+    match: "Developer Workbench",
+    offer: "Paired experiment on look-back vs greedy with verified evidence pack",
+  },
+  {
+    id: "opp-2",
+    prospect: "Research director",
+    organization: "Physical Intelligence",
+    problem: "Policy evaluation and measurable improvement",
+    match: "Developer Workbench",
+    offer: "Deterministic seed-controlled experiment with reproducibility hash",
+  },
+  {
+    id: "opp-3",
+    prospect: "Program lead",
+    organization: "Figure AI",
+    problem: "Independent evidence of whole-body performance",
+    match: "Global Workbench",
+    offer: "Traceable investigation with source-linked findings and human review",
+  },
 ];
 
 export default function AcquisitionPage() {
-  const [gates, setGates] = useState<Record<number, boolean>>({
-    1: false, 2: false, 3: false, 4: false, 5: false,
-  });
-  const [opportunity, setOpportunity] = useState("");
-  const [msg, setMsg] = useState("");
+  const [approved, setApproved] = useState<Record<string, boolean>>({});
 
-  const allPassed = GATES.every((g) => gates[g.id]);
-
-  function toggle(id: number) {
-    setGates((prev) => ({ ...prev, [id]: !prev[id] }));
-  }
-
-  async function prepare(e: React.FormEvent) {
-    e.preventDefault();
-    if (!allPassed) {
-      setMsg("Locked — all five gates must pass before any opportunity can be prepared.");
-      return;
-    }
-    setMsg(`Opportunity prepared (approval required before outreach): ${opportunity || "(empty)"}`);
+  function approve(id: string) {
+    setApproved((prev) => ({ ...prev, [id]: true }));
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Acquisition agent</h1>
-      <p className="text-sm text-neutral-600">
-        Evidence-backed prospect research and opportunity qualification. Locked until gates pass. No outreach without owner approval.
-      </p>
+    <div className="min-h-screen bg-black text-white">
+      <main className="max-w-4xl mx-auto px-6 py-16">
+        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-4">
+          Aethel Node · Acquisition Agent
+        </p>
 
-      <section className="border rounded p-4">
-        <h2 className="font-medium">Gates</h2>
-        <ul className="mt-2 space-y-1 text-sm">
-          {GATES.map((g) => (
-            <li key={g.id}>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={gates[g.id]} onChange={() => toggle(g.id)} />
-                {g.id}. {g.label}
-              </label>
-            </li>
+        <h1 className="text-4xl font-semibold mb-6">Opportunity qualification</h1>
+
+        <p className="text-zinc-300 mb-10">
+          The agent finds prospects, identifies a measurable problem, matches it to Global or Developer Workbench, and drafts a specific offer. Human approval is required before any outreach.
+        </p>
+
+        <div className="space-y-6">
+          {FIXTURE.map((opp) => (
+            <div key={opp.id} className="border border-zinc-800 rounded-xl p-6 bg-zinc-950">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <div className="font-semibold">{opp.prospect}</div>
+                  <div className="text-sm text-zinc-400">{opp.organization}</div>
+                </div>
+                <span className="text-xs bg-zinc-800 px-2 py-1 rounded">{opp.match}</span>
+              </div>
+
+              <div className="mb-3">
+                <div className="text-sm text-zinc-400">Problem</div>
+                <div>{opp.problem}</div>
+              </div>
+
+              <div className="mb-4">
+                <div className="text-sm text-zinc-400">Drafted offer</div>
+                <div>{opp.offer}</div>
+              </div>
+
+              {approved[opp.id] ? (
+                <div className="text-emerald-400 text-sm">Approved for outreach</div>
+              ) : (
+                <button
+                  onClick={() => approve(opp.id)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded text-sm"
+                >
+                  Approve outreach
+                </button>
+              )}
+            </div>
           ))}
-        </ul>
-        <p className="mt-2 text-sm">{allPassed ? "All gates passed." : "Locked."}</p>
-      </section>
+        </div>
 
-      <section className="border rounded p-4">
-        <h2 className="font-medium">Prepare opportunity</h2>
-        <form onSubmit={prepare} className="space-y-2 text-sm">
-          <label className="block">Customer problem / opportunity note</label>
-          <textarea className="w-full border rounded px-2 py-1" rows={3} value={opportunity} onChange={(e) => setOpportunity(e.target.value)} disabled={!allPassed} />
-          <button type="submit" className="px-3 py-1 bg-black text-white rounded" disabled={!allPassed}>
-            Prepare (approval required)
-          </button>
-          {msg && <p className="mt-2">{msg}</p>}
-        </form>
-      </section>
-
-      <p className="text-xs text-neutral-500">
-        Agent capabilities (when unlocked): understand Aethel Node from verified experience, identify the customer problem, select relevant verified evidence, construct a customer-specific demonstration, prepare an acquisition opportunity, and request approval before contacting anyone.
-      </p>
-    </main>
+        <p className="text-xs text-zinc-500 mt-10">
+          Synthetic fixture. Real prospect research and approved outreach remain gated until the five evidence conditions are met.
+        </p>
+      </main>
+    </div>
   );
 }
