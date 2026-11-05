@@ -1,184 +1,74 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 
-const EXPERIMENT_HASH_KEY = "aethel.lastExperimentHash";
-
-type Opportunity = {
-  id: string;
-  recipient: string;
-  organization: string;
-  problem: string;
-  evidence_hash: string;
-  originating_run: string;
-  contact_date: string;
-  response: string;
-  next_action: string;
-  stage: "identified" | "presented" | "engaged" | "pilot" | "measured";
-};
-
-const FIXTURE: Opportunity[] = [
-  {
-    id: "opp-1",
-    recipient: "Robotics lead",
-    organization: "Tesla Optimus",
-    problem: "Long-horizon task reliability and intervention reduction",
-    evidence_hash: "sha256:a1b2c3d4e5f6",
-    originating_run: "/workbench/robotics/experiment",
-    contact_date: "2026-11-03",
-    response: "Requested seed re-run",
-    next_action: "Send verified pack",
-    stage: "presented",
-  },
-  {
-    id: "opp-2",
-    recipient: "Research director",
-    organization: "Physical Intelligence",
-    problem: "Policy evaluation and measurable improvement",
-    evidence_hash: "sha256:b2c3d4e5f6a1",
-    originating_run: "/workbench/robotics/experiment",
-    contact_date: "2026-11-02",
-    response: "Asked for protocol",
-    next_action: "Link benchmark",
-    stage: "engaged",
-  },
-  {
-    id: "opp-3",
-    recipient: "Program lead",
-    organization: "Figure AI",
-    problem: "Independent evidence of whole-body performance",
-    evidence_hash: "sha256:c3d4e5f6a1b2",
-    originating_run: "/workbench/robotics/experiment",
-    contact_date: "2026-11-01",
-    response: "No response",
-    next_action: "Follow up",
-    stage: "identified",
-  },
+const GATES = [
+  { id: 1, label: "Non-synthetic source observations" },
+  { id: 2, label: "Reproducible improvement against a declared baseline" },
+  { id: 3, label: "Independent review" },
+  { id: 4, label: "Measured customer outcome" },
+  { id: 5, label: "Owner authorization" },
 ];
 
-function pack(o: Opportunity): string {
-  return JSON.stringify(
-    {
-      schema: "aethel.acquisition.opportunity.v1",
-      id: o.id,
-      recipient: o.recipient,
-      organization: o.organization,
-      problem: o.problem,
-      evidence_hash: o.evidence_hash,
-      originating_run: o.originating_run,
-      contact_date: o.contact_date,
-      response: o.response,
-      next_action: o.next_action,
-      stage: o.stage,
-    },
-    null,
-    2
-  );
-}
-
 export default function AcquisitionPage() {
-  const [filter, setFilter] = useState<"all" | Opportunity["stage"]>("all");
-  const [copied, setCopied] = useState<string | null>(null);
-  const [lastHash, setLastHash] = useState<string | null>(null);
-  const shown = filter === "all" ? FIXTURE : FIXTURE.filter((o) => o.stage === filter);
+  const [gates, setGates] = useState<Record<number, boolean>>({
+    1: false, 2: false, 3: false, 4: false, 5: false,
+  });
+  const [opportunity, setOpportunity] = useState("");
+  const [msg, setMsg] = useState("");
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const allPassed = GATES.every((g) => gates[g.id]);
 
-    const syncLastHash = () => {
-      try {
-        const hash =
-          window.localStorage.getItem(EXPERIMENT_HASH_KEY) ??
-          window.sessionStorage.getItem(EXPERIMENT_HASH_KEY);
-        setLastHash(hash);
-      } catch {
-        setLastHash(null);
-      }
-    };
+  function toggle(id: number) {
+    setGates((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
 
-    syncLastHash();
-    window.addEventListener("storage", syncLastHash);
-    return () => window.removeEventListener("storage", syncLastHash);
-  }, []);
-
-  const copy = async (o: Opportunity) => {
-    const withHash = lastHash ? { ...o, evidence_hash: lastHash } : o;
-    await navigator.clipboard.writeText(pack(withHash));
-    setCopied(o.id);
-    setTimeout(() => setCopied(null), 1200);
-  };
+  async function prepare(e: React.FormEvent) {
+    e.preventDefault();
+    if (!allPassed) {
+      setMsg("Locked — all five gates must pass before any opportunity can be prepared.");
+      return;
+    }
+    setMsg(`Opportunity prepared (approval required before outreach): ${opportunity || "(empty)"}`);
+  }
 
   return (
-    <main className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-2">Aethel Node · Acquisition Intelligence</h1>
-      <p className="text-sm text-neutral-500 mb-4">
-        Synthetic fixture. Display only. Every opportunity references an evidence-pack hash and originating run. Real contact tracking remains outside the engine.
+    <main className="max-w-3xl mx-auto p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">Acquisition agent</h1>
+      <p className="text-sm text-neutral-600">
+        Evidence-backed prospect research and opportunity qualification. Locked until gates pass. No outreach without owner approval.
       </p>
 
-      {lastHash && (
-        <div className="text-xs mb-3 border rounded p-2 bg-emerald-50">
-          Last experiment hash: {lastHash} ·{" "}
-          <Link href="/workbench/robotics/experiment" className="underline">
-            originating run
-          </Link>
-        </div>
-      )}
-
-      <div className="flex gap-2 mb-4 text-sm">
-        {(["all", "identified", "presented", "engaged", "pilot", "measured"] as const).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setFilter(s)}
-            className={`border rounded px-2 py-1 ${filter === s ? "bg-neutral-100" : ""}`}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
-
-      <div className="border rounded">
-        {shown.map((o) => (
-          <div key={o.id} className="border-b last:border-b-0 p-3 text-sm">
-            <div className="flex justify-between">
-              <span className="font-medium">{o.organization}</span>
-              <span className="text-neutral-500">{o.stage}</span>
-            </div>
-            <div className="text-neutral-600 mt-1">{o.problem}</div>
-            <div className="text-xs text-neutral-500 mt-1">
-              Recipient: {o.recipient} · Contact: {o.contact_date}
-            </div>
-            <div className="text-xs mt-1">
-              Evidence: {lastHash || o.evidence_hash} ·{" "}
-              <Link href={o.originating_run} className="underline">
-                originating run
-              </Link>
-            </div>
-            <div className="text-xs mt-1">
-              Response: {o.response} · Next: {o.next_action}
-            </div>
-            <button
-              type="button"
-              onClick={() => copy(o)}
-              className="mt-2 border rounded px-2 py-1 text-xs"
-            >
-              {copied === o.id ? "Copied" : "Copy opportunity"}
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <section className="mt-6 text-sm border rounded p-3">
-        <h2 className="font-medium mb-2">Efficiency (synthetic)</h2>
-        <div>Opportunities: {FIXTURE.length}</div>
-        <div>Presented: {FIXTURE.filter((o) => o.stage !== "identified").length}</div>
-        <div>Engaged: {FIXTURE.filter((o) => o.stage === "engaged" || o.stage === "pilot").length}</div>
-        <div>Pilot: {FIXTURE.filter((o) => o.stage === "pilot").length}</div>
-        <p className="text-xs text-neutral-500 mt-2">
-          Conversion, cost per opportunity, time to pilot, and realized revenue are not yet measured. Display only.
-        </p>
+      <section className="border rounded p-4">
+        <h2 className="font-medium">Gates</h2>
+        <ul className="mt-2 space-y-1 text-sm">
+          {GATES.map((g) => (
+            <li key={g.id}>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={gates[g.id]} onChange={() => toggle(g.id)} />
+                {g.id}. {g.label}
+              </label>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-sm">{allPassed ? "All gates passed." : "Locked."}</p>
       </section>
+
+      <section className="border rounded p-4">
+        <h2 className="font-medium">Prepare opportunity</h2>
+        <form onSubmit={prepare} className="space-y-2 text-sm">
+          <label className="block">Customer problem / opportunity note</label>
+          <textarea className="w-full border rounded px-2 py-1" rows={3} value={opportunity} onChange={(e) => setOpportunity(e.target.value)} disabled={!allPassed} />
+          <button type="submit" className="px-3 py-1 bg-black text-white rounded" disabled={!allPassed}>
+            Prepare (approval required)
+          </button>
+          {msg && <p className="mt-2">{msg}</p>}
+        </form>
+      </section>
+
+      <p className="text-xs text-neutral-500">
+        Agent capabilities (when unlocked): understand Aethel Node from verified experience, identify the customer problem, select relevant verified evidence, construct a customer-specific demonstration, prepare an acquisition opportunity, and request approval before contacting anyone.
+      </p>
     </main>
   );
 }
