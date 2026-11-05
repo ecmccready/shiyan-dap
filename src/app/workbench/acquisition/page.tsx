@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+const EXPERIMENT_HASH_KEY = "aethel.lastExperimentHash";
+
 type Opportunity = {
   id: string;
   recipient: string;
@@ -82,9 +84,22 @@ export default function AcquisitionPage() {
   const shown = filter === "all" ? FIXTURE : FIXTURE.filter((o) => o.stage === filter);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setLastHash(sessionStorage.getItem("aethel.lastExperimentHash"));
-    }
+    if (typeof window === "undefined") return;
+
+    const syncLastHash = () => {
+      try {
+        const hash =
+          window.localStorage.getItem(EXPERIMENT_HASH_KEY) ??
+          window.sessionStorage.getItem(EXPERIMENT_HASH_KEY);
+        setLastHash(hash);
+      } catch {
+        setLastHash(null);
+      }
+    };
+
+    syncLastHash();
+    window.addEventListener("storage", syncLastHash);
+    return () => window.removeEventListener("storage", syncLastHash);
   }, []);
 
   const copy = async (o: Opportunity) => {
