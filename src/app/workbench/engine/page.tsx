@@ -1,0 +1,48 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+
+const STEPS = [
+  { label: "Front door", href: "/workbench/journey", desc: "Prove the outcome. Then decide." },
+  { label: "Opportunity", href: "/workbench/opportunity", desc: "Persist prospect, problem, baseline and success conditions." },
+  { label: "Acquisition", href: "/workbench/acquisition", desc: "Qualify prospects and approve outreach." },
+  { label: "Proof contract", href: "/workbench/contract", desc: "Agree what counts as success before work begins." },
+  { label: "Execution", href: "/workbench/execute", desc: "Global or Developer path against the contract." },
+  { label: "Evidence", href: "/workbench/evidence", desc: "Authoritative, reproducible, independently reviewable." },
+];
+
+export default function EnginePage() {
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <main className="max-w-3xl mx-auto px-6 py-16">
+        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-4">
+          Aethel Node · Proof-to-Payment Engine
+        </p>
+
+        <h1 className="text-4xl font-semibold mb-6">The complete loop</h1>
+
+        <p className="text-zinc-300 mb-10">
+          Acquire, demonstrate, execute, verify and convert. Every step is inspectable. Evidence is authoritative. Payment follows proof.
+        </p>
+
+        <div className="space-y-4">
+          {STEPS.map((step) => (
+            <Link
+              key={step.href}
+              href={step.href}
+              className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600 transition-colors"
+            >
+              <div className="font-semibold">{step.label}</div>
+              <div className="text-sm text-zinc-400 mt-1">{step.desc}</div>
+            </Link>
+          ))}
+        </div>
+
+        <p className="text-xs text-zinc-500 mt-10">
+          Recursive improvement: verified experience from this loop feeds the next cycle.
+        </p>
+      </main>
+    </div>
+  );
+}
