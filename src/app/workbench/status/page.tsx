@@ -1,9 +1,34 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
+type MetamorphicStatus = {
+  phi: number;
+  converged: boolean;
+  predicted: number;
+  emergent: number;
+};
+
 export default function StatusPage() {
+  const [meta, setMeta] = useState<MetamorphicStatus | null>(null);
+
+  useEffect(() => {
+    fetch("/api/metamorphic")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.pack) {
+          setMeta({
+            phi: data.pack.phi,
+            converged: data.pack.converged,
+            predicted: data.pack.predicted,
+            emergent: data.pack.emergent,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-3xl mx-auto px-6 py-16">
@@ -14,7 +39,7 @@ export default function StatusPage() {
         <h1 className="text-4xl font-semibold mb-6">Current loop state</h1>
 
         <p className="text-zinc-300 mb-10">
-          Opportunity recorded. Contract agreed. Evidence verified. Awaiting human disposition.
+          Opportunity recorded. Contract agreed. Evidence verified. Metamorphic check complete. Awaiting human disposition.
         </p>
 
         <div className="space-y-4">
@@ -26,6 +51,22 @@ export default function StatusPage() {
           <Link href="/workbench/contract" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Proof contract</div>
             <div className="text-sm text-emerald-400 mt-1">Agreed</div>
+          </Link>
+
+          <Link href="/workbench/execute" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
+            <div className="font-semibold">Execution · Metamorphic</div>
+            {meta ? (
+              <div className="text-sm mt-1">
+                <span className={meta.converged ? "text-emerald-400" : "text-red-400"}>
+                  Φ {meta.phi} · {meta.converged ? "Converged" : "Drifted"}
+                </span>
+                <span className="text-zinc-500 ml-2">
+                  predicted {meta.predicted} → emergent {meta.emergent}
+                </span>
+              </div>
+            ) : (
+              <div className="text-sm text-zinc-400 mt-1">Loading…</div>
+            )}
           </Link>
 
           <Link href="/workbench/evidence" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
