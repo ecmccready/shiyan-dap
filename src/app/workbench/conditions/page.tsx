@@ -64,7 +64,7 @@ export default function ConditionsPage() {
             href="/workbench/flywheel"
             className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded"
           >
-            Founder Reference Flywheel
+            Founder Reference Flywheel (Live)
           </Link>
           <Link
             href="/workbench/loop"
