@@ -100,6 +100,11 @@ export default function StatusPage() {
             <div className="text-sm text-zinc-400 mt-1">Complete loop · All surfaces</div>
           </Link>
 
+          <Link href="/workbench/offer" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
+            <div className="font-semibold">Commercial offer</div>
+            <div className="text-sm text-zinc-400 mt-1">Generated from demonstrated outcome</div>
+          </Link>
+
           <Link href="/workbench/evidence" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Evidence</div>
             <div className="text-sm text-emerald-400 mt-1">Verified · Awaiting review</div>
