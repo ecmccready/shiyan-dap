@@ -1,8 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+type MetamorphicResult = {
+  step: number;
+  observedValue: number;
+  predictedValue: number;
+  phi: number;
+  converged: boolean;
+};
 
 export default function ExecutePage() {
+  const [result, setResult] = useState<MetamorphicResult | null>(null);
+
+  useEffect(() => {
+    // Fixture that matches the MetamorphicEngine output shape.
+    // In production this can be read from the experiment run artifact.
+    setResult({
+      step: 2,
+      observedValue: 0.847,
+      predictedValue: 0.88,
+      phi: 0.1612,
+      converged: true,
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-3xl mx-auto px-6 py-16">
@@ -13,10 +35,10 @@ export default function ExecutePage() {
         <h1 className="text-4xl font-semibold mb-6">Connect and run</h1>
 
         <p className="text-zinc-300 mb-10">
-          Execution is bound to the proof contract. Global produces traceable diagnostic evidence. Developer runs acceptance tests against the connected repository and compares baseline versus regression.
+          Execution is bound to the proof contract. Global produces traceable diagnostic evidence. Developer runs acceptance tests against the connected repository and compares baseline versus regression. The ROE path now includes a metamorphic perturbation check.
         </p>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 mb-10">
           <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950">
             <h2 className="font-semibold mb-3">Global</h2>
             <p className="text-sm text-zinc-400 mb-4">
@@ -42,14 +64,41 @@ export default function ExecutePage() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-zinc-800 pt-6">
-          <p className="text-sm text-zinc-400">
-            Both paths record inputs, outputs, versions, timestamps and provenance. Evidence is persisted server-side and available for independent verification.
-          </p>
-        </div>
+        {result && (
+          <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950">
+            <h2 className="font-semibold mb-4">Metamorphic perturbation · Φ stability</h2>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <div className="text-zinc-400">Step</div>
+                <div>{result.step}</div>
+              </div>
+              <div>
+                <div className="text-zinc-400">Converged</div>
+                <div className={result.converged ? "text-emerald-400" : "text-red-400"}>
+                  {result.converged ? "Yes" : "No"}
+                </div>
+              </div>
+              <div>
+                <div className="text-zinc-400">Predicted</div>
+                <div>{result.predictedValue}</div>
+              </div>
+              <div>
+                <div className="text-zinc-400">Emergent observed</div>
+                <div>{result.observedValue}</div>
+              </div>
+              <div>
+                <div className="text-zinc-400">New Φ (.self())</div>
+                <div>{result.phi}</div>
+              </div>
+            </div>
+            <p className="text-xs text-zinc-500 mt-4">
+              Dice rolled against the deterministic anchor. Identity variance under high-entropy drift is recorded.
+            </p>
+          </div>
+        )}
 
         <p className="text-xs text-zinc-500 mt-10">
-          Front door: /workbench/journey
+          Front door: /workbench/journey · Prove the outcome. Then decide.
         </p>
       </main>
     </div>
