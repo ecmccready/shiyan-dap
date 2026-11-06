@@ -51,6 +51,7 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Do | Human disposition | /workbench/review |
 | Do | Conversion | /workbench/convert |
 | Do | Engine status | /workbench/status |
+| Do | Founder Reference Flywheel | /workbench/flywheel |
 | Do | Start a durable run | /workbench#guided-run |
 | Do | Offer | /workbench/offer |
 | Do | Pilot | /workbench/pilot |
