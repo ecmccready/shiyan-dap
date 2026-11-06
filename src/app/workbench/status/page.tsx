@@ -69,6 +69,11 @@ export default function StatusPage() {
             )}
           </Link>
 
+          <Link href="/workbench/proof" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
+            <div className="font-semibold">Metamorphic proof pack</div>
+            <div className="text-sm text-emerald-400 mt-1">High-entropy pack ready · Exportable</div>
+          </Link>
+
           <Link href="/workbench/evidence" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Evidence</div>
             <div className="text-sm text-emerald-400 mt-1">Verified · Awaiting review</div>
