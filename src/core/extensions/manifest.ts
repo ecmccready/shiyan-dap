@@ -45,7 +45,7 @@ const nonEmpty = (value: unknown): value is string =>
 const uniqueStrings = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every(nonEmpty) && new Set(value).size === value.length;
 const ID = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/;
-const VERSION = /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$/;
+const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
 export function validateExtensionManifest(value: unknown): ManifestValidation {
   const errors: string[] = [];
@@ -57,15 +57,16 @@ export function validateExtensionManifest(value: unknown): ManifestValidation {
     "output_contracts",
   ]);
   for (const key of Object.keys(value)) {
-    if (!allowedKeys.has(key)) errors.push(`Unknown manifest field: ${key}`);
+    if (!allowedKeys.has(key)) errors.push(\`Unknown manifest field: \${key}\`);
   }
 
   if (value.api_version !== EXTENSION_API_VERSION) errors.push("api_version must be aethel.extension/v1.");
-  if (!nonEmpty(value.id) || !ID.test(value.id)) errors.push("id must be a lowercase reverse-domain-style identifier using letters, digits, dots or hyphens.");
+  if (!nonEmpty(value.id) || !ID.test(value.id)) errors.push("id must be a lowercase identifier using letters, digits, dots or hyphens.");
   if (!nonEmpty(value.name) || value.name.length > 100) errors.push("name must contain 1–100 characters.");
   if (!nonEmpty(value.version) || !VERSION.test(value.version)) errors.push("version must be a valid semantic version.");
-  if (!nonEmpty(value.entrypoint) || value.entrypoint.startsWith("/") || value.includes("\\\\") ||
-      value.split("/").some((part) => part === "." || part === "..")) {
+  const entrypoint = value.entrypoint;
+  if (!nonEmpty(entrypoint) || entrypoint.startsWith("/") || entrypoint.includes("\\\\") ||
+      entrypoint.split("/").some((part) => part === "." || part === "..")) {
     errors.push("entrypoint must be a relative path without traversal segments.");
   }
   if (value.mode !== "read-only" && value.mode !== "propose" && value.mode !== "execute") {
@@ -76,7 +77,7 @@ export function validateExtensionManifest(value: unknown): ManifestValidation {
   } else {
     for (const capability of value.capabilities) {
       if (!(EXTENSION_CAPABILITIES as readonly string[]).includes(capability)) {
-        errors.push(`Unsupported capability: ${capability}`);
+        errors.push(\`Unsupported capability: \${capability}\`);
       }
     }
   }
