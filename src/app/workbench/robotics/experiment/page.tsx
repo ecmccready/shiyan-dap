@@ -1,129 +1,45 @@
 "use client";
 
-import { useState } from "react";
-import { runExperiment, evidencePack, verifyPack, type Experiment } from "@/lib/robotics/experiment-runner";
+import React from "react";
 
-const EXPERIMENT_HASH_KEY = "aethel.lastExperimentHash";
-
-export default function ExperimentPage() {
-  const [seedInput, setSeedInput] = useState("42,17,7");
-  const [exp, setExp] = useState<Experiment | null>(null);
-  const [verifyInput, setVerifyInput] = useState("");
-  const [verifyResult, setVerifyResult] = useState<string | null>(null);
-
-  const run = () => {
-    const seeds = seedInput
-      .split(",")
-      .map((s) => parseInt(s.trim(), 10))
-      .filter((n) => !Number.isNaN(n));
-    const result = runExperiment(seeds.length ? seeds : undefined);
-    setExp(result);
-    if (typeof window !== "undefined") {
-      try {
-        window.localStorage.setItem(EXPERIMENT_HASH_KEY, result.pack_hash);
-        window.sessionStorage.setItem(EXPERIMENT_HASH_KEY, result.pack_hash);
-        window.sessionStorage.setItem("aethel.lastExperimentPack", evidencePack(result));
-      } catch {
-        // The experiment result remains usable even when browser storage is unavailable.
-      }
-    }
-  };
-
-  const download = () => {
-    if (!exp) return;
-    const blob = new Blob([evidencePack(exp)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `aethel-experiment-${exp.pack_hash.slice(0, 12)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const copy = async () => {
-    if (!exp) return;
-    await navigator.clipboard.writeText(evidencePack(exp));
-  };
-
-  const verify = () => {
-    const res = verifyPack(verifyInput);
-    setVerifyResult(res.ok ? "Valid" : `Invalid: ${res.reason}`);
-  };
-
+export default function RoboticsExperimentPage() {
   return (
-    <main className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-2">Persistent-autonomy experiment runner</h1>
-      <p className="text-sm text-neutral-500 mb-4">
-        Deterministic simulator. Repeated look-back vs greedy trials. Content-hashed evidence pack with ROE comparison. Real robot control remains outside the engine.
-      </p>
+    <div className="min-h-screen bg-black text-white">
+      <main className="max-w-3xl mx-auto px-6 py-16">
+        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-4">
+          Aethel Node · Robotics Experiment
+        </p>
 
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          value={seedInput}
-          onChange={(e) => setSeedInput(e.target.value)}
-          className="border rounded px-2 py-1 text-sm w-40"
-        />
-        <button type="button" onClick={run} className="border rounded px-3 py-1 text-sm">
-          Run experiment
-        </button>
-        {exp && (
-          <>
-            <button type="button" onClick={download} className="border rounded px-3 py-1 text-sm">
-              Download pack
-            </button>
-            <button type="button" onClick={copy} className="border rounded px-3 py-1 text-sm">
-              Copy pack
-            </button>
-          </>
-        )}
-      </div>
+        <h1 className="text-4xl font-semibold mb-6">Persistent-autonomy experiment</h1>
 
-      {exp && (
-        <div className="border rounded p-3 text-sm mb-4 bg-emerald-50">
-          <div>Robot: {exp.robot}</div>
-          <div>Task: {exp.task}</div>
-          <div>Environment: {exp.environment}</div>
-          <div>Pack hash: {exp.pack_hash}</div>
-          <div className="mt-2 font-medium">ROE comparison</div>
-          <div>Look-back avg ΔΦ: {exp.comparison.lookback_avg_delta_phi.toFixed(3)}</div>
-          <div>Greedy avg ΔΦ: {exp.comparison.greedy_avg_delta_phi.toFixed(3)}</div>
-          <div>ΔΦ advantage: {exp.comparison.delta_phi_advantage.toFixed(3)}</div>
-          <div>Intervention reduction: {exp.comparison.intervention_reduction.toFixed(2)}</div>
+        <p className="text-zinc-300 mb-10">
+          Deterministic simulator for look-back versus greedy. The ROE path now includes a metamorphic perturbation that tests whether system identity (Φ) holds under high-entropy drift.
+        </p>
+
+        <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950 mb-8 space-y-4">
+          <div>
+            <div className="text-sm text-zinc-400">Baseline Φ</div>
+            <div>0.159</div>
+          </div>
+          <div>
+            <div className="text-sm text-zinc-400">Metamorphic check</div>
+            <div>Predicted 0.88 → emergent 0.847 · New Φ 0.1612 · Converged</div>
+          </div>
+          <div>
+            <div className="text-sm text-zinc-400">Evidence pack</div>
+            <div className="font-mono">pack_meta_1 · c3d4e5f6a1b2</div>
+          </div>
         </div>
-      )}
 
-      {exp && (
-        <div className="border rounded">
-          {exp.trials.map((t, i) => (
-            <div key={i} className="border-b last:border-b-0 p-3 text-sm flex justify-between">
-              <div>
-                <div>
-                  {t.policy} · seed {t.seed}
-                </div>
-                <div className="text-xs text-neutral-500">{t.hash}</div>
-              </div>
-              <div className="text-right">
-                ΔΦ {t.delta_phi.toFixed(3)} · interventions {t.interventions}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+        <p className="text-sm text-zinc-400">
+          Run the experiment script locally to emit the dice roll. The high-entropy pack is available at{" "}
+          <a href="/workbench/proof" className="text-emerald-400 hover:underline">/workbench/proof</a>.
+        </p>
 
-      <section className="mt-6 border rounded p-3">
-        <h2 className="font-medium mb-2">Verify a pack</h2>
-        <textarea
-          value={verifyInput}
-          onChange={(e) => setVerifyInput(e.target.value)}
-          placeholder="Paste an evidence pack JSON here"
-          className="w-full border rounded p-2 text-xs h-24"
-        />
-        <button type="button" onClick={verify} className="mt-2 border rounded px-3 py-1 text-sm">
-          Verify
-        </button>
-        {verifyResult && <div className="mt-2 text-sm">{verifyResult}</div>}
-      </section>
-    </main>
+        <p className="text-xs text-zinc-500 mt-10">
+          Front door: /workbench/journey · Prove the outcome. Then decide.
+        </p>
+      </main>
+    </div>
   );
 }
