@@ -8,8 +8,9 @@ const STEPS = [
   { label: "Opportunity", href: "/workbench/opportunity", desc: "Persist prospect, problem, baseline and success conditions." },
   { label: "Acquisition", href: "/workbench/acquisition", desc: "Qualify prospects and approve outreach." },
   { label: "Proof contract", href: "/workbench/contract", desc: "Agree what counts as success before work begins." },
-  { label: "Execution", href: "/workbench/execute", desc: "Global or Developer path against the contract." },
+  { label: "Execution", href: "/workbench/execute", desc: "Global or Developer path. Includes metamorphic Φ check." },
   { label: "Evidence", href: "/workbench/evidence", desc: "Authoritative, reproducible, independently reviewable." },
+  { label: "Proof pack", href: "/workbench/proof", desc: "High-entropy pack from predicted-vs-emergent and Φ stability." },
   { label: "Disposition", href: "/workbench/review", desc: "Human review against the proof contract." },
   { label: "Conversion", href: "/workbench/convert", desc: "Accept the result and purchase the demonstrated outcome." },
   { label: "Status", href: "/workbench/status", desc: "Current state of the loop." },
@@ -26,7 +27,7 @@ export default function EnginePage() {
         <h1 className="text-4xl font-semibold mb-6">The complete loop</h1>
 
         <p className="text-zinc-300 mb-10">
-          Acquire, demonstrate, execute, verify, review and convert. Every step is inspectable. Evidence is authoritative. Payment follows proof.
+          Acquire, demonstrate, execute, verify, review and convert. The ROE path now injects a controlled metamorphic perturbation and records whether system identity (Φ) holds under high-entropy drift. Every step is inspectable. Evidence is authoritative. Payment follows proof.
         </p>
 
         <div className="space-y-4">
@@ -43,7 +44,7 @@ export default function EnginePage() {
         </div>
 
         <p className="text-xs text-zinc-500 mt-10">
-          Recursive improvement: verified experience from this loop feeds the next cycle.
+          Recursive improvement: verified experience from this loop, including metamorphic emergence, feeds the next cycle.
         </p>
       </main>
     </div>
