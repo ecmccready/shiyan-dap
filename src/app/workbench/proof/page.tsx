@@ -15,22 +15,37 @@ type ProofPack = {
 
 export default function ProofPage() {
   const [pack, setPack] = useState<ProofPack | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fixture that matches the shape produced by the metamorphic experiment.
-    setPack({
-      id: "pack_meta_1",
-      hash: "c3d4e5f6a1b2",
-      run_id: "run_20261106_metamorphic",
-      predicted: 0.88,
-      emergent: 0.847,
-      phi: 0.1612,
-      converged: true,
-      created_at: new Date().toISOString(),
-    });
+    fetch("/api/metamorphic")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load proof pack");
+        return res.json();
+      })
+      .then((data) => setPack(data.pack))
+      .catch((err) => setError(err.message));
   }, []);
 
-  if (!pack) return null;
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <main className="max-w-3xl mx-auto px-6 py-16">
+          <p className="text-red-400">{error}</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (!pack) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <main className="max-w-3xl mx-auto px-6 py-16">
+          <p className="text-zinc-400">Loading proof pack…</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
