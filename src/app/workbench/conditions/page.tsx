@@ -13,6 +13,7 @@ const CONDITIONS = [
 
 export default function ConditionsPage() {
   const metCount = CONDITIONS.filter((c) => c.met).length;
+  const progress = (metCount / CONDITIONS.length) * 100;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -27,8 +28,16 @@ export default function ConditionsPage() {
           Acquisition remains locked until these conditions are met. The eventual acquisition agent consumes the evidence the product generates. The metamorphic proof pack is available as candidate evidence. Verified experience feeds the next cycle.
         </p>
 
-        <div className="mb-6 text-sm text-zinc-400">
-          {metCount} of {CONDITIONS.length} conditions met
+        <div className="mb-6">
+          <div className="text-sm text-zinc-400 mb-2">
+            {metCount} of {CONDITIONS.length} conditions met
+          </div>
+          <div className="w-full bg-zinc-800 rounded-full h-2">
+            <div
+              className="bg-emerald-500 h-2 rounded-full transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
 
         <div className="space-y-4">
