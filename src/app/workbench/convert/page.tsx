@@ -15,7 +15,7 @@ export default function ConvertPage() {
         <h1 className="text-4xl font-semibold mb-6">Prove the outcome. Then decide.</h1>
 
         <p className="text-zinc-300 mb-10">
-          Evidence has been verified and reviewed. The customer can now accept the result and purchase the demonstrated outcome.
+          Evidence has been verified and reviewed. The metamorphic check confirms identity stability under drift. The customer can now accept the result and purchase the demonstrated outcome.
         </p>
 
         <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950 mb-8 space-y-4">
@@ -30,6 +30,10 @@ export default function ConvertPage() {
           <div>
             <div className="text-sm text-zinc-400">Measured improvement</div>
             <div>Δe −0.05 · Φ 0.87 · Full reproducibility</div>
+          </div>
+          <div>
+            <div className="text-sm text-zinc-400">Metamorphic check</div>
+            <div>Predicted 0.88 → emergent 0.847 · Φ 0.1612 · Converged</div>
           </div>
         </div>
 
