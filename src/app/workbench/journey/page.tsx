@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 
 export default function JourneyPage() {
   return (
@@ -19,6 +20,15 @@ export default function JourneyPage() {
           You see the evidence. Then you decide whether to pay for the demonstrated outcome.
           The ROE path now includes a metamorphic perturbation that tests whether system identity (Φ) holds under high-entropy drift.
         </p>
+
+        <div className="mb-10">
+          <Link
+            href="/workbench/proof"
+            className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded"
+          >
+            Inspect metamorphic proof pack
+          </Link>
+        </div>
 
         <section className="mb-12">
           <h2 className="text-xl font-medium mb-4">The commercial loop</h2>
