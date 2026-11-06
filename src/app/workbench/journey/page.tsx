@@ -17,6 +17,7 @@ export default function JourneyPage() {
         <p className="text-lg text-zinc-300 mb-10">
           Shiyan DAP is the first publicly inspectable proof of Aethel Node working end to end.
           You see the evidence. Then you decide whether to pay for the demonstrated outcome.
+          The ROE path now includes a metamorphic perturbation that tests whether system identity (Φ) holds under high-entropy drift.
         </p>
 
         <section className="mb-12">
@@ -26,9 +27,9 @@ export default function JourneyPage() {
             <li><strong>Demonstrate</strong> — Shiyan DAP serves as the live reference implementation.</li>
             <li><strong>Connect</strong> — Customer connects their own repository or data.</li>
             <li><strong>Understand</strong> — Workspace A analyses objectives, architecture and constraints.</li>
-            <li><strong>Execute</strong> — Workbench B runs approved tasks, tests and experiments.</li>
+            <li><strong>Execute</strong> — Workbench B runs approved tasks, tests and experiments. Includes metamorphic Φ check.</li>
             <li><strong>Verify</strong> — ROE measures changes against a declared baseline. Evidence is recorded and reproducible.</li>
-            <li><strong>Learn</strong> — Verified experience informs the next cycle.</li>
+            <li><strong>Learn</strong> — Verified experience, including identity stability under drift, informs the next cycle.</li>
             <li><strong>Convert</strong> — Customer sees the evidence, accepts the result and purchases.</li>
           </ol>
         </section>
@@ -63,12 +64,13 @@ export default function JourneyPage() {
             <li>Global / Misdiagnosis as a specialist vertical.</li>
             <li>Acquisition intelligence and opportunity development.</li>
             <li>Evidence-based execution, measurement and learning.</li>
+            <li>Identity stability (Φ) under metamorphic drift.</li>
             <li>A commercial model tied to demonstrable outcomes.</li>
           </ul>
         </section>
 
         <p className="text-sm text-zinc-500 border-t border-zinc-800 pt-6">
-          You are not selling a GitHub connector. You are selling the whole operating system for turning problems into executed, measured and verifiable outcomes.
+          You are not selling a GitHub connector. You are selling the whole operating system for turning problems into executed, measured and verifiable outcomes — including the ability to hold identity under unpredicted chaos.
         </p>
       </main>
     </div>
