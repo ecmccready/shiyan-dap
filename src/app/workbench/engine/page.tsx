@@ -10,6 +10,9 @@ const STEPS = [
   { label: "Proof contract", href: "/workbench/contract", desc: "Agree what counts as success before work begins." },
   { label: "Execution", href: "/workbench/execute", desc: "Global or Developer path against the contract." },
   { label: "Evidence", href: "/workbench/evidence", desc: "Authoritative, reproducible, independently reviewable." },
+  { label: "Disposition", href: "/workbench/review", desc: "Human review against the proof contract." },
+  { label: "Conversion", href: "/workbench/convert", desc: "Accept the result and purchase the demonstrated outcome." },
+  { label: "Status", href: "/workbench/status", desc: "Current state of the loop." },
 ];
 
 export default function EnginePage() {
@@ -23,7 +26,7 @@ export default function EnginePage() {
         <h1 className="text-4xl font-semibold mb-6">The complete loop</h1>
 
         <p className="text-zinc-300 mb-10">
-          Acquire, demonstrate, execute, verify and convert. Every step is inspectable. Evidence is authoritative. Payment follows proof.
+          Acquire, demonstrate, execute, verify, review and convert. Every step is inspectable. Evidence is authoritative. Payment follows proof.
         </p>
 
         <div className="space-y-4">
