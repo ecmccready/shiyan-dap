@@ -4,6 +4,35 @@ import React, { useState } from "react";
 
 export default function ContractPage() {
   const [agreed, setAgreed] = useState(false);
+  const [contractId, setContractId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const contract = {
+    objective: "Reduce next-action error against a declared baseline.",
+    baseline: "Current measured e and Φ on the reference task.",
+    successMetric: "Δe ≤ −0.05 and Φ improvement with full reproducibility hash.",
+    acceptanceThreshold: "Independent verification returns PASS and human reviewer records disposition.",
+    acceptableEvidence: "Server-persisted run, trial hashes, evidence pack, and replay verification link.",
+  };
+
+  async function agree() {
+    setError(null);
+    try {
+      const res = await fetch("/api/contract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contract),
+      });
+
+      if (!res.ok) throw new Error("Failed to record contract");
+
+      const data = await res.json();
+      setContractId(data.contract.id);
+      setAgreed(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -21,42 +50,44 @@ export default function ContractPage() {
         <div className="space-y-6 border border-zinc-800 rounded-xl p-6 bg-zinc-950 mb-8">
           <div>
             <div className="text-sm text-zinc-400 mb-1">Objective</div>
-            <div>Reduce next-action error against a declared baseline.</div>
+            <div>{contract.objective}</div>
           </div>
 
           <div>
             <div className="text-sm text-zinc-400 mb-1">Baseline</div>
-            <div>Current measured e and Φ on the reference task.</div>
+            <div>{contract.baseline}</div>
           </div>
 
           <div>
             <div className="text-sm text-zinc-400 mb-1">Success metric</div>
-            <div>Δe ≤ −0.05 and Φ improvement with full reproducibility hash.</div>
+            <div>{contract.successMetric}</div>
           </div>
 
           <div>
             <div className="text-sm text-zinc-400 mb-1">Acceptance threshold</div>
-            <div>Independent verification returns PASS and human reviewer records disposition.</div>
+            <div>{contract.acceptanceThreshold}</div>
           </div>
 
           <div>
             <div className="text-sm text-zinc-400 mb-1">Acceptable evidence</div>
-            <div>Server-persisted run, trial hashes, evidence pack, and replay verification link.</div>
+            <div>{contract.acceptableEvidence}</div>
           </div>
         </div>
 
         {!agreed ? (
           <button
-            onClick={() => setAgreed(true)}
+            onClick={agree}
             className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded"
           >
             Agree to proof contract
           </button>
         ) : (
           <div className="text-emerald-400">
-            Contract agreed. Work may begin. Evidence will be measured against these conditions.
+            Contract recorded as {contractId}. Work may begin.
           </div>
         )}
+
+        {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
 
         <p className="text-xs text-zinc-500 mt-10">
           Front door: /workbench/journey
