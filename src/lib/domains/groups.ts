@@ -41,6 +41,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "End-to-end proof journey", href: "/workbench/journey" },
       { label: "Customer opportunity", href: "/workbench/opportunity" },
       { label: "Acquisition agent", href: "/workbench/acquisition" },
+      { label: "Five evidence conditions", href: "/workbench/conditions" },
       { label: "Proof contract", href: "/workbench/contract" },
       { label: "Workbench execution", href: "/workbench/execute" },
       { label: "Authoritative evidence", href: "/workbench/evidence" },
