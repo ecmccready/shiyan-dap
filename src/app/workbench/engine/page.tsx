@@ -13,6 +13,7 @@ const STEPS = [
   { label: "Proof pack", href: "/workbench/proof", desc: "High-entropy pack from predicted-vs-emergent and Φ stability." },
   { label: "Disposition", href: "/workbench/review", desc: "Human review against the proof contract." },
   { label: "Conversion", href: "/workbench/convert", desc: "Accept the result and purchase the demonstrated outcome." },
+  { label: "Recursive improvement", href: "/workbench/loop", desc: "Verified experience, including metamorphic emergence, feeds the next cycle." },
   { label: "Status", href: "/workbench/status", desc: "Current state of the loop." },
 ];
 
@@ -27,7 +28,7 @@ export default function EnginePage() {
         <h1 className="text-4xl font-semibold mb-6">The complete loop</h1>
 
         <p className="text-zinc-300 mb-10">
-          Acquire, demonstrate, execute, verify, review and convert. The ROE path now injects a controlled metamorphic perturbation and records whether system identity (Φ) holds under high-entropy drift. Every step is inspectable. Evidence is authoritative. Payment follows proof.
+          Acquire, demonstrate, execute, verify, review and convert. The ROE path now injects a controlled metamorphic perturbation and records whether system identity (Φ) holds under high-entropy drift. Verified experience feeds the next cycle. Every step is inspectable. Evidence is authoritative. Payment follows proof.
         </p>
 
         <div className="space-y-4">
