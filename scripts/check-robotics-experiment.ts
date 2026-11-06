@@ -1,4 +1,5 @@
 import { runExperiment, evidencePack, verifyPack } from "../src/lib/robotics/experiment-runner";
+import { MetamorphicEngine } from '../src/core/metamorphic';
 
 const a = runExperiment([42, 17]);
 const b = runExperiment([42, 17]);
@@ -40,3 +41,12 @@ console.log("ok", {
   pack_hash: a.pack_hash,
   verification: verified,
 });
+
+console.log("🎲 Rolling the dice against the deterministic anchor...");
+const initialSeed = { step: 1, observedValue: 0.85, predictedValue: 0.88, phi: 0.159 }; // Baseline Φ
+
+const { emergentState, converged } = MetamorphicEngine.entangle(initialSeed);
+
+console.log(`[Mutation Results] Next Step: ${emergentState.step}`);
+console.log(`[Predicted vs Emergent] ${initialSeed.predictedValue} -> ${emergentState.observedValue}`);
+console.log(`[System Identity .self()] New Φ: ${emergentState.phi} (Converged: ${converged})`);
