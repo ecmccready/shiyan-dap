@@ -51,6 +51,11 @@ export default function StatusPage() {
             <div className="text-sm text-emerald-400 mt-1">Recorded</div>
           </Link>
 
+          <Link href="/workbench/acquisition" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
+            <div className="font-semibold">Acquisition agent</div>
+            <div className="text-sm text-zinc-400 mt-1">Qualify prospects · Human approval required</div>
+          </Link>
+
           <Link href="/workbench/contract" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Proof contract</div>
             <div className="text-sm text-emerald-400 mt-1">Agreed</div>
@@ -103,6 +108,11 @@ export default function StatusPage() {
           <Link href="/workbench/offer" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Commercial offer</div>
             <div className="text-sm text-zinc-400 mt-1">Generated from demonstrated outcome</div>
+          </Link>
+
+          <Link href="/workbench/convert" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
+            <div className="font-semibold">Conversion</div>
+            <div className="text-sm text-zinc-400 mt-1">Accept the result and purchase</div>
           </Link>
 
           <Link href="/workbench/evidence" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
