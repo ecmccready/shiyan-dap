@@ -56,6 +56,7 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Do | Pilot | /workbench/pilot |
 | Do | Marketplace | /workbench/marketplace |
 | Do | Acquisition Intelligence | /workbench/acquisition |
+| Do | Five evidence conditions | /workbench/conditions |
 
 The dropdown is also a read-only view of the verified-experience store. After load it fetches eligible records once and annotates the best Φ on relevant entries. Choosing Level 4 run opens the reuse hand-off when the record passes the same gates as the durable feed.
 
