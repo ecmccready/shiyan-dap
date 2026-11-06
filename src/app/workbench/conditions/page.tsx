@@ -3,50 +3,50 @@
 import React from "react";
 import Link from "next/link";
 
-const CONDITIONS = [
-  { id: 1, label: "Non-synthetic source observations", status: "Required" },
-  { id: 2, label: "Reproducible improvement against a declared baseline", status: "Required" },
-  { id: 3, label: "Independent review", status: "Required" },
-  { id: 4, label: "Measured customer outcome", status: "Required" },
-  { id: 5, label: "Owner authorization", status: "Required" },
+const STEPS = [
+  { label: "Front door", href: "/workbench/journey", desc: "Prove the outcome. Then decide." },
+  { label: "Opportunity", href: "/workbench/opportunity", desc: "Persist prospect, problem, baseline and success conditions." },
+  { label: "Acquisition", href: "/workbench/acquisition", desc: "Qualify prospects and approve outreach." },
+  { label: "Five evidence conditions", href: "/workbench/conditions", desc: "Acquisition remains gated until these are met." },
+  { label: "Proof contract", href: "/workbench/contract", desc: "Agree what counts as success before work begins." },
+  { label: "Execution", href: "/workbench/execute", desc: "Global or Developer path. Includes metamorphic Φ check." },
+  { label: "Evidence", href: "/workbench/evidence", desc: "Authoritative, reproducible, independently reviewable." },
+  { label: "Proof pack", href: "/workbench/proof", desc: "High-entropy pack from predicted-vs-emergent and Φ stability." },
+  { label: "Disposition", href: "/workbench/review", desc: "Human review against the proof contract." },
+  { label: "Conversion", href: "/workbench/convert", desc: "Accept the result and purchase the demonstrated outcome." },
+  { label: "Recursive improvement", href: "/workbench/loop", desc: "Verified experience, including metamorphic emergence, feeds the next cycle." },
+  { label: "Status", href: "/workbench/status", desc: "Current state of the loop." },
 ];
 
-export default function ConditionsPage() {
+export default function EnginePage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-3xl mx-auto px-6 py-16">
         <p className="text-xs uppercase tracking-widest text-emerald-400 mb-4">
-          Aethel Node · Acquisition Gate
+          Aethel Node · Proof-to-Payment Engine
         </p>
 
-        <h1 className="text-4xl font-semibold mb-6">Five evidence conditions</h1>
+        <h1 className="text-4xl font-semibold mb-6">The complete loop</h1>
 
         <p className="text-zinc-300 mb-10">
-          Acquisition remains locked until these conditions are met. The eventual acquisition agent consumes the evidence the product generates.
+          Acquire, demonstrate, execute, verify, review and convert. The ROE path now injects a controlled metamorphic perturbation and records whether system identity (Φ) holds under high-entropy drift. Verified experience feeds the next cycle. Acquisition remains gated until the five evidence conditions are met. Every step is inspectable. Evidence is authoritative. Payment follows proof.
         </p>
 
         <div className="space-y-4">
-          {CONDITIONS.map((c) => (
-            <div key={c.id} className="border border-zinc-800 rounded-xl p-5 bg-zinc-950 flex justify-between items-center">
-              <div>
-                <div className="font-semibold">{c.id}. {c.label}</div>
-              </div>
-              <div className="text-sm text-zinc-400">{c.status}</div>
-            </div>
+          {STEPS.map((step) => (
+            <Link
+              key={step.href}
+              href={step.href}
+              className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600 transition-colors"
+            >
+              <div className="font-semibold">{step.label}</div>
+              <div className="text-sm text-zinc-400 mt-1">{step.desc}</div>
+            </Link>
           ))}
         </div>
 
-        <div className="mt-10">
-          <Link
-            href="/workbench/journey"
-            className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded"
-          >
-            Back to front door
-          </Link>
-        </div>
-
         <p className="text-xs text-zinc-500 mt-10">
-          Prove the outcome. Then decide. Acquisition stays gated until the evidence is authoritative.
+          Recursive improvement: verified experience from this loop, including metamorphic emergence, feeds the next cycle.
         </p>
       </main>
     </div>
