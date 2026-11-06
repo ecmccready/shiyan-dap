@@ -28,6 +28,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
     label: "Show",
     items: [
       { label: "Proof", href: "/workbench/proof" },
+      { label: "Metamorphic proof pack", href: "/workbench/proof" },
       { label: "Result", href: "/workbench/result" },
       { label: "History", href: "/workbench/history" },
     ],
