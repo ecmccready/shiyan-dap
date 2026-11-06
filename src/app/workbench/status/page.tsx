@@ -12,6 +12,9 @@ type MetamorphicStatus = {
 
 export default function StatusPage() {
   const [meta, setMeta] = useState<MetamorphicStatus | null>(null);
+  const conditionsMet = 0;
+  const conditionsTotal = 5;
+  const progress = (conditionsMet / conditionsTotal) * 100;
 
   useEffect(() => {
     fetch("/api/metamorphic")
@@ -76,7 +79,15 @@ export default function StatusPage() {
 
           <Link href="/workbench/conditions" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Five evidence conditions</div>
-            <div className="text-sm text-zinc-400 mt-1">0 of 5 met · Acquisition gated</div>
+            <div className="text-sm text-zinc-400 mt-1 mb-2">
+              {conditionsMet} of {conditionsTotal} met · Acquisition gated
+            </div>
+            <div className="w-full bg-zinc-800 rounded-full h-1.5">
+              <div
+                className="bg-emerald-500 h-1.5 rounded-full"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </Link>
 
           <Link href="/workbench/evidence" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
