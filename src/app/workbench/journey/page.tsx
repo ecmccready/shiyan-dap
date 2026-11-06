@@ -19,14 +19,21 @@ export default function JourneyPage() {
           Shiyan DAP is the first publicly inspectable proof of Aethel Node working end to end.
           You see the evidence. Then you decide whether to pay for the demonstrated outcome.
           The ROE path now includes a metamorphic perturbation that tests whether system identity (Φ) holds under high-entropy drift.
+          Acquisition remains gated until the five evidence conditions are met.
         </p>
 
-        <div className="mb-10">
+        <div className="mb-10 flex gap-4">
           <Link
             href="/workbench/proof"
             className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded"
           >
             Inspect metamorphic proof pack
+          </Link>
+          <Link
+            href="/workbench/conditions"
+            className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded"
+          >
+            Five evidence conditions
           </Link>
         </div>
 
