@@ -55,7 +55,7 @@ export default function ConvertPage() {
           href="/workbench/flywheel"
           className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded mt-4"
         >
-          Founder Reference Flywheel
+          Founder Reference Flywheel (Live)
         </Link>
 
         <p className="text-xs text-zinc-500 mt-10">
