@@ -2,6 +2,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import type { ExperienceRecord as CanonicalExperienceRecord } from "./interfaces";
 import { type ExperienceRecord, validateExperienceRecord } from "./experience-schema";
 
 export type MemoryResult<T> = { ok: true; value: T } | { ok: false; error: string };
@@ -32,7 +33,7 @@ function safeId(id: string): void {
  */
 export class HFMemory {
   private readonly base: string;
-  constructor(root = DEFAULT_MEMORY_ROOT, private readonly readText = (path: string) => readFileSync(path, "utf8")) {
+  constructor(root = process.env.AETHEL_HF_MEMORY_ROOT || DEFAULT_MEMORY_ROOT, private readonly readText = (path: string) => readFileSync(path, "utf8")) {
     this.base = join(resolve(root), "founder-z");
   }
 
@@ -65,8 +66,21 @@ export class HFMemory {
     } catch (error) { return failure(error); }
   }
 
-  writeExperience(record: ExperienceRecord): MemoryResult<ExperienceRecord> {
-    try { return { ok: true, value: this.append(record) }; }
+  /** Verified, eligible records newest first. Legacy records have no proven convergence. */
+  retrieveEligible(): MemoryResult<CanonicalExperienceRecord[]> {
+    const records = this.listExperiences();
+    if (!records.ok) return records;
+    return { ok: true, value: records.value
+      .filter((record) => record.reuse_eligibility === true)
+      .map((record) => ({ ...record, metamorphic: {
+        ...record.metamorphic, converged: record.metamorphic.converged === true,
+      } }))
+      .sort((a, b) => Date.parse(b.provenance.timestamp) - Date.parse(a.provenance.timestamp)
+        || a.experience_id.localeCompare(b.experience_id)) };
+  }
+
+  writeExperience<T extends ExperienceRecord>(record: T): MemoryResult<T> {
+    try { return { ok: true, value: this.append(record) as T }; }
     catch (error) { return failure(error); }
   }
 
@@ -107,4 +121,18 @@ export class HFMemory {
       if (lock !== undefined) { closeSync(lock); unlinkSync(lockPath); }
     }
   }
+}
+
+/** Canonical v1.1 API; errors throw rather than masquerading as empty memory. */
+export function writeExperience(record: CanonicalExperienceRecord, memory = new HFMemory()): CanonicalExperienceRecord {
+  if (typeof record.metamorphic?.converged !== "boolean") throw new Error("Canonical record requires converged");
+  const saved = memory.writeExperience(record);
+  if (!saved.ok) throw new Error(saved.error);
+  return saved.value;
+}
+
+export function retrieveEligible(memory = new HFMemory()): CanonicalExperienceRecord[] {
+  const eligible = memory.retrieveEligible();
+  if (!eligible.ok) throw new Error(eligible.error);
+  return eligible.value;
 }

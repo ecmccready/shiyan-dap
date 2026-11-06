@@ -2,33 +2,34 @@
 
 import React, { useEffect, useState } from "react";
 
-type Experience = {
-  experience_id: string;
-  goal: string;
-  action: string;
-  reuse_eligibility: boolean;
-  z_next_action: string;
-  revision: number;
-};
+import type { ExperienceRecord, NextActionProposal } from "@/core/interfaces";
 
 export default function FlywheelPage() {
-  const [experience, setExperience] = useState<Experience | null>(null);
-  const [nextAction, setNextAction] = useState<string | null>(null);
+  const [experience, setExperience] = useState<ExperienceRecord | null>(null);
+  const [proposal, setProposal] = useState<NextActionProposal | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fixture that matches the ExperienceRecord shape written by the flywheel.
-    setExperience({
-      experience_id: "exp_20261106_metamorphic",
-      goal: "Reduce next-action error against baseline",
-      action: "Look-back vs greedy with metamorphic perturbation",
-      reuse_eligibility: true,
-      z_next_action: "Re-run with look-back policy informed by prior Φ stability",
-      revision: 1,
-    });
-    setNextAction("Re-run with look-back policy informed by prior Φ stability");
+    const controller = new AbortController();
+    async function load() {
+      try {
+        const response = await fetch("/api/flywheel", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error("Verified memory could not be read. No recommendation was made.");
+        const data: { latest: ExperienceRecord | null; proposal: NextActionProposal } = await response.json();
+        if (!controller.signal.aborted) {
+          setExperience(data.latest);
+          setProposal(data.proposal);
+        }
+      } catch (cause) {
+        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Memory request failed.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
+    void load();
+    return () => controller.abort();
   }, []);
-
-  if (!experience) return null;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -43,7 +44,15 @@ export default function FlywheelPage() {
           One complete cycle: Shiyan DAP → Aethel executes → Verifies → Hugging Face remembers → ROE improves next action.
         </p>
 
-        <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950 space-y-4 mb-8">
+        <p className="text-xs text-zinc-500 mb-8">
+          Reading this server’s local HF-shaped memory store; no remote Hugging Face upload is implied.
+        </p>
+        {loading && <p role="status" className="text-zinc-400 mb-8">Loading verified memory…</p>}
+        {error && <p role="alert" className="text-red-400 mb-8">{error}</p>}
+        {!loading && !error && !experience && (
+          <p className="text-zinc-400 mb-8">No eligible experience is stored here yet. No fixture or field evidence is substituted.</p>
+        )}
+        {experience && <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950 space-y-4 mb-8">
           <div>
             <div className="text-sm text-zinc-400">Experience</div>
             <div className="font-mono">{experience.experience_id}</div>
@@ -66,15 +75,41 @@ export default function FlywheelPage() {
             <div className="text-sm text-zinc-400">Revision</div>
             <div>{experience.revision}</div>
           </div>
-        </div>
-
-        <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950">
-          <div className="text-sm text-zinc-400 mb-1">ROE recommended next action</div>
-          <div className="font-semibold">{nextAction}</div>
-          <div className="text-xs text-zinc-500 mt-2">
-            Informed by experience {experience.experience_id}
+          <div>
+            <div className="text-sm text-zinc-400">Replay verdict · verifier</div>
+            <div>{experience.verification.replay_verdict} · {experience.verification.verifier_version}</div>
           </div>
-        </div>
+          <div>
+            <div className="text-sm text-zinc-400">Metamorphic verification</div>
+            <div>{experience.metamorphic.transformation} · seed {experience.metamorphic.seed}</div>
+            <div>{experience.metamorphic.expected_relation}</div>
+            <div className="whitespace-pre-wrap break-words">{experience.metamorphic.result}</div>
+            <div>Converged: {experience.metamorphic.converged ? "Yes" : "No / not established in legacy record"}</div>
+          </div>
+          <div>
+            <div className="text-sm text-zinc-400">Outcome · delta_e</div>
+            <div className="whitespace-pre-wrap break-words">{experience.observed_outcome}</div>
+            <div>{experience.delta_e}</div>
+          </div>
+          <div>
+            <div className="text-sm text-zinc-400">Source · run · timestamp</div>
+            <div className="break-words">{experience.provenance.source} · {experience.provenance.run_id} · {new Date(experience.provenance.timestamp).toLocaleString("en-US", { timeZone: "America/Los_Angeles", timeZoneName: "short" })}</div>
+          </div>
+        </div>}
+
+        {proposal && <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950">
+          <div className="text-sm text-zinc-400 mb-1">ROE recommended next action</div>
+          <div className="font-semibold">{proposal.action}</div>
+          <div className="text-xs text-zinc-500 mt-2">
+            {proposal.reason}
+          </div>
+          <div className="text-xs text-zinc-500 mt-2">
+            {proposal.experience_id ? `Informed by experience ${proposal.experience_id}` : "No experience cited"}
+          </div>
+          <div className="text-xs text-zinc-500 mt-2">
+            Evidence used: {proposal.evidence_used.join(", ") || "None"}
+          </div>
+        </div>}
 
         <p className="text-xs text-zinc-500 mt-10">
           Front door: /workbench/journey · Prove the outcome. Then decide.

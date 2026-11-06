@@ -19,6 +19,7 @@ export interface ExperienceRecord {
     transformation: string;
     expected_relation: string;
     result: string;
+    converged?: boolean; // v1 records remain readable; v1.1 requires explicit convergence.
   };
   provenance: {
     source: string;
@@ -51,5 +52,6 @@ export function validateExperienceRecord(value: unknown): value is ExperienceRec
   const { verification: v, metamorphic: m, provenance: p } = value;
   return object(v) && ["PASS", "FAIL", "SKIP"].includes(v.replay_verdict as string) && text(v.verifier_version)
     && object(m) && finite(m.seed) && text(m.transformation) && text(m.expected_relation) && text(m.result)
+    && (m.converged === undefined || typeof m.converged === "boolean")
     && object(p) && text(p.source) && text(p.run_id) && text(p.timestamp) && Number.isFinite(Date.parse(p.timestamp));
 }
