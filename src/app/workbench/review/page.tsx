@@ -1,99 +1,88 @@
 "use client";
 
-import Link from "next/link";
-import JourneyNote from "@/components/JourneyNote";
-import SiteHeader from "@/components/SiteHeader";
+import React, { useState } from "react";
 
 export default function ReviewPage() {
+  const [disposition, setDisposition] = useState<"accept" | "reject" | "revise" | null>(null);
+  const [note, setNote] = useState("");
+  const [recorded, setRecorded] = useState(false);
+
+  async function record() {
+    if (!disposition) return;
+
+    const res = await fetch("/api/disposition", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        evidence_id: "ev_demo_1",
+        disposition,
+        note,
+      }),
+    });
+
+    if (res.ok) setRecorded(true);
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
-      <SiteHeader section="Workbench" />
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-emerald-400 text-xs uppercase tracking-widest mb-3">
-          Review
-        </p>
-        <h1 className="text-3xl font-bold mb-3">Aethel Node · inspectable surface</h1>
-        <p className="text-zinc-400 max-w-2xl mb-8">
-          Developmental stack is the product. Public packs are the proof. Client reference is the next plant.
-          All claims are measured. Φ only when final e falls.
+      <main className="max-w-3xl mx-auto px-6 py-16">
+        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-4">
+          Aethel Node · Human Disposition
         </p>
 
-        <div className="mb-6"><JourneyNote /></div>
+        <h1 className="text-4xl font-semibold mb-6">Record disposition</h1>
 
-        <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
-          <h2 className="text-white font-semibold mb-2">Commercial proposition</h2>
-          <p>Buyer: organization responsible for quality, cost, or reliability of repeated workflows.</p>
-          <p>Product: workbench that executes, scores against a reference, and records reproducible evidence.</p>
-          <p>Primary metric: change in final error, Φ, alongside success, cost, latency, and safety.</p>
-          <p className="mt-2">
-            <Link className="underline" href="/workbench/offer">Offer</Link>
-          </p>
-        </section>
+        <p className="text-zinc-300 mb-10">
+          Independent review against the proof contract. Only reviewed evidence advances to acquisition.
+        </p>
 
-        <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
-          <h2 className="text-white font-semibold mb-2">Public proof</h2>
-          <p>Model 3 2018 sealed reference. Shiyan 2026 pipeline criteria. Same sealed sequence. Positive Φ.</p>
-          <p className="mt-2">
-            <Link className="underline" href="/workbench/shiyan">Shiyan + Model 3</Link>
-            {" · "}
-            <Link className="underline" href="/workbench/proof">Safety proof</Link>
-          </p>
-        </section>
+        <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950 mb-8">
+          <div className="text-sm text-zinc-400 mb-1">Evidence</div>
+          <div className="font-mono">ev_demo_1 · run_20261105_001</div>
+          <div className="text-sm text-zinc-400 mt-2">Hash a1b2c3d4e5f6 · Verified</div>
+        </div>
 
-        <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
-          <h2 className="text-white font-semibold mb-2">Client pipeline</h2>
-          <p>Same workbench. Client supplies reference. Export stores inspectable Run on History.</p>
-          <p className="mt-2">
-            <Link className="underline" href="/workbench/client">Client pipeline</Link>
-            {" · "}
-            <Link className="underline" href="/workbench/history">History</Link>
-          </p>
-        </section>
+        <div className="space-y-4 mb-6">
+          <div className="flex gap-3">
+            {(["accept", "reject", "revise"] as const).map((d) => (
+              <button
+                key={d}
+                onClick={() => setDisposition(d)}
+                className={`px-4 py-2 rounded text-sm capitalize ${
+                  disposition === d
+                    ? "bg-emerald-600 text-white"
+                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                }`}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
 
-        <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
-          <h2 className="text-white font-semibold mb-2">Verified sequences</h2>
-          <p>Marketplace lists sequences that have already lowered final e. Not settled. Not revenue.</p>
-          <p className="mt-2">
-            <Link className="underline" href="/workbench/marketplace">Marketplace</Link>
-          </p>
-        </section>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Reviewer note (optional)"
+            rows={3}
+            className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm"
+          />
+        </div>
 
-        <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
-          <h2 className="text-white font-semibold mb-2">Enterprise surfaces</h2>
-          <p>
-            Read-only views of the off-chain micro-ledger: an asset map (creation domain, latest domain, latest audit status, timeline) and an audit summary (counts by domain, signature status and settlement rail, assets with a passed audit, Merkle root not anchored on-chain). Audit results come from a heuristic mock scan, not a third-party attestation. Not settled. Not revenue.
-          </p>
-          <p className="mt-2">
-            <Link className="underline" href="/workbench/workspace">Workspace</Link>
-            {" · "}
-            <a className="underline" href="/api/v1/ledger/assets">Asset map (JSON)</a>
-            {" · "}
-            <a className="underline" href="/api/v1/audit/summary">Audit summary (JSON)</a>
-          </p>
-        </section>
+        {!recorded ? (
+          <button
+            onClick={record}
+            disabled={!disposition}
+            className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-6 py-2 rounded"
+          >
+            Record disposition
+          </button>
+        ) : (
+          <div className="text-emerald-400">Disposition recorded. Evidence is now reviewed.</div>
+        )}
 
-        <section className="border border-zinc-800 rounded-2xl p-5 mb-6 text-sm text-zinc-300">
-          <h2 className="text-white font-semibold mb-2">Request a scored pack</h2>
-          <p>
-            Supply the repeated workflow and the objective reference. The workbench scores it.
-            Export the Run. Inspect it on History. Same loop as the public proof.
-          </p>
-        </section>
-
-        <section className="border border-zinc-800 rounded-2xl p-5 text-sm text-zinc-500">
-          <p>
-            Not a diagnosis. No PHI. Not revenue until a client settles.
-            Healthcare diagnostics remains a higher-risk, later vertical.
-            Level 4 is the current architectural milestone: operate autonomously within constraints.
-          </p>
-        </section>
-
-        <nav className="flex flex-wrap gap-4 text-sm mt-8">
-          <Link className="underline" href="/workbench">Workbench</Link>
-          <Link className="underline" href="/workbench/offer">Offer</Link>
-          <Link className="underline" href="/workbench/network">Actor network</Link>
-          <Link className="underline" href="/workbench/compare">Peer proof</Link>
-        </nav>
+        <p className="text-xs text-zinc-500 mt-10">
+          Front door: /workbench/journey
+        </p>
       </main>
     </div>
   );
