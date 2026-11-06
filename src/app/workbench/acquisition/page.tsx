@@ -58,6 +58,12 @@ export default function AcquisitionPage() {
           >
             View five evidence conditions
           </Link>
+          <Link
+            href="/workbench/flywheel"
+            className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded text-sm"
+          >
+            Founder Reference Flywheel
+          </Link>
         </div>
 
         <div className="space-y-6">
