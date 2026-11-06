@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 export default function ReviewPage() {
   const [disposition, setDisposition] = useState<"accept" | "reject" | "revise" | null>(null);
@@ -83,6 +84,13 @@ export default function ReviewPage() {
         <p className="text-xs text-zinc-500 mt-10">
           Front door: /workbench/journey
         </p>
+
+        <Link
+          href="/workbench/flywheel"
+          className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded mt-6"
+        >
+          Founder Reference Flywheel
+        </Link>
       </main>
     </div>
   );
