@@ -24,7 +24,7 @@ export default function ConditionsPage() {
         <h1 className="text-4xl font-semibold mb-6">Five evidence conditions</h1>
 
         <p className="text-zinc-300 mb-10">
-          Acquisition remains locked until these conditions are met. The eventual acquisition agent consumes the evidence the product generates.
+          Acquisition remains locked until these conditions are met. The eventual acquisition agent consumes the evidence the product generates. The metamorphic proof pack is available as candidate evidence.
         </p>
 
         <div className="mb-6 text-sm text-zinc-400">
@@ -44,10 +44,16 @@ export default function ConditionsPage() {
           ))}
         </div>
 
-        <div className="mt-10">
+        <div className="mt-10 flex gap-4">
+          <Link
+            href="/workbench/proof"
+            className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded"
+          >
+            Inspect metamorphic proof pack
+          </Link>
           <Link
             href="/workbench/journey"
-            className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded"
+            className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded"
           >
             Back to front door
           </Link>
