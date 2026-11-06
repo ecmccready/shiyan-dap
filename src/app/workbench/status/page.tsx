@@ -90,6 +90,11 @@ export default function StatusPage() {
             </div>
           </Link>
 
+          <Link href="/workbench/loop" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
+            <div className="font-semibold">Recursive improvement</div>
+            <div className="text-sm text-zinc-400 mt-1">Verified experience feeds the next cycle</div>
+          </Link>
+
           <Link href="/workbench/evidence" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Evidence</div>
             <div className="text-sm text-emerald-400 mt-1">Verified · Awaiting review</div>
