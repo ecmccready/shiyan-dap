@@ -22,7 +22,7 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
 Pages that use the shared header show a Domains dropdown with four groups: Know, Know How, Show, and Do. Selecting an item navigates to it. The current page is preselected.
 
 | Group | Entry | Path |
-|---|---|---|
+| --- | --- | --- |
 | Know | Diagnostics | /workbench/diagnostic |
 | Know | Safety | /workbench/safety |
 | Know | Global · misdiagnosis | /workbench/global |
@@ -37,11 +37,21 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Know How | Level 4 run | /workbench/autonomous |
 | Know How | ROE · Reciprocal Optimization Engine | /workbench/autonomous?roe_drive=1 |
 | Show | Proof | /workbench/proof |
+| Show | Metamorphic proof pack | /workbench/proof |
 | Show | Result | /workbench/result |
 | Show | History | /workbench/history |
+| Do | Proof-to-Payment Engine | /workbench/engine |
+| Do | End-to-end proof journey | /workbench/journey |
+| Do | Customer opportunity | /workbench/opportunity |
+| Do | Acquisition agent | /workbench/acquisition |
+| Do | Proof contract | /workbench/contract |
+| Do | Workbench execution | /workbench/execute |
+| Do | Authoritative evidence | /workbench/evidence |
+| Do | Human disposition | /workbench/review |
+| Do | Conversion | /workbench/convert |
+| Do | Engine status | /workbench/status |
 | Do | Start a durable run | /workbench#guided-run |
 | Do | Offer | /workbench/offer |
-| Do | Proof journey | /workbench/journey |
 | Do | Pilot | /workbench/pilot |
 | Do | Marketplace | /workbench/marketplace |
 | Do | Acquisition Intelligence | /workbench/acquisition |
