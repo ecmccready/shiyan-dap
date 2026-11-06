@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { computeB, isOutcomeTransition, Self } from "@/lib/outcomes";
+import { isOutcomeTransition } from "@/lib/outcomes";
+import { readOperationalState } from "@/lib/hf-outcome-adapter";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const A_ACTIONS = ["PROPOSE", "LIST_INTENT", "REQUEST_RESPONSE"];
 const B_ACTIONS = ["ACK", "DECLINE", "REQUEST", "RETURN"];
@@ -72,8 +76,8 @@ export async function POST(req: Request) {
   }
 
   const validOutcomes = outcomes.filter(isOutcomeTransition);
-  const self = Self(validOutcomes);
-  const b = computeB(validOutcomes);
+  const state = readOperationalState(validOutcomes);
+  const { self, computed_b: b } = state;
 
   return NextResponse.json({
     ok: true,
@@ -83,6 +87,9 @@ export async function POST(req: Request) {
     settlement_written: false,
     self,
     computed_b: b,
+    memory_source: state.memory_source,
+    proposal: state.proposal,
+    memory_error: state.memory_error,
     z: self.z,
     note: "Server names the exchange. Client /ab writes the OutcomeTransition.",
     level3: false,

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { emitTrainingRecord, isTrainingRecord } from "@/lib/huggingface";
 import { requireLevel4Write } from "@/lib/level4/write-auth";
+
+export const runtime = "nodejs";
 
 function ndjsonLine(key: string, value: unknown) {
   return JSON.stringify({ key, value }) + "\n";
@@ -47,10 +50,6 @@ export async function POST(req: NextRequest) {
   const token = process.env.HF_TOKEN;
   const repo = process.env.HF_DATASET || "shiyan-dap/founder-z";
 
-  if (!token) {
-    return NextResponse.json({ ok: false, error: "HF_TOKEN missing" }, { status: 500 });
-  }
-
   let body: unknown;
   try {
     body = await req.json();
@@ -68,6 +67,21 @@ export async function POST(req: NextRequest) {
   }
 
   const input = body as Record<string, unknown>;
+  // Active local-emitter entrypoint. Public payloads cannot self-certify PASS:
+  // legacy text is persisted as SKIP/ineligible; canonical verified records are
+  // accepted only by the internal emitTrainingRecord API for trusted verifier callers.
+  if (input.kind === "training") {
+    if (!isTrainingRecord(input.record)) return NextResponse.json({ ok: false, error: "Invalid training text record" }, { status: 400 });
+    try {
+      // Strip extra fields so a text payload cannot masquerade as a verified canonical record.
+      const { clusterId, domain, input: text, cleaned } = input.record;
+      return NextResponse.json(await emitTrainingRecord({ clusterId, domain, input: text, cleaned }));
+    } catch (error) {
+      console.error("Local training emission failed", error);
+      return NextResponse.json({ ok: false, error: "Local HF training persistence failed" }, { status: 500 });
+    }
+  }
+  if (!token) return NextResponse.json({ ok: false, error: "HF_TOKEN missing" }, { status: 500 });
   const kind = input.kind ?? "event";
   const rawId = input.measurement_id ?? input.assetId ?? input.asset_id ?? "latest";
   const assetId = input.asset_id ?? input.assetId ?? "";

@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
-import { computeB, isOutcomeTransition, Self } from "@/lib/outcomes";
+import { isOutcomeTransition } from "@/lib/outcomes";
+import { readOperationalState } from "@/lib/hf-outcome-adapter";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const state = readOperationalState([]);
+  if (state.memory_source === "hf-memory") return NextResponse.json({
+    ok: true, protocol: "slice_v6", head: { z: state.self.z, action: state.computed_b.action, experience_id: state.proposal.experience_id },
+    ...state, note: "Server-local HF next-action advice; outcome measurements remain unchanged. No remote Hub upload implied.",
+  }, { headers: { "Cache-Control": "no-store" } });
   let latest: unknown;
   try {
     const response = await fetch(
@@ -35,8 +44,7 @@ export async function GET() {
     protocol: "slice_v6",
     note: "Server Self() has no browser ledger. Head z is founder-z. Client Learn remains the live sensor.",
     head: latest,
-    self: Self([]),
-    computed_b: computeB([]),
+    ...state,
   });
 }
 
@@ -69,13 +77,16 @@ export async function POST(req: Request) {
     );
   }
   const validOutcomes = outcomes.filter(isOutcomeTransition);
-  const self = Self(validOutcomes);
-  const b = computeB(validOutcomes);
+  const state = readOperationalState(validOutcomes);
+  const { self, computed_b: b } = state;
   return NextResponse.json({
     ok: true,
     protocol: "slice_v6",
     self,
     computed_b: b,
+    memory_source: state.memory_source,
+    proposal: state.proposal,
+    memory_error: state.memory_error,
     z: self.z,
   });
 }
