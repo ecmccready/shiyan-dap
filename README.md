@@ -36,6 +36,7 @@ Pages that use the shared header show a Domains dropdown with four groups: Know,
 | Know How | Loop · closed loop | /loop |
 | Know How | Level 4 run | /workbench/autonomous |
 | Know How | ROE · Reciprocal Optimization Engine | /workbench/autonomous?roe_drive=1 |
+| Know How | Recursive improvement | /workbench/loop |
 | Show | Proof | /workbench/proof |
 | Show | Metamorphic proof pack | /workbench/proof |
 | Show | Result | /workbench/result |
