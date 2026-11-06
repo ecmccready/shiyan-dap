@@ -68,6 +68,17 @@ Acquisition agent (evidence-backed discovery and approved outreach).
 New customer outcomes feed the next optimization cycle.  
 The proof journey at `/workbench/journey` is the front door. Acquisition remains gated until the five evidence conditions are met.
 
+## Metamorphic Perturbation Engine
+
+The ROE path includes a controlled runtime anomaly injection (`src/core/metamorphic.ts`).
+
+- The experiment script (`scripts/check-robotics-experiment.ts`) rolls a stochastic dice against the deterministic anchor.
+- It records predicted vs emergent observation and whether system identity (Φ) holds under high-entropy drift.
+- The result is surfaced on `/workbench/execute`, exported as a high-entropy proof pack on `/workbench/proof`, and included in the commercial offer and conversion surfaces.
+- The pack is available at `/api/metamorphic` and can be content-hashed for independent verification.
+
+This turns drift from a passive error into an active evolutionary feature of the persistent-autonomy benchmark.
+
 ## Four-stage graph
 
 Every commercial surface uses the same stages:
