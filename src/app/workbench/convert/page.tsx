@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 export default function ConvertPage() {
   const [ready, setReady] = useState(false);
@@ -49,6 +50,13 @@ export default function ConvertPage() {
             Result accepted. Commercial conversion is now available.
           </div>
         )}
+
+        <Link
+          href="/workbench/flywheel"
+          className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded mt-4"
+        >
+          Founder Reference Flywheel
+        </Link>
 
         <p className="text-xs text-zinc-500 mt-10">
           Front door: /workbench/journey · Payment follows proof.
