@@ -49,6 +49,12 @@ export default function OfferPage() {
           >
             Inspect proof pack
           </Link>
+          <Link
+            href="/workbench/flywheel"
+            className="border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded"
+          >
+            Founder Reference Flywheel
+          </Link>
         </div>
 
         <p className="text-xs text-zinc-500 mt-10">
