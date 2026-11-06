@@ -39,7 +39,7 @@ export default function StatusPage() {
         <h1 className="text-4xl font-semibold mb-6">Current loop state</h1>
 
         <p className="text-zinc-300 mb-10">
-          Opportunity recorded. Contract agreed. Evidence verified. Metamorphic check complete. Awaiting human disposition.
+          Opportunity recorded. Contract agreed. Evidence verified. Metamorphic check complete. Awaiting human disposition. Acquisition remains gated.
         </p>
 
         <div className="space-y-4">
@@ -72,6 +72,11 @@ export default function StatusPage() {
           <Link href="/workbench/proof" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Metamorphic proof pack</div>
             <div className="text-sm text-emerald-400 mt-1">High-entropy pack ready · Exportable</div>
+          </Link>
+
+          <Link href="/workbench/conditions" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
+            <div className="font-semibold">Five evidence conditions</div>
+            <div className="text-sm text-zinc-400 mt-1">0 of 5 met · Acquisition gated</div>
           </Link>
 
           <Link href="/workbench/evidence" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
