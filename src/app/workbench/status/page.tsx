@@ -129,6 +129,11 @@ export default function StatusPage() {
             <div className="font-semibold">Front door</div>
             <div className="text-sm text-zinc-400 mt-1">Prove the outcome. Then decide.</div>
           </Link>
+
+          <Link href="/workbench/flywheel" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
+            <div className="font-semibold">Founder Reference Flywheel</div>
+            <div className="text-sm text-zinc-400 mt-1">Append-only verified memory · ROE improves next action</div>
+          </Link>
         </div>
 
         <p className="text-xs text-zinc-500 mt-10">
