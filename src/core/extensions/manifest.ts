@@ -65,7 +65,7 @@ export function validateExtensionManifest(value: unknown): ManifestValidation {
   if (!nonEmpty(value.name) || value.name.length > 100) errors.push("name must contain 1–100 characters.");
   if (!nonEmpty(value.version) || !VERSION.test(value.version)) errors.push("version must be a valid semantic version.");
   const entrypoint = value.entrypoint;
-  if (!nonEmpty(entrypoint) || entrypoint.startsWith("/") || entrypoint.includes("\\\\") ||
+  if (!nonEmpty(entrypoint) || entrypoint.startsWith("/") || entrypoint.includes("\\") ||
       entrypoint.split("/").some((part) => part === "." || part === "..")) {
     errors.push("entrypoint must be a relative path without traversal segments.");
   }
