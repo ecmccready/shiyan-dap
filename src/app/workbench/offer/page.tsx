@@ -14,7 +14,7 @@ export default function OfferPage() {
         <h1 className="text-4xl font-semibold mb-6">Offer from demonstrated outcome</h1>
 
         <p className="text-zinc-300 mb-10">
-          The offer is generated from the verified and reviewed evidence. The customer sees the result before deciding to purchase.
+          The offer is generated from the verified and reviewed evidence, including the metamorphic perturbation result. The customer sees the result before deciding to purchase.
         </p>
 
         <div className="border border-zinc-800 rounded-xl p-6 bg-zinc-950 mb-8 space-y-4">
@@ -25,6 +25,10 @@ export default function OfferPage() {
           <div>
             <div className="text-sm text-zinc-400">Demonstrated outcome</div>
             <div>Δe −0.05 · Φ 0.87 · Full reproducibility · Independent review accepted</div>
+          </div>
+          <div>
+            <div className="text-sm text-zinc-400">Metamorphic check</div>
+            <div>Predicted 0.88 → emergent 0.847 · Φ 0.1612 · Converged under high-entropy drift</div>
           </div>
           <div>
             <div className="text-sm text-zinc-400">Proposed commercial terms</div>
@@ -40,10 +44,10 @@ export default function OfferPage() {
             Proceed to conversion
           </Link>
           <Link
-            href="/workbench/evidence"
+            href="/workbench/proof"
             className="border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded"
           >
-            Inspect evidence
+            Inspect proof pack
           </Link>
         </div>
 
