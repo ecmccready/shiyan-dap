@@ -27,6 +27,17 @@ export default function ProofPage() {
       .catch((err) => setError(err.message));
   }, []);
 
+  function exportPack() {
+    if (!pack) return;
+    const blob = new Blob([JSON.stringify(pack, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${pack.id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -102,6 +113,13 @@ export default function ProofPage() {
             Created {new Date(pack.created_at).toLocaleString()}
           </div>
         </div>
+
+        <button
+          onClick={exportPack}
+          className="mt-6 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded"
+        >
+          Export proof pack
+        </button>
 
         <p className="text-xs text-zinc-500 mt-10">
           Front door: /workbench/journey · Prove the outcome. Then decide.
