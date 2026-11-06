@@ -20,6 +20,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
     label: "Know How",
     items: [
       { label: "Loop · closed loop", href: "/loop" },
+      { label: "Recursive improvement", href: "/workbench/loop" },
       { label: "Level 4 run", href: "/workbench/autonomous", experience: { reuse: true } },
       { label: "ROE · Reciprocal Optimization Engine", href: "/workbench/autonomous?roe_drive=1" },
     ],
