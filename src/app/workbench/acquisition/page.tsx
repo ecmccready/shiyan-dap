@@ -1,36 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const FIXTURE = [
-  {
-    id: "opp-1",
-    prospect: "Robotics lead",
-    organization: "Tesla Optimus",
-    problem: "Long-horizon task reliability and intervention reduction",
-    match: "Developer Workbench",
-    offer: "Paired experiment on look-back vs greedy with verified evidence pack",
-  },
-  {
-    id: "opp-2",
-    prospect: "Research director",
-    organization: "Physical Intelligence",
-    problem: "Policy evaluation and measurable improvement",
-    match: "Developer Workbench",
-    offer: "Deterministic seed-controlled experiment with reproducibility hash",
-  },
-  {
-    id: "opp-3",
-    prospect: "Program lead",
-    organization: "Figure AI",
-    problem: "Independent evidence of whole-body performance",
-    match: "Global Workbench",
-    offer: "Traceable investigation with source-linked findings and human review",
-  },
-];
+type Opportunity = {
+  id: string;
+  prospect: string;
+  problem: string;
+  proposedValue: string;
+  objective: string;
+  baseline: string;
+  successMetric: string;
+  acceptanceThreshold: string;
+  status?: string;
+};
 
 export default function AcquisitionPage() {
+  const [records, setRecords] = useState<Opportunity[]>([]);
   const [approved, setApproved] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    // In production this fetches from /api/opportunity.
+    // For now we show a fixture that matches the opportunity form shape.
+    setRecords([
+      {
+        id: "opp_demo_1",
+        prospect: "Robotics lead",
+        problem: "Long-horizon task reliability and intervention reduction",
+        proposedValue: "Measured reduction in interventions with verified evidence",
+        objective: "Reduce next-action error against baseline",
+        baseline: "Current measured e and Φ",
+        successMetric: "Δe ≤ −0.05 with full reproducibility",
+        acceptanceThreshold: "Independent verification PASS + human disposition",
+      },
+    ]);
+  }, []);
 
   function approve(id: string) {
     setApproved((prev) => ({ ...prev, [id]: true }));
@@ -46,18 +49,18 @@ export default function AcquisitionPage() {
         <h1 className="text-4xl font-semibold mb-6">Opportunity qualification</h1>
 
         <p className="text-zinc-300 mb-10">
-          The agent finds prospects, identifies a measurable problem, matches it to Global or Developer Workbench, and drafts a specific offer. Human approval is required before any outreach.
+          Opportunity records appear here. The agent matches them to Global or Developer Workbench and drafts an offer. Human approval is required before outreach.
         </p>
 
         <div className="space-y-6">
-          {FIXTURE.map((opp) => (
+          {records.map((opp) => (
             <div key={opp.id} className="border border-zinc-800 rounded-xl p-6 bg-zinc-950">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="font-semibold">{opp.prospect}</div>
-                  <div className="text-sm text-zinc-400">{opp.organization}</div>
+                  <div className="text-sm text-zinc-400">{opp.id}</div>
                 </div>
-                <span className="text-xs bg-zinc-800 px-2 py-1 rounded">{opp.match}</span>
+                <span className="text-xs bg-zinc-800 px-2 py-1 rounded">Developer Workbench</span>
               </div>
 
               <div className="mb-3">
@@ -65,9 +68,14 @@ export default function AcquisitionPage() {
                 <div>{opp.problem}</div>
               </div>
 
+              <div className="mb-3">
+                <div className="text-sm text-zinc-400">Proposed value</div>
+                <div>{opp.proposedValue}</div>
+              </div>
+
               <div className="mb-4">
-                <div className="text-sm text-zinc-400">Drafted offer</div>
-                <div>{opp.offer}</div>
+                <div className="text-sm text-zinc-400">Success conditions</div>
+                <div className="text-sm">{opp.successMetric} · {opp.acceptanceThreshold}</div>
               </div>
 
               {approved[opp.id] ? (
@@ -85,7 +93,7 @@ export default function AcquisitionPage() {
         </div>
 
         <p className="text-xs text-zinc-500 mt-10">
-          Synthetic fixture. Real prospect research and approved outreach remain gated until the five evidence conditions are met.
+          Fixture data. Real records will appear once the opportunity API is durable.
         </p>
       </main>
     </div>
