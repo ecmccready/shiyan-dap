@@ -15,7 +15,7 @@ const STEPS = [
   { label: "Conversion", href: "/workbench/convert", desc: "Accept the result and purchase the demonstrated outcome." },
   { label: "Recursive improvement", href: "/workbench/loop", desc: "Verified experience, including metamorphic emergence, feeds the next cycle." },
   { label: "Status", href: "/workbench/status", desc: "Current state of the loop." },
-  { label: "Founder Reference Flywheel", href: "/workbench/flywheel", desc: "Append-only verified memory. ROE improves the next action." },
+  { label: "Founder Reference Flywheel", href: "/workbench/flywheel", desc: "Append-only verified memory. Live. ROE improves the next action." },
 ];
 
 export default function EnginePage() {
