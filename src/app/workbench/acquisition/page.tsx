@@ -19,17 +19,15 @@ export default function AcquisitionPage() {
   const [approved, setApproved] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    // In production this fetches from /api/opportunity.
-    // For now we show a fixture that matches the opportunity form shape.
     setRecords([
       {
         id: "opp_demo_1",
         prospect: "Robotics lead",
         problem: "Long-horizon task reliability and intervention reduction",
-        proposedValue: "Measured reduction in interventions with verified evidence",
+        proposedValue: "Measured reduction in interventions with verified evidence, including Φ stability under metamorphic drift",
         objective: "Reduce next-action error against baseline",
         baseline: "Current measured e and Φ",
-        successMetric: "Δe ≤ −0.05 with full reproducibility",
+        successMetric: "Δe ≤ −0.05 with full reproducibility and Φ convergence under high-entropy drift",
         acceptanceThreshold: "Independent verification PASS + human disposition",
       },
     ]);
@@ -49,7 +47,7 @@ export default function AcquisitionPage() {
         <h1 className="text-4xl font-semibold mb-6">Opportunity qualification</h1>
 
         <p className="text-zinc-300 mb-10">
-          Opportunity records appear here. The agent matches them to Global or Developer Workbench and drafts an offer. Human approval is required before outreach.
+          Opportunity records appear here. The agent matches them to Global or Developer Workbench and drafts an offer that can include the metamorphic Φ stability evidence. Human approval is required before outreach.
         </p>
 
         <div className="space-y-6">
@@ -93,7 +91,7 @@ export default function AcquisitionPage() {
         </div>
 
         <p className="text-xs text-zinc-500 mt-10">
-          Fixture data. Real records will appear once the opportunity API is durable.
+          Fixture data. Real records will appear once the opportunity API is durable. Metamorphic evidence is available at /workbench/proof.
         </p>
       </main>
     </div>
