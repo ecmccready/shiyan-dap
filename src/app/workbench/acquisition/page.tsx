@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
 type Opportunity = {
   id: string;
@@ -47,8 +48,17 @@ export default function AcquisitionPage() {
         <h1 className="text-4xl font-semibold mb-6">Opportunity qualification</h1>
 
         <p className="text-zinc-300 mb-10">
-          Opportunity records appear here. The agent matches them to Global or Developer Workbench and drafts an offer that can include the metamorphic Φ stability evidence. Human approval is required before outreach.
+          Opportunity records appear here. The agent matches them to Global or Developer Workbench and drafts an offer that can include the metamorphic Φ stability evidence. Human approval is required before outreach. Acquisition remains gated until the five evidence conditions are met.
         </p>
+
+        <div className="mb-8">
+          <Link
+            href="/workbench/conditions"
+            className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded text-sm"
+          >
+            View five evidence conditions
+          </Link>
+        </div>
 
         <div className="space-y-6">
           {records.map((opp) => (
