@@ -44,7 +44,7 @@ export default function ConditionsPage() {
           ))}
         </div>
 
-        <div className="mt-10 flex gap-4">
+        <div className="mt-10 flex gap-4 flex-wrap">
           <Link
             href="/workbench/proof"
             className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded"
@@ -56,6 +56,12 @@ export default function ConditionsPage() {
             className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded"
           >
             Recursive improvement
+          </Link>
+          <Link
+            href="/workbench/engine"
+            className="inline-block border border-zinc-700 hover:border-zinc-500 text-white px-6 py-2 rounded"
+          >
+            Engine overview
           </Link>
           <Link
             href="/workbench/journey"
