@@ -132,7 +132,7 @@ export default function StatusPage() {
 
           <Link href="/workbench/flywheel" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Founder Reference Flywheel</div>
-            <div className="text-sm text-zinc-400 mt-1">Append-only verified memory · ROE improves next action</div>
+            <div className="text-sm text-zinc-400 mt-1">Append-only verified memory · Live · ROE improves next action</div>
           </Link>
         </div>
 
