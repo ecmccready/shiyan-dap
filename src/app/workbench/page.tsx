@@ -172,6 +172,12 @@ export default function WorkbenchDashboardPage() {
           Customers can inspect the evidence behind the result before deciding to pay for the demonstrated outcome.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Trust boundary</div>
+        <div className="text-sm text-zinc-400">
+          Three layers: Acquisition finds the customer. Execution solves against a defined objective. Verification proves what happened and measures value.
+        </div>
+      </div>
     </main>
   );
 }
