@@ -46,6 +46,12 @@ export default function WorkbenchDashboardPage() {
           Non-synthetic source observations. Reproducible improvement against a declared baseline. Independent review. Measured customer outcome. Owner authorization.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Platform contract</div>
+        <div className="text-sm text-zinc-400">
+          Aethel Node Extension Architecture v1.1. A third-party Workbench produces ExperienceRecord, VerificationResult, MetamorphicResult, and NextActionProposal without modifying the core engine.
+        </div>
+      </div>
     </main>
   );
 }
