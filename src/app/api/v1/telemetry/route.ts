@@ -10,7 +10,14 @@ export async function POST(request: Request) {
   const input = parseTelemetryInput(body);
   if (!input) return NextResponse.json({ error: "Expected { predicted: number, observed: number, step?, phi?, seed? }" }, { status: 400 });
   const result = runTelemetry(input);
-  return NextResponse.json({ emergentState: result.emergentState, converged: result.converged, frame: result.frame, seed: result.seed });
+  return NextResponse.json({
+    emergentState: result.emergentState,
+    converged: result.converged,
+    frame: result.frame,
+    seed: result.seed,
+    review_flag: !result.converged ? "DRIFT_EXCEEDED" : null,
+    note: !result.converged ? "High-entropy drift detected. Flag for human review." : null,
+  });
 }
 
 export async function GET() {
