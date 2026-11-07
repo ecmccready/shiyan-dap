@@ -100,6 +100,12 @@ export default function WorkbenchDashboardPage() {
           Same seed and inputs reproduce the verdict. Controlled transformations test whether expected behavior survives. Deterministic replay.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Founder flywheel</div>
+        <div className="text-sm text-zinc-400">
+          Founder Reference Flywheel v1.1. Real memory. Real verification. Real recursive improvement. Live, inspectable presentation of the cycle.
+        </div>
+      </div>
     </main>
   );
 }
