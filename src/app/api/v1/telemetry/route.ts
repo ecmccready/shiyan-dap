@@ -12,3 +12,12 @@ export async function POST(request: Request) {
   const result = runTelemetry(input);
   return NextResponse.json({ emergentState: result.emergentState, converged: result.converged, frame: result.frame, seed: result.seed });
 }
+
+export async function GET() {
+  return Response.json({
+    route: "/api/v1/telemetry",
+    method: "POST",
+    body: { predicted: "number", observed: "number", step: "number?", phi: "number?", seed: "number?" },
+    description: "Accepts predicted and observed values. The metamorphic engine evaluates Φ under drift."
+  });
+}
