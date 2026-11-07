@@ -112,6 +112,12 @@ export default function WorkbenchDashboardPage() {
           Aethel Node Core: Execution, Verification, Memory, ROE. Workbench SDK for external extensions. Independent builders produce records without modifying the core engine.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Neocloud connector</div>
+        <div className="text-sm text-zinc-400">
+          Live middleware for hyper-scale AI workloads. Telemetry ingestion, realtime Φ drift evaluation, automated cryptographic proof publishing, and force-dynamic rendering.
+        </div>
+      </div>
     </main>
   );
 }
