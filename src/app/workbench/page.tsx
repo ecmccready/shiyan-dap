@@ -58,6 +58,12 @@ export default function WorkbenchDashboardPage() {
           Shiyan DAP → Aethel executes → Verifies → Hugging Face remembers → ROE improves next action. Run 1 must influence Run 2.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Commercial offer</div>
+        <div className="text-sm text-zinc-400">
+          Prove the outcome. Then decide. The offer page directs visitors into the proof journey first.
+        </div>
+      </div>
     </main>
   );
 }
