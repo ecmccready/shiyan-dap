@@ -94,6 +94,12 @@ export default function WorkbenchDashboardPage() {
           ROE retrieves prior eligible experiences, excludes failed or synthetic runs, and proposes the next action. Run 1 must influence Run 2.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Metamorphic verification</div>
+        <div className="text-sm text-zinc-400">
+          Same seed and inputs reproduce the verdict. Controlled transformations test whether expected behavior survives. Deterministic replay.
+        </div>
+      </div>
     </main>
   );
 }
