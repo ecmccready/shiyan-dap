@@ -67,7 +67,7 @@ export async function GET() {
   return Response.json({
     route: "/api/v1/proof",
     method: "POST",
-    body: { result: "metamorphic result object" },
+    body: "telemetry response object (converged, emergentState, review_flag, ...)",
     description: "Hashes the telemetry result and stores it as an experience record. The proof is content-hashed and available for inspection."
   });
 }
