@@ -109,6 +109,10 @@ POST `/api/v1/telemetry` with predicted and observed values. The metamorphic eng
 
 Both routes are marked `force-dynamic` for Vercel.
 
+## Drift review
+
+When Φ does not converge, the telemetry response includes `review_flag: "DRIFT_EXCEEDED"`. Flag the runtime for human review.
+
 ## Four-stage graph
 
 Every commercial surface uses the same stages:
