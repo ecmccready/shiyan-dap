@@ -121,6 +121,10 @@ POST `/api/v1/proof` hashes the telemetry result and stores it as an experience 
 
 /api/v1/telemetry accepts predicted and observed values. The metamorphic engine evaluates Φ under drift. Non-converged runs return review_flag: "DRIFT_EXCEEDED". /api/v1/proof hashes and stores the result as an experience record.
 
+## Stream harness
+
+scripts/stream-test-telemetry.ts posts two frames to /api/v1/telemetry. Start the dev server, then run `npx tsx scripts/stream-test-telemetry.ts`.
+
 ## Four-stage graph
 
 Every commercial surface uses the same stages:
