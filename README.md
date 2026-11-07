@@ -103,6 +103,12 @@ A third-party Workbench produces ExperienceRecord, VerificationResult, Metamorph
 - ROE: retrieval, qualification and next-action selection.
 - Flywheel: live, inspectable presentation of the resulting cycle.
 
+## Live telemetry
+
+POST `/api/v1/telemetry` with predicted and observed values. The metamorphic engine evaluates Φ under drift. POST `/api/v1/proof` hashes and stores the result as an experience record.
+
+Both routes are marked `force-dynamic` for Vercel.
+
 ## Four-stage graph
 
 Every commercial surface uses the same stages:
