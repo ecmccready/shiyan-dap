@@ -10,7 +10,17 @@ const mockPayloads = [
   { predicted: 0.95, observed: 0.41, step: 2, phi: 0.159, auto_proof: true },
 ];
 
+async function ensureServer() {
+  try {
+    await fetch(url, { method: "GET" });
+  } catch {
+    console.error(`Server not reachable at ${new URL(url).origin}. Start the dev server first: npm run dev`);
+    process.exit(1);
+  }
+}
+
 async function main() {
+  await ensureServer();
   let failed = false;
   for (const [i, payload] of mockPayloads.entries()) {
     try {
