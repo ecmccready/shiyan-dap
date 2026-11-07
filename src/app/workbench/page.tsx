@@ -52,6 +52,12 @@ export default function WorkbenchDashboardPage() {
           Aethel Node Extension Architecture v1.1. A third-party Workbench produces ExperienceRecord, VerificationResult, MetamorphicResult, and NextActionProposal without modifying the core engine.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Recursive improvement</div>
+        <div className="text-sm text-zinc-400">
+          Shiyan DAP → Aethel executes → Verifies → Hugging Face remembers → ROE improves next action. Run 1 must influence Run 2.
+        </div>
+      </div>
     </main>
   );
 }
