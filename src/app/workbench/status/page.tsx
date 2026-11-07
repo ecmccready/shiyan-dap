@@ -139,6 +139,13 @@ export default function StatusPage() {
         <p className="text-xs text-zinc-500 mt-10">
           Prove the outcome. Then decide.
         </p>
+
+        <div className="mt-10 border-t border-zinc-800 pt-6">
+          <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Platform contract</div>
+          <div className="text-sm text-zinc-400">
+            Aethel Node Extension Architecture v1.1. Level 4 = authoritative execution and verification. Hugging Face = durable, versioned founder experience archive. ROE = retrieval, qualification and next-action selection. Flywheel = live, inspectable presentation.
+          </div>
+        </div>
       </main>
     </div>
   );
