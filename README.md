@@ -92,6 +92,17 @@ The ROE path includes a controlled runtime anomaly injection (`src/core/metamorp
 
 This turns drift from a passive error into an active evolutionary feature of the persistent-autonomy benchmark.
 
+## Platform contract
+
+Aethel Node Extension Architecture v1.1.
+
+A third-party Workbench produces ExperienceRecord, VerificationResult, MetamorphicResult, and NextActionProposal without modifying the core engine.
+
+- Level 4: authoritative execution and verification records.
+- Hugging Face: durable, versioned founder experience archive.
+- ROE: retrieval, qualification and next-action selection.
+- Flywheel: live, inspectable presentation of the resulting cycle.
+
 ## Four-stage graph
 
 Every commercial surface uses the same stages:
