@@ -76,6 +76,12 @@ export default function WorkbenchDashboardPage() {
           /workbench/journey is the front door. One guided experience: objective, paired experiment, measurement, verification, disposition, acquisition readiness.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Domains</div>
+        <div className="text-sm text-zinc-400">
+          The Do group in the Domains dropdown links to Live telemetry, Drift review, Live middleware, Auto proof, and Stream harness.
+        </div>
+      </div>
     </main>
   );
 }
