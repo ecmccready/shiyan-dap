@@ -106,6 +106,12 @@ export default function WorkbenchDashboardPage() {
           Founder Reference Flywheel v1.1. Real memory. Real verification. Real recursive improvement. Live, inspectable presentation of the cycle.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Extension architecture</div>
+        <div className="text-sm text-zinc-400">
+          Aethel Node Core: Execution, Verification, Memory, ROE. Workbench SDK for external extensions. Independent builders produce records without modifying the core engine.
+        </div>
+      </div>
     </main>
   );
 }
