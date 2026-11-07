@@ -64,6 +64,12 @@ export default function WorkbenchDashboardPage() {
           Prove the outcome. Then decide. The offer page directs visitors into the proof journey first.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Acquisition gate</div>
+        <div className="text-sm text-zinc-400">
+          Acquisition remains locked until the five evidence conditions are met. The agent prepares an opportunity and requests approval before contacting anyone.
+        </div>
+      </div>
     </main>
   );
 }
