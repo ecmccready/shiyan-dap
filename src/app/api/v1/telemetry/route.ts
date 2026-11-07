@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseTelemetryInput, runTelemetry } from "@/core/metamorphic-runtime";
+import { publishProof } from "@/core/proof-publisher";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -10,14 +11,24 @@ export async function POST(request: Request) {
   const input = parseTelemetryInput(body);
   if (!input) return NextResponse.json({ error: "Expected { predicted: number, observed: number, step?, phi?, seed? }" }, { status: 400 });
   const result = runTelemetry(input);
-  return NextResponse.json({
+  const response: Record<string, unknown> = {
     emergentState: result.emergentState,
     converged: result.converged,
     frame: result.frame,
     seed: result.seed,
     review_flag: !result.converged ? "DRIFT_EXCEEDED" : null,
     note: !result.converged ? "High-entropy drift detected. Flag for human review." : null,
-  });
+  };
+  if ((body as Record<string, unknown>).auto_proof === true) {
+    try {
+      const proof = publishProof(response);
+      response.experience_id = proof.experience_id;
+      response.hash = proof.hash;
+    } catch (error) {
+      response.proof_error = error instanceof Error ? error.message : String(error);
+    }
+  }
+  return NextResponse.json(response);
 }
 
 export async function GET() {
