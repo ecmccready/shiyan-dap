@@ -36,6 +36,7 @@ export async function GET() {
     route: "/api/v1/telemetry",
     method: "POST",
     body: { predicted: "number", observed: "number", step: "number?", phi: "number?", seed: "number?" },
-    description: "Accepts predicted and observed values. The metamorphic engine evaluates Φ under drift."
+    description: "Accepts predicted and observed values. The metamorphic engine evaluates Φ under drift.",
+    auto_proof: "Include auto_proof: true in the POST body to hash and store the result as an experience record. The response then includes experience_id and hash."
   });
 }
