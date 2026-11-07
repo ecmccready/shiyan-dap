@@ -10,6 +10,12 @@ export default function WorkbenchDashboardPage() {
       <div className="border border-zinc-800 rounded-xl p-5 bg-zinc-950 text-sm">
         Routes are force-dynamic. Suspense boundary is in the workbench layout.
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Stream harness</div>
+        <div className="text-sm text-zinc-400">
+          scripts/stream-test-telemetry.ts posts two frames to /api/v1/telemetry. Start the dev server, then run npx tsx scripts/stream-test-telemetry.ts.
+        </div>
+      </div>
     </main>
   );
 }
