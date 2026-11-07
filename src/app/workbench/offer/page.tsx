@@ -74,6 +74,13 @@ export default function OfferPage() {
             POST /api/v1/telemetry with predicted and observed values. The metamorphic engine evaluates Φ under drift. POST /api/v1/proof hashes and stores the result as an experience record.
           </div>
         </div>
+
+        <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+          <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Drift review</div>
+          <div className="text-sm text-zinc-400">
+            When Φ does not converge, the telemetry response includes review_flag: "DRIFT_EXCEEDED". Flag the runtime for human review.
+          </div>
+        </div>
       </main>
     </div>
   );
