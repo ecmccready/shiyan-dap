@@ -118,6 +118,13 @@ export default function EvidencePage() {
             When Φ does not converge, the telemetry response includes review_flag: "DRIFT_EXCEEDED". Flag the runtime for human review.
           </div>
         </div>
+
+        <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+          <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Automated proof</div>
+          <div className="text-sm text-zinc-400">
+            POST /api/v1/proof hashes the telemetry result and stores it as an experience record. The proof is content-hashed and available for inspection.
+          </div>
+        </div>
       </main>
     </div>
   );
