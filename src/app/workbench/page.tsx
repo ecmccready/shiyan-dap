@@ -136,6 +136,12 @@ export default function WorkbenchDashboardPage() {
           scripts/stream-test-telemetry.ts posts two frames. Frame 1 converges. Frame 2 returns review_flag: "DRIFT_EXCEEDED". Both can include auto_proof.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Level 4 boundary</div>
+        <div className="text-sm text-zinc-400">
+          Level 4 remains the authoritative execution and verification plant. The live middleware connector is additive and does not modify it.
+        </div>
+      </div>
     </main>
   );
 }
