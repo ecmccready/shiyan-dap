@@ -124,6 +124,12 @@ export default function WorkbenchDashboardPage() {
           Automated cryptographic proof publisher. Telemetry results are hashed and stored as experience records. Content-hashed and available for inspection.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Force-dynamic</div>
+        <div className="text-sm text-zinc-400">
+          /api/v1/telemetry and /api/v1/proof export dynamic = "force-dynamic". Workbench layout wraps children in Suspense. Vercel build is stable.
+        </div>
+      </div>
     </main>
   );
 }
