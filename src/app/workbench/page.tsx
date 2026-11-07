@@ -214,6 +214,12 @@ export default function WorkbenchDashboardPage() {
           scripts/stream-test-telemetry.ts posts two frames. Frame 1 converges (Φ stable). Frame 2 returns review_flag: "DRIFT_EXCEEDED". Both can include auto_proof: true.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Force-dynamic and Suspense</div>
+        <div className="text-sm text-zinc-400">
+          /api/v1/telemetry and /api/v1/proof export dynamic = "force-dynamic". The workbench layout wraps children in Suspense. Vercel build is stable.
+        </div>
+      </div>
     </main>
   );
 }
