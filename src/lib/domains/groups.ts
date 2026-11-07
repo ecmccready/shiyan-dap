@@ -49,6 +49,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
       { label: "Conversion", href: "/workbench/convert" },
       { label: "Engine status", href: "/workbench/status" },
       { label: "Founder Reference Flywheel", href: "/workbench/flywheel" },
+      { label: "Live telemetry", href: "/api/v1/telemetry" },
       { label: "Start a durable run", href: "/workbench#guided-run" },
       { label: "Offer", href: "/workbench/offer" },
       { label: "Pilot", href: "/workbench/pilot" },
