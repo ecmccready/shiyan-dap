@@ -160,6 +160,12 @@ export default function WorkbenchDashboardPage() {
           Global: domain-specific intelligence. Developer: evidence-backed TDD. Autonomous: agents that discover opportunities and coordinate verified execution.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Commercial model</div>
+        <div className="text-sm text-zinc-400">
+          Enterprise subscription + usage-based execution + agreed outcome-based pilot fees. Customers inspect the evidence before deciding to pay.
+        </div>
+      </div>
     </main>
   );
 }
