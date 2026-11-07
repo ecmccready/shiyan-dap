@@ -16,6 +16,12 @@ export default function WorkbenchDashboardPage() {
           scripts/stream-test-telemetry.ts posts two frames to /api/v1/telemetry. Start the dev server, then run npx tsx scripts/stream-test-telemetry.ts.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Auto proof</div>
+        <div className="text-sm text-zinc-400">
+          Include auto_proof: true in the telemetry POST. The route hashes and stores the result as an experience record and returns experience_id and hash.
+        </div>
+      </div>
     </main>
   );
 }
