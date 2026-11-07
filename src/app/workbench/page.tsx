@@ -208,6 +208,12 @@ export default function WorkbenchDashboardPage() {
           Live AI workload → /api/v1/telemetry → metamorphic Φ evaluation → auto-generated JSON proof pack → /workbench/journey for enterprise review.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Stream harness result</div>
+        <div className="text-sm text-zinc-400">
+          scripts/stream-test-telemetry.ts posts two frames. Frame 1 converges (Φ stable). Frame 2 returns review_flag: "DRIFT_EXCEEDED". Both can include auto_proof: true.
+        </div>
+      </div>
     </main>
   );
 }
