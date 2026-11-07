@@ -40,6 +40,12 @@ export default function WorkbenchDashboardPage() {
           POST /api/v1/proof hashes the telemetry result and stores it as an experience record. The proof is content-hashed and available for inspection.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Five evidence conditions</div>
+        <div className="text-sm text-zinc-400">
+          Non-synthetic source observations. Reproducible improvement against a declared baseline. Independent review. Measured customer outcome. Owner authorization.
+        </div>
+      </div>
     </main>
   );
 }
