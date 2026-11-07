@@ -62,3 +62,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
+
+export async function GET() {
+  return Response.json({
+    route: "/api/v1/proof",
+    method: "POST",
+    body: { result: "metamorphic result object" },
+    description: "Hashes the telemetry result and stores it as an experience record. The proof is content-hashed and available for inspection."
+  });
+}
