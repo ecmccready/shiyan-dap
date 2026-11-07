@@ -88,6 +88,12 @@ export default function WorkbenchDashboardPage() {
           Append-only founder experience archive. Level 4 is authoritative. Hugging Face stores versioned records. ROE retrieves and qualifies.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">ROE next-action</div>
+        <div className="text-sm text-zinc-400">
+          ROE retrieves prior eligible experiences, excludes failed or synthetic runs, and proposes the next action. Run 1 must influence Run 2.
+        </div>
+      </div>
     </main>
   );
 }
