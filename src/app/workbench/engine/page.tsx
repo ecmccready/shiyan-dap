@@ -55,6 +55,13 @@ export default function EnginePage() {
             Aethel Node Extension Architecture v1.1. Level 4 = authoritative execution and verification. Hugging Face = durable, versioned founder experience archive. ROE = retrieval, qualification and next-action selection. Flywheel = live, inspectable presentation.
           </div>
         </div>
+
+        <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+          <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Live telemetry</div>
+          <div className="text-sm text-zinc-400">
+            POST /api/v1/telemetry with predicted and observed values. The metamorphic engine evaluates Φ under drift. POST /api/v1/proof hashes and stores the result as an experience record.
+          </div>
+        </div>
       </main>
     </div>
   );
