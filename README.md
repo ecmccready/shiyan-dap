@@ -113,6 +113,10 @@ Both routes are marked `force-dynamic` for Vercel.
 
 When Φ does not converge, the telemetry response includes `review_flag: "DRIFT_EXCEEDED"`. Flag the runtime for human review.
 
+## Automated proof
+
+POST `/api/v1/proof` hashes the telemetry result and stores it as an experience record. The proof is content-hashed and available for inspection.
+
 ## Four-stage graph
 
 Every commercial surface uses the same stages:
