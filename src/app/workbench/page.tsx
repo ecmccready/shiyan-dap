@@ -118,6 +118,12 @@ export default function WorkbenchDashboardPage() {
           Live middleware for hyper-scale AI workloads. Telemetry ingestion, realtime Φ drift evaluation, automated cryptographic proof publishing, and force-dynamic rendering.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Audit vault</div>
+        <div className="text-sm text-zinc-400">
+          Automated cryptographic proof publisher. Telemetry results are hashed and stored as experience records. Content-hashed and available for inspection.
+        </div>
+      </div>
     </main>
   );
 }
