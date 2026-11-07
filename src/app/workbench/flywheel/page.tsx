@@ -114,6 +114,13 @@ export default function FlywheelPage() {
         <p className="text-xs text-zinc-500 mt-10">
           Front door: /workbench/journey · Prove the outcome. Then decide.
         </p>
+
+        <div className="mt-10 border-t border-zinc-800 pt-6">
+          <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Platform contract</div>
+          <div className="text-sm text-zinc-400">
+            Aethel Node Extension Architecture v1.1. A third-party Workbench produces ExperienceRecord, VerificationResult, MetamorphicResult, and NextActionProposal without modifying the core engine.
+          </div>
+        </div>
       </main>
     </div>
   );
