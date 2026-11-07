@@ -117,6 +117,10 @@ When Φ does not converge, the telemetry response includes `review_flag: "DRIFT_
 
 POST `/api/v1/proof` hashes the telemetry result and stores it as an experience record. The proof is content-hashed and available for inspection.
 
+## Live middleware
+
+/api/v1/telemetry accepts predicted and observed values. The metamorphic engine evaluates Φ under drift. Non-converged runs return review_flag: "DRIFT_EXCEEDED". /api/v1/proof hashes and stores the result as an experience record.
+
 ## Four-stage graph
 
 Every commercial surface uses the same stages:
