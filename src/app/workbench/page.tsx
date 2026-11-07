@@ -178,6 +178,12 @@ export default function WorkbenchDashboardPage() {
           Three layers: Acquisition finds the customer. Execution solves against a defined objective. Verification proves what happened and measures value.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Proof-to-payment</div>
+        <div className="text-sm text-zinc-400">
+          Lock the front door. Persist the customer opportunity. Build the acquisition agent. Agree the proof contract. Connect Workbench execution. Make evidence authoritative.
+        </div>
+      </div>
     </main>
   );
 }
