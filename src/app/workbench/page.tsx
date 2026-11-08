@@ -268,6 +268,12 @@ export default function WorkbenchDashboardPage() {
           Lock the front door. Persist the customer opportunity. Build the acquisition agent. Agree the proof contract. Connect Workbench execution. Make evidence authoritative.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Five evidence conditions gate</div>
+        <div className="text-sm text-zinc-400">
+          Non-synthetic source observations. Reproducible improvement against a declared baseline. Independent review. Measured customer outcome. Owner authorization. Acquisition stays locked until all five are met.
+        </div>
+      </div>
     </main>
   );
 }
