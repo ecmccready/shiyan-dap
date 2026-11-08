@@ -238,6 +238,12 @@ export default function WorkbenchDashboardPage() {
           Aethel Node ↔ Shiyan DAP. The repository is the living reference implementation, the accumulated memory, the proof of capability, and the first commercial case.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Three commercial capabilities</div>
+        <div className="text-sm text-zinc-400">
+          Global: domain-specific intelligence. Developer: evidence-backed TDD. Autonomous: agents that discover opportunities and coordinate verified execution.
+        </div>
+      </div>
     </main>
   );
 }
