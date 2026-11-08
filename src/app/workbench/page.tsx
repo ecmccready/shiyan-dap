@@ -250,6 +250,12 @@ export default function WorkbenchDashboardPage() {
           Enterprise subscription + usage-based execution + agreed outcome-based pilot fees. Customers inspect the evidence before deciding to pay.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Differentiator</div>
+        <div className="text-sm text-zinc-400">
+          Customers can inspect the evidence behind the result before deciding to pay for the demonstrated outcome.
+        </div>
+      </div>
     </main>
   );
 }
