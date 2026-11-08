@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { HFMemory, writeExperience } from "@/core/hf-memory";
+import { resolveExperienceStoreRoot } from "@/core/experience-store";
 import type { ExperienceRecord } from "@/core/interfaces";
 
 function canonical(value: unknown): string {
@@ -46,7 +47,6 @@ export function publishProof(body: unknown): { experience_id: string; hash: stri
     z_next_action: b.converged ? "continue" : "investigate drift",
     revision: 1,
   };
-  const root = process.env.AETHEL_HF_MEMORY_ROOT || (process.env.VERCEL ? "/tmp/aethel-hf-memory" : undefined);
-  const saved = writeExperience(record, new HFMemory(root));
+  const saved = writeExperience(record, new HFMemory(resolveExperienceStoreRoot()));
   return { experience_id: saved.experience_id, hash };
 }
