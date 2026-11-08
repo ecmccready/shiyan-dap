@@ -45,6 +45,21 @@ export default function StatusPage() {
           Opportunity recorded. Contract agreed. Evidence verified. Metamorphic check complete. Awaiting human disposition. Acquisition remains gated.
         </p>
 
+        <section
+          aria-labelledby="github-tenant-status-heading"
+          className="mb-10 border border-zinc-800 rounded-xl p-5 bg-zinc-950"
+        >
+          <h2
+            id="github-tenant-status-heading"
+            className="text-sm font-semibold text-zinc-200 mb-2"
+          >
+            GitHub connection and tenant boundary
+          </h2>
+          <p className="text-sm text-zinc-300 leading-relaxed">
+            Owner-authorized GitHub connection for Shiyan DAP is pending production verification. Tenant-authenticated reference controls exist in source; durable ingestion and complete cross-tenant isolation are not yet verified. Level 4 remains unchanged.
+          </p>
+        </section>
+
         <div className="space-y-4">
           <Link href="/workbench/opportunity" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Opportunity</div>
@@ -157,7 +172,7 @@ export default function StatusPage() {
         <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
           <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Drift review</div>
           <div className="text-sm text-zinc-400">
-            When Φ does not converge, the telemetry response includes review_flag: "DRIFT_EXCEEDED". Flag the runtime for human review.
+            When Φ does not converge, the telemetry response includes review_flag: &quot;DRIFT_EXCEEDED&quot;. Flag the runtime for human review.
           </div>
         </div>
 
@@ -171,7 +186,7 @@ export default function StatusPage() {
         <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
           <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Live middleware</div>
           <div className="text-sm text-zinc-400">
-            /api/v1/telemetry accepts predicted and observed values. The metamorphic engine evaluates Φ under drift. Non-converged runs return review_flag: "DRIFT_EXCEEDED". /api/v1/proof hashes and stores the result as an experience record.
+            /api/v1/telemetry accepts predicted and observed values. The metamorphic engine evaluates Φ under drift. Non-converged runs return review_flag: &quot;DRIFT_EXCEEDED&quot;. /api/v1/proof hashes and stores the result as an experience record.
           </div>
         </div>
 

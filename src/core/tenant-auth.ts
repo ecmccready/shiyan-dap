@@ -21,8 +21,11 @@ export function loadTenantKeys(env: Env = process.env): Map<string, Buffer> | nu
   try { parsed = JSON.parse(raw); } catch { return null; }
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return null;
   const keys = new Map<string, Buffer>();
+  const seenHashes = new Set<string>();
   for (const [tenant, hash] of Object.entries(parsed)) {
     if (!TENANT_ID_PATTERN.test(tenant) || typeof hash !== "string" || !/^[0-9a-f]{64}$/.test(hash)) return null;
+    if (seenHashes.has(hash)) return null;
+    seenHashes.add(hash);
     keys.set(tenant, Buffer.from(hash, "hex"));
   }
   return keys.size ? keys : null;
@@ -47,4 +50,4 @@ export function tenantRoot(tenant: string, env: Env = process.env): string {
   if (!TENANT_ID_PATTERN.test(tenant)) throw new Error("Invalid tenant id");
   return join(resolveExperienceStoreRoot(env), "tenants", tenant);
 }
-export const tenantStore = (tenant: string) => new ExperienceStore(new HFMemory(tenantRoot(tenant)));
+export const tenantStore = (tenant: string) => new ExperienceStore(new HFMemory(tenantRoot(tenant)))
