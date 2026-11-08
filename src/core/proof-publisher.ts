@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { HFMemory, writeExperience } from "@/core/hf-memory";
 import { resolveExperienceStoreRoot } from "@/core/experience-store";
 import type { ExperienceRecord } from "@/core/interfaces";
+import { evaluateDeterministicProof, type DeterministicProof } from "@/core/deterministic-proof";
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
@@ -11,6 +12,9 @@ function canonical(value: unknown): string {
   }
   return JSON.stringify(value);
 }
+const deterministic = (p: unknown): p is DeterministicProof => typeof p === "object" && p !== null
+  && (p as DeterministicProof).version === "deterministic-proof-v1" && Array.isArray((p as DeterministicProof).transformations)
+  && Array.isArray((p as DeterministicProof).expected_relations) && ["PASS", "FAIL", "INCONCLUSIVE"].includes((p as DeterministicProof).verdict);
 const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
 
 /** Shared proof path: canonical SHA-256 of a telemetry result, stored as an experience record. Throws on storage failure. */
@@ -19,6 +23,8 @@ export function publishProof(body: unknown): { experience_id: string; hash: stri
   const hash = createHash("sha256").update(canonical(body)).digest("hex");
   const timestamp = new Date().toISOString();
   const experience_id = `telemetry-${Date.now()}-${hash.slice(0, 12)}`;
+  // Never trust a submitted verdict: recompute it from the recorded seed and inputs.
+  const proof = deterministic(b.proof) && b.proof.inputs ? evaluateDeterministicProof(b.proof.inputs, b.proof.seed) : null;
   const frame = b.frame ?? {};
   const emergent = b.emergentState ?? {};
   const predicted = num(frame.predictedValue ?? emergent.predictedValue, 0);
@@ -34,8 +40,14 @@ export function publishProof(body: unknown): { experience_id: string; hash: stri
     observed_outcome: String(num(emergent.observedValue, observed)),
     delta_e: Math.abs(predicted - observed),
     metrics: { phi: num(emergent.phi, 0), step: num(emergent.step, 0) },
-    verification: { replay_verdict: "SKIP", verifier_version: "telemetry-proof-v1" },
-    metamorphic: {
+    verification: { replay_verdict: "SKIP", verifier_version: proof ? proof.version : "telemetry-proof-v1" },
+    metamorphic: proof ? {
+      seed: proof.seed ?? 0,
+      transformation: canonical({ inputs: proof.inputs, transformations: proof.transformations }),
+      expected_relation: proof.expected_relations.join("; "),
+      result: proof.verdict,
+      converged: proof.verdict === "PASS",
+    } : {
       seed: num(b.seed, 0),
       transformation: "stochastic-drift",
       expected_relation: "phi stable within 0.05",

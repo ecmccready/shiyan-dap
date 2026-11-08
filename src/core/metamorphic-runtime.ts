@@ -1,6 +1,7 @@
 // Thin, side-effect-free wrapper so API routes can call MetamorphicEngine.
 // No I/O, no globals mutated; the engine itself is left unchanged.
 import { MetamorphicEngine } from "./metamorphic";
+import { evaluateDeterministicProof, seededDrifts, type DeterministicProof } from "./deterministic-proof";
 
 export interface TelemetryInput { predicted: number; observed: number; step?: number; phi?: number; seed?: number }
 export interface TelemetryFrame { step: number; observedValue: number; predictedValue: number; phi: number }
@@ -9,6 +10,7 @@ export interface TelemetryResult {
   emergentState: TelemetryFrame;
   converged: boolean;
   seed: number | null;
+  proof: DeterministicProof;
 }
 
 const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
@@ -27,6 +29,13 @@ export function toTelemetryFrame(input: TelemetryInput): TelemetryFrame {
 
 export function runTelemetry(input: TelemetryInput): TelemetryResult {
   const frame = toTelemetryFrame(input);
+  const proof = evaluateDeterministicProof(input, input.seed);
+  if (proof.seed !== null && proof.verdict !== "INCONCLUSIVE") {
+    // Seeded: emergent state uses the first seeded drift; converged mirrors the deterministic verdict.
+    const { emergentState } = MetamorphicEngine.entangleWithDrift({ ...frame }, seededDrifts(proof.seed, 1)[0]);
+    return { frame, emergentState, converged: proof.verdict === "PASS", seed: proof.seed, proof };
+  }
+  // Unseeded (or invalid seed): legacy stochastic step; the proof verdict is INCONCLUSIVE.
   const { emergentState, converged } = MetamorphicEngine.entangle({ ...frame });
-  return { frame, emergentState, converged, seed: input.seed ?? null };
+  return { frame, emergentState, converged, seed: input.seed ?? null, proof };
 }

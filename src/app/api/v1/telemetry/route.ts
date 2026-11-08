@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     converged: result.converged,
     frame: result.frame,
     seed: result.seed,
+    proof: result.proof,
     review_flag: !result.converged ? "DRIFT_EXCEEDED" : null,
     note: !result.converged ? "High-entropy drift detected. Flag for human review." : null,
   };

@@ -17,6 +17,12 @@ export default function WorkbenchDashboardPage() {
         </div>
       </div>
       <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Deterministic proof</div>
+        <div className="text-sm text-zinc-400">
+          Active. With an integer seed, /api/v1/telemetry runs 8 seeded drift transformations and checks two expected relations (anchor held, Φ stable within 0.05). The same seed and inputs reproduce the same PASS or FAIL verdict. No seed or non-evaluable inputs return INCONCLUSIVE. With auto_proof, the seed, transformations, relations and verdict are stored in the integrity-checked experience record.
+        </div>
+      </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
         <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Stream harness</div>
         <div className="text-sm text-zinc-400">
           scripts/stream-test-telemetry.ts posts two frames to /api/v1/telemetry. Start the dev server, then run npx tsx scripts/stream-test-telemetry.ts.

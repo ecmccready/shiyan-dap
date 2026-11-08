@@ -12,7 +12,11 @@ export class MetamorphicEngine {
    */
   public static entangle(state: SystemState): { emergentState: SystemState; converged: boolean } {
     // 1. Generate the "Dice" factor - an unpredicted environmental mutation
-    const stochasticDrift = (Math.random() - 0.5) * 0.1;
+    return MetamorphicEngine.entangleWithDrift(state, (Math.random() - 0.5) * 0.1);
+  }
+
+  /** Same step with the drift supplied by the caller (e.g. a seeded PRNG); pure and deterministic. */
+  public static entangleWithDrift(state: SystemState, stochasticDrift: number): { emergentState: SystemState; converged: boolean } {
     
     // 2. Calculate the delta between prediction reference and raw observation
     const epistemicGap = Math.abs(state.predictedValue - state.observedValue);
