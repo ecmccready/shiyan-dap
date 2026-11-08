@@ -286,6 +286,12 @@ export default function WorkbenchDashboardPage() {
           PLATFORM_CONTRACT_VERSION = "1.1". Four stable interfaces: ExperienceRecord, VerificationResult, MetamorphicResult, NextActionProposal. A third-party Workbench produces these without modifying the core engine.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Neocloud live path</div>
+        <div className="text-sm text-zinc-400">
+          Live AI workload → /api/v1/telemetry → metamorphic Φ evaluation → auto-generated JSON proof pack → /workbench/journey for enterprise review.
+        </div>
+      </div>
     </main>
   );
 }
