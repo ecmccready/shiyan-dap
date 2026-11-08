@@ -310,6 +310,12 @@ export default function WorkbenchDashboardPage() {
           Level 4 remains the authoritative execution and verification plant. The live middleware connector is additive and does not modify it.
         </div>
       </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Commercial loop</div>
+        <div className="text-sm text-zinc-400">
+          Eight-step commercial loop: acquisition, objective, execution, verification, measurement, evidence, disposition, offer. Prove the outcome. Then decide.
+        </div>
+      </div>
     </main>
   );
 }
