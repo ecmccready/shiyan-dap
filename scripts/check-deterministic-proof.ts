@@ -4,6 +4,8 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
+import { tenantRoot } from "../src/core/tenant-auth";
 import { evaluateDeterministicProof, seededDrifts } from "../src/core/deterministic-proof";
 import { runTelemetry } from "../src/core/metamorphic-runtime";
 import { ExperienceStore } from "../src/core/experience-store";
@@ -20,6 +22,9 @@ if (process.argv[2] === "--child") {
 const root = mkdtempSync(join(tmpdir(), "aethel-det-proof-"));
 const priorRoot = process.env.AETHEL_HF_MEMORY_ROOT;
 process.env.AETHEL_HF_MEMORY_ROOT = root;
+const KEY = "det-proof-test-key-0001";
+const priorKeys = process.env.AETHEL_TENANT_KEYS;
+process.env.AETHEL_TENANT_KEYS = JSON.stringify({ "tenant-a": createHash("sha256").update(KEY).digest("hex") });
 async function main() {
   // Stable transformations: same seed => same drifts; different seed => different drifts; bounded.
   assert.deepEqual(seededDrifts(42), seededDrifts(42));
@@ -55,7 +60,7 @@ async function main() {
   assert.equal(runTelemetry(pass).proof.verdict, "INCONCLUSIVE");
 
   const { POST } = await import("../src/app/api/v1/telemetry/route");
-  const post = async (body: unknown) => (await POST(new Request("http://x/api/v1/telemetry", { method: "POST", body: JSON.stringify(body) }))).json();
+  const post = async (body: unknown) => (await POST(new Request("http://x/api/v1/telemetry", { method: "POST", headers: { authorization: `Bearer ${KEY}` }, body: JSON.stringify(body) }))).json();
   const res1 = await post({ ...pass, seed: 42, auto_proof: true });
   const res2 = await post({ ...pass, seed: 42, auto_proof: true });
   assert.equal(res1.proof.verdict, "PASS");
@@ -63,7 +68,7 @@ async function main() {
   assert.equal(res1.proof_error, undefined);
 
   // Recorded metadata persists and integrity-verifies from a fresh store instance.
-  const rec = new ExperienceStore(new HFMemory(root)).readById(res1.experience_id);
+  const rec = new ExperienceStore(new HFMemory(tenantRoot("tenant-a"))).readById(res1.experience_id);
   assert.equal(rec.metamorphic.seed, 42);
   assert.equal(rec.metamorphic.result, "PASS");
   assert.equal(rec.metamorphic.converged, true);
@@ -71,15 +76,21 @@ async function main() {
   assert.deepEqual(JSON.parse(rec.metamorphic.transformation).transformations, a.transformations);
   assert.equal(rec.verification.verifier_version, "deterministic-proof-v1");
   const failRes = await post({ ...fail, seed: 42, auto_proof: true });
-  assert.equal(new ExperienceStore(new HFMemory(root)).readById(failRes.experience_id).metamorphic.result, "FAIL");
+  assert.equal(new ExperienceStore(new HFMemory(tenantRoot("tenant-a"))).readById(failRes.experience_id).metamorphic.result, "FAIL");
 
   // A forged verdict submitted to the proof path is recomputed, not trusted.
   const { publishProof } = await import("../src/core/proof-publisher");
-  const forged = publishProof({ converged: true, proof: { ...evaluateDeterministicProof(fail, 42), verdict: "PASS" } });
-  assert.equal(new ExperienceStore(new HFMemory(root)).readById(forged.experience_id).metamorphic.result, "FAIL");
+  const forged = publishProof("tenant-a", { converged: true, proof: { ...evaluateDeterministicProof(fail, 42), verdict: "PASS" } });
+  assert.equal(new ExperienceStore(new HFMemory(tenantRoot("tenant-a"))).readById(forged.experience_id).metamorphic.result, "FAIL");
+  // Without tenant auth, auto_proof computes but stores nothing.
+  const anon = await (await POST(new Request("http://x/api/v1/telemetry", { method: "POST", body: JSON.stringify({ ...pass, seed: 42, auto_proof: true }) }))).json();
+  assert.equal(anon.proof.verdict, "PASS");
+  assert.equal(anon.experience_id, undefined);
+  assert.match(anon.proof_error, /UNAUTHENTICATED/);
   console.log("deterministic-proof: PASS");
 }
 main().finally(() => {
+  if (priorKeys === undefined) delete process.env.AETHEL_TENANT_KEYS; else process.env.AETHEL_TENANT_KEYS = priorKeys;
   if (priorRoot === undefined) delete process.env.AETHEL_HF_MEMORY_ROOT; else process.env.AETHEL_HF_MEMORY_ROOT = priorRoot;
   rmSync(root, { recursive: true, force: true });
 }).catch((e) => { console.error(e); process.exit(1); });

@@ -1,6 +1,11 @@
+import { githubConnectionStatus } from "@/core/github-reference";
+import { isTenantAuthConfigured } from "@/core/tenant-auth";
+
 export const dynamic = 'force-dynamic';
 
 export default function WorkbenchDashboardPage() {
+  const github = githubConnectionStatus();
+  const tenants = isTenantAuthConfigured();
   return (
     <main className="max-w-3xl mx-auto p-8 text-zinc-300">
       <h1 className="text-xl text-white mb-4">Aethel Node // Workbench</h1>
@@ -26,6 +31,18 @@ export default function WorkbenchDashboardPage() {
         <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Platform contract</div>
         <div className="text-sm text-zinc-400">
           Executable (aethel.run/1). A third-party Workbench can POST a standard run to /api/v1/runs and verify it at GET /api/v1/runs/&#123;experience_id&#125;. The server computes the verdict from seed and inputs, rejects caller-supplied verdicts, and re-checks the stored record hash on verify. Verification is a deterministic metamorphic check, not an independent replay. On Vercel, runs are stored per instance unless durable storage is configured.
+        </div>
+      </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">GitHub connection and tenant boundary</div>
+        <div className="text-sm text-zinc-400">
+          {github.configured
+            ? `GitHub connection authorized: read-only, ${github.allowlisted_repos} allowlisted repo(s), each readable only by its owning tenant.`
+            : "GitHub connection not configured on this deployment: reference reads are refused until a read-only token and repo allowlist are set."}{" "}
+          {tenants
+            ? "Tenant boundary enforced: the tenant comes from the server-checked API key, and each tenant can only read, verify and list its own runs and references."
+            : "Tenant keys are not configured, so run submission, verification, proof storage and references are blocked (fail closed)."}{" "}
+          The founder repo snapshot in fixtures/references was read with authorized access and lists commit, file and contract hashes.
         </div>
       </div>
       <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">

@@ -2,7 +2,8 @@
 // Verdicts are always computed server-side from deterministic inputs; caller verdicts/hashes are rejected.
 import { createHash } from "node:crypto";
 import { experienceDigest } from "./hf-memory";
-import { ExperienceAppendError, ExperienceIntegrityError, ExperienceStore } from "./experience-store";
+import { ExperienceAppendError, ExperienceIntegrityError, type ExperienceStore } from "./experience-store";
+import { tenantStore } from "./tenant-auth";
 import { evaluateDeterministicProof, type DeterministicProof } from "./deterministic-proof";
 import type { ExperienceRecord } from "./experience-schema";
 import type { ContractVerdict, MetamorphicResult, NextActionProposal, VerificationResult } from "./interfaces";
@@ -59,9 +60,9 @@ export function validateStandardRun(value: unknown): string[] {
   return problems;
 }
 
-/** Stable id from workbench name + run_id, so resubmitting the same run hits the same id. */
-export function experienceIdFor(workbenchName: string, runId: string): string {
-  return `wb-${createHash("sha256").update(JSON.stringify([workbenchName, runId])).digest("hex").slice(0, 32)}`;
+/** Stable, tenant-qualified id: resubmitting the same run in the same tenant hits the same id; tenants never collide. */
+export function experienceIdFor(tenant: string, workbenchName: string, runId: string): string {
+  return `wb-${createHash("sha256").update(JSON.stringify([tenant, workbenchName, runId])).digest("hex").slice(0, 32)}`;
 }
 
 const replayOf = (v: ContractVerdict) => (v === "PASS" ? "PASS" : v === "FAIL" ? "FAIL" : "SKIP");
@@ -97,11 +98,12 @@ function buildResult(record: ExperienceRecord, recomputed: DeterministicProof, s
   };
 }
 
-export function submitStandardRun(body: unknown, store = new ExperienceStore()): ContractOutcome {
+/** tenant must come from server-side authentication (authenticateTenant), never from the request body. */
+export function submitStandardRun(tenant: string, body: unknown, store: ExperienceStore = tenantStore(tenant)): ContractOutcome {
   const problems = validateStandardRun(body);
   if (problems.length) return err(400, "INVALID_SUBMISSION", problems.join("; "));
   const run = body as StandardRunSubmission;
-  const id = experienceIdFor(run.workbench.name, run.run_id);
+  const id = experienceIdFor(tenant, run.workbench.name, run.run_id);
   const proof = evaluateDeterministicProof({ predicted: run.predicted, observed: run.observed, phi: run.phi, step: run.step }, run.seed);
   const record: ExperienceRecord = {
     experience_id: id, repo: `workbench:${run.workbench.name}`, commit_sha: run.workbench.version,
@@ -113,7 +115,7 @@ export function submitStandardRun(body: unknown, store = new ExperienceStore()):
       expected_relation: proof.expected_relations.join("; "), result: proof.verdict, converged: proof.verdict === "PASS" },
     provenance: { source: "third-party-workbench", run_id: run.run_id, timestamp: new Date().toISOString() },
     reuse_eligibility: false, z_next_action: proposal(proof.verdict, id).action,
-    data_classification: "third-party-submission", revision: 1,
+    tenant_id: tenant, data_classification: "third-party-submission", revision: 1,
   };
   try {
     const saved = store.append(record);
@@ -127,7 +129,7 @@ export function submitStandardRun(body: unknown, store = new ExperienceStore()):
   }
 }
 
-export function verifyStandardRun(id: unknown, store = new ExperienceStore()): ContractOutcome {
+export function verifyStandardRun(tenant: string, id: unknown, store: ExperienceStore = tenantStore(tenant)): ContractOutcome {
   if (typeof id !== "string" || !/^wb-[0-9a-f]{32}$/.test(id)) return err(400, "INVALID_ID", "experience_id must be wb- followed by 32 hex characters");
   let record: ExperienceRecord;
   try { record = store.readById(id); } catch (e) {
@@ -135,7 +137,7 @@ export function verifyStandardRun(id: unknown, store = new ExperienceStore()): C
     if (e instanceof ExperienceIntegrityError && /ENOENT/.test(msg)) return err(404, "NOT_FOUND", "No run with this experience_id", id);
     return err(422, "INTEGRITY_FAILED", msg, id);
   }
-  if (record.provenance.source !== "third-party-workbench") return err(404, "NOT_FOUND", "No standard run with this experience_id", id);
+  if (record.provenance.source !== "third-party-workbench" || record.tenant_id !== tenant) return err(404, "NOT_FOUND", "No standard run with this experience_id", id);
   let detail: { inputs?: unknown };
   try { detail = JSON.parse(record.metamorphic.transformation); } catch { detail = {}; }
   const inputs = detail.inputs as { predicted: number; observed: number; phi?: number; step?: number } | undefined;

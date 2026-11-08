@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { HFMemory, writeExperience } from "@/core/hf-memory";
-import { resolveExperienceStoreRoot } from "@/core/experience-store";
+import { tenantRoot } from "@/core/tenant-auth";
 import type { ExperienceRecord } from "@/core/interfaces";
 import { evaluateDeterministicProof, type DeterministicProof } from "@/core/deterministic-proof";
 
@@ -18,7 +18,8 @@ const deterministic = (p: unknown): p is DeterministicProof => typeof p === "obj
 const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
 
 /** Shared proof path: canonical SHA-256 of a telemetry result, stored as an experience record. Throws on storage failure. */
-export function publishProof(body: unknown): { experience_id: string; hash: string } {
+/** Stores into the authenticated tenant's own store; there is no unauthenticated write path. */
+export function publishProof(tenant: string, body: unknown): { experience_id: string; hash: string } {
   const b = body as Record<string, any>;
   const hash = createHash("sha256").update(canonical(body)).digest("hex");
   const timestamp = new Date().toISOString();
@@ -54,11 +55,12 @@ export function publishProof(body: unknown): { experience_id: string; hash: stri
       result: b.converged ? "converged" : "diverged",
       converged: b.converged,
     },
+    tenant_id: tenant,
     provenance: { source: "api/v1/proof", run_id: hash, timestamp },
     reuse_eligibility: false,
     z_next_action: b.converged ? "continue" : "investigate drift",
     revision: 1,
   };
-  const saved = writeExperience(record, new HFMemory(resolveExperienceStoreRoot()));
+  const saved = writeExperience(record, new HFMemory(tenantRoot(tenant)));
   return { experience_id: saved.experience_id, hash };
 }

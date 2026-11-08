@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseTelemetryInput, runTelemetry } from "@/core/metamorphic-runtime";
 import { publishProof } from "@/core/proof-publisher";
+import { authenticateTenant } from "@/core/tenant-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,8 +22,10 @@ export async function POST(request: Request) {
     note: !result.converged ? "High-entropy drift detected. Flag for human review." : null,
   };
   if ((body as Record<string, unknown>).auto_proof === true) {
-    try {
-      const proof = publishProof(response);
+    const auth = authenticateTenant(request);
+    if (!auth.ok) response.proof_error = `auto_proof requires tenant authentication (${auth.code}); result not stored`;
+    else try {
+      const proof = publishProof(auth.tenant, response);
       response.experience_id = proof.experience_id;
       response.hash = proof.hash;
     } catch (error) {
@@ -38,6 +41,6 @@ export async function GET() {
     method: "POST",
     body: { predicted: "number", observed: "number", step: "number?", phi: "number?", seed: "number?" },
     description: "Accepts predicted and observed values. The metamorphic engine evaluates Φ under drift.",
-    auto_proof: "Include auto_proof: true in the POST body to hash and store the result as an experience record. The response then includes experience_id and hash."
+    auto_proof: "Include auto_proof: true and Authorization: Bearer <tenant API key> to hash and store the result as an experience record in that tenant's store. The response then includes experience_id and hash."
   });
 }

@@ -11,6 +11,9 @@ import { join } from "node:path";
 const root = mkdtempSync(join(tmpdir(), "aethel-run-contract-"));
 const prior = process.env.AETHEL_HF_MEMORY_ROOT;
 process.env.AETHEL_HF_MEMORY_ROOT = root;
+const KEY = "run-contract-test-key-01";
+const priorKeys = process.env.AETHEL_TENANT_KEYS;
+process.env.AETHEL_TENANT_KEYS = JSON.stringify({ "tenant-a": createHash("sha256").update(KEY).digest("hex") });
 const V = "aethel.run/1";
 const run = (overrides: Record<string, unknown> = {}) => ({ contract_version: V, run_id: "run-001",
   workbench: { name: "acme-workbench", version: "0.3.1" }, goal: "Keep prediction within tolerance",
@@ -20,11 +23,11 @@ async function main() {
   const runs = await import("../src/app/api/v1/runs/route");
   const one = await import("../src/app/api/v1/runs/[id]/route");
   const submit = async (body: unknown, raw = false) => {
-    const r = await runs.POST(new Request("http://x/api/v1/runs", { method: "POST", body: raw ? String(body) : JSON.stringify(body) }));
+    const r = await runs.POST(new Request("http://x/api/v1/runs", { method: "POST", headers: { authorization: `Bearer ${KEY}` }, body: raw ? String(body) : JSON.stringify(body) }));
     return { status: r.status, body: await r.json() };
   };
   const verify = async (id: string) => {
-    const r = await one.GET(new Request(`http://x/api/v1/runs/${id}`), { params: Promise.resolve({ id }) });
+    const r = await one.GET(new Request(`http://x/api/v1/runs/${id}`, { headers: { authorization: `Bearer ${KEY}` } }), { params: Promise.resolve({ id }) });
     return { status: r.status, body: await r.json() };
   };
 
@@ -83,7 +86,7 @@ async function main() {
   assert.equal((await verify("wb-" + "0".repeat(32))).status, 404);
 
   // Tamper: edit the stored record without updating its hash -> 422.
-  const base = join(root, "founder-z");
+  const base = join(root, "tenants", "tenant-a", "founder-z");
   const recPath = (id: string) => join(base, "experiences", `${id}.json`);
   const t = JSON.parse(readFileSync(recPath(f.body.experience_id), "utf8"));
   writeFileSync(recPath(f.body.experience_id), JSON.stringify({ ...t, metamorphic: { ...t.metamorphic, result: "PASS" } }));
@@ -110,6 +113,7 @@ async function main() {
   console.log("run-contract: PASS");
 }
 main().finally(() => {
+  if (priorKeys === undefined) delete process.env.AETHEL_TENANT_KEYS; else process.env.AETHEL_TENANT_KEYS = priorKeys;
   if (prior === undefined) delete process.env.AETHEL_HF_MEMORY_ROOT; else process.env.AETHEL_HF_MEMORY_ROOT = prior;
   rmSync(root, { recursive: true, force: true });
 }).catch((e) => { console.error(e); process.exit(1); });
