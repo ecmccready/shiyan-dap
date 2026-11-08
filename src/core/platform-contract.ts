@@ -10,7 +10,10 @@ export type {
   VerificationResult,
   MetamorphicResult,
   NextActionProposal,
+  ContractVerdict,
 } from "./interfaces";
+export { RUN_CONTRACT_VERSION, submitStandardRun, verifyStandardRun, validateStandardRun } from "./run-contract";
+export type { StandardRunSubmission, StandardRunResult } from "./run-contract";
 
 export interface WorkbenchManifest {
   name: string;

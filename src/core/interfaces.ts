@@ -18,9 +18,20 @@ export interface ExperienceRecord {
   revision: number;
 }
 
+export type ContractVerdict = "PASS" | "FAIL" | "INCONCLUSIVE";
+
 export interface VerificationResult {
   replay_verdict: "PASS" | "FAIL" | "SKIP";
   verifier_version: string;
+  /** Contract responses only (not stored): computed server-side, never taken from the caller. */
+  contract_version?: string;
+  integrity?: "PASS";
+  content_sha256?: string;
+  stored_verdict?: ContractVerdict;
+  recomputed_verdict?: ContractVerdict;
+  consistent?: boolean;
+  verdict?: ContractVerdict;
+  reason?: string;
 }
 
 export interface MetamorphicResult {
@@ -29,6 +40,10 @@ export interface MetamorphicResult {
   expected_relation: string;
   result: string;
   converged: boolean;
+  /** Contract responses only (not stored as separate fields): parsed deterministic proof detail. */
+  verdict?: ContractVerdict;
+  transformations?: { index: number; drift: number; phi_after: number; anchor_held: boolean; phi_stable: boolean }[];
+  expected_relations?: string[];
 }
 
 export interface NextActionProposal {
@@ -36,4 +51,7 @@ export interface NextActionProposal {
   reason: string;
   experience_id?: string;
   evidence_used: string[];
+  /** Descriptive only. The platform never executes a proposal. */
+  executable?: false;
+  contract_version?: string;
 }

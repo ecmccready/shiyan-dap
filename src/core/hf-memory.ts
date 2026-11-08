@@ -17,7 +17,9 @@ function canonical(value: unknown): string {
   }
   return JSON.stringify(value);
 }
-const digest = (record: ExperienceRecord) => createHash("sha256").update(canonical(record)).digest("hex");
+/** sha256 of the canonical record; equals the stored proof hash for any record that passed readExperience. */
+export const experienceDigest = (record: ExperienceRecord) => createHash("sha256").update(canonical(record)).digest("hex");
+const digest = experienceDigest;
 const failure = (error: unknown): { ok: false; error: string } => ({
   ok: false, error: error instanceof Error ? error.message : String(error),
 });

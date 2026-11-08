@@ -23,6 +23,12 @@ export default function WorkbenchDashboardPage() {
         </div>
       </div>
       <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
+        <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Platform contract</div>
+        <div className="text-sm text-zinc-400">
+          Executable (aethel.run/1). A third-party Workbench can POST a standard run to /api/v1/runs and verify it at GET /api/v1/runs/&#123;experience_id&#125;. The server computes the verdict from seed and inputs, rejects caller-supplied verdicts, and re-checks the stored record hash on verify. Verification is a deterministic metamorphic check, not an independent replay. On Vercel, runs are stored per instance unless durable storage is configured.
+        </div>
+      </div>
+      <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
         <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Stream harness</div>
         <div className="text-sm text-zinc-400">
           scripts/stream-test-telemetry.ts posts two frames to /api/v1/telemetry. Start the dev server, then run npx tsx scripts/stream-test-telemetry.ts.
