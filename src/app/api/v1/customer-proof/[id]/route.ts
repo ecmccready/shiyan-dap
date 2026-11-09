@@ -55,6 +55,14 @@ export async function GET(
       return failure(422, "INTEGRITY_FAILED");
     }
 
+    if (
+      result.verification.integrity !== "PASS" ||
+      result.verification.consistent !== true ||
+      result.verification.stored_verdict !== result.verification.recomputed_verdict
+    ) {
+      return failure(422, "VERIFICATION_INCONSISTENT");
+    }
+
     return NextResponse.json(
       {
         report_version: "aethel.customer-proof/1",
