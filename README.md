@@ -163,3 +163,28 @@ npm ci
 npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
+## Neon Staging (Preview)
+
+Two isolated Neon projects are used for Preview deployments:
+
+- **shiyan-storage** — experiences and reference envelopes (`shiyan_app` role)
+- **shiyan-anchors** — reference anchors (`shiyan_anchor_app` role)
+
+### Required Preview environment variables
+
+| Variable | Value |
+|----------|-------|
+| `SHIYAN_STORAGE_BACKEND` | `neon` |
+| `SHIYAN_STORAGE_URL` | `postgresql://shiyan_app:<password>@ep-sweet-bread-bdzz2swe.c-8.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require` |
+| `SHIYAN_ANCHOR_URL` | `postgresql://shiyan_anchor_app:<password>@ep-dark-dawn-be92d9ji.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require` |
+
+App-role passwords and full connection strings are stored outside git.
+
+### Migrations
+
+Applied once via `psql` (storage) and the Neon SQL Editor (anchors):
+
+- `db/migrations/001_shiyan_storage.sql`
+- `db/migrations/001_shiyan_anchors.sql`
+
+Both are idempotent.
