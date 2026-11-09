@@ -1,8 +1,4 @@
-Full corrected scripts/check-tenant-boundary.ts
 
-Replace the entire file with this. The GITHUB_NOT_CONFIGURED assertion now passes anchors as the fifth argument.
-
-ts
 /**
  * Offline tenant-boundary and customer-export tests.
  * Run from repository root in a fresh Linux/WSL process:
