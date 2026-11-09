@@ -60,6 +60,13 @@ export default function StatusPage() {
           </p>
         </section>
 
+        <Link
+          href="/workbench/customer-proof"
+          className="mb-10 block rounded-xl border border-zinc-800 p-5"
+        >
+          Inspect a customer proof export — evidence, verification scope and uncertainties
+        </Link>
+
         <div className="space-y-4">
           <Link href="/workbench/opportunity" className="block border border-zinc-800 rounded-xl p-5 bg-zinc-950 hover:border-zinc-600">
             <div className="font-semibold">Opportunity</div>
