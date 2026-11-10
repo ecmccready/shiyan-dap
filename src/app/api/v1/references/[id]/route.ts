@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { readReference } from "@/core/github-reference";
-import { configuredReferenceAnchors } from "@/core/reference-anchor-provider";
-import { authenticateTenant } from "@/core/tenant-auth";
+import { readReference } from "../../../../../core/github-reference";
+import { configuredReferenceStorage } from "../../../../../core/reference-anchor-provider";
+import { authenticateTenant } from "../../../../../core/tenant-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,10 +21,12 @@ export async function GET(
   const { id } = await params;
 
   try {
+    const storage = configuredReferenceStorage();
     const ref = await readReference(
       auth.tenant,
       id,
-      configuredReferenceAnchors(),
+      storage?.anchors,
+      storage?.envelopes,
     );
 
     if (!ref) {

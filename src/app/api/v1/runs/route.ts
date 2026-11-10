@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { RUN_CONTRACT_VERSION, submitStandardRun } from "@/core/run-contract";
-import { authenticateTenant } from "@/core/tenant-auth";
+import { RUN_CONTRACT_VERSION, submitStandardRunAsync } from "../../../../core/run-contract";
+import { configuredExperienceStore } from "../../../../core/storage-provider";
+import { authenticateTenant } from "../../../../core/tenant-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -12,7 +13,9 @@ export async function POST(request: Request) {
   try { body = await request.json(); } catch {
     return NextResponse.json({ contract_version: RUN_CONTRACT_VERSION, code: "INVALID_JSON", error: "Invalid JSON" }, { status: 400 });
   }
-  const outcome = submitStandardRun(auth.tenant, body);
+  const storage = configuredExperienceStore(auth.tenant);
+  if (!storage.ok) return NextResponse.json({ contract_version: RUN_CONTRACT_VERSION, code: storage.code, error: storage.error }, { status: storage.status });
+  const outcome = await submitStandardRunAsync(auth.tenant, body, storage.store);
   return NextResponse.json(outcome.body, { status: outcome.status });
 }
 
@@ -35,8 +38,8 @@ export async function GET() {
       "Verify re-reads the stored record, checks its sha256, and recomputes the verdict; a mismatch yields verdict FAIL, a tampered record 422 INTEGRITY_FAILED.",
       "next_action is descriptive only (executable: false). The platform runs no submitted code.",
       "replay_verdict reflects the deterministic metamorphic check, not an independent replay.",
-      "Storage is the local experience store; on Vercel it is per-instance /tmp unless AETHEL_HF_MEMORY_ROOT points at durable storage, so a run may not be verifiable on another instance.",
+      "Storage is selected explicitly by SHIYAN_STORAGE_BACKEND: neon (durable Postgres) or filesystem (local only; refused in Vercel production). Unconfigured storage returns 503 STORAGE_NOT_CONFIGURED; nothing falls back silently.",
     ],
-    errors: { 401: ["UNAUTHENTICATED"], 503: ["AUTH_NOT_CONFIGURED"], 400: ["INVALID_JSON", "INVALID_SUBMISSION", "INVALID_ID"], 404: ["NOT_FOUND"], 409: ["DUPLICATE_RUN", "STORE_BUSY"], 422: ["INTEGRITY_FAILED"], 500: ["STORE_ERROR"] },
+    errors: { 401: ["UNAUTHENTICATED"], 503: ["AUTH_NOT_CONFIGURED", "STORAGE_NOT_CONFIGURED", "STORE_UNAVAILABLE"], 400: ["INVALID_JSON", "INVALID_SUBMISSION", "INVALID_ID"], 404: ["NOT_FOUND"], 409: ["DUPLICATE_RUN", "STORE_BUSY"], 422: ["INTEGRITY_FAILED"], 500: ["STORE_ERROR"] },
   });
 }

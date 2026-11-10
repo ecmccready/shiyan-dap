@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { publishProof } from "@/core/proof-publisher";
-import { authenticateTenant } from "@/core/tenant-auth";
+import { publishProofTo } from "../../../../core/proof-publisher";
+import { configuredExperienceStore } from "../../../../core/storage-provider";
+import { authenticateTenant } from "../../../../core/tenant-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -13,8 +14,10 @@ export async function POST(request: Request) {
   if (typeof body !== "object" || body === null || typeof (body as Record<string, unknown>).converged !== "boolean") {
     return NextResponse.json({ error: "Expected a metamorphic result with boolean converged" }, { status: 400 });
   }
+  const storage = configuredExperienceStore(auth.tenant);
+  if (!storage.ok) return NextResponse.json({ code: storage.code, error: storage.error }, { status: storage.status });
   try {
-    return NextResponse.json(publishProof(auth.tenant, body));
+    return NextResponse.json(await publishProofTo(auth.tenant, body, storage.store));
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }

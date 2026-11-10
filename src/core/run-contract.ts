@@ -2,7 +2,10 @@
 // Verdicts are always computed server-side from deterministic inputs; caller verdicts/hashes are rejected.
 import { createHash } from "node:crypto";
 import { experienceDigest } from "./hf-memory";
-import { ExperienceAppendError, ExperienceIntegrityError, type ExperienceStore } from "./experience-store";
+import {
+  ExperienceAppendError, ExperienceIntegrityError, ExperienceNotFoundError, ExperienceStoreUnavailableError,
+  type ExperienceStore, type ExperienceStoreLike,
+} from "./experience-store";
 import { tenantStore } from "./tenant-auth";
 import { evaluateDeterministicProof, type DeterministicProof } from "./deterministic-proof";
 import type { ExperienceRecord } from "./experience-schema";
@@ -34,12 +37,12 @@ export interface StandardRunResult {
 
 export type ContractOutcome =
   | { ok: true; status: 200 | 201; body: StandardRunResult }
-  | { ok: false; status: 400 | 404 | 409 | 422 | 500; body: { contract_version: string; error: string; code: string; experience_id?: string } };
+  | { ok: false; status: 400 | 404 | 409 | 422 | 500 | 503; body: { contract_version: string; error: string; code: string; experience_id?: string } };
 
 const ALLOWED = new Set(["contract_version", "run_id", "workbench", "goal", "action", "predicted", "observed", "seed", "phi", "step"]);
 const text = (v: unknown, max: number) => typeof v === "string" && v.trim().length > 0 && v.length <= max;
 const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
-const err = (status: 400 | 404 | 409 | 422 | 500, code: string, error: string, experience_id?: string): ContractOutcome =>
+const err = (status: 400 | 404 | 409 | 422 | 500 | 503, code: string, error: string, experience_id?: string): ContractOutcome =>
   ({ ok: false, status, body: { contract_version: RUN_CONTRACT_VERSION, code, error, ...(experience_id ? { experience_id } : {}) } });
 
 /** Returns a list of problems; empty means valid. Unknown fields (incl. verdict/hash/verification) are rejected. */
@@ -98,10 +101,11 @@ function buildResult(record: ExperienceRecord, recomputed: DeterministicProof, s
   };
 }
 
-/** tenant must come from server-side authentication (authenticateTenant), never from the request body. */
-export function submitStandardRun(tenant: string, body: unknown, store: ExperienceStore = tenantStore(tenant)): ContractOutcome {
+type Prepared = { ok: true; id: string; proof: DeterministicProof; record: ExperienceRecord } | { ok: false; outcome: ContractOutcome };
+
+function prepareSubmission(tenant: string, body: unknown): Prepared {
   const problems = validateStandardRun(body);
-  if (problems.length) return err(400, "INVALID_SUBMISSION", problems.join("; "));
+  if (problems.length) return { ok: false, outcome: err(400, "INVALID_SUBMISSION", problems.join("; ")) };
   const run = body as StandardRunSubmission;
   const id = experienceIdFor(tenant, run.workbench.name, run.run_id);
   const proof = evaluateDeterministicProof({ predicted: run.predicted, observed: run.observed, phi: run.phi, step: run.step }, run.seed);
@@ -117,26 +121,29 @@ export function submitStandardRun(tenant: string, body: unknown, store: Experien
     reuse_eligibility: false, z_next_action: proposal(proof.verdict, id).action,
     tenant_id: tenant, data_classification: "third-party-submission", revision: 1,
   };
-  try {
-    const saved = store.append(record);
-    return { ok: true, status: 201, body: buildResult(saved, proof, proof.verdict) };
-  } catch (e) {
-    if (e instanceof ExperienceAppendError && /Append-only|EEXIST|writer\.lock/.test(e.message)) {
-      return err(409, /lock/.test(e.message) ? "STORE_BUSY" : "DUPLICATE_RUN", /lock/.test(e.message)
-        ? "Store is busy; retry" : "run_id already submitted for this workbench; runs are append-only", id);
-    }
-    return err(500, "STORE_ERROR", e instanceof Error ? e.message : String(e), id);
-  }
+  return { ok: true, id, proof, record };
 }
 
-export function verifyStandardRun(tenant: string, id: unknown, store: ExperienceStore = tenantStore(tenant)): ContractOutcome {
-  if (typeof id !== "string" || !/^wb-[0-9a-f]{32}$/.test(id)) return err(400, "INVALID_ID", "experience_id must be wb- followed by 32 hex characters");
-  let record: ExperienceRecord;
-  try { record = store.readById(id); } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    if (e instanceof ExperienceIntegrityError && /ENOENT/.test(msg)) return err(404, "NOT_FOUND", "No run with this experience_id", id);
-    return err(422, "INTEGRITY_FAILED", msg, id);
+function appendFailure(e: unknown, id: string): ContractOutcome {
+  if (e instanceof ExperienceAppendError && /Append-only|EEXIST|writer\.lock/.test(e.message)) {
+    return err(409, /lock/.test(e.message) ? "STORE_BUSY" : "DUPLICATE_RUN", /lock/.test(e.message)
+      ? "Store is busy; retry" : "run_id already submitted for this workbench; runs are append-only", id);
   }
+  if (e instanceof ExperienceStoreUnavailableError) return err(503, "STORE_UNAVAILABLE", "Experience storage is unavailable; retry", id);
+  return err(500, "STORE_ERROR", e instanceof Error ? e.message : String(e), id);
+}
+
+function readFailure(e: unknown, id: string): ContractOutcome {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (e instanceof ExperienceNotFoundError || (e instanceof ExperienceIntegrityError && /ENOENT/.test(msg))) return err(404, "NOT_FOUND", "No run with this experience_id", id);
+  if (e instanceof ExperienceStoreUnavailableError) return err(503, "STORE_UNAVAILABLE", "Experience storage is unavailable; retry", id);
+  return err(422, "INTEGRITY_FAILED", msg, id);
+}
+
+const invalidId = (id: unknown): boolean => typeof id !== "string" || !/^wb-[0-9a-f]{32}$/.test(id);
+const invalidIdOutcome = () => err(400, "INVALID_ID", "experience_id must be wb- followed by 32 hex characters");
+
+function verifiedOutcome(tenant: string, id: string, record: ExperienceRecord): ContractOutcome {
   if (record.provenance.source !== "third-party-workbench" || record.tenant_id !== tenant) return err(404, "NOT_FOUND", "No standard run with this experience_id", id);
   let detail: { inputs?: unknown };
   try { detail = JSON.parse(record.metamorphic.transformation); } catch { detail = {}; }
@@ -144,4 +151,45 @@ export function verifyStandardRun(tenant: string, id: unknown, store: Experience
   const recomputed = evaluateDeterministicProof(inputs as never, record.metamorphic.seed);
   const stored = ["PASS", "FAIL", "INCONCLUSIVE"].includes(record.metamorphic.result) ? record.metamorphic.result as ContractVerdict : null;
   return { ok: true, status: 200, body: buildResult(record, recomputed, stored) };
+}
+
+/** tenant must come from server-side authentication (authenticateTenant), never from the request body. */
+export function submitStandardRun(tenant: string, body: unknown, store: ExperienceStore = tenantStore(tenant)): ContractOutcome {
+  const prepared = prepareSubmission(tenant, body);
+  if (!prepared.ok) return prepared.outcome;
+  try {
+    const saved = store.append(prepared.record);
+    return { ok: true, status: 201, body: buildResult(saved, prepared.proof, prepared.proof.verdict) };
+  } catch (e) {
+    return appendFailure(e, prepared.id);
+  }
+}
+
+export function verifyStandardRun(tenant: string, id: unknown, store: ExperienceStore = tenantStore(tenant)): ContractOutcome {
+  if (invalidId(id)) return invalidIdOutcome();
+  const experienceId = id as string;
+  let record: ExperienceRecord;
+  try { record = store.readById(experienceId); } catch (e) { return readFailure(e, experienceId); }
+  return verifiedOutcome(tenant, experienceId, record);
+}
+
+/** Same contract as submitStandardRun for any store, including the async Neon store. */
+export async function submitStandardRunAsync(tenant: string, body: unknown, store: ExperienceStoreLike): Promise<ContractOutcome> {
+  const prepared = prepareSubmission(tenant, body);
+  if (!prepared.ok) return prepared.outcome;
+  try {
+    const saved = await store.append(prepared.record);
+    return { ok: true, status: 201, body: buildResult(saved, prepared.proof, prepared.proof.verdict) };
+  } catch (e) {
+    return appendFailure(e, prepared.id);
+  }
+}
+
+/** Same contract as verifyStandardRun for any store, including the async Neon store. */
+export async function verifyStandardRunAsync(tenant: string, id: unknown, store: ExperienceStoreLike): Promise<ContractOutcome> {
+  if (invalidId(id)) return invalidIdOutcome();
+  const experienceId = id as string;
+  let record: ExperienceRecord;
+  try { record = await store.readById(experienceId); } catch (e) { return readFailure(e, experienceId); }
+  return verifiedOutcome(tenant, experienceId, record);
 }

@@ -16,6 +16,8 @@ export interface ExperienceRecord {
   reuse_eligibility: boolean;
   z_next_action: string;
   revision: number;
+  /** Present only when a telemetry payload included a SelfEngine recovery record. */
+  recovery?: Record<string, unknown>;
 }
 
 export type ContractVerdict = "PASS" | "FAIL" | "INCONCLUSIVE";
