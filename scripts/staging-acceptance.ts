@@ -63,7 +63,7 @@ function required(name: string): string {
 }
 
 function looksLikeStaging(host: string): boolean {
-  return host === "localhost" || host === "127.0.0.1" || /(^|[-.])(staging|preview)([.-]|$)/.test(host) || /-git-[a-z0-9-]+\.vercel\.app$/.test(host) || /^shiyan-[a-z0-9]+-ecmccreadys-projects\.vercel\.app$/.test(host);
+  return host === "localhost" || host === "127.0.0.1" || /(^|[-.])(staging|preview)([.-]|$)/.test(host) || /-git-[a-z0-9-]+\.vercel\.app$/.test(host) || (/^shiyan-[a-z0-9]+-ecmccreadys-projects\.vercel\.app$/.test(host) && host !== "shiyan-dap-ecmccreadys-projects.vercel.app");
 }
 
 async function main() {

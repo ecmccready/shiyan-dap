@@ -14,7 +14,7 @@ export type TenantAuth =
 type Env = Record<string, string | undefined>;
 
 /** AETHEL_TENANT_KEYS = {"<tenant-id>": "<sha256 hex of that tenant's API key>", ...}. Raw keys are never stored. */
-function loadConfiguredTenantKeys(env: Env): Map<string, Buffer> | null {
+export function loadTenantKeys(env: Env = process.env): Map<string, Buffer> | null {
   const raw = env.AETHEL_TENANT_KEYS;
   if (!raw) return null;
   let parsed: unknown;
@@ -29,25 +29,6 @@ function loadConfiguredTenantKeys(env: Env): Map<string, Buffer> | null {
     keys.set(tenant, Buffer.from(hash, "hex"));
   }
   return keys.size ? keys : null;
-}
-
-// TEMPORARY (staging acceptance only, remove before merge): when AETHEL_TENANT_KEYS is missing or invalid on a
-// Vercel PREVIEW deployment, accept one hard-coded test tenant. Only the sha256 of the key is stored here.
-// Never active in production or locally (requires VERCEL_ENV === "preview").
-const TEMP_PREVIEW_TENANT = "test-tenant";
-const TEMP_PREVIEW_KEY_SHA256 = "f4f8d07ac582fddbeaf6081f8ed70467750b136b901bb58b5ac0d8f69f6ac403";
-// TEMPORARY (staging acceptance only, remove before merge): second Preview-only tenant so the cross-tenant 404 check can run.
-const TEMP_PREVIEW_TENANT_B = "test-tenant-b";
-const TEMP_PREVIEW_KEY_B_SHA256 = "e9d0b2cd0ad019944271fddda3bf8c8fcaead5a17d9a15de963f7efd5ba5c9ef";
-
-export function loadTenantKeys(env: Env = process.env): Map<string, Buffer> | null {
-  const keys = loadConfiguredTenantKeys(env);
-  if (keys) return keys;
-  if (env.VERCEL_ENV === "preview") return new Map([
-    [TEMP_PREVIEW_TENANT, Buffer.from(TEMP_PREVIEW_KEY_SHA256, "hex")],
-    [TEMP_PREVIEW_TENANT_B, Buffer.from(TEMP_PREVIEW_KEY_B_SHA256, "hex")], // TEMPORARY
-  ]);
-  return null;
 }
 
 export const isTenantAuthConfigured = (env: Env = process.env) => loadTenantKeys(env) !== null;
