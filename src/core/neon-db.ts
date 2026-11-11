@@ -112,3 +112,24 @@ export async function inTransaction<T>(pool: Pool, fn: (client: PoolClient) => P
 
 export const isUniqueViolation = (error: unknown) =>
   typeof error === "object" && error !== null && "code" in error && (error as { code?: unknown }).code === "23505";
+
+// TEMPORARY (staging diagnosis only, remove before merge): logs the underlying Postgres/Neon error behind a
+// 503 STORE_UNAVAILABLE. Logs only code/severity/routine/errno/syscall and a scrubbed message: never the
+// connection string, host credentials or password.
+export function logNeonStoreError(context: string, error: unknown, pool?: { options?: { password?: unknown } }): void {
+  const e = (typeof error === "object" && error !== null ? error : {}) as Record<string, unknown>;
+  const password = typeof pool?.options?.password === "string" ? pool.options.password : "";
+  let message = String(e.message ?? error);
+  message = message.replace(/postgres(?:ql)?:\/\/[^\s'"]+/gi, "[redacted-url]");
+  if (password) message = message.split(password).join("[redacted]");
+  console.error("[TEMPORARY neon-store-error]", JSON.stringify({
+    context,
+    code: e.code ?? null,
+    severity: e.severity ?? null,
+    routine: e.routine ?? null,
+    errno: e.errno ?? null,
+    syscall: e.syscall ?? null,
+    name: e.name ?? null,
+    message,
+  }));
+}
