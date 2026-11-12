@@ -62,7 +62,6 @@ export class NeonExperienceStore implements ExperienceStoreLike {
       if (error instanceof ExperienceAppendError) throw error;
       if (error instanceof ExperienceIntegrityError) throw new ExperienceAppendError(id, "Write read-back validation failed");
       if (isUniqueViolation(error)) throw new ExperienceAppendError(id, "Append-only memory refuses existing experience_id");
-      console.error("[neon-store-error append]", { message: (error as any)?.message, code: (error as any)?.code });
       throw new ExperienceStoreUnavailableError(id);
     }
     return (await this.readById(id)) as T;
@@ -74,7 +73,6 @@ export class NeonExperienceStore implements ExperienceStoreLike {
     try {
       rows = (await this.pool.query<Row>(SELECT_ONE, [this.tenant, id])).rows;
     } catch (error) {
-      console.error("[neon-store-error read]", { message: (error as any)?.message, code: (error as any)?.code });
       throw new ExperienceStoreUnavailableError(id);
     }
     return this.verifyRow(id, rows).record;
