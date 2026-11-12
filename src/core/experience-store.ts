@@ -15,6 +15,31 @@ export class ExperienceAppendError extends Error {
     this.name = "ExperienceAppendError";
   }
 }
+/** Authoritative absence of a record for this tenant (never thrown for outages). */
+export class ExperienceNotFoundError extends ExperienceIntegrityError {
+  constructor(experienceId: string) {
+    super(experienceId, "ENOENT: no record with this experience_id");
+    this.name = "ExperienceNotFoundError";
+  }
+}
+/** The backing store could not be reached or did not answer; no integrity conclusion was reached. */
+export class ExperienceStoreUnavailableError extends Error {
+  constructor(readonly experienceId: string) {
+    super(`Experience storage unavailable for ${experienceId}`);
+    this.name = "ExperienceStoreUnavailableError";
+  }
+}
+
+/**
+ * Minimal storage contract shared by the local file store (sync) and the Neon store (async).
+ * append is append-only and must throw ExperienceAppendError("...Append-only...") for an existing id.
+ * readById must verify the stored content hash and throw ExperienceNotFoundError for absence,
+ * ExperienceIntegrityError for any mismatch and ExperienceStoreUnavailableError for outages.
+ */
+export interface ExperienceStoreLike {
+  append<T extends ExperienceRecord>(record: T): T | Promise<T>;
+  readById(id: string): ExperienceRecord | Promise<ExperienceRecord>;
+}
 
 /**
  * Store root: AETHEL_HF_MEMORY_ROOT if set; on Vercel, /tmp (writable but ephemeral per instance);
@@ -29,7 +54,7 @@ export function isDurableExperienceStore(env: Record<string, string | undefined>
   return !(env.VERCEL && !env.AETHEL_HF_MEMORY_ROOT) && !resolveExperienceStoreRoot(env).startsWith("/tmp");
 }
 
-export class ExperienceStore {
+export class ExperienceStore implements ExperienceStoreLike {
   constructor(private readonly memory = new HFMemory(resolveExperienceStoreRoot())) {}
 
   /** Append a new record. The sha256 of its canonical form is stored in a separate proof file. */

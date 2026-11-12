@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { authenticateTenant } from "../../../../../core/tenant-auth";
 import {
   experienceIdFor,
-  verifyStandardRun,
+  verifyStandardRunAsync,
 } from "../../../../../core/run-contract";
+import { configuredExperienceStore } from "../../../../../core/storage-provider";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -31,7 +32,9 @@ export async function GET(
   }
 
   try {
-    const outcome = verifyStandardRun(auth.tenant, id);
+    const storage = configuredExperienceStore(auth.tenant);
+    if (!storage.ok) return failure(storage.status, storage.code);
+    const outcome = await verifyStandardRunAsync(auth.tenant, id, storage.store);
     if (!outcome.ok) {
       return failure(outcome.status, outcome.body.code);
     }

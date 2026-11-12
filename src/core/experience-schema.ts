@@ -31,6 +31,8 @@ export interface ExperienceRecord {
   data_classification?: string;
   consent_policy?: string;
   revision: number;
+  /** Present only when a telemetry payload included a SelfEngine recovery record. */
+  recovery?: Record<string, unknown>;
 }
 
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -53,5 +55,6 @@ export function validateExperienceRecord(value: unknown): value is ExperienceRec
   return object(v) && ["PASS", "FAIL", "SKIP"].includes(v.replay_verdict as string) && text(v.verifier_version)
     && object(m) && finite(m.seed) && text(m.transformation) && text(m.expected_relation) && text(m.result)
     && (m.converged === undefined || typeof m.converged === "boolean")
-    && object(p) && text(p.source) && text(p.run_id) && text(p.timestamp) && Number.isFinite(Date.parse(p.timestamp));
+    && object(p) && text(p.source) && text(p.run_id) && text(p.timestamp) && Number.isFinite(Date.parse(p.timestamp))
+    && (value.recovery === undefined || object(value.recovery));
 }

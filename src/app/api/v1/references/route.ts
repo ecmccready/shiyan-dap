@@ -4,7 +4,7 @@ import {
   listReferences,
 } from "../../../../core/github-reference";
 import {
-  configuredReferenceAnchors,
+  configuredReferenceStorage,
 } from "../../../../core/reference-anchor-provider";
 import { authenticateTenant } from "../../../../core/tenant-auth";
 
@@ -30,12 +30,14 @@ export async function POST(request: Request) {
     );
   }
 
+  const storage = configuredReferenceStorage();
   const outcome = await connectReference(
     auth.tenant,
     body,
     process.env,
     undefined,
-    configuredReferenceAnchors(),
+    storage?.anchors,
+    storage?.envelopes,
   );
 
   return NextResponse.json(outcome.body, {
@@ -53,9 +55,11 @@ export async function GET(request: Request) {
   }
 
   try {
+    const storage = configuredReferenceStorage();
     const references = await listReferences(
       auth.tenant,
-      configuredReferenceAnchors(),
+      storage?.anchors,
+      storage?.envelopes,
     );
     return NextResponse.json({ references });
   } catch {

@@ -1,5 +1,5 @@
-// PROPOSED COPY-ONLY SOURCE: unapplied and untested; no independent backend is supplied.
-// Read-only GitHub reference adapter and independently anchored local envelopes.
+// Read-only GitHub reference adapter and independently anchored envelopes
+// (local POSIX files by default; a durable ReferenceEnvelopeStore such as Neon when supplied).
 import { createHash, randomUUID } from "node:crypto";
 import {
   constants, closeSync, fsyncSync, fstatSync, linkSync, lstatSync,
@@ -225,6 +225,18 @@ export interface IndependentReferenceAnchors {
   get(tenant: string, id: string): Promise<ReferenceAnchor | null>;
   listTenant(tenant: string): Promise<readonly ReferenceAnchor[]>;
 }
+/**
+ * Optional durable envelope store (e.g. Neon). When omitted, envelopes use the local POSIX files below.
+ * putIfAbsent never overwrites: it inserts only if (tenant,id) is absent and returns the durable stored
+ * bytes, with created=true only for the insert that won. get is strongly consistent: null means
+ * authoritative absence; outages THROW. listIds is complete for the tenant.
+ * Envelope bytes are always verified against the independent anchor; this store is not trusted.
+ */
+export interface ReferenceEnvelopeStore {
+  putIfAbsent(tenant: string, id: string, bytes: Buffer): Promise<{ bytes: Buffer; created: boolean }>;
+  get(tenant: string, id: string): Promise<Buffer | null>;
+  listIds(tenant: string): Promise<readonly string[]>;
+}
 export class ReferenceStorageError extends Error {}
 type StoredReference = { snapshot: ReferenceSnapshot; snapshot_sha256: string };
 const refsDir = (tenant: string) => resolve(tenantRoot(tenant), "references");
@@ -375,26 +387,60 @@ function stabilizePublishedFile(dir: string, id: string): void {
   } finally { closeSync(fd); }
   syncDirectory(dir);
 }
-export async function readReference(tenant: string, id: string, anchors?: IndependentReferenceAnchors): Promise<StoredReference | null> {
+async function remoteBytes(envelopes: ReferenceEnvelopeStore, tenant: string, id: string): Promise<Buffer | null> {
+  const bytes = await envelopes.get(tenant, id);
+  if (bytes === null) return null;
+  if (!Buffer.isBuffer(bytes) || bytes.length > MAX_RECORD_BYTES) throw new ReferenceStorageError("Invalid or oversized reference envelope");
+  return bytes;
+}
+export async function readReference(tenant: string, id: string, anchors?: IndependentReferenceAnchors, envelopes?: ReferenceEnvelopeStore): Promise<StoredReference | null> {
   const store = anchorStore(anchors);
   if (!TENANT_ID_PATTERN.test(tenant)) throw new ReferenceStorageError("Invalid tenant");
   if (!REFERENCE_ID.test(id)) return null;
   const result = await store.get(tenant, id);
   const anchor = result === null ? null : checkedAnchor(result, tenant, id);
-  const bytes = localBytes(tenant, id);
+  const bytes = envelopes ? await remoteBytes(envelopes, tenant, id) : localBytes(tenant, id);
   if (!anchor && !bytes) return null;
   if (!anchor || !bytes) throw new ReferenceStorageError("Reference integrity/publication incomplete");
   const stored = verifiedEnvelope(bytes, tenant, id, anchor);
   // A reader can race the writer immediately after link(): do not acknowledge
   // publication until the final file and directory have been fsynced.
-  stabilizePublishedFile(refsDir(tenant), id);
+  if (!envelopes) stabilizePublishedFile(refsDir(tenant), id);
   return stored;
 }
-export async function saveReference(snapshot: ReferenceSnapshot, anchors?: IndependentReferenceAnchors): Promise<{ reference_id: string; snapshot_sha256: string; created: boolean }> {
+/** Anchor first, then envelope; a crash between them leaves an anchored-but-unpublished id that a retry completes. */
+async function saveRemoteReference(checked: ReferenceSnapshot, snapshotJson: string, id: string, store: IndependentReferenceAnchors, envelopes: ReferenceEnvelopeStore): Promise<{ reference_id: string; snapshot_sha256: string; created: boolean }> {
+  const tenant = checked.tenant;
+  if (await remoteBytes(envelopes, tenant, id) !== null) {
+    const existing = await readReference(tenant, id, store, envelopes);
+    if (!existing || existing.snapshot.repo !== checked.repo || existing.snapshot.commit_sha !== checked.commit_sha) throw new ReferenceStorageError("Conflicting stored reference");
+    return { reference_id: id, snapshot_sha256: existing.snapshot_sha256, created: false };
+  }
+  const snapshotHash = sha256(snapshotJson);
+  const bytes = Buffer.from(JSON.stringify({ format: ENVELOPE_FORMAT, tenant, reference_id: id, snapshot_json: snapshotJson, snapshot_sha256: snapshotHash }) + "\n", "utf8");
+  if (bytes.length > MAX_RECORD_BYTES) throw new ReferenceStorageError("Oversized reference envelope");
+  const proposed: ReferenceAnchor = {
+    anchor_version: ANCHOR_VERSION, envelope_format: ENVELOPE_FORMAT,
+    tenant, reference_id: id, repo: checked.repo, commit_sha: checked.commit_sha,
+    snapshot_sha256: snapshotHash, envelope_sha256: sha256(bytes),
+  };
+  const winner = checkedAnchor(await store.createIfAbsent(proposed), tenant, id);
+  if (!sameAnchor(winner, proposed)) {
+    const existing = await readReference(tenant, id, store, envelopes);
+    if (!existing || existing.snapshot.repo !== checked.repo || existing.snapshot.commit_sha !== checked.commit_sha) throw new ReferenceStorageError("Conflicting independent anchor");
+    return { reference_id: id, snapshot_sha256: existing.snapshot_sha256, created: false };
+  }
+  const put = await envelopes.putIfAbsent(tenant, id, bytes);
+  const stored = await readReference(tenant, id, store, envelopes);
+  if (!stored) throw new ReferenceStorageError("Published reference disappeared");
+  return { reference_id: id, snapshot_sha256: stored.snapshot_sha256, created: put.created === true };
+}
+export async function saveReference(snapshot: ReferenceSnapshot, anchors?: IndependentReferenceAnchors, envelopes?: ReferenceEnvelopeStore): Promise<{ reference_id: string; snapshot_sha256: string; created: boolean }> {
   const store = anchorStore(anchors);
   const snapshotJson = JSON.stringify(snapshot);
   const checked = storageSnapshot(JSON.parse(snapshotJson), snapshot.tenant);
   const id = referenceId(checked);
+  if (envelopes) return saveRemoteReference(checked, snapshotJson, id, store, envelopes);
   const dir = refsDir(checked.tenant);
   checkedDirectory(dir, true);
   if (localBytes(checked.tenant, id) !== null) {
@@ -444,7 +490,7 @@ export async function saveReference(snapshot: ReferenceSnapshot, anchors?: Indep
     // real anchor. Never list/publish temp files or overwrite a final record.
   }
 }
-export async function listReferences(tenant: string, anchors?: IndependentReferenceAnchors) {
+export async function listReferences(tenant: string, anchors?: IndependentReferenceAnchors, envelopes?: ReferenceEnvelopeStore) {
   const store = anchorStore(anchors);
   if (!TENANT_ID_PATTERN.test(tenant)) throw new ReferenceStorageError("Invalid tenant");
   const anchored = await store.listTenant(tenant);
@@ -457,17 +503,26 @@ export async function listReferences(tenant: string, anchors?: IndependentRefere
     if (ids.has(anchor.reference_id)) throw new ReferenceStorageError("Duplicate anchor listing entry");
     ids.add(anchor.reference_id);
   }
-  const dir = refsDir(tenant);
-  if (checkedDirectory(dir, false)) {
-    for (const name of readdirSync(dir)) {
-      const match = /^(ref-[0-9a-f]{32})\.(json|sha256)$/.exec(name);
-      if (match) ids.add(match[1]);
+  if (envelopes) {
+    const published = await envelopes.listIds(tenant);
+    if (!Array.isArray(published) || published.length > MAX_LIST_RECORDS) throw new ReferenceStorageError("Invalid or oversized envelope listing");
+    for (const value of published) {
+      if (typeof value !== "string" || !REFERENCE_ID.test(value)) throw new ReferenceStorageError("Invalid envelope listing entry");
+      ids.add(value);
+    }
+  } else {
+    const dir = refsDir(tenant);
+    if (checkedDirectory(dir, false)) {
+      for (const name of readdirSync(dir)) {
+        const match = /^(ref-[0-9a-f]{32})\.(json|sha256)$/.exec(name);
+        if (match) ids.add(match[1]);
+      }
     }
   }
   if (ids.size > MAX_LIST_RECORDS) throw new ReferenceStorageError("Reference listing limit exceeded");
   const result: { reference_id: string; repo: string; commit_sha: string; snapshot_sha256: string }[] = [];
   for (const id of [...ids].sort()) {
-    const stored = await readReference(tenant, id, store);
+    const stored = await readReference(tenant, id, store, envelopes);
     if (!stored) throw new ReferenceStorageError("Listed reference is missing");
     result.push({ reference_id: id, repo: stored.snapshot.repo, commit_sha: stored.snapshot.commit_sha, snapshot_sha256: stored.snapshot_sha256 });
   }
@@ -476,7 +531,7 @@ export async function listReferences(tenant: string, anchors?: IndependentRefere
 
 export type ConnectOutcome = { status: 200 | 201 | 400 | 404 | 502 | 503; body: Record<string, unknown> };
 /** Authorization precedes all upstream access. Missing independent anchors fails closed. */
-export async function connectReference(tenant: string, body: unknown, env: Env = process.env, gh?: GitHubFetch, anchors?: IndependentReferenceAnchors): Promise<ConnectOutcome> {
+export async function connectReference(tenant: string, body: unknown, env: Env = process.env, gh?: GitHubFetch, anchors?: IndependentReferenceAnchors, envelopes?: ReferenceEnvelopeStore): Promise<ConnectOutcome> {
   const b = (typeof body === "object" && body !== null ? body : {}) as Record<string, unknown>;
   const extra = Object.keys(b).filter((key) => key !== "repo" && key !== "ref");
   if (extra.length) return { status: 400, body: { code: "INVALID_REQUEST", error: `unknown field: ${extra.join(", ")}` } };
@@ -489,8 +544,8 @@ export async function connectReference(tenant: string, body: unknown, env: Env =
   try { snapshot = await buildReferenceSnapshot(tenant, authz.repo, authz.ref, fetcher); }
   catch { return { status: 502, body: { code: "GITHUB_READ_FAILED", error: "Could not read the authorized repository" } }; }
   try {
-    const saved = await saveReference(snapshot, anchors);
-    const stored = await readReference(tenant, saved.reference_id, anchors);
+    const saved = await saveReference(snapshot, anchors, envelopes);
+    const stored = await readReference(tenant, saved.reference_id, anchors, envelopes);
     if (!stored) throw new ReferenceStorageError("Saved reference missing");
     const s = stored.snapshot;
     return { status: saved.created ? 201 : 200, body: {

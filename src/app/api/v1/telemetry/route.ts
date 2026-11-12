@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { parseTelemetryInput, runTelemetry } from "@/core/metamorphic-runtime";
-import { publishProof } from "@/core/proof-publisher";
-import { authenticateTenant } from "@/core/tenant-auth";
+import { parseTelemetryInput, runTelemetry } from "../../../../core/metamorphic-runtime";
+import { publishProofTo } from "../../../../core/proof-publisher";
+import { SelfEngine } from "../../../../core/self-engine";
+import { configuredExperienceStore } from "../../../../core/storage-provider";
+import { authenticateTenant } from "../../../../core/tenant-auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,11 +23,27 @@ export async function POST(request: Request) {
     review_flag: !result.converged ? "DRIFT_EXCEEDED" : null,
     note: !result.converged ? "High-entropy drift detected. Flag for human review." : null,
   };
+  const recovery = SelfEngine.reconcileResult(result, input);
+  if (recovery.ran && recovery.record) {
+    if (recovery.promoted && recovery.telemetry) {
+      const next = recovery.telemetry;
+      response.emergentState = next.emergentState;
+      response.converged = next.converged;
+      response.frame = next.frame;
+      response.seed = next.seed;
+      response.proof = next.proof;
+      response.review_flag = null;
+      response.note = null;
+    }
+    response.recovery = recovery.record;
+  }
   if ((body as Record<string, unknown>).auto_proof === true) {
     const auth = authenticateTenant(request);
     if (!auth.ok) response.proof_error = `auto_proof requires tenant authentication (${auth.code}); result not stored`;
     else try {
-      const proof = publishProof(auth.tenant, response);
+      const storage = configuredExperienceStore(auth.tenant);
+      if (!storage.ok) throw new Error(`${storage.code}: ${storage.error}; result not stored`);
+      const proof = await publishProofTo(auth.tenant, response, storage.store);
       response.experience_id = proof.experience_id;
       response.hash = proof.hash;
     } catch (error) {
