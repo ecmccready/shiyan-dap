@@ -15,7 +15,6 @@ const EXPERIENCE_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{0,159}$/;
 const SHA256_HEX = /^[0-9a-f]{64}$/;
 const MAX_RECORD_BYTES = 1024 * 1024;
 
-/** Same canonical form as hf-memory: sorted keys, undefined omitted. sha256(canonical) === experienceDigest. */
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
   if (value !== null && typeof value === "object") {
@@ -36,7 +35,6 @@ export class NeonExperienceStore implements ExperienceStoreLike {
     if (!TENANT_ID_PATTERN.test(tenant)) throw new Error("Invalid tenant id");
   }
 
-  /** Inserts once inside a transaction, re-reads and verifies before COMMIT, then re-reads after COMMIT. */
   async append<T extends ExperienceRecord>(record: T): Promise<T> {
     const id = String(record?.experience_id);
     if (!validateExperienceRecord(record)) throw new ExperienceAppendError(id, "Invalid ExperienceRecord");
@@ -64,19 +62,19 @@ export class NeonExperienceStore implements ExperienceStoreLike {
       if (error instanceof ExperienceAppendError) throw error;
       if (error instanceof ExperienceIntegrityError) throw new ExperienceAppendError(id, "Write read-back validation failed");
       if (isUniqueViolation(error)) throw new ExperienceAppendError(id, "Append-only memory refuses existing experience_id");
-      // COMMIT outcome may be unknown; a retry of the same run returns 409 if it was committed.
+      console.error("[neon-store-error append]", { message: (error as any)?.message, code: (error as any)?.code });
       throw new ExperienceStoreUnavailableError(id);
     }
     return (await this.readById(id)) as T;
   }
 
-  /** Tenant-scoped read; recomputes the canonical digest and compares it with the stored content_sha256. */
   async readById(id: string): Promise<ExperienceRecord> {
     if (typeof id !== "string" || !EXPERIENCE_ID.test(id)) throw new ExperienceIntegrityError(String(id), "Invalid experience_id");
     let rows: Row[];
     try {
       rows = (await this.pool.query<Row>(SELECT_ONE, [this.tenant, id])).rows;
-    } catch {
+    } catch (error) {
+      console.error("[neon-store-error read]", { message: (error as any)?.message, code: (error as any)?.code });
       throw new ExperienceStoreUnavailableError(id);
     }
     return this.verifyRow(id, rows).record;
