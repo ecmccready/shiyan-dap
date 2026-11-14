@@ -16,6 +16,8 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
 - Level 4 plant, durable experience store, replay verification, and the Workbench MCP contract are live and are not modified by the commercial surfaces.
 - Phase 3 surfaces (asset map, audit summary) are read-only and off-chain.
 - Eight original test events remain in the ledger. Only the project owner can purge them.
+- Production security close-out (2026-11-14) is complete: anchor and GitHub credentials rotated, unused env vars removed, schema guard green, acceptance passing with independent anchors.
+- 4D state compression engine: milestone M1 (pure, lossless, isolated core in `src/core/compression/`) is built and tested; it is not wired into any route or production path. Design and decisions: `docs/design/4d-state-compression.md`. Next is M2, a read-only per-tenant reader verified locally. Segment sealing, persistence, and the first consumer are still open questions.
 
 ## Surfaces and the Domains dropdown
 
