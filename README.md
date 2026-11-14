@@ -163,6 +163,7 @@ npm ci
 npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
+npx tsx scripts/check-compression.ts && npx tsx scripts/check-compression-boundary.ts
 ```
 
 ## Neon Staging (Preview)
