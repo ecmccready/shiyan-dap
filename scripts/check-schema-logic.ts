@@ -64,11 +64,15 @@ const extra = compareColumns("storage.reference_envelopes", [
 assert.equal(extra.ok, false);
 assert.match(extra.detail ?? "", /unexpected record_json/);
 
-// Triggers: pg_trigger.tgtype 99 = BEFORE ROW UPDATE+DELETE; 130 = BEFORE STATEMENT TRUNCATE.
-const decodedRow = decodeTgType(99);
+// Triggers: real pg_trigger.tgtype values. 27 = ROW(1)+BEFORE(2)+DELETE(8)+UPDATE(16);
+// 34 = BEFORE(2)+TRUNCATE(32) at statement level.
+const decodedRow = decodeTgType(27);
 assert.deepEqual(decodedRow, { timing: "BEFORE", level: "ROW", events: ["DELETE", "UPDATE"] });
-const decodedTruncate = decodeTgType(130);
+const decodedTruncate = decodeTgType(34);
 assert.deepEqual(decodedTruncate, { timing: "BEFORE", level: "STATEMENT", events: ["TRUNCATE"] });
+// AFTER ROW INSERT = ROW(1)+INSERT(4); INSTEAD OF ROW UPDATE = ROW(1)+UPDATE(16)+INSTEAD(64).
+assert.deepEqual(decodeTgType(5), { timing: "AFTER", level: "ROW", events: ["INSERT"] });
+assert.deepEqual(decodeTgType(81), { timing: "INSTEAD OF", level: "ROW", events: ["UPDATE"] });
 
 const triggerPass = compareTriggers("storage.reference_envelopes", [
   { name: "envelopes_no_update_delete", table: "reference_envelopes", functionName: "reject_mutation", ...decodedRow },

@@ -147,16 +147,17 @@ export const RECOVERY_RECORD_PRIVILEGES: PrivilegeInfo = {
 
 /**
  * Decode pg_trigger.tgtype into timing, level, and events.
- * Bits: 1=ROW, 2=BEFORE, 4=AFTER, 8=INSTEAD, 16=INSERT, 32=DELETE, 64=UPDATE, 128=TRUNCATE.
+ * Bits (PostgreSQL src/include/catalog/pg_trigger.h): 1=ROW, 2=BEFORE, 4=INSERT,
+ * 8=DELETE, 16=UPDATE, 32=TRUNCATE, 64=INSTEAD. Neither BEFORE nor INSTEAD means AFTER.
  */
 export function decodeTgType(tgtype: number): Pick<TriggerInfo, "timing" | "level" | "events"> {
-  const timing: TriggerInfo["timing"] = tgtype & 2 ? "BEFORE" : tgtype & 8 ? "INSTEAD OF" : "AFTER";
+  const timing: TriggerInfo["timing"] = tgtype & 2 ? "BEFORE" : tgtype & 64 ? "INSTEAD OF" : "AFTER";
   const level: TriggerInfo["level"] = tgtype & 1 ? "ROW" : "STATEMENT";
   const events: string[] = [];
-  if (tgtype & 16) events.push("INSERT");
-  if (tgtype & 32) events.push("DELETE");
-  if (tgtype & 64) events.push("UPDATE");
-  if (tgtype & 128) events.push("TRUNCATE");
+  if (tgtype & 4) events.push("INSERT");
+  if (tgtype & 8) events.push("DELETE");
+  if (tgtype & 16) events.push("UPDATE");
+  if (tgtype & 32) events.push("TRUNCATE");
   return { timing, level, events };
 }
 
