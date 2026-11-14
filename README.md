@@ -189,6 +189,7 @@ Applied once via `psql` (storage) and the Neon SQL Editor (anchors):
 - `db/migrations/001_shiyan_storage.sql`
 - `db/migrations/001_shiyan_anchors.sql`
 - `db/migrations/002_shiyan_recovery_records.sql` (anchors project; append-only `shiyan_anchor.recovery_records`)
+- `db/migrations/003_shiyan_storage_legacy_envelopes.sql` (storage project; repairs a legacy envelopes table shape, no-op if already correct)
 
 All are idempotent.
 
@@ -219,6 +220,17 @@ tr -d '\r\n' < ~/.shiyan-anchor-url | npx vercel env add SHIYAN_ANCHOR_URL produ
 ```
 
 Never commit connection strings, passwords, keys or tokens.
+
+### Schema guard and diagnostics
+
+After applying migrations, including `db/migrations/003_shiyan_storage_legacy_envelopes.sql` in the storage project's SQL Editor (a no-op if `shiyan.reference_envelopes` already has the expected shape; it never drops data), verify both databases with the read-only schema guard. It checks tables, columns, append-only triggers, and app-role privileges, and never prints connection strings:
+
+```bash
+cd ~/src/shiyan-dap
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-schema.ts --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
+```
+
+Set `SHIYAN_STORAGE_DIAGNOSTICS=1` in Vercel only while diagnosing `REFERENCE_STORAGE_UNAVAILABLE`. The app then logs a single line with the operation name, Postgres error code, and error class; it never logs URLs or error message text. Leave the flag unset in normal operation.
 
 ### Acceptance
 

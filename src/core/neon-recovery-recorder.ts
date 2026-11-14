@@ -11,6 +11,7 @@ import {
   type RecoveryRecordWrite,
   type RecorderResult,
 } from "./reconcile";
+import { logStorageDiagnostic } from "./storage-diagnostics";
 import { resolvedAnchorUrl, resolvedStorageUrl } from "./storage-provider";
 
 type Env = Record<string, string | undefined>;
@@ -75,8 +76,9 @@ export class NeonRecoveryRecorder implements RecoveryRecorder {
         ],
       );
       return { ok: true };
-    } catch {
+    } catch (error) {
       // Never surface driver messages: they can include connection strings.
+      logStorageDiagnostic("recovery.record", error);
       return { ok: false, error: "Anchors storage backend unavailable" };
     }
   }

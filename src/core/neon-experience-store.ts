@@ -9,6 +9,7 @@ import {
   ExperienceStoreUnavailableError, type ExperienceStoreLike,
 } from "./experience-store";
 import { inTransaction, isUniqueViolation } from "./neon-db";
+import { logStorageDiagnostic } from "./storage-diagnostics";
 import { TENANT_ID_PATTERN } from "./tenant-auth";
 
 const EXPERIENCE_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{0,159}$/;
@@ -62,6 +63,7 @@ export class NeonExperienceStore implements ExperienceStoreLike {
       if (error instanceof ExperienceAppendError) throw error;
       if (error instanceof ExperienceIntegrityError) throw new ExperienceAppendError(id, "Write read-back validation failed");
       if (isUniqueViolation(error)) throw new ExperienceAppendError(id, "Append-only memory refuses existing experience_id");
+      logStorageDiagnostic("experiences.append", error);
       throw new ExperienceStoreUnavailableError(id);
     }
     return (await this.readById(id)) as T;
@@ -73,6 +75,7 @@ export class NeonExperienceStore implements ExperienceStoreLike {
     try {
       rows = (await this.pool.query<Row>(SELECT_ONE, [this.tenant, id])).rows;
     } catch (error) {
+      logStorageDiagnostic("experiences.readById", error);
       throw new ExperienceStoreUnavailableError(id);
     }
     return this.verifyRow(id, rows).record;

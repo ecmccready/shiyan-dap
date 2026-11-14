@@ -10,6 +10,7 @@ import {
   ReferenceStorageError,
   type IndependentReferenceAnchors, type ReferenceAnchor, type ReferenceEnvelopeStore,
 } from "./github-reference";
+import { logStorageDiagnostic } from "./storage-diagnostics";
 import { TENANT_ID_PATTERN } from "./tenant-auth";
 
 const REFERENCE_ID = /^ref-[0-9a-f]{32}$/;
@@ -22,10 +23,11 @@ function checkKey(tenant: string, id?: string): void {
   if (!TENANT_ID_PATTERN.test(tenant)) throw new ReferenceStorageError("Invalid tenant");
   if (id !== undefined && !REFERENCE_ID.test(id)) throw new ReferenceStorageError("Invalid reference id");
 }
-async function guarded<T>(fn: () => Promise<T>): Promise<T> {
+async function guarded<T>(operation: string, fn: () => Promise<T>): Promise<T> {
   try { return await fn(); } catch (error) {
     if (error instanceof ReferenceStorageError) throw error;
     // Outages and permission errors throw; they are never reported as absence.
+    logStorageDiagnostic(operation, error);
     throw new ReferenceStorageError("Reference storage backend unavailable");
   }
 }
@@ -58,7 +60,7 @@ export class NeonReferenceAnchors implements IndependentReferenceAnchors {
     if (!GIT_SHA.test(anchor.commit_sha) || !SHA256_HEX.test(anchor.snapshot_sha256) || !SHA256_HEX.test(anchor.envelope_sha256)) {
       throw new ReferenceStorageError("Invalid proposed anchor");
     }
-    return guarded(async () => {
+    return guarded("anchors.createIfAbsent", async () => {
       await this.pool.query(
         `INSERT INTO shiyan_anchor.reference_anchors (${ANCHOR_COLUMNS})
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -74,7 +76,7 @@ export class NeonReferenceAnchors implements IndependentReferenceAnchors {
 
   async get(tenant: string, id: string): Promise<ReferenceAnchor | null> {
     checkKey(tenant, id);
-    return guarded(async () => {
+    return guarded("anchors.get", async () => {
       const result = await this.pool.query<AnchorRow>(
         `SELECT ${ANCHOR_COLUMNS} FROM shiyan_anchor.reference_anchors WHERE tenant_id = $1 AND reference_id = $2`,
         [tenant, id],
@@ -87,7 +89,7 @@ export class NeonReferenceAnchors implements IndependentReferenceAnchors {
 
   async listTenant(tenant: string): Promise<readonly ReferenceAnchor[]> {
     checkKey(tenant);
-    return guarded(async () => {
+    return guarded("anchors.listTenant", async () => {
       const result = await this.pool.query<AnchorRow>(
         `SELECT ${ANCHOR_COLUMNS} FROM shiyan_anchor.reference_anchors WHERE tenant_id = $1 ORDER BY reference_id LIMIT $2`,
         [tenant, MAX_LIST + 1],
@@ -107,7 +109,7 @@ export class NeonReferenceEnvelopes implements ReferenceEnvelopeStore {
     checkKey(tenant, id);
     if (!Buffer.isBuffer(bytes) || bytes.length === 0 || bytes.length > MAX_ENVELOPE_BYTES) throw new ReferenceStorageError("Invalid envelope");
     const hash = createHash("sha256").update(bytes).digest("hex");
-    return guarded(async () => {
+    return guarded("envelopes.putIfAbsent", async () => {
       const inserted = await this.pool.query(
         `INSERT INTO shiyan.reference_envelopes (tenant_id, reference_id, envelope, envelope_sha256)
          VALUES ($1, $2, $3, $4)
@@ -123,7 +125,7 @@ export class NeonReferenceEnvelopes implements ReferenceEnvelopeStore {
 
   async get(tenant: string, id: string): Promise<Buffer | null> {
     checkKey(tenant, id);
-    return guarded(async () => {
+    return guarded("envelopes.get", async () => {
       const result = await this.pool.query<EnvelopeRow>(
         "SELECT tenant_id, reference_id, envelope, envelope_sha256 FROM shiyan.reference_envelopes WHERE tenant_id = $1 AND reference_id = $2",
         [tenant, id],
@@ -141,7 +143,7 @@ export class NeonReferenceEnvelopes implements ReferenceEnvelopeStore {
 
   async listIds(tenant: string): Promise<readonly string[]> {
     checkKey(tenant);
-    return guarded(async () => {
+    return guarded("envelopes.listIds", async () => {
       const result = await this.pool.query<{ reference_id: unknown }>(
         "SELECT reference_id FROM shiyan.reference_envelopes WHERE tenant_id = $1 ORDER BY reference_id LIMIT $2",
         [tenant, MAX_LIST + 1],
