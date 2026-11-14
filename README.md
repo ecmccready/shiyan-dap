@@ -163,31 +163,7 @@ npm ci
 npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
-## Neon Staging (Preview)
-
-Two isolated Neon projects are used for Preview deployments:
-
-- **shiyan-storage** — experiences and reference envelopes (`shiyan_app` role)
-- **shiyan-anchors** — reference anchors (`shiyan_anchor_app` role)
-
-### Required Preview environment variables
-
-| Variable | Value |
-|----------|-------|
-| `SHIYAN_STORAGE_BACKEND` | `neon` |
-| `SHIYAN_STORAGE_URL` | `postgresql://shiyan_app:<password>@ep-sweet-bread-bdzz2swe.c-8.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require` |
-| `SHIYAN_ANCHOR_URL` | `postgresql://shiyan_anchor_app:<password>@ep-dark-dawn-be92d9ji.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require` |
-
-App-role passwords and full connection strings are stored outside git.
-
-### Migrations
-
-Applied once via `psql` (storage) and the Neon SQL Editor (anchors):
-
-- `db/migrations/001_shiyan_storage.sql`
-- `db/migrations/001_shiyan_anchors.sql`
-
-Both are idempotent.
+```
 
 ## Neon Staging (Preview)
 
@@ -212,5 +188,48 @@ Applied once via `psql` (storage) and the Neon SQL Editor (anchors):
 
 - `db/migrations/001_shiyan_storage.sql`
 - `db/migrations/001_shiyan_anchors.sql`
+- `db/migrations/002_shiyan_recovery_records.sql` (anchors project; append-only `shiyan_anchor.recovery_records`)
 
-Both are idempotent.
+All are idempotent.
+
+## Production (Vercel)
+
+Production uses the same two-database layout as Preview, on separate Neon projects:
+
+- **storage** holds `shiyan.experiences` and `shiyan.reference_envelopes`.
+- **shiyan-anchors** holds `shiyan_anchor.reference_anchors` and `shiyan_anchor.recovery_records`, reached by the `shiyan_anchor` role (SELECT and INSERT only).
+
+The anchor URL must point to a different database and a different role than the storage URL. Otherwise the reference routes fail closed with `503 REFERENCE_STORAGE_NOT_CONFIGURED`. Nothing falls back to the storage database or the filesystem.
+
+### Required Production environment variables
+
+| Variable | Value |
+|----------|-------|
+| `AETHEL_TENANT_KEYS` | tenant key map (secret) |
+| `SHIYAN_STORAGE_BACKEND` | `neon` |
+| `SHIYAN_STORAGE_URL` | `postgresql://<storage role>:<password>@<storage host>/neondb?sslmode=require` |
+| `SHIYAN_ANCHOR_URL` | `postgresql://shiyan_anchor:<password>@<anchors host>/neondb?sslmode=require` |
+| `AETHEL_GITHUB_TOKEN` | fine-grained read-only token (secret) |
+| `AETHEL_GITHUB_REPOS` | `{"ecmccready/shiyan-dap":"prod-a"}` |
+
+Vercel reads environment variables at build time, so redeploy after any change (for example with an empty commit). Set secret values from local files with the Vercel CLI rather than by pasting:
+
+```bash
+tr -d '\r\n' < ~/.shiyan-anchor-url | npx vercel env add SHIYAN_ANCHOR_URL production
+```
+
+Never commit connection strings, passwords, keys or tokens.
+
+### Acceptance
+
+```bash
+export STAGING_BASE_URL="https://<deployment>.vercel.app"
+export STAGING_TENANT_A_KEY="$(cat ~/.shiyan-prod-a.key)"
+export STAGING_TENANT_B_KEY="$(cat ~/.shiyan-prod-b.key)"
+export STAGING_EXPECT_ANCHORS=1
+export STAGING_REFERENCE_REPO=ecmccready/shiyan-dap
+npx tsx --tsconfig ./tsconfig.json scripts/staging-acceptance.ts --run-file <genuine aethel.run/1 file>
+unset STAGING_TENANT_A_KEY STAGING_TENANT_B_KEY
+```
+
+Each run needs a unique `run_id` (a reused one returns 409).
