@@ -1,6 +1,7 @@
 // Pure, side-effect-free comparison of Neon storage and anchors schema
 // against the shapes in db/migrations/001_shiyan_storage.sql,
-// 001_shiyan_anchors.sql, and 002_shiyan_recovery_records.sql.
+// 001_shiyan_anchors.sql, and 002_shiyan_recovery_records.sql, plus the staged
+// table from 004_shiyan_state_segments.sql (checked only once it exists).
 // Used by scripts/check-schema.ts. Prints and connections live in the script.
 
 export type ColumnInfo = { name: string; dataType: string };
@@ -36,6 +37,10 @@ const TYPE_ALIASES: Record<string, string> = {
   "double precision": "double precision",
   float8: "double precision",
   numeric: "numeric",
+  integer: "integer",
+  int4: "integer",
+  array: "array",
+  "text[]": "array",
 };
 
 export function normalizeDataType(dataType: string): string {
@@ -128,6 +133,55 @@ export const EXPECTED_ANCHOR_TRIGGERS: Record<string, readonly TriggerInfo[]> = 
   reference_anchors: appendOnlyPair("reference_anchors", "anchors", "reject_mutation"),
   recovery_records: appendOnlyPair("recovery_records", "recovery_records", "reject_mutation"),
 };
+
+/**
+ * Staged storage tables: migrations that exist in db/migrations but may not be applied yet. scripts/check-schema.ts
+ * reports a staged table as SKIP while it is absent (so the live guard does not break before the owner applies
+ * the migration) and checks it fully once it exists. Pass --require-state-segments to make absence a FAIL.
+ */
+export const STAGED_STORAGE_COLUMNS: Record<string, readonly ColumnInfo[]> = {
+  state_segments: [
+    { name: "tenant_id", dataType: "text" },
+    { name: "seq", dataType: "integer" },
+    { name: "segment_sha256", dataType: "text" },
+    { name: "prev_segment_sha256", dataType: "text" },
+    { name: "segment_json", dataType: "text" },
+    { name: "point_count", dataType: "integer" },
+    { name: "source_ids", dataType: "array" },
+    { name: "window_opened_at", dataType: "timestamptz" },
+    { name: "window_closed_at", dataType: "timestamptz" },
+    { name: "closed_by", dataType: "text" },
+    { name: "segment_size", dataType: "integer" },
+    { name: "cutoff_ms", dataType: "bigint" },
+    { name: "grace_ms", dataType: "bigint" },
+    { name: "loss_mode", dataType: "text" },
+    { name: "eps_predicted", dataType: "double precision" },
+    { name: "eps_observed", dataType: "double precision" },
+    { name: "eps_phi", dataType: "double precision" },
+    { name: "context_sha256", dataType: "text" },
+    { name: "created_at", dataType: "timestamptz" },
+  ],
+};
+
+export const STAGED_STORAGE_TRIGGERS: Record<string, readonly TriggerInfo[]> = {
+  // tgtype 27 (BEFORE ROW UPDATE|DELETE), 34 (BEFORE STATEMENT TRUNCATE), 7 (BEFORE ROW INSERT).
+  state_segments: [
+    ...appendOnlyPair("state_segments", "state_segments", "reject_mutation"),
+    { name: "state_segments_link_check", table: "state_segments", functionName: "state_segments_link_check", timing: "BEFORE", level: "ROW", events: ["INSERT"] },
+  ],
+};
+
+/** Which migration creates each staged table (for SKIP messages). */
+export const STAGED_STORAGE_MIGRATIONS: Record<string, string> = {
+  state_segments: "db/migrations/004_shiyan_state_segments.sql",
+};
+
+/** Result for a staged table that does not exist yet: SKIP (ok) unless required. */
+export function stagedTableMissing(label: string, migration: string, required: boolean): CheckResult {
+  return required
+    ? { name: `${label}.exists`, ok: false, detail: `table is missing; apply ${migration}` }
+    : { name: label, ok: true, detail: `SKIP: pending ${migration} (not applied yet)` };
+}
 
 export const APP_TABLE_PRIVILEGES: PrivilegeInfo = {
   select: true,

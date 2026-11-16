@@ -1,6 +1,6 @@
 # 4D State Compression Engine: design (draft, not implemented)
 
-Status: M1 (pure core), M2 (read-only per-tenant reader, local CLI, off by default) and M3 (window sealing, opt-in bounded-loss, anchors context) implemented. M4–M5 are not implemented. No migration exists or has been applied, and no existing source file outside `src/core/compression/` and the compression scripts was changed. Designed on `main` at `2a09d82`.
+Status: M1 (pure core), M2 (read-only per-tenant reader, local CLI, off by default), M3 (window sealing, opt-in bounded-loss, anchors context) and M4 (append-only persistence in `shiyan.state_segments`, local CLI only) implemented. M5 (the customer proof export consumer) is not implemented. Migration `004_shiyan_state_segments.sql` exists but is **not applied** anywhere by this work; the owner applies it. No existing source file outside `src/core/compression/`, the compression scripts and the schema guard (`src/core/schema-guard.ts`, `scripts/check-schema.ts`) was changed. Designed on `main` at `2a09d82`.
 
 ## 1. Inspiration (SIMA 2), stated honestly
 SIMA 2 is Google DeepMind's Gemini-based agent for 3D virtual worlds. It follows instructions given in language and images, reasons about goals, and converses with users [1][2]. Its self-improvement loop works like this: Gemini sets a task and estimates a reward for the agent's behaviour, and the result goes into a **bank of self-generated experience** that trains the next generation of the agent [1]. In the paper, Gemini rates each trajectory (video) from 0 to 100 against a rubric calibrated to human preferences, and a score of 50 or more counts as a success [2]. Failed tasks are retried with hints until the agent succeeds [3].
@@ -58,7 +58,7 @@ The tenant comes only from server-side `authenticateTenant` and must match `TENA
 
 ## 8. Storage
 - **Phases 1–2: in memory only.** No table.
-- **Phase 4 (only if asked):** add migration `db/migrations/004_shiyan_state_segments.sql` on the storage project. It would create `shiyan.state_segments (tenant_id, seq, segment_json, segment_sha256, prev_segment_sha256, created_at)` with PK `(tenant_id, seq)`, UNIQUE `segment_sha256`, a CHECK that the sha matches the JSON, and the `state_segments_no_update_delete` and `state_segments_no_truncate` triggers using `shiyan.reject_mutation()`. `shiyan_app` would get SELECT and INSERT only. `scripts/check-schema.ts` would need a new expectation entry, which is a later and separate change.
+- **Phase 4 (built as M4):** migration `db/migrations/004_shiyan_state_segments.sql` on the storage project. See "M4 as built" for the final shape, which extends this sketch.
 
 ## 9. Module layout (new, isolated)
 ```
@@ -91,8 +91,8 @@ The Level 4 plant is `src/lib/level4/*`, `src/components/Level4Shell.tsx`, `src/
 1. **M1, pure core:** `types`, `extract`, `encode`, `verify` plus unit tests. Lossless only, no DB, no flag needed.
 2. **M2, read-only source:** `source.ts` plus a local CLI script that compresses and verifies one tenant from a `--storage-file` URL and prints only hashes and counts. Behind the flag.
 3. **M3, enrichment and bounded-loss:** recovery_records and reference_anchors annotations, plus opt-in eps quantization. **Done (2026-11-16)**, with window sealing (open question 4).
-4. **M4, persistence (only if asked):** migration 004, schema-guard expectation, append-only writer.
-5. **M5, consumer (only if asked):** a read-only tenant API route or ROE input. This is a separate decision.
+4. **M4, persistence:** migration 004, schema-guard expectation, append-only writer. **Done (2026-11-16)**.
+5. **M5, consumer:** the tenant-authenticated customer proof export (decided 2026-11-16, see open question 6). Not built.
 
 ## Decisions (2026-11-14)
 1. **4D = (predicted, observed, Φ) × time, per tenant.** The reference commit is segment *context* (M3), not an axis.
@@ -173,13 +173,76 @@ New pure files `window.ts`, `context.ts`, `chain.ts`; additive changes to `types
 - Recovery records created after their segment sealed are not attached to it (by design, for immutability). The `recovery_records` write path (`reconcile()`) is not yet called from any route, so production may have few or none.
 - All tested against mock clients; the parent/user runs against live data.
 
+### M4 as built (2026-11-16)
+**Migration `db/migrations/004_shiyan_state_segments.sql`** (storage project; plain SQL for the Neon SQL Editor; idempotent; not applied by this work).
+- Table: `shiyan.state_segments(tenant_id, seq, segment_sha256, prev_segment_sha256, segment_json text, point_count, source_ids text[], window_opened_at, window_closed_at, closed_by, segment_size, cutoff_ms (NULL = none), grace_ms, loss_mode, eps_predicted, eps_observed, eps_phi, context_sha256, created_at default now())`.
+- Keys and constraints:
+  - PK `(tenant_id, seq)`, UNIQUE `segment_sha256`.
+  - `segment_sha256 = sha256(segment_json)` (text, not jsonb, so the canonical bytes are kept exactly).
+  - The JSON's tenant/seq/count/prev/loss mode must equal the columns, and `cardinality(source_ids) = point_count ≤ segment_size`.
+  - seq 0 ⇔ no prev; the eps shape follows the loss mode; `context_sha256` is present ⇔ the segment has context.
+- Triggers:
+  - `state_segments_link_check` (BEFORE INSERT, ROW, tgtype 7): seq n > 0 requires the tenant's row n−1 with `segment_sha256 = prev_segment_sha256`. With the PK this makes each tenant's chain contiguous and linked in SQL.
+  - `state_segments_no_update_delete` (27) and `state_segments_no_truncate` (34) use `shiyan.reject_mutation()`.
+- Grants: REVOKE ALL FROM PUBLIC; `shiyan_app` gets SELECT and INSERT only.
+- **No `chain_root` column:** each `segment_sha256` commits to its `prev_segment_sha256`, so the chain root is the `segment_sha256` at the tenant's highest seq. A separate column would duplicate it and could disagree.
+- Applied twice to a scratch PostgreSQL 17 instance (PGlite, not committed). Verified: idempotent; triggers report tgtype 7/27/34; UPDATE, DELETE and TRUNCATE are rejected (42501); an unlinked insert is rejected (23503); `shiyan_app` has SELECT/INSERT and no UPDATE/DELETE.
+
+**Schema guard.** The guard had no notion of staged migrations (a missing table was a FAIL), so making `state_segments` a plain expectation would have turned the live guard red until 004 is applied. I chose the safer option and added a narrow staged-table mechanism (`STAGED_STORAGE_COLUMNS/TRIGGERS`):
+- While the table is absent, the guard prints `SKIP storage.state_segments: pending …004…` (not a failure).
+- Once the table exists, its columns, the three triggers and the `shiyan_app` privileges are checked fully.
+- `--require-state-segments` turns absence into a FAIL; use it after applying 004.
+- Existing tables are unaffected.
+
+**Writer `src/core/compression/store.ts`.** It is the only module allowed write SQL, and only `INSERT INTO shiyan.state_segments`. It is imported only by `scripts/persist-tenant-segments.ts` (and test-only check scripts); the boundary check enforces this. One transaction per run:
+- **write:** `BEGIN` → `SELECT pg_advisory_xact_lock(hashtext('shiyan.state_segments'), hashtext($1))` (per-tenant serialization) → SELECT the tenant's experiences → SELECT the tenant's stored segments → verify → INSERT the new sealed segments → SELECT read-back (must equal stored + appended) → `COMMIT`. On any refusal or error it sends `ROLLBACK`.
+- **dry-run / verify:** `BEGIN READ ONLY` → the two SELECTs → `COMMIT`.
+- Each mode has its own exact-match allowlist; the read modes cannot send INSERT, BEGIN or the lock.
+- **Extends from the stored head (fixes the M3 late-commit caveat):**
+  - Stored rows are parsed strictly: the hash matches the JSON, the JSON is canonical, the columns equal the JSON, and the row belongs to this tenant.
+  - The chain is verified: links, every stored segment rebuilt from exactly its stored `source_ids` rows with the identical hash, decode exact or within eps, `context_sha256` matches, and context is re-derived when anchors are given.
+  - The requested sealing parameters, loss mode/eps and context presence must equal the stored chain's.
+  - Any failure → **refused, nothing written, never overwritten**.
+  - Points already covered by stored segments are fixed. Uncovered points (including late commits whose `created_at` falls inside an already-stored window) are windowed with `effective arrival = max(arrival, stored head's window_closed_at)`, so they go to the next open window. Only sealed windows are inserted, never pending ones. A rerun with nothing newly sealed inserts 0 rows and sends no INSERT.
+  - With no stored chain, the first append equals the M3 `buildTenantChain` result.
+- Concurrency: the advisory lock serializes appends per tenant. The PK plus the link trigger also reject a racing duplicate (23505/23503), and the CLI says "rerun".
+
+**Pure core addition `extend.ts`:** `verifyStoredChain` and `extendTenantChain` (no I/O, no clock).
+
+**CLI `scripts/persist-tenant-segments.ts`.**
+- Gate: refuses (exit 2, no reads) unless `SHIYAN_STATE_COMPRESSION=1`. Without `--write` it is a **dry run** (READ ONLY; prints `would_append`). `--write` appends. `--verify-stored` (READ ONLY) checks the stored chain with its own stored parameters.
+- The verify output also reports `from_scratch_prefix`: whether a from-scratch recomputation agrees. It says `no` when late commits were placed after the head, which is expected.
+- Same sealing/loss/`--anchor-file` flags as `compress-tenant.ts`. Prints only hashes, ids and counts. A missing table prints a hint to apply 004.
+- `compress-tenant.ts` stays strictly read-only and may not import the writer.
+
+**Tests.**
+- `scripts/check-compression-m4.ts` (18 checks, in-memory fake of the storage DB that accepts only the exact statements and emulates the PK, the sha CHECK and the link trigger):
+  - migration text: triggers, grants, no destructive statements, idempotent, columns = guard expectation;
+  - staged guard: SKIP / required FAIL / the real catalog shape;
+  - statement allowlists;
+  - dry run inserts nothing; write inserts only sealed segments; reruns are idempotent;
+  - late commit never alters stored segments;
+  - stored-prefix mismatch refuses (options, tampered row, missing source row);
+  - tenant isolation; PK race rolls back; bounded and context chains persist and verify;
+  - CLI gate, dry run, write/rerun/verify, refusal, the 42P01 hint, no leaks, no file writes.
+- `check-compression-boundary.ts` adds:
+  - write SQL only in `store.ts`, and only `INSERT INTO shiyan.state_segments`;
+  - `store.ts` importable only by the persist CLI;
+  - the persist CLI's import allowlist;
+  - a repo-wide wiring scan: no `src/` module outside compression imports it, so no route.
+
+**Caveats.**
+- The writer runs as `shiyan_app` from `~/.shiyan-storage-url`, which now gains INSERT on `state_segments` via 004 (no UPDATE/DELETE; triggers block mutation even for the owner, except by dropping triggers).
+- Parameters are fixed per tenant chain: changing cutoff/grace/loss/context later requires a new decision (a new chain or a version bump), because appends are refused on mismatch.
+- `source_ids` (about 35 bytes per run) are stored so each segment can be re-verified from its exact sources.
+
 ## 13. Open questions
 1. ~~Meaning of "4D"~~ **Resolved:** (predicted, observed, Φ) × time. The reference commit is context, not an axis.
 2. ~~Lossless vs bounded-loss~~ **Resolved:** lossless for M1–M2. Bounded-loss is opt-in in M3, and eps per axis is to be chosen then.
 3. ~~Which sources~~ **Resolved:** `third-party-workbench` only. Others are excluded and counted.
 4. ~~Segment size and sealing~~ **Resolved (M3):** fixed 256-run windows plus a time cutoff (default 24 h, configurable), ordered by DB arrival; a late record goes into the next open window and never reopens a sealed one. See "M3 as built".
-5. If persisted, should segments live in the storage DB (`shiyan`) or the independent anchors DB, given they are derived and not authoritative? (Default for now: no persistence.)
-6. Who reads the segments first: ROE next-action, the customer proof export, or nobody yet (verification only)? (Default for now: no consumer.)
+5. ~~Where segments are stored~~ **Resolved (2026-11-16):** in the **storage** project, table `shiyan.state_segments`, next to `shiyan.experiences`. Rationale: segments are derived data, so they live with their source. That gives one tenant boundary, one role (`shiyan_app`: SELECT + INSERT) and one backup/restore unit, and the writer can read sources and append in a single transaction. The anchors project stays an **independent witness**. A later step (not M4) can anchor each tenant's chain head there, so tampering with storage would be detectable from a second database.
+6. ~~First consumer~~ **Resolved (2026-11-16):** the **tenant-authenticated customer proof export**. It would gain a read-only, additive section with the tenant's persisted chain head (root), segment count and seal status. Rationale: a customer can verify a compact, hash-chained summary of their own runs, and that verifiability is the commercial moat. ROE inputs come later. This is M5; M4 wires no consumer and no route.
 
 ## Sources
 [1] Google DeepMind, "SIMA 2: An agent that plays, reasons, and learns with you in virtual 3D worlds", https://deepmind.google/blog/sima-2-an-agent-that-plays-reasons-and-learns-with-you-in-virtual-3d-worlds/

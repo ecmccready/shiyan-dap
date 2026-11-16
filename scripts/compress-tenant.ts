@@ -51,7 +51,7 @@ export interface CompressTenantOutcome {
   lines: string[];
 }
 
-function argValue(argv: readonly string[], flag: string): string | undefined {
+export function argValue(argv: readonly string[], flag: string): string | undefined {
   const i = argv.indexOf(flag);
   if (i === -1) return undefined;
   const v = argv[i + 1];
@@ -64,9 +64,9 @@ function expandHome(path: string, home: () => string): string {
   return path;
 }
 
-type Parsed = { ok: true; value: ChainOptions & { lossLabel: string } } | { ok: false; line: string };
+export type Parsed = { ok: true; value: ChainOptions & { lossLabel: string } } | { ok: false; line: string };
 
-function parseOptions(argv: readonly string[], now: number): Parsed {
+export function parseOptions(argv: readonly string[], now: number): Parsed {
   const usage = (m: string): Parsed => ({ ok: false, line: `usage: ${m}` });
   let loss: LossOption = { mode: "lossless" };
   let lossLabel = "lossless";
@@ -106,8 +106,8 @@ function parseOptions(argv: readonly string[], now: number): Parsed {
   return { ok: true, value: { segmentSize: DEFAULT_SEGMENT_SIZE, cutoffMs, graceMs, asOfMs, loss, lossLabel } };
 }
 
-type UrlRead = { ok: true; checked: CheckedDatabaseUrl } | { ok: false; exitCode: 1 | 2; line: string };
-function readUrl(label: string, file: string | undefined, fallback: string | undefined, env: Env, deps: CompressTenantDeps): UrlRead {
+export type UrlRead = { ok: true; checked: CheckedDatabaseUrl } | { ok: false; exitCode: 1 | 2; line: string };
+export function readUrl(label: string, file: string | undefined, fallback: string | undefined, env: Env, deps: CompressTenantDeps): UrlRead {
   let url: string | undefined;
   if (file) {
     try { url = deps.readTextFile(expandHome(file, deps.home)).trim(); } catch { return { ok: false, exitCode: 1, line: `FAIL ${label}.url: file could not be read` }; }
@@ -122,7 +122,7 @@ function readUrl(label: string, file: string | undefined, fallback: string | und
   return { ok: true, checked: checked.value };
 }
 
-const dbFail = (label: string, error: unknown) =>
+export const dbFail = (label: string, error: unknown) =>
   `FAIL ${label}.read: class=${diagnosticErrorClass(error) || "unknown"} code=${diagnosticErrorCode(error) || "none"}`;
 const iso = (ms: number) => new Date(ms).toISOString();
 const byteLength = (s: unknown) => (typeof s === "string" ? Buffer.byteLength(s, "utf8") : 0);

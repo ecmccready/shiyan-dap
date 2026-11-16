@@ -17,7 +17,12 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
 - Phase 3 surfaces (asset map, audit summary) are read-only and off-chain.
 - Eight original test events remain in the ledger. Only the project owner can purge them.
 - Production security close-out (2026-11-14) is complete: anchor and GitHub credentials rotated, unused env vars removed, schema guard green, acceptance passing with independent anchors.
-- 4D state compression engine: M1 (pure, lossless core), M2 (read-only per-tenant reader and local CLI) and M3 (window sealing at 256 runs or a 24 h cutoff with late records going to the next open window, opt-in bounded-loss with per-axis eps, and per-segment context from recovery records and the reference anchor) are built and tested in `src/core/compression/` and `scripts/compress-tenant.ts`. Lossless stays the default and its hashes are unchanged. The CLI is off by default (`SHIYAN_STATE_COMPRESSION=1` required), reads only inside READ ONLY transactions, prints only hashes, ids and counts, and writes nothing. Nothing is wired into any route or production path, and there is no migration. Design and decisions: `docs/design/4d-state-compression.md`. Persistence (M4) and the first consumer (M5) are still open questions.
+- 4D state compression engine:
+  - **Built and tested:** M1 (pure, lossless core), M2 (read-only per-tenant reader), M3 (256-run windows with a 24 h cutoff, late records go to the next open window, opt-in bounded-loss, per-segment recovery/anchor context) and M4 (append-only persistence in `shiyan.state_segments`, migration `db/migrations/004_shiyan_state_segments.sql`).
+  - **Persistence:** segments live in the storage project; the anchors project stays an independent witness. Writes go only through the local CLI `scripts/persist-tenant-segments.ts`, which is off by default (`SHIYAN_STATE_COMPRESSION=1` plus `--write`), extends each tenant's chain from its stored head, refuses rather than overwrites, and prints only hashes and counts.
+  - **Not wired in:** no route or production path. The first consumer (M5, the tenant-authenticated customer proof export) is decided but not built.
+  - **Schema guard:** until 004 is applied, the guard reports `state_segments` as SKIP.
+  - Design and decisions: `docs/design/4d-state-compression.md`.
 
 ## Surfaces and the Domains dropdown
 
@@ -166,10 +171,12 @@ npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
 npx tsx scripts/check-compression.ts && npx tsx scripts/check-compression-boundary.ts
-npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts
+npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts
 # 4D compression, local and read-only (off by default; prints hashes, ids and counts only, writes nothing):
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/compress-tenant.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
 # opt-in bounded-loss example: add  --loss bounded --eps 0.001,0.001,0.0001
+# M4 persistence (after applying migration 004): dry run by default; --write appends; --verify-stored is read-only
+SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/persist-tenant-segments.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url [--write | --verify-stored]
 ```
 
 ## Neon Staging (Preview)
@@ -236,6 +243,8 @@ After applying migrations, including `db/migrations/003_shiyan_storage_legacy_en
 cd ~/src/shiyan-dap
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-schema.ts --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
 ```
+
+`shiyan.state_segments` (migration 004, 4D state compression M4) is a staged table. The guard prints SKIP while it is absent and checks it fully once present. After applying 004, add `--require-state-segments` to make its absence a failure.
 
 Set `SHIYAN_STORAGE_DIAGNOSTICS=1` in Vercel only while diagnosing `REFERENCE_STORAGE_UNAVAILABLE`. The app then logs a single line with the operation name, Postgres error code, and error class; it never logs URLs or error message text. Leave the flag unset in normal operation.
 

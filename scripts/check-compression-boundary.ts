@@ -2,6 +2,8 @@
  * Fails (exit 1) if a compression module imports anything outside its allowlist, reaches a forbidden
  * module transitively (MetamorphicEngine, metamorphic-runtime, deterministic-proof, self-engine, src/lib/level4),
  * or uses a non-deterministic / I/O primitive directly.
+ * M4: store.ts is the only module allowed any write SQL, and only INSERT INTO shiyan.state_segments; only
+ *     scripts/persist-tenant-segments.ts may import it. Every other compression file and the read-only CLI contain no write SQL.
  * M3: the pure core may not import source.ts (the only I/O module); new core files are covered automatically.
  * M2: also checks the read-only edge (src/core/compression/source.ts and scripts/compress-tenant.ts): no write
  * SQL, no file-write APIs, and the CLI may import only an allowlist (never routes, Level 4 or write modules).
@@ -55,9 +57,22 @@ function resolveSpec(fromFile: string, spec: string): string | null {
 const isForbidden = (p: string) => FORBIDDEN.includes(p) || p.startsWith(FORBIDDEN_DIR);
 
 /** Direct-rule violations for one compression file's text. */
+const WRITE_SQL_RE = /\b(INSERT|UPDATE|DELETE|TRUNCATE|CREATE|ALTER|DROP|GRANT|REVOKE|MERGE|COPY|VACUUM)\b/g;
+const STORE_FILE = "src/core/compression/store.ts";
+/** Write SQL anywhere in the compression tree: none at all, except store.ts may say INSERT INTO shiyan.state_segments. */
+export function writeSqlViolations(rel: string, text: string): string[] {
+  const v: string[] = [];
+  for (const m of text.matchAll(WRITE_SQL_RE)) {
+    const target = "INSERT INTO shiyan.state_segments";
+    const ok = rel === STORE_FILE && m[1] === "INSERT" && text.startsWith(target, m.index) && !/\w/.test(text.charAt(m.index! + target.length));
+    if (!ok) v.push(`${rel}: write SQL keyword ${m[1]}${rel === STORE_FILE ? " (store.ts may only INSERT INTO shiyan.state_segments)" : ""}`);
+  }
+  return v;
+}
+
 export function checkCompressionFile(file: string, text: string): string[] {
   const rel = posix(file);
-  const v: string[] = [];
+  const v: string[] = [...writeSqlViolations(rel, text)];
   for (const [re, name] of BANNED_TOKENS) if (re.test(text)) v.push(`${rel}: uses ${name}`);
   for (const spec of specifiers(text)) {
     const target = resolveSpec(file, spec);
@@ -67,7 +82,8 @@ export function checkCompressionFile(file: string, text: string): string[] {
     }
     const t = posix(target);
     if (isForbidden(t)) v.push(`${rel}: imports forbidden module ${t}`);
-    else if (t === "src/core/compression/source.ts" && rel !== "src/core/compression/source.ts") v.push(`${rel}: pure core imports the I/O module ${t}`);
+    else if (t === "src/core/compression/store.ts" && rel !== "src/core/compression/store.ts") v.push(`${rel}: imports the writer ${t} (only scripts/persist-tenant-segments.ts may)`);
+    else if (t === "src/core/compression/source.ts" && rel !== "src/core/compression/source.ts" && rel !== "src/core/compression/store.ts") v.push(`${rel}: pure core imports the I/O module ${t}`);
     else if (t.startsWith("src/core/compression/")) continue;
     else if (ALLOWED_CORE.includes(t)) continue;
     else if (t === SOURCE_ONLY && rel === "src/core/compression/source.ts") continue;
@@ -121,6 +137,8 @@ const bad: [string, RegExp][] = [
   ["const t = Date.now();", /uses Date\.now/],
   ["const r = Math.random();", /uses Math\.random/],
   ['import { readTenantRows } from "./source";', /pure core imports the I\/O module src\/core\/compression\/source\.ts/],
+  ['import { persistTenantSegments } from "./store";', /imports the writer src\/core\/compression\/store\.ts/],
+  ['const q = "INSERT INTO shiyan.state_segments VALUES ($1)";', /write SQL keyword INSERT/],
   ['const flag = process.env.SHIYAN_STATE_COMPRESSION;', /uses process\.env/],
 ];
 for (const [text, expected] of bad) {
@@ -129,6 +147,17 @@ for (const [text, expected] of bad) {
 }
 assert.deepEqual(checkCompressionFile(fake, 'import { canonical } from "../reconcile";\nimport { createHash } from "node:crypto";\nimport type { StatePoint } from "./types";'), []);
 assert.deepEqual(checkCompressionFile(join(compressionDir, "source.ts"), 'import { poolFor } from "../neon-db";'), [], "neon-db allowed only in source.ts");
+const storeFake = join(compressionDir, "store.ts");
+assert.deepEqual(checkCompressionFile(storeFake, 'import { toSourceRow } from "./source";\nconst q = "INSERT INTO shiyan.state_segments (a) VALUES ($1)";'), [], "store.ts may read via source.ts and INSERT into state_segments");
+for (const [text, re] of [
+  ['const q = "INSERT INTO shiyan.experiences (a) VALUES ($1)";', /store\.ts may only INSERT INTO shiyan\.state_segments/],
+  ['const q = "UPDATE shiyan.state_segments SET a = 1";', /write SQL keyword UPDATE/],
+  ['const q = "DELETE FROM shiyan.state_segments";', /write SQL keyword DELETE/],
+  ['import { poolFor } from "../neon-db";', /non-allowlisted module src\/core\/neon-db\.ts/],
+] as [string, RegExp][]) {
+  const v = checkCompressionFile(storeFake, text);
+  assert.ok(v.some((x) => re.test(x)), `store self-test: expected ${re} for: ${text}\n got: ${v.join("; ")}`);
+}
 console.log(`PASS self-test (${bad.length} forbidden patterns rejected)`);
 
 // ---------- Real tree ----------
@@ -143,8 +172,10 @@ console.log(`PASS compression boundary (${files.length} files: ${files.map((f) =
 
 // ---------- M2 read-only edge: source.ts and the local CLI ----------
 const cliFile = join(root, "scripts", "compress-tenant.ts");
+const persistFile = join(root, "scripts", "persist-tenant-segments.ts");
 const sourceFile = join(compressionDir, "source.ts");
 const CLI_ALLOWED_BUILTINS = ["node:fs", "node:os", "node:path", "node:url"];
+const CLI_FILES = ["scripts/compress-tenant.ts", "scripts/persist-tenant-segments.ts"];
 const CLI_ALLOWED = ["src/core/neon-db.ts", "src/core/storage-diagnostics.ts", "src/core/tenant-auth.ts"];
 /** Routes, Level 4, the engine, and every module that appends, publishes or persists. */
 const EDGE_FORBIDDEN_PREFIX = ["src/app/", "src/lib/level4/", "src/components/"];
@@ -164,17 +195,22 @@ const isEdgeForbidden = (p: string) => EDGE_FORBIDDEN.includes(p) || EDGE_FORBID
 export function checkEdgeFile(file: string, text: string): string[] {
   const rel = posix(file);
   const v: string[] = [];
-  for (const [re, name] of WRITE_TOKENS) if (re.test(text)) v.push(`${rel}: uses ${name}`);
+  for (const [re, name] of WRITE_TOKENS) {
+    if (rel === STORE_FILE && name === "write/DDL SQL keyword") continue; // store.ts is checked by writeSqlViolations
+    if (re.test(text)) v.push(`${rel}: uses ${name}`);
+  }
   for (const spec of specifiers(text)) {
     const target = resolveSpec(file, spec);
     if (target === null) {
       // source.ts builtins are already limited by checkCompressionFile (node:crypto only).
-      if (rel === "scripts/compress-tenant.ts" && !CLI_ALLOWED_BUILTINS.includes(spec)) v.push(`${rel}: imports non-allowlisted module "${spec}"`);
+      if (CLI_FILES.includes(rel) && !CLI_ALLOWED_BUILTINS.includes(spec)) v.push(`${rel}: imports non-allowlisted module "${spec}"`);
       continue;
     }
     const t = posix(target);
     if (isEdgeForbidden(t)) v.push(`${rel}: imports forbidden module ${t}`);
-    else if (rel === "scripts/compress-tenant.ts" && !t.startsWith("src/core/compression/") && !CLI_ALLOWED.includes(t)) {
+    else if (t === STORE_FILE && rel !== "scripts/persist-tenant-segments.ts" && rel !== STORE_FILE) v.push(`${rel}: imports the writer ${t} (only scripts/persist-tenant-segments.ts may)`);
+    else if (CLI_FILES.includes(rel) && !t.startsWith("src/core/compression/") && !CLI_ALLOWED.includes(t)
+      && !(rel === "scripts/persist-tenant-segments.ts" && t === "scripts/compress-tenant.ts")) {
       v.push(`${rel}: imports non-allowlisted module ${t}`);
     }
   }
@@ -220,19 +256,46 @@ const edgeBad: [string, string, RegExp][] = [
   [sourceFile, 'const q = "SELECT 1; DELETE FROM shiyan_anchor.recovery_records";', /write\/DDL SQL keyword/],
   [cliFile, 'import { NeonRecoveryRecorder } from "../src/core/neon-recovery-recorder";', /forbidden module src\/core\/neon-recovery-recorder\.ts/],
   [cliFile, 'import { reconcile } from "../src/core/reconcile";', /non-allowlisted module src\/core\/reconcile\.ts/],
+  [cliFile, 'import { persistTenantSegments } from "../src/core/compression/store";', /imports the writer src\/core\/compression\/store\.ts/],
+  [persistFile, 'import { NeonExperienceStore } from "../src/core/neon-experience-store";', /forbidden module src\/core\/neon-experience-store\.ts/],
+  [persistFile, 'import { GET } from "../src/app/api/proof/route";', /forbidden module src\/app\/api\/proof\/route\.ts/],
+  [persistFile, 'writeFileSync("/tmp/x", "y");', /file-write API/],
+  [persistFile, 'const q = "INSERT INTO shiyan.state_segments VALUES ($1)";', /write\/DDL SQL keyword/],
 ];
 for (const [file, text, expected] of edgeBad) {
   const v = checkEdgeFile(file, text);
   assert.ok(v.some((x) => expected.test(x)), `edge self-test: expected ${expected} for: ${text}\n got: ${v.join("; ")}`);
 }
+assert.deepEqual(checkEdgeFile(persistFile, 'import { persistTenantSegments } from "../src/core/compression/store";\nimport { parseOptions } from "./compress-tenant";'), []);
 assert.deepEqual(checkEdgeFile(cliFile, 'import { readFileSync } from "node:fs";\nimport { compressTenant } from "../src/core/compression/index";\nimport { checkDatabaseUrl } from "../src/core/neon-db";'), []);
 console.log(`PASS edge self-test (${edgeBad.length} forbidden patterns rejected)`);
 
-const edgeFiles = [sourceFile, cliFile];
+const edgeFiles = [sourceFile, cliFile, persistFile, join(compressionDir, "store.ts")];
 for (const f of edgeFiles) assert.ok(existsSync(f), `missing ${posix(f)}`);
 const edgeViolations = [...edgeFiles.flatMap((f) => checkEdgeFile(f, readFileSync(f, "utf8"))), ...edgeTransitive(edgeFiles)];
 if (edgeViolations.length) {
   for (const x of edgeViolations) console.error(`FAIL ${x}`);
   process.exit(1);
 }
-console.log("PASS read-only edge boundary (source.ts, scripts/compress-tenant.ts: no write SQL, no file writes, no route/Level 4/engine/write-module imports)");
+console.log("PASS edge boundary (source.ts, store.ts, compress-tenant.ts, persist-tenant-segments.ts: no file writes; write SQL only in store.ts as INSERT INTO shiyan.state_segments; store.ts imported only by persist-tenant-segments.ts; no route/Level 4/engine/write-module imports)");
+
+// ---------- M4: repo-wide wiring check ----------
+// Nothing in src/ outside src/core/compression imports the compression modules (no route, page or app wiring),
+// and nothing anywhere except the persist CLI and test-only check scripts imports the writer store.ts.
+const wiring: string[] = [];
+for (const f of [...listTs(src), ...listTs(join(root, "scripts"))]) {
+  const rel = posix(f);
+  if (rel.startsWith("src/core/compression/")) continue;
+  for (const spec of specifiers(readFileSync(f, "utf8"))) {
+    const target = resolveSpec(f, spec);
+    if (target === null) continue;
+    const t = posix(target);
+    if (rel.startsWith("src/") && t.startsWith("src/core/compression/")) wiring.push(`${rel}: imports ${t} (compression is not wired into the app)`);
+    if (t === STORE_FILE && rel !== "scripts/persist-tenant-segments.ts" && !/^scripts\/check-[a-z0-9-]+\.ts$/.test(rel)) wiring.push(`${rel}: imports the writer ${t}`);
+  }
+}
+if (wiring.length) {
+  for (const x of wiring) console.error(`FAIL ${x}`);
+  process.exit(1);
+}
+console.log("PASS wiring (no src/ module outside compression imports it; store.ts imported only by persist-tenant-segments.ts and check scripts)");

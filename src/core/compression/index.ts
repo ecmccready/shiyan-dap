@@ -1,4 +1,4 @@
-// 4D state compression (M1-M3): narrow public interface. Pure, in-memory, no I/O, not wired into any route.
+// 4D state compression (M1-M4): narrow public interface. Pure, in-memory, no I/O, not wired into any route.
 // Does not import MetamorphicEngine, metamorphic-runtime, deterministic-proof, self-engine or src/lib/level4.
 import { extractPoints, summarizeExclusions } from "./extract";
 import { compressPoints } from "./encode";
@@ -14,6 +14,8 @@ export { checkEps, type SegmentOptions } from "./encode";
 export { DEFAULT_CUTOFF_MS, DEFAULT_GRACE_MS, arrivalsFrom, checkSealingOptions, planWindows, type CloseReason, type SealingOptions, type SealedWindow, type WindowPlan } from "./window";
 export { prepareAnchors, recoveryRoot, runIdsFrom, segmentContext, type AnchorRow, type AnchorSource, type PreparedAnchors, type RecoveryRow } from "./context";
 export { buildTenantChain, verifyTenantChain, type ChainChecks, type ChainOptions, type TenantChain } from "./chain";
+// M4: extend a persisted chain from its stored head (pure; the writer that talks to the DB is store.ts, CLI-only).
+export { extendTenantChain, verifyStoredChain, type ChainParams, type Extension, type StoredChecks, type StoredSegment } from "./extend";
 
 /** Compresses one tenant's rows into a chain of closed, lossless segments. Same rows (any order) => same output. */
 export function compressTenant(tenant: string, rows: readonly SourceRow[], options: CompressOptions = {}): TenantCompression {

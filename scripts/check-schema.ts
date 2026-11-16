@@ -6,6 +6,8 @@
  *     --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
  *
  * URLs may also come from SHIYAN_STORAGE_URL and SHIYAN_ANCHOR_URL.
+ * Staged tables (shiyan.state_segments, migration 004) are SKIP while absent and fully checked once present;
+ * add --require-state-segments to make their absence a FAIL.
  * A database whose URL is not provided is skipped (not a failure).
  */
 import { existsSync, readFileSync } from "node:fs";
@@ -23,6 +25,10 @@ import {
   EXPECTED_ANCHOR_TRIGGERS,
   EXPECTED_STORAGE_COLUMNS,
   EXPECTED_STORAGE_TRIGGERS,
+  STAGED_STORAGE_COLUMNS,
+  STAGED_STORAGE_MIGRATIONS,
+  STAGED_STORAGE_TRIGGERS,
+  stagedTableMissing,
   RECOVERY_RECORD_PRIVILEGES,
   compareColumns,
   comparePrivileges,
@@ -249,6 +255,7 @@ async function inspectTable(
 async function inspectDatabase(
   purpose: "storage" | "anchors",
   checked: CheckedDatabaseUrl,
+  requireStaged = false,
 ): Promise<CheckResult[]> {
   const pool = poolFor(purpose, checked);
   const results: CheckResult[] = [];
@@ -263,6 +270,14 @@ async function inspectDatabase(
         EXPECTED_STORAGE_COLUMNS.experiences, EXPECTED_STORAGE_TRIGGERS.experiences, APP_TABLE_PRIVILEGES));
       results.push(...await inspectTable(pool, "storage.reference_envelopes", "shiyan", "reference_envelopes",
         EXPECTED_STORAGE_COLUMNS.reference_envelopes, EXPECTED_STORAGE_TRIGGERS.reference_envelopes, APP_TABLE_PRIVILEGES));
+      for (const table of Object.keys(STAGED_STORAGE_COLUMNS)) {
+        const label = `storage.${table}`;
+        const exists = await tableExists(pool, "shiyan", table);
+        if (!exists.ok) results.push({ name: `${label}.exists`, ok: false, detail: exists.detail });
+        else if (!exists.exists) results.push(stagedTableMissing(label, STAGED_STORAGE_MIGRATIONS[table], requireStaged));
+        else results.push(...await inspectTable(pool, label, "shiyan", table,
+          STAGED_STORAGE_COLUMNS[table], STAGED_STORAGE_TRIGGERS[table], APP_TABLE_PRIVILEGES));
+      }
     } else {
       results.push(await checkSchemaUsage(pool, "anchors", "shiyan_anchor"));
       results.push(...await inspectTable(pool, "anchors.reference_anchors", "shiyan_anchor", "reference_anchors",
@@ -295,7 +310,7 @@ export async function runSchemaGuard(argv: string[] = process.argv.slice(2), env
       results.push({ name: "storage.url", ok: false, detail: checked.reason });
     } else {
       storageChecked = checked.value;
-      results.push(...await inspectDatabase("storage", checked.value));
+      results.push(...await inspectDatabase("storage", checked.value, argv.includes("--require-state-segments")));
     }
   }
 
