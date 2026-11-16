@@ -17,7 +17,7 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
 - Phase 3 surfaces (asset map, audit summary) are read-only and off-chain.
 - Eight original test events remain in the ledger. Only the project owner can purge them.
 - Production security close-out (2026-11-14) is complete: anchor and GitHub credentials rotated, unused env vars removed, schema guard green, acceptance passing with independent anchors.
-- 4D state compression engine: milestone M1 (pure, lossless, isolated core in `src/core/compression/`) is built and tested; it is not wired into any route or production path. Design and decisions: `docs/design/4d-state-compression.md`. Next is M2, a read-only per-tenant reader verified locally. Segment sealing, persistence, and the first consumer are still open questions.
+- 4D state compression engine: M1 (pure, lossless, isolated core in `src/core/compression/`) and M2 (read-only per-tenant reader: `src/core/compression/source.ts` plus the local CLI `scripts/compress-tenant.ts`) are built and tested. M2 is off by default (`SHIYAN_STATE_COMPRESSION=1` required), reads one tenant inside a READ ONLY transaction, verifies losslessly in memory, prints only hashes and counts, and writes nothing. Neither is wired into any route or production path. Design and decisions: `docs/design/4d-state-compression.md`. Segment sealing, persistence, and the first consumer are still open questions.
 
 ## Surfaces and the Domains dropdown
 
@@ -166,6 +166,9 @@ npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
 npx tsx scripts/check-compression.ts && npx tsx scripts/check-compression-boundary.ts
+npx tsx scripts/check-compression-source.ts
+# M2, local and read-only (off by default; prints hashes and counts only, writes nothing):
+SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/compress-tenant.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url
 ```
 
 ## Neon Staging (Preview)
