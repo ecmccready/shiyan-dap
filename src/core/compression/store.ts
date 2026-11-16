@@ -110,6 +110,8 @@ export interface PersistResult {
   appended: number;
   inserted: number;
   stored_head_after: string | null;
+  /** M5: the valid stored segment hashes in seq order (index = seq), as read in this transaction. */
+  stored_hashes: string[];
   /** verify only: whether the stored chain is a prefix of a from-scratch recomputation (informational). */
   from_scratch_prefix?: boolean;
   /** verify only: the stored chain's own checks (context re-derived only when anchors were given). */
@@ -159,6 +161,7 @@ export async function persistTenantSegments(
       mode, rows_read: rows.length, foreign_rows_dropped: foreign, stored_before: stored.length + invalid_stored.length,
       invalid_stored, extension, appended: mode === "verify" ? 0 : extension.appended.length, inserted: 0,
       stored_head_after: stored.length ? stored[stored.length - 1].sealed.segment_sha256 : null,
+      stored_hashes: stored.map((s) => s.sealed.segment_sha256),
     };
     if (mode === "verify") {
       const { covered: _covered, ...storedChecks } = verifyStoredChain(tenant, stored, rows, effective.anchors);

@@ -7,7 +7,8 @@
  *
  * URLs may also come from SHIYAN_STORAGE_URL and SHIYAN_ANCHOR_URL.
  * Staged tables (shiyan.state_segments, migration 004) are SKIP while absent and fully checked once present;
- * add --require-state-segments to make their absence a FAIL.
+ * add --require-state-segments to make their absence a FAIL. Likewise shiyan_anchor.state_chain_anchors (migration 005,
+ * anchors project) with --require-state-anchors.
  * A database whose URL is not provided is skipped (not a failure).
  */
 import { existsSync, readFileSync } from "node:fs";
@@ -25,6 +26,9 @@ import {
   EXPECTED_ANCHOR_TRIGGERS,
   EXPECTED_STORAGE_COLUMNS,
   EXPECTED_STORAGE_TRIGGERS,
+  STAGED_ANCHOR_COLUMNS,
+  STAGED_ANCHOR_MIGRATIONS,
+  STAGED_ANCHOR_TRIGGERS,
   STAGED_STORAGE_COLUMNS,
   STAGED_STORAGE_MIGRATIONS,
   STAGED_STORAGE_TRIGGERS,
@@ -285,6 +289,14 @@ async function inspectDatabase(
       results.push(...await inspectTable(pool, "anchors.recovery_records", "shiyan_anchor", "recovery_records",
         EXPECTED_ANCHOR_COLUMNS.recovery_records, EXPECTED_ANCHOR_TRIGGERS.recovery_records,
         RECOVERY_RECORD_PRIVILEGES, "shiyan_anchor.recovery_records_id_seq"));
+      for (const table of Object.keys(STAGED_ANCHOR_COLUMNS)) {
+        const label = `anchors.${table}`;
+        const exists = await tableExists(pool, "shiyan_anchor", table);
+        if (!exists.ok) results.push({ name: `${label}.exists`, ok: false, detail: exists.detail });
+        else if (!exists.exists) results.push(stagedTableMissing(label, STAGED_ANCHOR_MIGRATIONS[table], requireStaged));
+        else results.push(...await inspectTable(pool, label, "shiyan_anchor", table,
+          STAGED_ANCHOR_COLUMNS[table], STAGED_ANCHOR_TRIGGERS[table], APP_TABLE_PRIVILEGES));
+      }
     }
     return results;
   } finally {
@@ -324,7 +336,7 @@ export async function runSchemaGuard(argv: string[] = process.argv.slice(2), env
       results.push({ name: "anchors.url", ok: false, detail: checked.reason });
     } else {
       anchorsChecked = checked.value;
-      results.push(...await inspectDatabase("anchors", checked.value));
+      results.push(...await inspectDatabase("anchors", checked.value, argv.includes("--require-state-anchors")));
     }
   }
 

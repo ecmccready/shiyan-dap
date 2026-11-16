@@ -5,6 +5,10 @@ import {
   verifyStandardRunAsync,
 } from "../../../../../core/run-contract";
 import { configuredExperienceStore } from "../../../../../core/storage-provider";
+import {
+  stateCompressionExportEnabled,
+  stateCompressionForExport,
+} from "../../../../../core/compression/export-reader";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -66,13 +70,21 @@ export async function GET(
       return failure(422, "VERIFICATION_INCONSISTENT");
     }
 
+    const report = {
+      report_version: "aethel.customer-proof/1",
+      record,
+      content_sha256: result.verification.content_sha256,
+      server_verdict: result.verification.verdict ?? "INCONCLUSIVE",
+    };
+    // 4D state compression (M5): additive, read-only, off by default. When SHIYAN_STATE_COMPRESSION is not "1"
+    // the field is omitted and the body is byte-identical to before. Never fails the export (errors -> "unavailable").
+    // Outside content_sha256, which hashes only `record`.
+    const body = stateCompressionExportEnabled(process.env)
+      ? { ...report, state_compression: await stateCompressionForExport(auth.tenant, process.env) }
+      : report;
+
     return NextResponse.json(
-      {
-        report_version: "aethel.customer-proof/1",
-        record,
-        content_sha256: result.verification.content_sha256,
-        server_verdict: result.verification.verdict ?? "INCONCLUSIVE",
-      },
+      body,
       {
         headers: {
           ...headers,

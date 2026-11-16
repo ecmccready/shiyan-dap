@@ -1,7 +1,8 @@
 // Pure, side-effect-free comparison of Neon storage and anchors schema
 // against the shapes in db/migrations/001_shiyan_storage.sql,
 // 001_shiyan_anchors.sql, and 002_shiyan_recovery_records.sql, plus the staged
-// table from 004_shiyan_state_segments.sql (checked only once it exists).
+// tables from 004_shiyan_state_segments.sql (storage) and 005_shiyan_state_chain_anchors.sql (anchors),
+// each checked only once it exists.
 // Used by scripts/check-schema.ts. Prints and connections live in the script.
 
 export type ColumnInfo = { name: string; dataType: string };
@@ -174,6 +175,30 @@ export const STAGED_STORAGE_TRIGGERS: Record<string, readonly TriggerInfo[]> = {
 /** Which migration creates each staged table (for SKIP messages). */
 export const STAGED_STORAGE_MIGRATIONS: Record<string, string> = {
   state_segments: "db/migrations/004_shiyan_state_segments.sql",
+};
+
+/**
+ * Staged anchors tables (M5): db/migrations/005_shiyan_state_chain_anchors.sql in the independent anchors project.
+ * Same pattern as the staged storage tables: SKIP while absent, fully checked once present;
+ * --require-state-anchors makes absence a FAIL.
+ */
+export const STAGED_ANCHOR_COLUMNS: Record<string, readonly ColumnInfo[]> = {
+  state_chain_anchors: [
+    { name: "tenant_id", dataType: "text" },
+    { name: "seq", dataType: "integer" },
+    { name: "chain_head", dataType: "text" },
+    { name: "segment_count", dataType: "integer" },
+    { name: "anchored_at", dataType: "timestamptz" },
+  ],
+};
+
+export const STAGED_ANCHOR_TRIGGERS: Record<string, readonly TriggerInfo[]> = {
+  // tgtype 27 (BEFORE ROW UPDATE|DELETE) and 34 (BEFORE STATEMENT TRUNCATE).
+  state_chain_anchors: appendOnlyPair("state_chain_anchors", "state_chain_anchors", "reject_mutation"),
+};
+
+export const STAGED_ANCHOR_MIGRATIONS: Record<string, string> = {
+  state_chain_anchors: "db/migrations/005_shiyan_state_chain_anchors.sql",
 };
 
 /** Result for a staged table that does not exist yet: SKIP (ok) unless required. */

@@ -1,6 +1,21 @@
 # 4D State Compression Engine: design (draft, not implemented)
 
-Status: M1 (pure core), M2 (read-only per-tenant reader, local CLI, off by default), M3 (window sealing, opt-in bounded-loss, anchors context) and M4 (append-only persistence in `shiyan.state_segments`, local CLI only) implemented. M5 (the customer proof export consumer) is not implemented. Migration `004_shiyan_state_segments.sql` exists but is **not applied** anywhere by this work; the owner applies it. No existing source file outside `src/core/compression/`, the compression scripts and the schema guard (`src/core/schema-guard.ts`, `scripts/check-schema.ts`) was changed. Designed on `main` at `2a09d82`.
+Status: M1 to M5 are implemented:
+- M1: pure core.
+- M2: read-only per-tenant reader, a local CLI, off by default.
+- M3: window sealing, opt-in bounded-loss, anchors context.
+- M4: append-only persistence in `shiyan.state_segments`.
+- M5: a read-only `state_compression` field in the customer proof export, plus anchoring of the chain head in the independent anchors project.
+
+Migration `004_shiyan_state_segments.sql` is applied on prod (verified 2026-11-16). Migration `005_shiyan_state_chain_anchors.sql` (anchors project) exists but this work does **not apply** it; the owner does.
+
+The export field is off by default. It appears only when `SHIYAN_STATE_COMPRESSION=1` is set on the deployment.
+
+Outside `src/core/compression/` and the compression scripts, the only existing files changed are:
+- the schema guard (`src/core/schema-guard.ts`, `scripts/check-schema.ts`);
+- in M5, `src/app/api/v1/customer-proof/[id]/route.ts` (additive and flag-gated).
+
+Designed on `main` at `2a09d82`.
 
 ## 1. Inspiration (SIMA 2), stated honestly
 SIMA 2 is Google DeepMind's Gemini-based agent for 3D virtual worlds. It follows instructions given in language and images, reasons about goals, and converses with users [1][2]. Its self-improvement loop works like this: Gemini sets a task and estimates a reward for the agent's behaviour, and the result goes into a **bank of self-generated experience** that trains the next generation of the agent [1]. In the paper, Gemini rates each trajectory (video) from 0 to 100 against a rubric calibrated to human preferences, and a score of 50 or more counts as a success [2]. Failed tasks are retried with hints until the agent succeeds [3].
@@ -75,7 +90,7 @@ Allowed imports: `experience-schema.ts` (types and validator), `reconcile.ts` (`
 **Feature flag:** `SHIYAN_STATE_COMPRESSION=1`, off by default, introduced in M2. M1 has no runtime wiring, so it needs no flag. Phases 1–3 add no route. When the flag is off, nothing is loaded or executed.
 
 ## 10. Explicitly untouched
-The Level 4 plant is `src/lib/level4/*`, `src/components/Level4Shell.tsx`, `src/app/api/level4/*` and `docs/level4-*`. It, along with `MetamorphicEngine` (`src/core/metamorphic.ts`), `src/core/metamorphic-runtime.ts`, the existing tables, triggers and grants, `run-contract`, `reconcile`, `github-reference` and all existing routes, is **not modified or imported** by this subsystem. The change is additive only, so nothing breaks.
+The Level 4 plant is `src/lib/level4/*`, `src/components/Level4Shell.tsx`, `src/app/api/level4/*` and `docs/level4-*`. It, along with `MetamorphicEngine` (`src/core/metamorphic.ts`), `src/core/metamorphic-runtime.ts`, the existing tables, triggers and grants, `run-contract`, `reconcile`, `github-reference` and all existing routes except the customer proof export, is **not modified or imported** by this subsystem. The customer proof export route (M5) imports exactly one read-only module, `src/core/compression/export-reader.ts`, behind a flag that is off by default. The change is additive only, so nothing breaks.
 
 ## 11. Test plan (fixtures in tests only)
 - Fixtures: hand-written `ExperienceRecord`s built inside `scripts/check-compression.ts` (the repo's check-script convention), never written to any database.
@@ -92,7 +107,7 @@ The Level 4 plant is `src/lib/level4/*`, `src/components/Level4Shell.tsx`, `src/
 2. **M2, read-only source:** `source.ts` plus a local CLI script that compresses and verifies one tenant from a `--storage-file` URL and prints only hashes and counts. Behind the flag.
 3. **M3, enrichment and bounded-loss:** recovery_records and reference_anchors annotations, plus opt-in eps quantization. **Done (2026-11-16)**, with window sealing (open question 4).
 4. **M4, persistence:** migration 004, schema-guard expectation, append-only writer. **Done (2026-11-16)**.
-5. **M5, consumer:** the tenant-authenticated customer proof export (decided 2026-11-16, see open question 6). Not built.
+5. **M5, consumer:** the tenant-authenticated customer proof export (decided 2026-11-16, see open question 6), plus anchoring of the chain head in the anchors project. **Done (2026-11-16)**.
 
 ## Decisions (2026-11-14)
 1. **4D = (predicted, observed, Φ) × time, per tenant.** The reference commit is segment *context* (M3), not an axis.
@@ -235,6 +250,95 @@ New pure files `window.ts`, `context.ts`, `chain.ts`; additive changes to `types
 - The writer runs as `shiyan_app` from `~/.shiyan-storage-url`, which now gains INSERT on `state_segments` via 004 (no UPDATE/DELETE; triggers block mutation even for the owner, except by dropping triggers).
 - Parameters are fixed per tenant chain: changing cutoff/grace/loss/context later requires a new decision (a new chain or a version bump), because appends are refused on mismatch.
 - `source_ids` (about 35 bytes per run) are stored so each segment can be re-verified from its exact sources.
+
+### M5 as built (2026-11-16)
+**Customer proof export (`GET /api/v1/customer-proof/{id}`).**
+- **Flag off (the default):** unless `SHIYAN_STATE_COMPRESSION` is exactly `1` on the deployment, the handler builds the same four-key object as before (`report_version`, `record`, `content_sha256`, `server_verdict`). The body is byte-identical to before M5 and no state-chain query is sent.
+- **Flag on:** one key, `state_compression`, is appended last. Everything else is unchanged:
+  - `report_version` stays `aethel.customer-proof/1`.
+  - Headers, status codes and error paths are unchanged.
+  - The local inspection page ignores unknown keys, so it is untouched.
+- **Hash/signature decision:** the export has no signature. Its only hash, `content_sha256`, covers `record` alone (it equals `experienceDigest(record)` and is what customers recompute). `state_compression` is deliberately **outside** it:
+  - Putting it inside would change every existing digest and break verification of earlier downloads.
+  - The field is independently verifiable instead: `chain_head` is a sha256 that chains back to seq 0, and it is witnessed in a separate database.
+  - Additive, unsigned fields under a `/1` report version are backward compatible for every existing consumer.
+- **Field shape (`format: "aethel.state-chain/1"`):**
+  - `status`: one of
+    - `present`;
+    - `absent` (no stored segments for this tenant);
+    - `unavailable` (not a Neon backend, missing table, permission error, timeout of 2.5 s per query, a row for another tenant, or any error);
+    - `inconsistent` (the stored head columns do not form a contiguous, linked chain).
+  - `chain_head`: the `segment_sha256` at the highest seq. Each segment hash commits to its prev, so this is the chain root.
+  - `segment_count`, `last_seq`.
+  - `sealed_through`: the head window's `window_closed_at`, ISO.
+  - `points`: the sum of `point_count`.
+  - `loss_mode`.
+  - `context`: whether the head segment carries context.
+  - `anchor`, with:
+    - `status`: `anchored` (every anchor row names exactly the stored segment at its seq), `unanchored`, `mismatch` (any anchor row disagrees, names a seq beyond the stored head, or has a wrong count) or `unavailable` (anchors DB not configured, not independent, missing table or error);
+    - `anchored_seq`, `anchored_head`, `anchored_at`, `anchor_count`;
+    - `covers_head`: the latest anchor is the current head.
+  - I used `anchored_seq`/`anchored_head` instead of an opaque `anchor_id`, because `(tenant_id, seq)` is the anchor's natural key. A separate id column could disagree with it.
+- **Never fails the export:** every failure becomes a status. No error text, codes, URLs or payloads are returned.
+- **Reader `src/core/compression/export-reader.ts`:**
+  - It sends exactly two tenant-scoped SELECTs (exact-match allowlist), each with `[tenant]` from `authenticateTenant`:
+    - `CHAIN_HEADS_SQL` on `shiyan.state_segments`: hash, link, count, time and loss/context columns only, never `segment_json` or `source_ids`;
+    - `STATE_ANCHORS_SQL` on `shiyan_anchor.state_chain_anchors`.
+  - It uses the app's existing pools (`poolFor`) and the app's own rules: `SHIYAN_STORAGE_BACKEND=neon`, and an anchors URL that reaches a different database with a different role.
+  - It never imports a writer or `source.ts`.
+  - It does not re-hash `segment_json`: migration 004's CHECK and link trigger guarantee hash and link integrity in SQL. Full re-verification is the CLI's job (`--verify-stored`, `--verify-anchor`).
+
+**Independent witness: migration `db/migrations/005_shiyan_state_chain_anchors.sql` (anchors project).**
+- Table: `shiyan_anchor.state_chain_anchors(tenant_id, seq, chain_head, segment_count, anchored_at default now())`.
+  - PK `(tenant_id, seq)`.
+  - CHECKs: tenant pattern, `seq >= 0`, `chain_head` is sha256 hex, and `segment_count = seq + 1`.
+- Triggers: `state_chain_anchors_no_update_delete` (tgtype 27) and `state_chain_anchors_no_truncate` (34), both using 001's `shiyan_anchor.reject_mutation()`.
+- Grants: REVOKE PUBLIC; SELECT and INSERT to `shiyan_anchor` and/or `shiyan_anchor_app` (whichever exist, as in 002). The storage role gets nothing there.
+- Names follow the existing anchors project: schema `shiyan_anchor` and role `shiyan_anchor`/`shiyan_anchor_app`, not `shiyan.*`.
+- Plain SQL, idempotent.
+
+**Anchor writer and CLI.**
+- **`src/core/compression/anchor-store.ts`:** the only module that may write anything there, and only `INSERT INTO shiyan_anchor.state_chain_anchors`.
+  - write: `BEGIN`, a per-tenant advisory lock, SELECT anchors, compare, INSERT the head, read back, `COMMIT`.
+  - dry-run/verify: `BEGIN READ ONLY`, SELECT, `COMMIT`.
+  - Any disagreeing anchor (`mismatch`) or a foreign/malformed row means `ROLLBACK` and nothing written.
+  - An already-anchored head inserts 0 (idempotent).
+- **`scripts/anchor-state-chain.ts`:**
+  - Off unless `SHIYAN_STATE_COMPRESSION=1`. Dry run by default; `--write` anchors; `--verify-anchor` is read-only and checks every anchor against the stored segment at its seq.
+  - It needs both URLs and refuses if they reach the same database or role.
+  - It first verifies the stored chain READ ONLY with the M4 verify-stored logic (context re-derived from the anchors DB). If that fails, nothing is anchored.
+  - The two databases use separate connections, and storage is never written.
+  - It prints only hashes, seqs and counts.
+
+**Schema guard.**
+- `anchors.state_chain_anchors` is a staged table: SKIP while absent, then fully checked (columns, triggers 27/34, SELECT+INSERT only for the connecting role).
+- `--require-state-anchors` makes its absence a FAIL.
+
+**Boundary.** `scripts/check-compression-boundary.ts` now enforces:
+- exactly one app consumer: the customer-proof route, importing only `export-reader.ts`;
+- the export reader's transitive imports never reach `store.ts`, `anchor-store.ts` or `source.ts`;
+- `store.ts` may be imported only by the persist and anchor CLIs; `anchor-store.ts` only by the anchor CLI;
+- each writer may name only its one INSERT target.
+
+**Tests.** `scripts/check-compression-m5.ts` has 21 checks:
+- migration 005 text and columns against the guard; the staged guard with real tgtypes;
+- export allowlist; present/anchored/stale/unanchored/mismatch/absent/unavailable (missing table, permission, timeout, throw)/inconsistent; tenant isolation, including leaky databases;
+- env resolution with fake pools in the app's pool cache;
+- the real route: flag off byte-identical on the filesystem and (fake) Neon backends; flag on appended last with the existing bytes as a prefix; tenant-scoped; never failing;
+- the anchor writer: dry run, write, idempotent rerun, growth, mismatch refusal, PK race, allowlist;
+- the anchor CLI: gate, same-DB refusal, dry/write/rerun/verify, stored-chain failure, mismatch, missing tables, no leaks, no file writes.
+
+A scratch PostgreSQL 17 run (PGlite, not committed) checked:
+- 005 applied twice, with triggers 27/34;
+- privileges for both anchor roles;
+- the CLI dry/write/rerun/verify sequence, re-anchoring after growth, and refusal of a forged anchor;
+- the export reader's present/anchored, stale and mismatch results;
+- UPDATE, DELETE and TRUNCATE rejected (42501), and a bad `segment_count` rejected (23514).
+
+**Caveats.**
+- The export shows only what is stored and anchored. Run the persist and anchor CLIs to advance them; no automatic job exists.
+- The export reader trusts the SQL constraints for segment-hash integrity. The CLIs re-verify everything.
+- Anchoring is as independent as the two Neon projects and roles are. Anyone with owner access to both could rewrite both, so keep them administered separately.
 
 ## 13. Open questions
 1. ~~Meaning of "4D"~~ **Resolved:** (predicted, observed, Φ) × time. The reference commit is context, not an axis.

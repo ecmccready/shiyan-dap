@@ -18,10 +18,18 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
 - Eight original test events remain in the ledger. Only the project owner can purge them.
 - Production security close-out (2026-11-14) is complete: anchor and GitHub credentials rotated, unused env vars removed, schema guard green, acceptance passing with independent anchors.
 - 4D state compression engine:
-  - **Built and tested:** M1 (pure, lossless core), M2 (read-only per-tenant reader), M3 (256-run windows with a 24 h cutoff, late records go to the next open window, opt-in bounded-loss, per-segment recovery/anchor context) and M4 (append-only persistence in `shiyan.state_segments`, migration `db/migrations/004_shiyan_state_segments.sql`).
-  - **Persistence:** segments live in the storage project; the anchors project stays an independent witness. Writes go only through the local CLI `scripts/persist-tenant-segments.ts`, which is off by default (`SHIYAN_STATE_COMPRESSION=1` plus `--write`), extends each tenant's chain from its stored head, refuses rather than overwrites, and prints only hashes and counts.
-  - **Not wired in:** no route or production path. The first consumer (M5, the tenant-authenticated customer proof export) is decided but not built.
-  - **Schema guard:** until 004 is applied, the guard reports `state_segments` as SKIP.
+  - **Built and tested:** M1 to M5:
+    - M1: pure, lossless core.
+    - M2: read-only per-tenant reader.
+    - M3: 256-run windows with a 24 h cutoff, opt-in bounded-loss and per-segment context.
+    - M4: append-only `shiyan.state_segments`, migration 004.
+    - M5: customer proof export field, plus anchoring of the chain head in the anchors project, migration `db/migrations/005_shiyan_state_chain_anchors.sql`.
+  - **Customer proof export:**
+    - With `SHIYAN_STATE_COMPRESSION=1` on the deployment, `GET /api/v1/customer-proof/{id}` gains a read-only `state_compression` field: the tenant's chain head, segment count, sealed-through time and anchor status.
+    - Off by default. When off, the response is byte-identical to before.
+    - The field is outside `content_sha256` and never fails the export.
+  - **Writes:** only through the local CLIs `scripts/persist-tenant-segments.ts` (storage) and `scripts/anchor-state-chain.ts` (anchors). Both need `SHIYAN_STATE_COMPRESSION=1` plus `--write`, refuse rather than overwrite, and print only hashes and counts.
+  - **Schema guard:** until 005 is applied, the guard reports `state_chain_anchors` as SKIP.
   - Design and decisions: `docs/design/4d-state-compression.md`.
 
 ## Surfaces and the Domains dropdown
@@ -171,12 +179,14 @@ npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
 npx tsx scripts/check-compression.ts && npx tsx scripts/check-compression-boundary.ts
-npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts
+npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts && npx tsx scripts/check-compression-m5.ts
 # 4D compression, local and read-only (off by default; prints hashes, ids and counts only, writes nothing):
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/compress-tenant.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
 # opt-in bounded-loss example: add  --loss bounded --eps 0.001,0.001,0.0001
 # M4 persistence (after applying migration 004): dry run by default; --write appends; --verify-stored is read-only
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/persist-tenant-segments.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url [--write | --verify-stored]
+# M5 anchor the stored head in the anchors project (after applying migration 005): dry run by default; --write anchors; --verify-anchor is read-only
+SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/anchor-state-chain.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url [--write | --verify-anchor]
 ```
 
 ## Neon Staging (Preview)
@@ -244,7 +254,7 @@ cd ~/src/shiyan-dap
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-schema.ts --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
 ```
 
-`shiyan.state_segments` (migration 004, 4D state compression M4) is a staged table. The guard prints SKIP while it is absent and checks it fully once present. After applying 004, add `--require-state-segments` to make its absence a failure.
+`shiyan.state_segments` (migration 004, 4D state compression M4) is a staged table. The guard prints SKIP while it is absent and checks it fully once present. After applying 004, add `--require-state-segments` to make its absence a failure. Likewise `shiyan_anchor.state_chain_anchors` (migration 005, anchors project, M5): SKIP while absent; after applying 005, add `--require-state-anchors`.
 
 Set `SHIYAN_STORAGE_DIAGNOSTICS=1` in Vercel only while diagnosing `REFERENCE_STORAGE_UNAVAILABLE`. The app then logs a single line with the operation name, Postgres error code, and error class; it never logs URLs or error message text. Leave the flag unset in normal operation.
 
