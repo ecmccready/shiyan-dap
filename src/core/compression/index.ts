@@ -1,4 +1,4 @@
-// 4D state compression (M1): narrow public interface. Pure, in-memory, no I/O, not wired into any route.
+// 4D state compression (M1-M3): narrow public interface. Pure, in-memory, no I/O, not wired into any route.
 // Does not import MetamorphicEngine, metamorphic-runtime, deterministic-proof, self-engine or src/lib/level4.
 import { extractPoints, summarizeExclusions } from "./extract";
 import { compressPoints } from "./encode";
@@ -8,7 +8,12 @@ import { DEFAULT_SEGMENT_SIZE, type CompressOptions, type SealedSegment, type So
 export * from "./types";
 export { extractPoint, extractPoints, comparePoints, summarizeExclusions } from "./extract";
 export { encodeFloats, decodeFloats, sourceIdsRoot, sealSegment, compressPoints, reconstruct } from "./encode";
-export { verifySealed, verifySegment, verifyChain } from "./verify";
+export { verifySealed, verifySegment, verifyChain, verifyReconstruction } from "./verify";
+// M3: window sealing, opt-in bounded-loss, optional anchors context. Pure; I/O stays in source.ts.
+export { checkEps, type SegmentOptions } from "./encode";
+export { DEFAULT_CUTOFF_MS, DEFAULT_GRACE_MS, arrivalsFrom, checkSealingOptions, planWindows, type CloseReason, type SealingOptions, type SealedWindow, type WindowPlan } from "./window";
+export { prepareAnchors, recoveryRoot, runIdsFrom, segmentContext, type AnchorRow, type AnchorSource, type PreparedAnchors, type RecoveryRow } from "./context";
+export { buildTenantChain, verifyTenantChain, type ChainChecks, type ChainOptions, type TenantChain } from "./chain";
 
 /** Compresses one tenant's rows into a chain of closed, lossless segments. Same rows (any order) => same output. */
 export function compressTenant(tenant: string, rows: readonly SourceRow[], options: CompressOptions = {}): TenantCompression {

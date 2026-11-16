@@ -15,6 +15,8 @@ export interface SourceRow {
   record_json: string;
   content_sha256: string;
   proof_timestamp: string;
+  /** M3, optional: the row's DB arrival time (shiyan.experiences.created_at, ISO). Orders windows; never hashed. */
+  created_at?: string;
 }
 
 /** The 4D state of one run plus its stored verdict. */
@@ -56,8 +58,46 @@ export interface ExclusionSummary {
   reasons: Partial<Record<ExclusionReason, number>>;
 }
 
-/** M1-M2 are lossless only. Bounded-loss is deferred to M3 as an opt-in mode. */
-export type LossMode = { mode: "lossless" };
+/** Per-axis tolerances for the opt-in bounded-loss mode (M3). Each must be finite and > 0. */
+export interface AxisEps {
+  predicted: number;
+  observed: number;
+  phi: number;
+}
+
+/**
+ * Lossless is the default and its segment bytes are unchanged since M1. Bounded (M3, opt-in) quantizes
+ * predicted/observed/phi to round(v / eps) per axis and records eps plus the measured max |v - v'|.
+ * t, step, verdicts and source identities are never lossy.
+ */
+export type LossMode = { mode: "lossless" } | { mode: "bounded"; eps: AxisEps; max_abs_err: AxisEps };
+
+/** Caller's choice of loss mode; max_abs_err is always measured, never supplied. */
+export type LossOption = { mode: "lossless" } | { mode: "bounded"; eps: AxisEps };
+
+export const STATE_CONTEXT_VERSION = "aethel.state-context/1";
+export type RecoveryStatusCode = "PROMOTED" | "DRIFT_EXCEEDED" | "REJECTED";
+
+/**
+ * M3 enrichment, embedded in a segment only when the caller supplies an anchors source, and therefore
+ * covered by segment_sha256 and the chain. Hashes, counts and ids only. "as_of" is the window's seal time
+ * (epoch ms): only anchor-DB rows created at or before it are considered, so a sealed segment never changes.
+ */
+export interface SegmentContext {
+  version: typeof STATE_CONTEXT_VERSION;
+  as_of: number;
+  recovery: {
+    /** recovery_records whose run_id is one of this segment's runs (provenance.run_id), created <= as_of. */
+    count: number;
+    by_status: Partial<Record<RecoveryStatusCode, number>>;
+    /** Merkle root over the linked record_sha256 values, sorted; null when count is 0. */
+    records_root: string | null;
+  };
+  /** Latest reference anchor for the tenant created <= as_of, or an explicit "none". Never invented. */
+  reference:
+    | { status: "present"; reference_id: string; commit_sha: string; snapshot_sha256: string; envelope_sha256: string }
+    | { status: "none" };
+}
 
 export interface StateSegment {
   version: typeof STATE_SEGMENT_VERSION;
@@ -78,6 +118,8 @@ export interface StateSegment {
   source_ids_root: string;
   loss: LossMode;
   prev_segment_sha256: string | null;
+  /** M3, optional: absent unless enrichment was requested, so plain lossless segments hash exactly as in M1. */
+  context?: SegmentContext;
 }
 
 export interface SealedSegment {

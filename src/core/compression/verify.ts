@@ -1,8 +1,9 @@
-// 4D state compression (M1): segment and chain verification against source rows. Pure.
+// 4D state compression: segment and chain verification against source rows. Pure.
+// M3: verifySegment rebuilds with the segment's own loss mode and context; verifyReconstruction checks error bounds.
 import { sha256Canonical } from "../reconcile";
 import { extractPoints } from "./extract";
 import { compressPoints, reconstruct } from "./encode";
-import type { SealedSegment, SourceRow, VerifyResult } from "./types";
+import type { LossOption, SealedSegment, SourceRow, StatePoint, VerifyResult } from "./types";
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -32,7 +33,9 @@ export function verifySegment(sealed: SealedSegment, sources: readonly SourceRow
   if (extracted.points.length !== segment.count) errors.push(`source count ${extracted.points.length} != segment count ${segment.count}`);
   if (extracted.points.length > 0) {
     try {
-      const rebuilt = compressPoints(segment.tenant_id, segment.seq, extracted.points, segment.prev_segment_sha256);
+      const loss: LossOption = segment.loss?.mode === "bounded" ? { mode: "bounded", eps: segment.loss.eps } : { mode: "lossless" };
+      const rebuilt = compressPoints(segment.tenant_id, segment.seq, extracted.points, segment.prev_segment_sha256,
+        { loss, context: segment.context });
       if (rebuilt.segment.source_ids_root !== segment.source_ids_root) errors.push("source_ids_root does not match sources");
       if (rebuilt.segment_sha256 !== sealed.segment_sha256) errors.push("segment does not reproduce from sources");
     } catch (e) {
@@ -56,5 +59,40 @@ export function verifyChain(segments: readonly SealedSegment[]): VerifyResult {
     if (s.segment.prev_segment_sha256 !== prev) errors.push(`seq ${i}: prev_segment_sha256 does not link to previous segment`);
     prev = s.segment_sha256;
   });
+  return { ok: errors.length === 0, errors };
+}
+
+/**
+ * Checks a segment's decoded state against the exact points it covers (in segment order).
+ * Lossless: every value bit-identical (Object.is, so -0 counts). Bounded: |v - v'| <= eps per axis, the stored
+ * max_abs_err equals the recomputed maximum, and t, step and verdict are exact.
+ */
+export function verifyReconstruction(sealed: SealedSegment, points: readonly StatePoint[]): VerifyResult {
+  const errors: string[] = [];
+  const segment = sealed?.segment;
+  if (!segment) return { ok: false, errors: ["missing segment"] };
+  let got: ReturnType<typeof reconstruct>;
+  try { got = reconstruct(segment); } catch (e) { return { ok: false, errors: [`segment does not decode: ${message(e)}`] }; }
+  if (got.length !== points.length) return { ok: false, errors: [`decoded ${got.length} points, expected ${points.length}`] };
+  const bounded = segment.loss.mode === "bounded" ? segment.loss : null;
+  const maxErr = { predicted: 0, observed: 0, phi: 0 };
+  for (let k = 0; k < points.length; k++) {
+    const g = got[k], w = points[k];
+    if (g.t !== w.t || !Object.is(g.step, w.step) || g.verdict !== w.verdict) { errors.push(`point ${k}: time, step or verdict differs`); continue; }
+    for (const a of ["predicted", "observed", "phi"] as const) {
+      if (!bounded) {
+        if (!Object.is(g[a], w[a])) errors.push(`point ${k}: ${a} differs (lossless)`);
+      } else {
+        const err = Math.abs(g[a] - w[a]);
+        if (!(err <= bounded.eps[a])) errors.push(`point ${k}: ${a} error exceeds eps`);
+        if (err > maxErr[a]) maxErr[a] = err;
+      }
+    }
+  }
+  if (bounded) {
+    for (const a of ["predicted", "observed", "phi"] as const) {
+      if (!Object.is(bounded.max_abs_err[a], maxErr[a])) errors.push(`${a}: stored max_abs_err does not match measured`);
+    }
+  }
   return { ok: errors.length === 0, errors };
 }

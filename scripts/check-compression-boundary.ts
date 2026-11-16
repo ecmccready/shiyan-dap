@@ -2,6 +2,7 @@
  * Fails (exit 1) if a compression module imports anything outside its allowlist, reaches a forbidden
  * module transitively (MetamorphicEngine, metamorphic-runtime, deterministic-proof, self-engine, src/lib/level4),
  * or uses a non-deterministic / I/O primitive directly.
+ * M3: the pure core may not import source.ts (the only I/O module); new core files are covered automatically.
  * M2: also checks the read-only edge (src/core/compression/source.ts and scripts/compress-tenant.ts): no write
  * SQL, no file-write APIs, and the CLI may import only an allowlist (never routes, Level 4 or write modules).
  * Run: npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-compression-boundary.ts
@@ -66,6 +67,7 @@ export function checkCompressionFile(file: string, text: string): string[] {
     }
     const t = posix(target);
     if (isForbidden(t)) v.push(`${rel}: imports forbidden module ${t}`);
+    else if (t === "src/core/compression/source.ts" && rel !== "src/core/compression/source.ts") v.push(`${rel}: pure core imports the I/O module ${t}`);
     else if (t.startsWith("src/core/compression/")) continue;
     else if (ALLOWED_CORE.includes(t)) continue;
     else if (t === SOURCE_ONLY && rel === "src/core/compression/source.ts") continue;
@@ -118,6 +120,8 @@ const bad: [string, RegExp][] = [
   ['import { submitStandardRun } from "../run-contract";', /non-allowlisted module src\/core\/run-contract\.ts/],
   ["const t = Date.now();", /uses Date\.now/],
   ["const r = Math.random();", /uses Math\.random/],
+  ['import { readTenantRows } from "./source";', /pure core imports the I\/O module src\/core\/compression\/source\.ts/],
+  ['const flag = process.env.SHIYAN_STATE_COMPRESSION;', /uses process\.env/],
 ];
 for (const [text, expected] of bad) {
   const v = checkCompressionFile(fake, text);
@@ -213,6 +217,9 @@ const edgeBad: [string, string, RegExp][] = [
   [sourceFile, 'const q = "INSERT INTO shiyan.experiences VALUES ($1)";', /write\/DDL SQL keyword/],
   [sourceFile, 'const q = "UPDATE shiyan.experiences SET x = 1";', /write\/DDL SQL keyword/],
   [sourceFile, 'const q = "CREATE TABLE t (x int)";', /write\/DDL SQL keyword/],
+  [sourceFile, 'const q = "SELECT 1; DELETE FROM shiyan_anchor.recovery_records";', /write\/DDL SQL keyword/],
+  [cliFile, 'import { NeonRecoveryRecorder } from "../src/core/neon-recovery-recorder";', /forbidden module src\/core\/neon-recovery-recorder\.ts/],
+  [cliFile, 'import { reconcile } from "../src/core/reconcile";', /non-allowlisted module src\/core\/reconcile\.ts/],
 ];
 for (const [file, text, expected] of edgeBad) {
   const v = checkEdgeFile(file, text);

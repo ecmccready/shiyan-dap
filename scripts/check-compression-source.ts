@@ -171,10 +171,10 @@ try {
     assert.match(passOutput, /^points_included: 300$/m);
     assert.match(passOutput, /^excluded: 2 \(hash_mismatch=1, not_third_party_workbench=1\)$/m);
     assert.match(passOutput, /^segments: 2 {2}pending: 0$/m);
-    assert.match(passOutput, /^segment 0: count=256 sha256=[0-9a-f]{64} source_ids_root=[0-9a-f]{64}$/m);
-    assert.match(passOutput, /^segment 1: count=44 sha256=[0-9a-f]{64} /m);
+    assert.match(passOutput, /^segment 0: count=256 closed_by=full sha256=[0-9a-f]{64} source_ids_root=[0-9a-f]{64}$/m);
+    assert.match(passOutput, /^segment 1: count=44 closed_by=cutoff sha256=[0-9a-f]{64} /m);
     assert.match(passOutput, /^chain_root: [0-9a-f]{64}$/m);
-    for (const c of ["chain", "recompute", "sources", "lossless"]) assert.match(passOutput, new RegExp(`^PASS ${c}$`, "m"));
+    for (const c of ["chain", "recompute", "sources", "lossless", "context"]) assert.match(passOutput, new RegExp(`^PASS ${c}$`, "m"));
     assert.match(passOutput, /^RESULT: PASS$/m);
     assert.deepEqual(calls, { read: 1, connect: 1, close: 1 });
     assert.ok(onlyReadOnly(log), "mock pg client received a non-read-only statement");

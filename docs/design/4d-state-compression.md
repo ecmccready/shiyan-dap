@@ -1,6 +1,6 @@
 # 4D State Compression Engine: design (draft, not implemented)
 
-Status: M1 (pure core) and M2 (read-only per-tenant reader, local CLI, off by default) implemented. M3–M5 are not implemented. No migration exists or has been applied, and no existing source file was changed (only the compression checks and README/doc). Designed on `main` at `2a09d82`.
+Status: M1 (pure core), M2 (read-only per-tenant reader, local CLI, off by default) and M3 (window sealing, opt-in bounded-loss, anchors context) implemented. M4–M5 are not implemented. No migration exists or has been applied, and no existing source file outside `src/core/compression/` and the compression scripts was changed. Designed on `main` at `2a09d82`.
 
 ## 1. Inspiration (SIMA 2), stated honestly
 SIMA 2 is Google DeepMind's Gemini-based agent for 3D virtual worlds. It follows instructions given in language and images, reasons about goals, and converses with users [1][2]. Its self-improvement loop works like this: Gemini sets a task and estimates a reward for the agent's behaviour, and the result goes into a **bank of self-generated experience** that trains the next generation of the agent [1]. In the paper, Gemini rates each trajectory (video) from 0 to 100 against a rubric calibrated to human preferences, and a score of 50 or more counts as a success [2]. Failed tasks are retried with hints until the agent succeeds [3].
@@ -90,7 +90,7 @@ The Level 4 plant is `src/lib/level4/*`, `src/components/Level4Shell.tsx`, `src/
 ## 12. Milestones (smallest slice first)
 1. **M1, pure core:** `types`, `extract`, `encode`, `verify` plus unit tests. Lossless only, no DB, no flag needed.
 2. **M2, read-only source:** `source.ts` plus a local CLI script that compresses and verifies one tenant from a `--storage-file` URL and prints only hashes and counts. Behind the flag.
-3. **M3, enrichment and bounded-loss:** recovery_records and reference_anchors annotations, plus opt-in eps quantization.
+3. **M3, enrichment and bounded-loss:** recovery_records and reference_anchors annotations, plus opt-in eps quantization. **Done (2026-11-16)**, with window sealing (open question 4).
 4. **M4, persistence (only if asked):** migration 004, schema-guard expectation, append-only writer.
 5. **M5, consumer (only if asked):** a read-only tenant API route or ROE input. This is a separate decision.
 
@@ -124,11 +124,60 @@ The Level 4 plant is `src/lib/level4/*`, `src/components/Level4Shell.tsx`, `src/
 - Tests: `scripts/check-compression-source.ts` (15 checks: Date-to-ISO, exact statement sequence on a recording mock client, tenant filtering, rollback on error, tenant refusal before any statement, allowlist, flag-off refusal with zero reads, usage errors, a 300-row two-segment PASS with exclusions, no payloads/ids/URL/role/host/password in output, order-independent chain root, `--full-windows-only`, error output with code only, non-TLS URL refused without echo, and the fixture URL file's mtime, hash and temp dir unchanged). The fixture file is created in a fresh temp dir and deleted afterwards. `scripts/check-compression-boundary.ts` additionally checks `source.ts` and the CLI: no write/DDL SQL keywords, no file-write APIs, the CLI imports only an allowlist (`node:fs/os/path/url`, compression, `neon-db`, `storage-diagnostics`, `tenant-auth`), never routes, `src/components/`, Level 4, the engine or any write module, and nothing reaches routes, Level 4 or the engine transitively. It has a self-test for each rule.
 - Caveats: all rows of one tenant are loaded into memory in one SELECT (fine at current volume; paging would come with M4). The URL's role is `shiyan_app`, which has INSERT; the READ ONLY transaction plus the statement allowlist are what keep the reader read-only. `tenant-auth.ts` (for `TENANT_ID_PATTERN`) transitively loads the local experience-store modules, but nothing calls them. M2 was tested against a mock client, not a live Postgres.
 
+### M3 as built (2026-11-16)
+New pure files `window.ts`, `context.ts`, `chain.ts`; additive changes to `types.ts`, `encode.ts`, `verify.ts`, `index.ts`; `source.ts` gains the anchors reader. M1's `compressTenant`/`verifyTenant` are unchanged. M3's entry points are `buildTenantChain(tenant, rows, options)` and `verifyTenantChain(...)`.
+
+**Lossless default is byte-identical.** `context` is an optional segment field that is absent unless an anchors source is given, and `loss` stays `{ mode: "lossless" }` by default, so a plain segment's canonical bytes and `segment_sha256` are exactly M1's. `scripts/check-compression-m3.ts` pins golden hashes computed with the M2 code (`fac78f1`) for the M1 and M2 fixtures and checks that both `compressTenant` and `buildTenantChain` still reproduce them.
+
+**Sealing (resolves open question 4).**
+- Arrival = the row's `created_at` (DB insert time, now also SELECTed; never hashed). If a row has none, arrival falls back to `proof_timestamp` (counted as `arrival_from_proof_timestamp`).
+- Points are walked in `(arrival, t, experience_id)` order. A window opens at its first point's arrival and closes `full` at 256 points, or `cutoff` when the next point arrives at or after `opened_at + cutoff`. The last window closes by cutoff once `as_of` reaches `opened_at + cutoff`.
+- A closed window counts as sealed only after a **grace** period: `as_of >= close time + grace`, where the close time is the last arrival (full) or `opened_at + cutoff` (cutoff). The default grace is 10 min. It covers inserts timestamped before a boundary but committed after it. Everything from the first non-final window onward is `pending`, so the sealed chain is always a prefix.
+- Inside a window, points are encoded in M1 order `(t, experience_id)`.
+- **Late record:** a record whose `t` is earlier than the newest `t` in an already-sealed window lands in the window open at its arrival (the next open window). Membership is decided by arrival, so a sealed window never reopens. The tests prove this, including a late record and a 27-step "as_of advances" prefix property.
+- Defaults: size 256, cutoff 24 h, grace 10 min. All are configurable (`cutoffMs`, `graceMs`; CLI `--cutoff-hours`, `--grace-minutes`, `--full-windows-only` for no cutoff). `as_of` is always supplied by the caller (the CLI uses the current time or `--as-of`), and the core reads no clock.
+- Sealing metadata (close reason, open/close times) is reported but **not** embedded in plain segments, to keep lossless hashes stable. With context, `context.as_of` records the seal time.
+
+**Bounded-loss (opt-in).**
+- `loss: { mode: "bounded", eps: {predicted, observed, phi}, max_abs_err: {…} }`. Each axis stores `q = round(v / eps)` (integer-valued float64, never -0) in the same XOR-delta column coding. Reconstruction is `q * eps`. t, step, verdicts and source ids stay exact.
+- `max_abs_err` is measured at compression and covered by the hash. `verifyReconstruction` checks every value is within eps, that t/step/verdict are exact, and that the stored `max_abs_err` equals the recomputed maximum. Lossless is checked bit-exactly with `Object.is`.
+- The quantization error is ≤ eps/2 plus float rounding. The verified bound is eps. If a value's magnitude makes eps unreachable (or `|v/eps| > 2^53`), compression refuses with an error rather than exceeding eps.
+- `verifySegment` now rebuilds using the segment's own loss mode and context.
+
+**Context (enrichment).**
+- `SegmentContext { version: "aethel.state-context/1", as_of, recovery: { count, by_status, records_root }, reference: { status: "present", reference_id, commit_sha, snapshot_sha256, envelope_sha256 } | { status: "none" } }`.
+- `as_of` is the window's seal time. Only anchor-DB rows created at or before it are used, so a sealed segment's context never changes later.
+- Recovery records are linked to a segment when their `run_id` equals one of its runs' `provenance.run_id`. `records_root` is a domain-separated Merkle root over the sorted linked `record_sha256` values (null when none). The reference is the latest `reference_anchors` row created ≤ `as_of` (ties broken by `reference_id`), else an explicit `{ status: "none" }`.
+- Invalid anchor-DB rows are skipped and counted, never repaired. Recovery rows without `run_id` are counted as unlinked.
+- Context exists only when an anchors source is supplied, and then it is embedded in every segment and covered by `segment_sha256` and the chain. Without `--anchor-file`, segments carry no context, and the CLI says so explicitly.
+
+**Anchors source.**
+- Both tables live in the anchors DB (separate project, `~/.shiyan-anchor-url`). `readTenantAnchors` sends exactly `BEGIN READ ONLY`, `SELECT reference_id, commit_sha, snapshot_sha256, envelope_sha256, created_at FROM shiyan_anchor.reference_anchors WHERE tenant_id = $1 …`, `SELECT run_id, status, record_sha256, created_at FROM shiyan_anchor.recovery_records WHERE tenant_id = $1 ORDER BY id`, then `COMMIT` (or `ROLLBACK`). These SELECTs are added to the same exact-match allowlist.
+- No numeric recovery fields (`prior_predicted`, `phi_lift`, …) are read.
+- The CLI refuses an anchors URL that is not independent of storage (`independentDatabases`). The anchors URL is read only from `--anchor-file`, never from the environment.
+
+**CLI.**
+- Same gate (`SHIYAN_STATE_COMPRESSION=1`, else exit 2 with zero reads).
+- New flags: `--anchor-file`, `--loss lossless|bounded`, `--eps p,o,phi`, `--cutoff-hours`, `--grace-minutes`, `--as-of`.
+- Checks printed: `chain`, `recompute` (full rebuild incl. sealing and context), `sources`, `lossless` or `bounded`, `context`.
+- Output adds sealing/window/late counts, the loss line, context counts, and per segment `closed_by`, `max_abs_err` (bounded), recovery count/root, and reference id/commit/snapshot hash. Still no payloads, URLs or secrets.
+- **Difference from M2 output:** because windows now seal by arrival and cutoff, a tenant whose runs span more than 24 h gets more, smaller segments than M2's single in-memory partial window, so its chain root differs from M2's. A window with the same points still has the same hash.
+
+**Tests.**
+- `scripts/check-compression-m3.ts`, 25 checks: golden hashes, bounded bounds/tamper/eps validation, bit-exact lossless, sealing (full, cutoff, grace, configurable, late record, prefix stability, determinism), context (selection, linking, hash coverage, explicit none, anchors after seal ignored), the anchors reader (statements, rollback, tenant refusal), and the CLI (flag off, anchors, bounded example, usage errors, non-independent anchors URL, error output, pinned `--as-of`, no-write snapshot).
+- `check-compression-boundary.ts` adds two rules: the pure core may not import `source.ts`, and the CLI may not import `reconcile` or the recovery recorder.
+- `check-compression-source.ts` is updated for the new output lines.
+
+**Caveats.**
+- Arrival uses `created_at = now()` (transaction start). An insert whose transaction began more than the grace period before it committed could arrive "inside" an already-sealed window. That would only matter once segments are persisted (M4), and M4 should then append from the persisted head rather than recompute.
+- Recovery records created after their segment sealed are not attached to it (by design, for immutability). The `recovery_records` write path (`reconcile()`) is not yet called from any route, so production may have few or none.
+- All tested against mock clients; the parent/user runs against live data.
+
 ## 13. Open questions
 1. ~~Meaning of "4D"~~ **Resolved:** (predicted, observed, Φ) × time. The reference commit is context, not an axis.
 2. ~~Lossless vs bounded-loss~~ **Resolved:** lossless for M1–M2. Bounded-loss is opt-in in M3, and eps per axis is to be chosen then.
 3. ~~Which sources~~ **Resolved:** `third-party-workbench` only. Others are excluded and counted.
-4. Segment size and sealing: fixed N=256 (current default), or also time windows (e.g. daily)? This interacts with the late-arrival caveat above.
+4. ~~Segment size and sealing~~ **Resolved (M3):** fixed 256-run windows plus a time cutoff (default 24 h, configurable), ordered by DB arrival; a late record goes into the next open window and never reopens a sealed one. See "M3 as built".
 5. If persisted, should segments live in the storage DB (`shiyan`) or the independent anchors DB, given they are derived and not authoritative? (Default for now: no persistence.)
 6. Who reads the segments first: ROE next-action, the customer proof export, or nobody yet (verification only)? (Default for now: no consumer.)
 
