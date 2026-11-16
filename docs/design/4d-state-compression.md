@@ -6,6 +6,7 @@ Status: M1 to M5 are implemented:
 - M3: window sealing, opt-in bounded-loss, anchors context.
 - M4: append-only persistence in `shiyan.state_segments`.
 - M5: a read-only `state_compression` field in the customer proof export, plus anchoring of the chain head in the independent anchors project.
+- Scheduled sync: `scripts/sync-state-chains.ts` plus a workflow staged at `ops/github/state-chain-sync.yml` (install it at `.github/workflows/`); inert until configured.
 
 Migration `004_shiyan_state_segments.sql` is applied on prod (verified 2026-11-16). Migration `005_shiyan_state_chain_anchors.sql` (anchors project) exists but this work does **not apply** it; the owner does.
 
@@ -339,6 +340,62 @@ A scratch PostgreSQL 17 run (PGlite, not committed) checked:
 - The export shows only what is stored and anchored. Run the persist and anchor CLIs to advance them; no automatic job exists.
 - The export reader trusts the SQL constraints for segment-hash integrity. The CLIs re-verify everything.
 - Anchoring is as independent as the two Neon projects and roles are. Anyone with owner access to both could rewrite both, so keep them administered separately.
+
+### Scheduled sync (2026-11-16)
+**Goal:** keep each tenant's stored chain and its anchor current without manual runs. Every existing guarantee stays: append-only, refuse rather than overwrite, tenant-scoped statements, exact allowlists, off by default, and no secrets in output.
+
+**Pieces.**
+- **`scripts/sync-state-chains.ts`:**
+  - It calls `persistTenantSegments` (store.ts) and `anchorStateChainHead` (anchor-store.ts) directly, so the statement allowlists, per-tenant advisory locks, READ ONLY transactions and refusal rules are exactly the CLIs'.
+  - Tenants come only from `SHIYAN_SYNC_TENANTS`: comma-separated, each checked with `TENANT_ID_PATTERN`, deduplicated, at most 50. An invalid entry is a usage error and nothing is read; the value is not echoed. Empty means `no tenants configured`, exit 0.
+  - It requires `SHIYAN_STATE_COMPRESSION=1`. Without `--write`, the whole sync is READ ONLY.
+  - It uses one connection per database for the run, and each step is its own transaction. The two URLs must reach different databases with different roles.
+- **`.github/workflows/state-chain-sync.yml`:**
+  - It is committed staged at `ops/github/state-chain-sync.yml`, because the automation token cannot write workflow files. The owner installs it with `git mv`. `check-state-chain-sync` checks whichever copy exists, and requires both to be identical if both exist.
+  - Runs hourly (`17 * * * *`) and on `workflow_dispatch`, with a `write` boolean input (default false).
+  - Scheduled runs write only if the repository variable `SHIYAN_SYNC_WRITE` is `true`. Otherwise they are dry runs.
+  - `permissions: contents: read`; concurrency group `state-chain-sync` with no cancellation (runs never overlap or get cut mid-transaction); `timeout-minutes: 10`.
+  - `actions/checkout@v4` with `persist-credentials: false`, `actions/setup-node@v4` (Node 22), then `npm ci --ignore-scripts`.
+  - Secrets: `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` are masked, written with `umask 077` to files in `$RUNNER_TEMP`, passed by path, and removed in an `always()` step.
+  - If either secret or the `SHIYAN_SYNC_TENANTS` variable is missing, every step is skipped and the job succeeds, so the workflow is inert until configured.
+  - No tracing, no env dumps.
+
+**Per-tenant steps (fail closed).**
+1. **Probe:** a READ ONLY verify of the stored chain (context re-derived from the anchors DB). It yields the chain's own options: sealing parameters, loss mode/eps and context presence. Then a **READ ONLY anchor pre-check**: if the witness already disagrees with storage, nothing is written for that tenant.
+2. **Persist dry run** (READ ONLY). Refused means FAIL.
+3. **Persist `--write`:** only with `--write`, and only if the dry run passed with `would_append > 0`.
+4. **Verify-stored** (READ ONLY, includes the new rows).
+5. **Anchor dry run** (READ ONLY). A mismatch or invalid row means FAIL.
+6. **Anchor `--write`:** only if the head is not yet anchored.
+7. **Verify-anchor** (READ ONLY). A mismatch is FAIL. After `--write`, the latest anchor must be the current head.
+
+**Options are never hardcoded for an existing chain:** they are read from the stored chain itself. A tenant with nothing stored starts with prod-a's choices: lossless, 256-run windows, 24 h cutoff, 10 min grace, anchors context.
+
+**Failure policy:** on any FAIL, REFUSED, mismatch or DB error, that tenant stops and its later steps are skipped. The other tenants still run, because their chains are independent and one tenant's problem should not freeze everyone else's witness. The process exits 1 if any tenant failed, so the workflow run is red and GitHub notifies. Connection or URL failures stop the whole run before anything is read.
+
+**Idempotence:** a rerun with nothing newly sealed sends no INSERT and no write transaction (`appended=0 anchored=0`).
+
+**Output:** one line per tenant plus `RESULT`. It contains only mode, counts, loss/context, anchor status, seqs and hashes. DB errors show `class=… code=…` only. No URLs, roles, hosts or payloads.
+
+**Least privilege (optional, recommended).** The default secrets would be the app URLs:
+- `shiyan_app`: INSERT on `experiences` and `reference_envelopes` as well as `state_segments`;
+- the anchor app role: INSERT on `reference_anchors` and `recovery_records`.
+
+Dedicated sync roles need only:
+- **storage `shiyan_sync`:** USAGE on schema `shiyan`; SELECT on `shiyan.experiences`; SELECT and INSERT on `shiyan.state_segments`.
+- **anchors `shiyan_anchor_sync`:** USAGE on schema `shiyan_anchor`; SELECT on `reference_anchors` and `recovery_records` (context); SELECT and INSERT on `state_chain_anchors`.
+
+`recovery_records` lives in the anchors project, not storage. Advisory locks and `hashtext` need no grants. The 004 link trigger fires without EXECUTE on its function.
+
+Checked on scratch PostgreSQL 17 (PGlite) running as exactly these roles:
+- dry run, write, rerun (0/0) and a later append + anchor for two tenants all passed;
+- the export read back the result;
+- UPDATE/DELETE, inserts into `experiences`/`recovery_records`, and reads of `reference_envelopes` were all denied (42501).
+
+**Caveats.**
+- GitHub-hosted runners reach Neon over the public internet. If Neon IP Allow is enabled, the runner IPs must be allowed; GitHub's ranges are broad.
+- Scheduled workflows can be delayed by GitHub and are auto-disabled after 60 days without repository activity.
+- A FAIL stops only that tenant; it never repairs anything. Investigate with `persist-tenant-segments.ts --verify-stored` and `anchor-state-chain.ts --verify-anchor`.
 
 ## 13. Open questions
 1. ~~Meaning of "4D"~~ **Resolved:** (predicted, observed, Φ) × time. The reference commit is context, not an axis.

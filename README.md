@@ -29,7 +29,10 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
     - Off by default. When off, the response is byte-identical to before.
     - The field is outside `content_sha256` and never fails the export.
   - **Writes:** only through the local CLIs `scripts/persist-tenant-segments.ts` (storage) and `scripts/anchor-state-chain.ts` (anchors). Both need `SHIYAN_STATE_COMPRESSION=1` plus `--write`, refuse rather than overwrite, and print only hashes and counts.
-  - **Schema guard:** until 005 is applied, the guard reports `state_chain_anchors` as SKIP.
+  - **Scheduled sync:** the workflow is staged at `ops/github/state-chain-sync.yml`. Install it once with `git mv ops/github/state-chain-sync.yml .github/workflows/`. Once installed, it runs hourly and calls `scripts/sync-state-chains.ts` for the tenants in the repository variable `SHIYAN_SYNC_TENANTS`.
+    - It is a dry run unless the repository variable `SHIYAN_SYNC_WRITE` is `true` (or a manual run sets `write=true`).
+    - It is inert until the secrets `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` are set.
+    - It is fail-closed per tenant.
   - Design and decisions: `docs/design/4d-state-compression.md`.
 
 ## Surfaces and the Domains dropdown
@@ -179,7 +182,7 @@ npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
 npx tsx scripts/check-compression.ts && npx tsx scripts/check-compression-boundary.ts
-npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts && npx tsx scripts/check-compression-m5.ts
+npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts && npx tsx scripts/check-compression-m5.ts && npx tsx scripts/check-state-chain-sync.ts
 # 4D compression, local and read-only (off by default; prints hashes, ids and counts only, writes nothing):
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/compress-tenant.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
 # opt-in bounded-loss example: add  --loss bounded --eps 0.001,0.001,0.0001
@@ -187,6 +190,8 @@ SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/compress-tenant.ts --tenant <tenant-i
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/persist-tenant-segments.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url [--write | --verify-stored]
 # M5 anchor the stored head in the anchors project (after applying migration 005): dry run by default; --write anchors; --verify-anchor is read-only
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/anchor-state-chain.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url [--write | --verify-anchor]
+# Scheduled sync, run manually: dry run by default; --write appends + anchors; tenants from SHIYAN_SYNC_TENANTS
+SHIYAN_STATE_COMPRESSION=1 SHIYAN_SYNC_TENANTS=<tenant-id>[,<tenant-id>] npx tsx scripts/sync-state-chains.ts --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url [--write]
 ```
 
 ## Neon Staging (Preview)

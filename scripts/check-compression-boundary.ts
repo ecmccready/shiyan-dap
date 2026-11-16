@@ -2,6 +2,8 @@
  * Fails (exit 1) if a compression module imports anything outside its allowlist, reaches a forbidden
  * module transitively (MetamorphicEngine, metamorphic-runtime, deterministic-proof, self-engine, src/lib/level4),
  * or uses a non-deterministic / I/O primitive directly.
+ * Sync: scripts/sync-state-chains.ts is an edge CLI like the others; it may import both writers (reusing their
+ *     allowlists and locks), never the export reader, a route, Level 4 or the engine.
  * M5: anchor-store.ts may only INSERT INTO shiyan_anchor.state_chain_anchors and is imported only by
  *     scripts/anchor-state-chain.ts. export-reader.ts is the ONE read-only module the app may import, and only from
  *     src/app/api/v1/customer-proof/[id]/route.ts; it never reaches a writer (store.ts, anchor-store.ts) or source.ts.
@@ -69,6 +71,7 @@ const EXPORT_READER_FILE = "src/core/compression/export-reader.ts";
 const EXPORT_CONSUMER = "src/app/api/v1/customer-proof/[id]/route.ts";
 const PERSIST_CLI = "scripts/persist-tenant-segments.ts";
 const ANCHOR_CLI = "scripts/anchor-state-chain.ts";
+const SYNC_CLI = "scripts/sync-state-chains.ts"; // scheduled sync: reuses both writers with their own allowlists/locks
 /** The one write target each writer may name. */
 const WRITE_TARGETS: Record<string, string> = {
   [STORE_FILE]: "INSERT INTO shiyan.state_segments",
@@ -76,8 +79,8 @@ const WRITE_TARGETS: Record<string, string> = {
 };
 /** Which non-check files may import each writer. */
 const WRITER_IMPORTERS: Record<string, readonly string[]> = {
-  [STORE_FILE]: [PERSIST_CLI, ANCHOR_CLI],
-  [ANCHOR_STORE_FILE]: [ANCHOR_CLI],
+  [STORE_FILE]: [PERSIST_CLI, ANCHOR_CLI, SYNC_CLI],
+  [ANCHOR_STORE_FILE]: [ANCHOR_CLI, SYNC_CLI],
 };
 /** Write SQL anywhere in the compression tree: none at all, except each writer may name its one INSERT target. */
 export function writeSqlViolations(rel: string, text: string): string[] {
@@ -219,7 +222,8 @@ const persistFile = join(root, "scripts", "persist-tenant-segments.ts");
 const sourceFile = join(compressionDir, "source.ts");
 const CLI_ALLOWED_BUILTINS = ["node:fs", "node:os", "node:path", "node:url"];
 const anchorCliFile = join(root, "scripts", "anchor-state-chain.ts");
-const CLI_FILES = ["scripts/compress-tenant.ts", PERSIST_CLI, ANCHOR_CLI];
+const syncCliFile = join(root, "scripts", "sync-state-chains.ts");
+const CLI_FILES = ["scripts/compress-tenant.ts", PERSIST_CLI, ANCHOR_CLI, SYNC_CLI];
 const CLI_ALLOWED = ["src/core/neon-db.ts", "src/core/storage-diagnostics.ts", "src/core/tenant-auth.ts"];
 /** Routes, Level 4, the engine, and every module that appends, publishes or persists. */
 const EDGE_FORBIDDEN_PREFIX = ["src/app/", "src/lib/level4/", "src/components/"];
@@ -256,7 +260,7 @@ export function checkEdgeFile(file: string, text: string): string[] {
     else if (WRITER_IMPORTERS[t] && rel !== t && !WRITER_IMPORTERS[t].includes(rel)) v.push(`${rel}: imports the writer ${t} (only ${WRITER_IMPORTERS[t].join(", ")} may)`);
     else if (t === EXPORT_READER_FILE && CLI_FILES.includes(rel)) v.push(`${rel}: imports the export reader ${t} (only ${EXPORT_CONSUMER} may)`);
     else if (CLI_FILES.includes(rel) && !t.startsWith("src/core/compression/") && !CLI_ALLOWED.includes(t)
-      && !((rel === PERSIST_CLI || rel === ANCHOR_CLI) && t === "scripts/compress-tenant.ts")) {
+      && !((rel === PERSIST_CLI || rel === ANCHOR_CLI || rel === SYNC_CLI) && t === "scripts/compress-tenant.ts")) {
       v.push(`${rel}: imports non-allowlisted module ${t}`);
     }
   }
@@ -314,24 +318,31 @@ const edgeBad: [string, string, RegExp][] = [
   [anchorCliFile, 'import { stateCompressionForExport } from "../src/core/compression/export-reader";', /imports the export reader/],
   [anchorCliFile, 'import { configuredReferenceAnchors } from "../src/core/reference-anchor-provider";', /forbidden module src\/core\/reference-anchor-provider\.ts/],
   [anchorCliFile, 'writeFileSync("/tmp/x", "y");', /file-write API/],
+  [syncCliFile, 'const q = "INSERT INTO shiyan.state_segments VALUES ($1)";', /write\/DDL SQL keyword/],
+  [syncCliFile, 'import { stateCompressionForExport } from "../src/core/compression/export-reader";', /imports the export reader/],
+  [syncCliFile, 'import { GET } from "../src/app/api/v1/customer-proof/[id]/route";', /forbidden module src\/app\//],
+  [syncCliFile, 'import { NeonExperienceStore } from "../src/core/neon-experience-store";', /forbidden module/],
+  [syncCliFile, 'import { execSync } from "node:child_process";', /non-allowlisted module "node:child_process"/],
+  [syncCliFile, 'writeFileSync("/tmp/x", "y");', /file-write API/],
 ];
 for (const [file, text, expected] of edgeBad) {
   const v = checkEdgeFile(file, text);
   assert.ok(v.some((x) => expected.test(x)), `edge self-test: expected ${expected} for: ${text}\n got: ${v.join("; ")}`);
 }
 assert.deepEqual(checkEdgeFile(persistFile, 'import { persistTenantSegments } from "../src/core/compression/store";\nimport { parseOptions } from "./compress-tenant";'), []);
+assert.deepEqual(checkEdgeFile(syncCliFile, 'import { persistTenantSegments } from "../src/core/compression/store";\nimport { anchorStateChainHead } from "../src/core/compression/anchor-store";\nimport { readUrl } from "./compress-tenant";'), []);
 assert.deepEqual(checkEdgeFile(anchorCliFile, 'import { persistTenantSegments } from "../src/core/compression/store";\nimport { anchorStateChainHead } from "../src/core/compression/anchor-store";\nimport { parseOptions } from "./compress-tenant";'), []);
 assert.deepEqual(checkEdgeFile(cliFile, 'import { readFileSync } from "node:fs";\nimport { compressTenant } from "../src/core/compression/index";\nimport { checkDatabaseUrl } from "../src/core/neon-db";'), []);
 console.log(`PASS edge self-test (${edgeBad.length} forbidden patterns rejected)`);
 
-const edgeFiles = [sourceFile, cliFile, persistFile, anchorCliFile, join(compressionDir, "store.ts"), join(compressionDir, "anchor-store.ts"), join(compressionDir, "export-reader.ts")];
+const edgeFiles = [sourceFile, cliFile, persistFile, anchorCliFile, syncCliFile, join(compressionDir, "store.ts"), join(compressionDir, "anchor-store.ts"), join(compressionDir, "export-reader.ts")];
 for (const f of edgeFiles) assert.ok(existsSync(f), `missing ${posix(f)}`);
 const edgeViolations = [...edgeFiles.flatMap((f) => checkEdgeFile(f, readFileSync(f, "utf8"))), ...edgeTransitive(edgeFiles)];
 if (edgeViolations.length) {
   for (const x of edgeViolations) console.error(`FAIL ${x}`);
   process.exit(1);
 }
-console.log("PASS edge boundary (source.ts, store.ts, anchor-store.ts, export-reader.ts and the three CLIs: no file writes; write SQL only in store.ts (INSERT INTO shiyan.state_segments) and anchor-store.ts (INSERT INTO shiyan_anchor.state_chain_anchors); writers imported only by their CLIs; no route/Level 4/engine imports)");
+console.log("PASS edge boundary (source.ts, store.ts, anchor-store.ts, export-reader.ts and the four CLIs (compress, persist, anchor, sync): no file writes; write SQL only in store.ts (INSERT INTO shiyan.state_segments) and anchor-store.ts (INSERT INTO shiyan_anchor.state_chain_anchors); writers imported only by their CLIs; no route/Level 4/engine imports)");
 
 // ---------- M4/M5: repo-wide wiring check ----------
 // Nothing in src/ outside src/core/compression imports the compression modules, EXCEPT exactly one consumer:
@@ -374,4 +385,4 @@ if (wiring.length) {
   for (const x of wiring) console.error(`FAIL ${x}`);
   process.exit(1);
 }
-console.log("PASS wiring (only the customer-proof export route imports compression, and only export-reader.ts, which never reaches a writer or source.ts; store.ts imported only by the persist/anchor CLIs, anchor-store.ts only by the anchor CLI, plus check scripts)");
+console.log("PASS wiring (only the customer-proof export route imports compression, and only export-reader.ts, which never reaches a writer or source.ts; store.ts imported only by the persist/anchor/sync CLIs, anchor-store.ts only by the anchor/sync CLIs, plus check scripts)");

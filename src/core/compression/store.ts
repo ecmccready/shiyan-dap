@@ -112,6 +112,8 @@ export interface PersistResult {
   stored_head_after: string | null;
   /** M5: the valid stored segment hashes in seq order (index = seq), as read in this transaction. */
   stored_hashes: string[];
+  /** Sync: the stored chain's own sealing parameters, loss option and context presence (null when nothing is stored). */
+  stored_options: { params: ChainParams; loss: ChainOptions["loss"]; context: boolean } | null;
   /** verify only: whether the stored chain is a prefix of a from-scratch recomputation (informational). */
   from_scratch_prefix?: boolean;
   /** verify only: the stored chain's own checks (context re-derived only when anchors were given). */
@@ -162,6 +164,11 @@ export async function persistTenantSegments(
       invalid_stored, extension, appended: mode === "verify" ? 0 : extension.appended.length, inserted: 0,
       stored_head_after: stored.length ? stored[stored.length - 1].sealed.segment_sha256 : null,
       stored_hashes: stored.map((s) => s.sealed.segment_sha256),
+      stored_options: stored.length ? {
+        params: { ...stored[0].params },
+        loss: stored[0].sealed.segment.loss.mode === "bounded" ? { mode: "bounded", eps: { ...stored[0].sealed.segment.loss.eps } } : { mode: "lossless" },
+        context: storedHasContext,
+      } : null,
     };
     if (mode === "verify") {
       const { covered: _covered, ...storedChecks } = verifyStoredChain(tenant, stored, rows, effective.anchors);
