@@ -16,6 +16,12 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
 - Level 4 plant, durable experience store, replay verification, and the Workbench MCP contract are live and are not modified by the commercial surfaces.
 - Phase 3 surfaces (asset map, audit summary) are read-only and off-chain.
 - Eight original test events remain in the ledger. Only the project owner can purge them.
+- **Production status (2026-11-16):**
+  - Neon storage and anchors projects are live in Production.
+  - Tenant auth (`AETHEL_TENANT_KEYS`) is configured and verified on Production.
+  - 4D state compression is live for `prod-a`: chain persisted and anchored, and the customer proof export shows `state_compression` present and anchored.
+  - The GitHub Actions `state-chain-sync` workflow is live. Manual dry-run and write-mode runs both PASS, and the hourly schedule writes automatically.
+  - Level 4 plant is untouched.
 - Production security close-out (2026-11-14) is complete: anchor and GitHub credentials rotated, unused env vars removed, schema guard green, acceptance passing with independent anchors.
 - 4D state compression engine:
   - **Built and tested:** M1 to M5:
@@ -29,10 +35,11 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
     - Off by default. When off, the response is byte-identical to before.
     - The field is outside `content_sha256` and never fails the export.
   - **Writes:** only through the local CLIs `scripts/persist-tenant-segments.ts` (storage) and `scripts/anchor-state-chain.ts` (anchors). Both need `SHIYAN_STATE_COMPRESSION=1` plus `--write`, refuse rather than overwrite, and print only hashes and counts.
-  - **Scheduled sync:** the workflow is staged at `ops/github/state-chain-sync.yml`. Install it once with `git mv ops/github/state-chain-sync.yml .github/workflows/`. Once installed, it runs hourly and calls `scripts/sync-state-chains.ts` for the tenants in the repository variable `SHIYAN_SYNC_TENANTS`.
-    - It is a dry run unless the repository variable `SHIYAN_SYNC_WRITE` is `true` (or a manual run sets `write=true`).
-    - It is inert until the secrets `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` are set.
-    - It is fail-closed per tenant.
+  - **Scheduled sync (live):** `.github/workflows/state-chain-sync.yml` runs hourly (at :17) and calls `scripts/sync-state-chains.ts` for the tenants in the repository variable `SHIYAN_SYNC_TENANTS`.
+    - Repository secrets `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` hold the connection strings. Repository variables: `SHIYAN_SYNC_TENANTS=prod-a`, `SHIYAN_SYNC_WRITE=true`.
+    - Scheduled runs write because `SHIYAN_SYNC_WRITE` is `true`. Manual runs write only when dispatched with `write=true`.
+    - Dry run first, idempotent, fail-closed per tenant; logs show only hashes and counts.
+    - Disable with `gh workflow disable state-chain-sync.yml`, or return to dry runs with `gh variable delete SHIYAN_SYNC_WRITE`.
   - Design and decisions: `docs/design/4d-state-compression.md`.
 
 ## Surfaces and the Domains dropdown
