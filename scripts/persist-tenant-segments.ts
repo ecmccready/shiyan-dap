@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import { independentDatabases, type CheckedDatabaseUrl } from "../src/core/neon-db";
 import { diagnosticErrorClass, diagnosticErrorCode } from "../src/core/storage-diagnostics";
 import { TENANT_ID_PATTERN } from "../src/core/tenant-auth";
-import type { AnchorSource } from "../src/core/compression/index";
+import { formatPendingWindow, type AnchorSource } from "../src/core/compression/index";
 import { readTenantAnchors } from "../src/core/compression/source";
 import { persistTenantSegments, type PersistMode, type PersistResult } from "../src/core/compression/store";
 import { FLAG, argValue, defaultDeps, parseOptions, readUrl, type CompressTenantDeps, type CompressTenantOutcome } from "./compress-tenant";
@@ -101,7 +101,7 @@ export async function runPersistTenant(argv: readonly string[], env: Env, deps: 
     if (!e.refused.length) {
       e.appended.forEach((s, i) => lines.push(`segment ${s.segment.seq}: count=${s.segment.count} closed_by=${e.windows[i].closed_by} sha256=${s.segment_sha256}`));
     }
-    lines.push(`pending: ${e.pending}  late_records: ${e.late}`);
+    lines.push(`pending: ${e.pending}  late_records: ${e.late}  ${formatPendingWindow(e.pending_window)}`);
   }
   lines.push(`chain_head: ${(mode === "write" ? r.stored_head_after : mode === "dry-run" && !e.refused.length ? e.head_sha256 : r.stored_head_after) ?? "none"}${mode === "dry-run" ? " (after the would-be append)" : ""}`);
 

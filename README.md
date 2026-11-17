@@ -36,9 +36,10 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
     - The field is outside `content_sha256` and never fails the export.
   - **Writes:** only through the local CLIs `scripts/persist-tenant-segments.ts` (storage) and `scripts/anchor-state-chain.ts` (anchors). Both need `SHIYAN_STATE_COMPRESSION=1` plus `--write`, refuse rather than overwrite, and print only hashes and counts.
   - **Scheduled sync (live):** `.github/workflows/state-chain-sync.yml` runs hourly (at :17) and calls `scripts/sync-state-chains.ts` for the tenants in the repository variable `SHIYAN_SYNC_TENANTS`.
-    - Repository secrets `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` hold the connection strings. Repository variables: `SHIYAN_SYNC_TENANTS=prod-a`, `SHIYAN_SYNC_WRITE=true`.
+    - Repository secrets `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` hold the connection strings. Repository variables: `SHIYAN_SYNC_TENANTS=prod-a,prod-b`, `SHIYAN_SYNC_WRITE=true`.
     - Scheduled runs write because `SHIYAN_SYNC_WRITE` is `true`. Manual runs write only when dispatched with `write=true`.
-    - Dry run first, idempotent, fail-closed per tenant; logs show only hashes and counts.
+    - Dry run first, idempotent, fail-closed per tenant; logs show only hashes, counts and pending-window times (`pending_opened_at` / `pending_seals_at`, or `pending_seals_at=none`).
+    - GitHub may delay or drop hourly scheduled runs; each run catches up, so this is harmless.
     - Disable with `gh workflow disable state-chain-sync.yml`, or return to dry runs with `gh variable delete SHIYAN_SYNC_WRITE`.
   - Design and decisions: `docs/design/4d-state-compression.md`.
 

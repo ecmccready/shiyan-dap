@@ -10,8 +10,8 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  DEFAULT_CUTOFF_MS, buildTenantChain, compressPoints, compressTenant, extractPoints, planWindows, arrivalsFrom,
-  reconstruct, recoveryRoot, verifyChain, verifyReconstruction, verifySealed, verifySegment, verifyTenantChain,
+  DEFAULT_CUTOFF_MS, DEFAULT_GRACE_MS, buildTenantChain, compressPoints, compressTenant, extractPoints, planWindows, arrivalsFrom,
+  formatPendingWindow, reconstruct, recoveryRoot, verifyChain, verifyReconstruction, verifySealed, verifySegment, verifyTenantChain,
   type AnchorSource, type SealedSegment, type SourceRow,
 } from "../src/core/compression";
 import {
@@ -252,6 +252,29 @@ async function main(): Promise<void> {
     assert.equal(arr.get(fid(1)), T0 + H); assert.equal(arr.has(fid(2)), false);
     const plan = planWindows(extractPoints(TENANT, [rowAt(1, T0, T0 + H), rowAt(2, T0)]).points, arr, { asOfMs: FAR });
     assert.equal(plan.arrival_fallback, 1);
+  });
+  await check("pending_window: open, cutoff-closed-unsealed, and none (seals_at from the real sealing rule)", () => {
+    const rows = [rowAt(1, T0, T0), rowAt(2, T0 + MIN, T0 + MIN)];
+    const points = extractPoints(TENANT, rows).points;
+    const arr = arrivalsFrom(rows);
+    const opts = (asOfMs: number) => ({ asOfMs, cutoffMs: DEFAULT_CUTOFF_MS, graceMs: DEFAULT_GRACE_MS });
+    const iso = (ms: number) => new Date(ms).toISOString();
+    const sealsAt = T0 + DEFAULT_CUTOFF_MS + DEFAULT_GRACE_MS;
+
+    const open = planWindows(points, arr, opts(T0 + 12 * H));
+    assert.equal(open.pending, 2); assert.equal(open.sealed.length, 0);
+    assert.deepEqual(open.pending_window, { opened_at: T0, seals_at: sealsAt });
+    assert.equal(formatPendingWindow(open.pending_window), `pending_opened_at=${iso(T0)} pending_seals_at=${iso(sealsAt)}`);
+
+    const inGrace = planWindows(points, arr, opts(T0 + DEFAULT_CUTOFF_MS + 5 * MIN));
+    assert.equal(inGrace.pending, 2); assert.equal(inGrace.sealed.length, 0);
+    assert.deepEqual(inGrace.pending_window, { opened_at: T0, closed_at: T0 + DEFAULT_CUTOFF_MS, closed_by: "cutoff", seals_at: sealsAt });
+    assert.equal(formatPendingWindow(inGrace.pending_window), `pending_opened_at=${iso(T0)} pending_seals_at=${iso(sealsAt)}`);
+
+    const done = planWindows(points, arr, opts(sealsAt));
+    assert.equal(done.pending, 0); assert.equal(done.sealed.length, 1);
+    assert.equal(done.pending_window, null);
+    assert.equal(formatPendingWindow(null), "pending_seals_at=none");
   });
 
   // ---------- 4. Context ----------

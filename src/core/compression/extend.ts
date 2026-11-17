@@ -10,7 +10,7 @@ import { compressPoints, checkEps } from "./encode";
 import { comparePoints, extractPoints, summarizeExclusions } from "./extract";
 import { verifyChain, verifyReconstruction, verifySegment } from "./verify";
 import { prepareAnchors, runIdsFrom, segmentContext, type AnchorSource } from "./context";
-import { arrivalsFrom, checkSealingOptions, planWindows, type CloseReason } from "./window";
+import { arrivalsFrom, checkSealingOptions, planWindows, type CloseReason, type PendingWindow } from "./window";
 import type { ChainOptions } from "./chain";
 import type { ExclusionSummary, LossOption, SealedSegment, SourceRow, StatePoint, VerifyResult } from "./types";
 
@@ -103,6 +103,8 @@ export interface Extension {
   included: number;
   /** Included points not in any stored or newly sealed segment. */
   pending: number;
+  /** The next window that will seal among uncovered points, or null when pending is 0. */
+  pending_window: PendingWindow | null;
   /** New sealed points whose t is earlier than the newest t already sealed (stored or new). */
   late: number;
   head_sha256: string | null;
@@ -141,7 +143,7 @@ export function extendTenantChain(tenant: string, rows: readonly SourceRow[], st
   };
   const storedHead = stored.length ? stored[stored.length - 1] : null;
   if (refused.length) {
-    return { ...base, refused, appended: [], windows: [], pending: points.length - covered.size, late: 0, head_sha256: storedHead?.sealed.segment_sha256 ?? null };
+    return { ...base, refused, appended: [], windows: [], pending: points.length - covered.size, pending_window: null, late: 0, head_sha256: storedHead?.sealed.segment_sha256 ?? null };
   }
   const fresh = points.filter((p) => !covered.has(p.experience_id));
   const floor = storedHead ? storedHead.closed_at : -Infinity;
@@ -169,6 +171,6 @@ export function extendTenantChain(tenant: string, rows: readonly SourceRow[], st
   return {
     ...base, refused, appended,
     windows: plan.sealed.map((w) => ({ closed_by: w.closed_by, opened_at: w.opened_at, closed_at: w.closed_at, points: w.points })),
-    pending: plan.pending, late, head_sha256: prev,
+    pending: plan.pending, pending_window: plan.pending_window, late, head_sha256: prev,
   };
 }

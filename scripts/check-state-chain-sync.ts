@@ -196,7 +196,7 @@ async function main(): Promise<void> {
     const o = await run(base, env(A), s, a);
     assert.equal(o.exitCode, 0, o.text);
     assert.match(o.text, /^state-chain sync: mode=dry-run \(READ ONLY, nothing written\) tenants=1 as_of=\S+$/m);
-    assert.match(o.text, /^tenant tenant-a: OK mode=dry-run stored=0 would_append=2 pending=0 loss=lossless context=yes anchor=unanchored would_anchor=0 covers_head=no head=none$/m);
+    assert.match(o.text, /^tenant tenant-a: OK mode=dry-run stored=0 would_append=2 pending=0 loss=lossless context=yes anchor=unanchored would_anchor=0 covers_head=no head=none pending_seals_at=none$/m);
     assert.match(o.text, /RESULT: PASS \(1 tenant\(s\)\)$/);
     assert.deepEqual(writes(s, a), []); assert.equal(s.segments.length, 0); assert.equal(a.anchors.length, 0);
     assert.deepEqual(leaks(o.text), []);
@@ -208,7 +208,7 @@ async function main(): Promise<void> {
     assert.equal(o.exitCode, 0, o.text);
     assert.equal(s.segments.length, 2); assert.equal(a.anchors.length, 1);
     const head = s.segments[1].segment_sha256 as string;
-    assert.match(o.text, new RegExp(`^tenant tenant-a: OK mode=write stored=2 appended=2 pending=0 loss=lossless context=yes anchor=anchored anchored=1 covers_head=yes head=${head} anchored_seq=1$`, "m"));
+    assert.match(o.text, new RegExp(`^tenant tenant-a: OK mode=write stored=2 appended=2 pending=0 loss=lossless context=yes anchor=anchored anchored=1 covers_head=yes head=${head} anchored_seq=1 pending_seals_at=none$`, "m"));
     // Order: READ ONLY dry run before any write; write transaction under the tenant lock.
     const kinds = s.log.map((q) => q.sql);
     const firstWrite = kinds.indexOf(WRITE_BEGIN);
@@ -297,6 +297,39 @@ async function main(): Promise<void> {
     const o = await runStateChainSync([...base, "--write"], env(A), { ...deps(new FakeStorage(), new FakeAnchors()), connect: async () => { throw Object.assign(new Error(`connect postgres://x:${PW}@h/d`), { code: "28P01" }); } });
     assert.equal(o.exitCode, 1); assert.match(o.lines.join("\n"), /FAIL storage\.connect: class=\S+ code=28P01\nRESULT: FAIL \(nothing was written\)$/);
     assert.deepEqual(leaks(o.lines.join("\n")), []);
+  });
+
+  await check("OK line reports pending_opened_at and pending_seals_at for the open/pending window", async () => {
+    const iso = (ms: number) => new Date(ms).toISOString();
+    const sealsAt = T0 + 24 * H + 10 * MIN;
+    const saved = now;
+    const sP = new FakeStorage(), aP = new FakeAnchors();
+    sP.experiences.push(...day1());
+    try {
+      now = T0 + 12 * H;
+      const open = await run(base, env(A), sP, aP);
+      assert.equal(open.exitCode, 0, open.text);
+      assert.match(open.text, /pending=5 /);
+      assert.ok(open.text.split("\n").some((l) => l.endsWith(`pending_opened_at=${iso(T0)} pending_seals_at=${iso(sealsAt)}`)), open.text);
+      assert.deepEqual(writes(sP, aP), []);
+
+      now = T0 + 24 * H + 5 * MIN;
+      const inGrace = await run(base, env(A), sP, aP);
+      assert.equal(inGrace.exitCode, 0, inGrace.text);
+      assert.match(inGrace.text, /pending=5 /);
+      assert.ok(inGrace.text.split("\n").some((l) => l.endsWith(`pending_opened_at=${iso(T0)} pending_seals_at=${iso(sealsAt)}`)), inGrace.text);
+      assert.deepEqual(writes(sP, aP), []);
+
+      now = sealsAt;
+      const done = await run(base, env(A), sP, aP);
+      assert.equal(done.exitCode, 0, done.text);
+      assert.match(done.text, /pending=0 /);
+      assert.match(done.text, /pending_seals_at=none$/m);
+      assert.ok(!/pending_opened_at=/.test(done.text), "no opened_at field when there is nothing pending");
+      assert.deepEqual(leaks(open.text + "\n" + inGrace.text + "\n" + done.text), []);
+    } finally {
+      now = saved;
+    }
   });
 
   // ---------- Workflow YAML (static) ----------

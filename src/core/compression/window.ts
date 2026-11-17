@@ -39,6 +39,16 @@ export interface SealedWindow {
   closed_by: CloseReason;
 }
 
+/** The first unsealed window (still open, or closed but still inside grace). */
+export interface PendingWindow {
+  opened_at: number;
+  /** Set when the window has already closed (full or cutoff) but grace has not elapsed. */
+  closed_at?: number;
+  closed_by?: CloseReason;
+  /** Epoch ms when this window becomes sealed, or null when cutoff is Infinity and the window is still open. */
+  seals_at: number | null;
+}
+
 export interface WindowPlan {
   sealed: SealedWindow[];
   /** Included points not yet in a sealed window. */
@@ -47,6 +57,8 @@ export interface WindowPlan {
   late: number;
   /** Points with no valid created_at, so arrival fell back to proof_timestamp. */
   arrival_fallback: number;
+  /** The next window that will seal, or null when every included point is already sealed. */
+  pending_window: PendingWindow | null;
 }
 
 export function checkSealingOptions(o: SealingOptions): Required<SealingOptions> {
@@ -107,5 +119,23 @@ export function planWindows(points: readonly StatePoint[], arrivals: ReadonlyMap
     for (const p of w.points) if (p.t > newest) newest = p.t;
   }
   const inSealed = sealed.reduce((n, w) => n + w.points.length, 0);
-  return { sealed, pending: points.length - inSealed, late, arrival_fallback };
+  const pending = points.length - inSealed;
+  let pending_window: PendingWindow | null = null;
+  if (pending > 0) {
+    const first = closed[sealed.length];
+    if (first) {
+      pending_window = { opened_at: first.opened_at, closed_at: first.closed_at, closed_by: first.closed_by, seals_at: first.closed_at + graceMs };
+    } else if (open) {
+      pending_window = { opened_at: open.opened_at, seals_at: cutoffMs === Infinity ? null : open.opened_at + cutoffMs + graceMs };
+    }
+  }
+  return { sealed, pending, late, arrival_fallback, pending_window };
+}
+
+/** CLI field(s) for the pending window. ISO-8601 UTC; `pending_seals_at=none` when there is nothing pending (or no time-based seal). */
+export function formatPendingWindow(w: PendingWindow | null): string {
+  if (!w) return "pending_seals_at=none";
+  const opened = `pending_opened_at=${new Date(w.opened_at).toISOString()}`;
+  const seals = w.seals_at === null ? "pending_seals_at=none" : `pending_seals_at=${new Date(w.seals_at).toISOString()}`;
+  return `${opened} ${seals}`;
 }

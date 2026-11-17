@@ -11,7 +11,7 @@ export { encodeFloats, decodeFloats, sourceIdsRoot, sealSegment, compressPoints,
 export { verifySealed, verifySegment, verifyChain, verifyReconstruction } from "./verify";
 // M3: window sealing, opt-in bounded-loss, optional anchors context. Pure; I/O stays in source.ts.
 export { checkEps, type SegmentOptions } from "./encode";
-export { DEFAULT_CUTOFF_MS, DEFAULT_GRACE_MS, arrivalsFrom, checkSealingOptions, planWindows, type CloseReason, type SealingOptions, type SealedWindow, type WindowPlan } from "./window";
+export { DEFAULT_CUTOFF_MS, DEFAULT_GRACE_MS, arrivalsFrom, checkSealingOptions, formatPendingWindow, planWindows, type CloseReason, type PendingWindow, type SealingOptions, type SealedWindow, type WindowPlan } from "./window";
 export { prepareAnchors, recoveryRoot, runIdsFrom, segmentContext, type AnchorRow, type AnchorSource, type PreparedAnchors, type RecoveryRow } from "./context";
 export { buildTenantChain, verifyTenantChain, type ChainChecks, type ChainOptions, type TenantChain } from "./chain";
 // M4: extend a persisted chain from its stored head (pure; the writer that talks to the DB is store.ts, CLI-only).

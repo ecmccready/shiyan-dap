@@ -21,7 +21,7 @@
  *   7. verify-anchor  READ ONLY; mismatch => FAIL; after --write the latest anchor must be the current head
  * Options: a tenant with a stored chain is always synced with that chain's own options (never hardcoded). A tenant
  * with nothing stored starts with the defaults used for prod-a: lossless, 24 h cutoff, 10 min grace, anchors context.
- * Output: one line per tenant plus RESULT; only counts, seqs and hashes. Never URLs, roles, hosts, payloads or error
+ * Output: one line per tenant plus RESULT; only counts, seqs, hashes and pending-window ISO times. Never URLs, roles, hosts, payloads or error
  * text (DB errors print class/code only).
  * Exit codes: 0 PASS (or no tenants configured), 1 any tenant FAILED or a connection failed, 2 gate/usage.
  */
@@ -30,7 +30,7 @@ import { fileURLToPath } from "node:url";
 import { independentDatabases } from "../src/core/neon-db";
 import { diagnosticErrorClass, diagnosticErrorCode } from "../src/core/storage-diagnostics";
 import { TENANT_ID_PATTERN } from "../src/core/tenant-auth";
-import { DEFAULT_CUTOFF_MS, DEFAULT_GRACE_MS, DEFAULT_SEGMENT_SIZE, type AnchorSource, type ChainOptions } from "../src/core/compression/index";
+import { DEFAULT_CUTOFF_MS, DEFAULT_GRACE_MS, DEFAULT_SEGMENT_SIZE, formatPendingWindow, type AnchorSource, type ChainOptions } from "../src/core/compression/index";
 import { readTenantAnchors, type ReadOnlyClient } from "../src/core/compression/source";
 import { persistTenantSegments, type PersistMode, type PersistResult } from "../src/core/compression/store";
 import { anchorStateChainHead, type AnchorMode, type AnchorResult } from "../src/core/compression/anchor-store";
@@ -135,7 +135,8 @@ async function syncTenant(
       + `${write ? `appended=${appended}` : `would_append=${wouldAppend}`} pending=${verified.extension.pending} `
       + `loss=${loss} context=${options.anchors ? "yes" : "no"} anchor=${v.comparison.status} `
       + `${write ? `anchored=${anchored}` : `would_anchor=${aDry.would_insert}`} covers_head=${covers ? "yes" : "no"} `
-      + `head=${head ?? "none"}${v.comparison.latest ? ` anchored_seq=${v.comparison.latest.seq}` : ""}`;
+      + `head=${head ?? "none"}${v.comparison.latest ? ` anchored_seq=${v.comparison.latest.seq}` : ""} `
+      + formatPendingWindow(verified.extension.pending_window);
     return { tenant, ok: true, line };
   } catch (error) {
     const f = error instanceof StepFailed ? error : new StepFailed(step, dbDetail(error));
