@@ -40,6 +40,7 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
     - Scheduled runs write because `SHIYAN_SYNC_WRITE` is `true`. Manual runs write only when dispatched with `write=true`.
     - Dry run first, idempotent, fail-closed per tenant; logs show only hashes, counts and pending-window times (`pending_opened_at` / `pending_seals_at`, or `pending_seals_at=none`).
     - GitHub may delay or drop hourly scheduled runs; each run catches up, so this is harmless.
+    - **Least-privilege roles (migration 006):** create non-admin Neon roles `shiyan_sync` (storage project) and `shiyan_anchor_sync` (anchors project) in the Console so Neon generates the passwords, then apply `db/migrations/006_shiyan_sync_role.sql` and `db/migrations/006_shiyan_anchor_sync_role.sql` as each project's owner. Confirm with `scripts/verify-sync-roles.ts --storage-file <sync-url> --anchor-file <anchor-sync-url>`, then point the `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` Actions secrets at those role URLs. Apply steps: `docs/design/4d-state-compression.md`.
     - Disable with `gh workflow disable state-chain-sync.yml`, or return to dry runs with `gh variable delete SHIYAN_SYNC_WRITE`.
   - Design and decisions: `docs/design/4d-state-compression.md`.
 
@@ -190,7 +191,7 @@ npx tsx scripts/check-medicare.ts
 npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
 npx tsx scripts/check-compression.ts && npx tsx scripts/check-compression-boundary.ts
-npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts && npx tsx scripts/check-compression-m5.ts && npx tsx scripts/check-state-chain-sync.ts
+npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts && npx tsx scripts/check-compression-m5.ts && npx tsx scripts/check-state-chain-sync.ts && npx tsx scripts/check-sync-roles.ts
 # 4D compression, local and read-only (off by default; prints hashes, ids and counts only, writes nothing):
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/compress-tenant.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
 # opt-in bounded-loss example: add  --loss bounded --eps 0.001,0.001,0.0001
@@ -200,6 +201,8 @@ SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/persist-tenant-segments.ts --tenant <
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/anchor-state-chain.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url [--write | --verify-anchor]
 # Scheduled sync, run manually: dry run by default; --write appends + anchors; tenants from SHIYAN_SYNC_TENANTS
 SHIYAN_STATE_COMPRESSION=1 SHIYAN_SYNC_TENANTS=<tenant-id>[,<tenant-id>] npx tsx scripts/sync-state-chains.ts --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url [--write]
+# After applying migration 006, verify the sync roles (READ ONLY; prints role name and PASS/FAIL only):
+npx tsx scripts/verify-sync-roles.ts --storage-file ~/.shiyan-storage-sync-url --anchor-file ~/.shiyan-anchor-sync-url
 ```
 
 ## Neon Staging (Preview)

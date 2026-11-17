@@ -377,15 +377,28 @@ A scratch PostgreSQL 17 run (PGlite, not committed) checked:
 
 **Output:** one line per tenant plus `RESULT`. It contains only mode, counts, loss/context, anchor status, seqs and hashes. DB errors show `class=… code=…` only. No URLs, roles, hosts or payloads.
 
-**Least privilege (optional, recommended).** The default secrets would be the app URLs:
+**Least privilege (migration 006).** The default secrets would be the app URLs:
 - `shiyan_app`: INSERT on `experiences` and `reference_envelopes` as well as `state_segments`;
 - the anchor app role: INSERT on `reference_anchors` and `recovery_records`.
 
-Dedicated sync roles need only:
+Dedicated sync roles need only the grants confirmed by an audit (2026-11-17) of `scripts/sync-state-chains.ts` and the modules it calls (`source.ts`, `store.ts`, `anchor-store.ts`; not `export-reader.ts`):
 - **storage `shiyan_sync`:** USAGE on schema `shiyan`; SELECT on `shiyan.experiences`; SELECT and INSERT on `shiyan.state_segments`.
 - **anchors `shiyan_anchor_sync`:** USAGE on schema `shiyan_anchor`; SELECT on `reference_anchors` and `recovery_records` (context); SELECT and INSERT on `state_chain_anchors`.
 
-`recovery_records` lives in the anchors project, not storage. Advisory locks and `hashtext` need no grants. The 004 link trigger fires without EXECUTE on its function.
+No deviations from that list. `recovery_records` lives in the anchors project, not storage. Advisory locks and `hashtext` need no grants. Catalog reads need no grant. Neither `state_segments` nor `state_chain_anchors` uses serial/identity (seq is supplied by the writer), and the sync only SELECTs `recovery_records`, so `recovery_records_id_seq` is not granted. The 004 link trigger fires without EXECUTE on its function and only SELECTs `state_segments` (already granted).
+
+Migrations (plain SQL, idempotent, no password, role is not created here):
+- Storage: `db/migrations/006_shiyan_sync_role.sql`. Create a non-admin role `shiyan_sync` in the Neon Console of the storage project first (so Neon generates the password); the migration raises if the role is missing, is SUPERUSER/CREATEDB/CREATEROLE, or is a member of `shiyan_app` / `neon_superuser`. It then REVOKEs all table/sequence/function privileges on schema `shiyan` and GRANTs only the list above.
+- Anchors: `db/migrations/006_shiyan_anchor_sync_role.sql`, same pattern for `shiyan_anchor_sync`, refusing membership in `shiyan_anchor` / `shiyan_anchor_app` / `neon_superuser`.
+
+Apply each file as that project's owner in the Neon SQL Editor (or `psql "$SHIYAN_*_OWNER_URL" -v ON_ERROR_STOP=1 -f …`). Then verify, using URL files that must never be pasted into chat:
+
+```
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/verify-sync-roles.ts \
+  --storage-file ~/.shiyan-storage-sync-url --anchor-file ~/.shiyan-anchor-sync-url
+```
+
+The verifier is READ ONLY, prints only the role name and PASS/FAIL per privilege, and exits non-zero on any FAIL. After it passes, point the Actions secrets `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` at the sync-role URLs (`gh secret set NAME < file`). Offline check: `scripts/check-sync-roles.ts`.
 
 Checked on scratch PostgreSQL 17 (PGlite) running as exactly these roles:
 - dry run, write, rerun (0/0) and a later append + anchor for two tenants all passed;
