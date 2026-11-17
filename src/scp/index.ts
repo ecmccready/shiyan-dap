@@ -12,9 +12,10 @@ export {
   notImplementedCompressor, notImplementedDecoder, notImplementedEncoder,
   notImplementedProcessor, notImplementedScheduler, notImplementedVerifier, scpNotImplemented,
 } from "./not-implemented";
-export type { PackedEps, PackedPoint, PackedVerdict, QuantizedEncodeResult } from "./pack";
+export type { PackedEps, PackedPoint, PackedVerdict, QuantizedEncodeResult, QuantizedIntBaselineResult } from "./pack";
 export {
-  decodeBinaryBaseline, decodeQuantized, encodeBinaryBaseline, encodeQuantized,
-  isBinaryBaseline, isQuantizedEncoding,
+  decodeBinaryBaseline, decodeQuantized, decodeQuantizedFloatBaseline, decodeQuantizedIntBaseline,
+  encodeBinaryBaseline, encodeQuantized, encodeQuantizedFloatBaseline, encodeQuantizedIntBaseline,
+  isBinaryBaseline, isQuantizedEncoding, isQuantizedFloatBaseline, isQuantizedIntBaseline,
 } from "./pack";
 

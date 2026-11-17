@@ -1,6 +1,6 @@
 # 4D State Compression Processor (4D-SCP): architecture
 
-Status: **v0.1 fixture proof, v0.1.1 defensible baselines, and v0.1.2 stress measurement** (`scripts/check-scp-v01.ts`, `scripts/check-scp-v011.ts`, `scripts/check-scp-v012.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval).
+Status: **v0.1 fixture proof plus v0.1.1–v0.1.3 size measurement** (`scripts/check-scp-v01.ts`, `scripts/check-scp-v011.ts`, `scripts/check-scp-v012.ts`, `scripts/check-scp-v013.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval).
 
 Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. The eight owner questions and their accepted answers are in §14 (history preserved).
 
@@ -12,7 +12,7 @@ Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §
 
 **Scope of this document and of `src/scp/` today.**
 
-- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), a v0.1.1 baseline-and-quantized measurement (`scripts/check-scp-v011.ts`), a v0.1.2 stress measurement on less regular fixtures (`scripts/check-scp-v012.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format), and the accepted decisions in §14.
+- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), v0.1.1–v0.1.3 size measurements (`scripts/check-scp-v011.ts`, `scripts/check-scp-v012.ts`, `scripts/check-scp-v013.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format), and the accepted decisions in §14.
 - Out: any replacement of the stored chain encoder; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result; any read-only product surface (decision 5).
 
 **v0.1 (first milestone) is a software proof** that measures compression ratio, fidelity, latency, retained task performance, and determinism/verifiability (see §7). Fixtures only in tests. Proposed pass thresholds are stated in §7 and in the check script.
@@ -322,6 +322,45 @@ Latency (K=21, hang bound 30_000 ms; one later run of the same check, not an SLA
 On fixture A, gzip(quantized) is 126 B against a 117 B payload (gzip expanded a tiny buffer). That is expected and is not a ratio gate.
 
 
+### 7.8 Fair lossy baselines (v0.1.3)
+
+v0.1.2 compared the *lossy* quantized compact encoding to *lossless* baselines, so part of the reported gain was simply allowing `eps` error. `scripts/check-scp-v013.ts` adds same-eps baselines and splits the gain. The stored chain format and v0.1 hashes are unchanged.
+
+| Id | Baseline | Definition |
+|---|---|---|
+| (a) int codes (`SCQI`) | The same `q = round(v / eps)` as the compact encoding, packed as fixed-width little-endian int32 (or int64 if a code does not fit int32). No delta, no varint. `t` / step / verdict stay lossless. |
+| (a) rounded float64 (`SCQF`) | The same `v' = q * eps`, stored as float64 (plus `t` / step / verdict). Shows that quantization alone does not shrink a float64 packing. |
+| (b) gzip of (a) | `zlib.gzipSync` level 9, MTIME=0, OS=0xff, of `SCQI` and of `SCQF` |
+| (c) brotli of (a) and of compact | `zlib.brotliCompressSync`, quality 11, mode generic, lgwin 22, of `SCQI`, `SCQF`, and the quantized compact encoding |
+| (d) gzip of compact | same gzip as (b), of the quantized compact bytes |
+
+**Gain split.** Quantization gain = lossless compact binary (`SCPB`) / lossy fixed-width packing. Structure gain = that same lossy packing / quantized compact (delta + varint of the same `q`s), also reported versus gzip and brotli of the int codes.
+
+**Pass thresholds:** every lossy encoding (int, float64, compact) has `max_abs_err ≤ eps`, exact `t` / step / verdict, retained score = 1.0, and deterministic bytes; v0.1 engine heads unchanged; latency p95 under the hang bound. Ratios are reported, not asserted.
+
+**Results** (bytes exact; ratios to 4 decimals). All four fixtures used int32 codes (`width = 4`). `eps = { predicted: 0.001, observed: 0.001, phi: 0.0001 }`.
+
+Sizes (bytes):
+
+| Fixture | N | lossless binary | lossy int32 | lossy float64 | quantized compact | gzip(int) | gzip(float) | gzip(compact) | brotli(int) | brotli(float) | brotli(compact) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| v0.1 | 256 | 9481 | 6434 | 9505 | 2551 | 3564 | 4671 | 115 | 2492 | 3916 | 122 |
+| A-medicare | 6 | 231 | 184 | 255 | 117 | 172 | 182 | 126 | 176 | 192 | 121 |
+| B256 | 256 | 9481 | 6434 | 9505 | 1970 | 3213 | 4688 | 991 | 2167 | 4240 | 914 |
+| B4096 | 4096 | 151561 | 102434 | 151585 | 30729 | 49739 | 61749 | 13511 | 31684 | 51254 | 11817 |
+
+Quantized compact versus each fair baseline (`baseline / compact`; >1 means compact is smaller), and the gain split:
+
+| Fixture | vs lossy int | vs lossy float64 | vs gzip(int) | vs gzip(float) | vs gzip(compact) | vs brotli(int) | vs brotli(float) | vs brotli(compact) | quantization (int / float) | structure vs int / gzip(int) / brotli(int) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
+| v0.1 | 2.5221 | 3.7260 | 1.3971 | 1.8310 | 0.0451 | **0.9769** | 1.5351 | 0.0478 | 1.4736 / 0.9975 | 2.5221 / 1.3971 / **0.9769** |
+| A-medicare | 1.5726 | 2.1795 | 1.4701 | 1.5556 | 1.0769 | 1.5043 | 1.6410 | 1.0342 | 1.2554 / 0.9059 | 1.5726 / 1.4701 / 1.5043 |
+| B256 | 3.2660 | 4.8249 | 1.6310 | 2.3797 | 0.5030 | 1.1000 | 2.1523 | 0.4640 | 1.4736 / 0.9975 | 3.2660 / 1.6310 / 1.1000 |
+| B4096 | 3.3335 | 4.9330 | 1.6186 | 2.0095 | 0.4397 | 1.0311 | 1.6679 | 0.3846 | 1.4796 / 0.9998 | 3.3335 / 1.6186 / 1.0311 |
+
+On the regular v0.1 fixture the compact encoding **loses** to brotli of the same int32 codes (2551 B vs 2492 B). gzip of the compact form is still much smaller on the large fixtures (leftover regularity); on the 6-row Medicare mapping, gzip expanded the 117 B compact payload to 126 B.
+
+
 ## 8. Integration points (all additive, all later, Level 4 untouched)
 
 Nothing in this commit wires 4D-SCP into the app. The following are the *only* integration points a later milestone may use, and each must stay additive and flag-gated.
@@ -378,6 +417,7 @@ Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossin
 | **v0.1** (this path’s first implementation milestone) | Software proof on fixtures: ratio, fidelity, latency (reported), retained agreement, determinism. The test script is the thin wrapper over the existing engine; `src/scp` stubs stay unwired from app/Level 4. | `check-scp-v01` + boundary green against the proposed pass thresholds in §7 |
 | **v0.1.1** | Defensible size measurement: baselines (raw JSON, compact binary, gzip-JSON, gzip-SCP canonical), honest headline versus the best general-purpose baseline, and a measured quantized compact encoding that does not change the stored chain | `check-scp-v011` + `check-scp-v01` + boundary green; v0.1 hashes unchanged; results and claims in §7.6 / §15 |
 | **v0.1.2** | Stress the v0.1.1 quantized-vs-binary claim on less regular data (6-row synthetic Medicare mapping, not padded; seeded noisy N=256 and N=4096) | `check-scp-v012` + prior SCP checks green; v0.1 hashes unchanged; per-fixture table and revised headline in §7.7 / §15 |
+| **v0.1.3** | Fair same-eps lossy baselines (fixed-width int codes and rounded float64, plus gzip/brotli) and a split of quantization gain vs encoding-structure gain | `check-scp-v013` + prior SCP checks green; v0.1 hashes unchanged; fair-baseline table and revised headline in §7.8 / §15 |
 | **v0.2** | Optional read-only surface, only after v0.1 passes (decision 5). Still no Level 4 edits. Which surface (export field, inspect page, both, or neither) is decided later. | Additive, off by default, existing export bytes unchanged when the flag is off |
 | **v0.3** | Layer 2 cost/latency model first, bit-accurate model later, against Layer 1 measurements | Documented model; later bit-accurate work agrees with Layer 1 hashes or explains bounded diffs |
 | **v0.4** | Hardware research proposition (writing and evidence, not a tape-out) | Proposition reviewed; claims labelled as hypotheses |
@@ -417,21 +457,19 @@ The owner accepted the recommended defaults for the eight questions below. This 
 7. For Layer 2, do you want a bit-accurate (FPGA-style) arithmetic model, a cost/latency model only, or both?
 8. Is there an external document called “Tensor Scope” or “Return on Evidence” we should follow? In this repository, Tensor Scope is `src/lib/level4/tensor.ts` and ROE is the Reciprocal Optimization Engine (`src/lib/level4/roe.ts`).
 
-## 15. Honest claims (v0.1.1–v0.1.2)
+## 15. Honest claims (v0.1.1–v0.1.3)
 
 What **can** be claimed, on these committed fixtures only:
 
-- Stored lossless reconstruction is bit-exact; stored bounded and the measured quantized encoding stay within the declared eps; retained task performance is 1.0 on the v0.1 fixture, the 6-row synthetic Medicare mapping, and both noisy fixtures.
-- The v0.1 engine heads, and the v0.1 binary / quantized sha256 values, are unchanged. v0.1.2 hashes for A / B256 / B4096 are deterministic across repeated runs and shuffled row order.
-- On the regular v0.1 fixture, quantized compact is 3.7166× smaller than compact binary (2551 B vs 9481 B) and 1.7989× smaller than the best general-purpose baseline, which is gzip(binary) at 4589 B.
-- On less regular data, quantized vs compact binary is 1.9744× (Medicare n=6), 4.8127× (noisy N=256), and 4.9322× (noisy N=4096). Versus gzip(binary) — the best general-purpose baseline on every fixture here — those figures are 1.3590×, 3.7650×, and 3.8623×.
+- Stored lossless reconstruction is bit-exact; stored bounded, the measured quantized compact encoding, and the v0.1.3 fair lossy baselines (fixed-width int codes and rounded float64) stay within the declared eps, with retained score 1.0 and deterministic hashes. v0.1 engine heads are unchanged.
+- At the same eps, writing already-rounded values back as float64 does **not** shrink the lossless binary packing (0.9975× on v0.1; 0.9059× on the 6-row Medicare mapping, where the extra eps header dominates). Switching to fixed-width int32 codes is a modest **quantization** gain of about 1.47× (1.2554× on n=6).
+- The compact delta/varint encoding's remaining **structure** gain versus those uncompressed int32 codes is 2.5221× (v0.1), 1.5726× (Medicare n=6), 3.2660× (noisy N=256), and 3.3335× (noisy N=4096). Versus gzip of the same int codes it is 1.3971×, 1.4701×, 1.6310×, and 1.6186×.
 
 What **cannot** be claimed:
 
-- That 3.72× vs compact binary is *the* SCP ratio, or that it is a lower or upper bound. It is one comparison on one regular fixture. The honest headline uses the best general-purpose baseline per fixture, which in this set is always gzip(binary), and the Medicare file has only 6 rows (not a size-stress sample, not padded).
-- That the **stored** canonical form beats general-purpose compression in general. It never beats compact binary or gzip(binary) here. It *does* slightly beat gzip(JSON) on the noisy fixtures (about 1.01–1.03×) and on Medicare lossless (1.0336×), and it loses to gzip(JSON) on the regular v0.1 fixture and on Medicare bounded.
-- That the measured quantized encoding is the smallest possible representation, or that it is stored or in production. gzip of the quantized bytes is still smaller on the large fixtures (115 B, 991 B, 13511 B); on the 6-row Medicare mapping gzip expanded the 117 B payload to 126 B.
-- That Fixture A is a Medicare or CMS encoder, a clinical finding, or a fraud finding. The mapping is test-only and synthetic, and the committed file has only six invented rows.
-- Production datasets, hardware latency/area/energy, or a product surface (still decision 5 / v0.2).
+- That the 3.72× quantized-vs-lossless-binary figure is a fair compression ratio, or that most of it comes from a clever encoding. Much of it is “float64 → int32 codes plus allowing eps,” and almost none of it is from storing rounded values as float64.
+- That the compact encoding beats a general-purpose compressor of the **same quantized integers**. On the regular v0.1 fixture it **loses** to brotli quality 11 of the int32 codes (2551 B vs 2492 B, 0.9769×). On noisy N=256 / N=4096 it is only 1.1000× / 1.0311× ahead of that brotli baseline.
+- That the compact encoding is the smallest representation, or that it is stored or in production. gzip/brotli of the compact bytes are still much smaller on the large fixtures (115 B / 122 B on v0.1); on the 6-row Medicare mapping gzip expanded 117 B to 126 B.
+- Production datasets, a Medicare/CMS encoder, hardware results, or a product surface (still decision 5 / v0.2).
 
-**Headline (one sentence).** The v0.1.1 3.72× claim is quantized vs compact binary on the regular v0.1 fixture (3.7166×, 2551 B vs 9481 B); versus the best general-purpose baseline, which is gzip(binary) on every fixture here, quantized is 1.7989× (v0.1), 1.3590× (6-row synthetic Medicare mapping, not padded), 3.7650× (noisy N=256), and 3.8623× (noisy N=4096); stored canonical never beats compact binary or gzip(binary), and fidelity ≤ eps with retained score 1.0 held on every fixture.
+**Headline (one sentence).** At the same eps, packing already-rounded values as float64 does not shrink the lossless binary packing (v0.1 0.9975×); switching to fixed-width int32 codes is only a 1.4736× quantization gain; the compact delta/varint encoding is 2.5221× / 1.5726× / 3.2660× / 3.3335× vs those uncompressed int codes on v0.1 / Medicare n=6 / noisy N=256 / N=4096 and 1.3971×–1.6310× vs gzip of them, but on the regular v0.1 fixture it loses to brotli of the same codes (0.9769×, 2551 B vs 2492 B) and is only 1.1000× / 1.0311× ahead of brotli on noisy N=256 / N=4096.
