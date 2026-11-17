@@ -1,5 +1,5 @@
 /** TEST ONLY. Shared v0.1.1/v0.1.2 size-measurement helpers. Fixtures only; no network, no writes. */
-import { brotliCompressSync, constants as zc, gzipSync } from "node:zlib";
+import { brotliCompressSync, brotliDecompressSync, constants as zc, gunzipSync, gzipSync } from "node:zlib";
 import {
   buildTenantChain,
   reconstruct,
@@ -36,27 +36,35 @@ import {
 
 export const GZIP_LEVEL = 9;
 
-export function gzipDeterministic(data: string | Uint8Array): Buffer {
+export function gzipDeterministic(data: string | Uint8Array, level: number = GZIP_LEVEL): Buffer {
   const input = typeof data === "string" ? Buffer.from(data, "utf8") : Buffer.from(data);
-  const buf = gzipSync(input, { level: GZIP_LEVEL });
+  const buf = gzipSync(input, { level });
   buf[4] = 0; buf[5] = 0; buf[6] = 0; buf[7] = 0;
   buf[9] = 0xff;
   return buf;
+}
+
+export function gunzipBytes(data: Uint8Array): Buffer {
+  return gunzipSync(Buffer.from(data));
 }
 
 /** Brotli quality 11 (max), generic mode, lgwin 22. No size hint. Deterministic for a given payload. */
 export const BROTLI_QUALITY = 11;
 export const BROTLI_LGWIN = 22;
 
-export function brotliDeterministic(data: string | Uint8Array): Buffer {
+export function brotliDeterministic(data: string | Uint8Array, quality: number = BROTLI_QUALITY, lgwin: number = BROTLI_LGWIN): Buffer {
   const input = typeof data === "string" ? Buffer.from(data, "utf8") : Buffer.from(data);
   return brotliCompressSync(input, {
     params: {
       [zc.BROTLI_PARAM_MODE]: zc.BROTLI_MODE_GENERIC,
-      [zc.BROTLI_PARAM_QUALITY]: BROTLI_QUALITY,
-      [zc.BROTLI_PARAM_LGWIN]: BROTLI_LGWIN,
+      [zc.BROTLI_PARAM_QUALITY]: quality,
+      [zc.BROTLI_PARAM_LGWIN]: lgwin,
     },
   });
+}
+
+export function brotliDecompressBytes(data: Uint8Array): Buffer {
+  return brotliDecompressSync(Buffer.from(data));
 }
 
 export function ratio(baseline: number, encoded: number): number {

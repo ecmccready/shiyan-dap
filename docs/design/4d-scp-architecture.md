@@ -1,6 +1,6 @@
 # 4D State Compression Processor (4D-SCP): architecture
 
-Status: **v0.1 fixture proof plus v0.1.1–v0.1.3 size measurement** (`scripts/check-scp-v01.ts`, `scripts/check-scp-v011.ts`, `scripts/check-scp-v012.ts`, `scripts/check-scp-v013.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval).
+Status: **v0.1 fixture proof plus v0.1.1–v0.1.4 size and cost measurement** (`scripts/check-scp-v01.ts`, `scripts/check-scp-v011.ts`, `scripts/check-scp-v012.ts`, `scripts/check-scp-v013.ts`, `scripts/check-scp-v014.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval).
 
 Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. The eight owner questions and their accepted answers are in §14 (history preserved).
 
@@ -12,7 +12,7 @@ Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §
 
 **Scope of this document and of `src/scp/` today.**
 
-- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), v0.1.1–v0.1.3 size measurements (`scripts/check-scp-v011.ts`, `scripts/check-scp-v012.ts`, `scripts/check-scp-v013.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format), and the accepted decisions in §14.
+- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), v0.1.1–v0.1.4 size and cost measurements (`scripts/check-scp-v011.ts`, `scripts/check-scp-v012.ts`, `scripts/check-scp-v013.ts`, `scripts/check-scp-v014.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format), a test-only instrumented compact-codec copy (`scripts/scp-v014-ops.ts`), and the accepted decisions in §14.
 - Out: any replacement of the stored chain encoder; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result; any read-only product surface (decision 5).
 
 **v0.1 (first milestone) is a software proof** that measures compression ratio, fidelity, latency, retained task performance, and determinism/verifiability (see §7). Fixtures only in tests. Proposed pass thresholds are stated in §7 and in the check script.
@@ -361,6 +361,53 @@ Quantized compact versus each fair baseline (`baseline / compact`; >1 means comp
 On the regular v0.1 fixture the compact encoding **loses** to brotli of the same int32 codes (2551 B vs 2492 B). gzip of the compact form is still much smaller on the large fixtures (leftover regularity); on the 6-row Medicare mapping, gzip expanded the 117 B compact payload to 126 B.
 
 
+### 7.9 Cost, latency, and working set (v0.1.4)
+
+v0.1.3 showed the compact encoding roughly ties brotli on size versus the same rounded int codes. `scripts/check-scp-v014.ts` tests the follow-on hypothesis — equal size at much lower compute and memory — on fixtures v0.1, B256, and B4096 (the 6-row Medicare mapping is skipped as too small for throughput). The stored chain format and v0.1 hashes are unchanged.
+
+**Codecs, same eps, same rounded int codes (SCQI payload):** quantized compact (`encodeQuantized` / `decodeQuantized` in `src/scp/pack.ts`, including quantization); gzip levels 9 and 6 of SCQI; brotli qualities 11 and 5 of SCQI (generic mode, lgwin 22). Compact encode includes quantization from floats; gzip/brotli encode a pre-built SCQI buffer.
+
+**Method.** Warmup 8 + K=31 timed iterations. If a single call is under 2 ms, the check batches calls so each sample is at least ~2 ms, then divides by the batch size. p50/p95 are reported, not asserted (hang bound only). Throughput MB/s uses decimal megabytes (1e6) of the shared SCQI payload. Memory figures are approximate `process.memoryUsage` heap/RSS/external deltas (median of 5 samples), labelled approximate; they can be negative if GC runs mid-sample. This run did not have `global.gc` exposed.
+
+**Op counts.** A test-only instrumented copy (`scripts/scp-v014-ops.ts`) counts explicit adds, subs, shifts, muls, divs, bitwise ops, rounds, branches (every evaluated condition, not only taken), and bytes written/read. Engine internals, DataView, and allocations are not counted. The instrumented encoder must emit byte-identical output to `encodeQuantized`. Counts are deterministic and amortized over n (header included).
+
+**Working set (the hardware-relevant figure).** The compact codec is five independent zigzag-delta varint streams and needs only the previous value per stream: 5 × 8 = 40 bytes of registers (64 bytes on decode including three float64 eps values). Gzip's deflate window is 32 KiB; brotli lgwin 22 is 4 MiB. Node zlib also uses hasher/scratch beyond the advertised window (not measured). The current JS Writer materializes O(n) arrays and a growing `number[]` output buffer; that is an implementation artifact, not a lower bound on a streaming implementation, and it shows up in the large approximate heap deltas for compact below.
+
+**Pass thresholds:** round-trip, `max_abs_err ≤ eps`, exact `t` / step / verdict, retained 1.0, deterministic encoded bytes and op counts, instrumented bytes match `pack.ts`, v0.1 engine heads unchanged, latency p95 under the hang bound. Throughput, memory, and ratios are reported, not asserted. Single-machine Node timings, not a lab or silicon result.
+
+**Environment for the table below:** Node v24.22.1, linux x64, CPU model `Intel(R) Xeon(R) Processor`, 8 CPUs. Single-machine, no `global.gc`. The table records a dedicated `check-scp-v014` run. A second run on the same machine (after the full check suite) moved B4096 encode speedup vs gzip-l9 from 2.16× to 1.71× and vs brotli-q11 from 69.43× to 54.85×, and decode slowdown vs gzip-l9 from 7.01× to 5.56×; the qualitative result (faster encode, slower JS decode, 40 B vs 32 KiB / 4 MiB) was unchanged.
+
+Sizes (bytes) and encode/decode p50. `enc/dec MB/s` are decimal MB of the SCQI payload. Heap deltas are approximate bytes (p50 of 5 samples).
+
+| Fixture | Codec | N | bytes | encode p50 ms | encode points/s | encode MB/s | decode p50 ms | decode points/s | decode MB/s | approx encode heap Δ | approx decode heap Δ | working set |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| v0.1 | compact | 256 | 2551 | 0.1614 | 1,585,868 | 39.857 | 0.2468 | 1,037,283 | 26.070 | 237,192 | 470,056 | 40 B |
+| v0.1 | gzip-l9 | 256 | 3564 | 0.2317 | 1,104,824 | 27.767 | 0.0455 | 5,628,987 | 141.472 | 3,432 | 2,256 | 32 KiB |
+| v0.1 | gzip-l6 | 256 | 3560 | 0.2060 | 1,242,515 | 31.228 | 0.0450 | 5,684,755 | 142.874 | 3,336 | 2,160 | 32 KiB |
+| v0.1 | brotli-q11 | 256 | 2492 | 6.3582 | 40,263 | 1.012 | 0.0558 | 4,585,075 | 115.236 | 3,352 | 2,272 | 4 MiB |
+| v0.1 | brotli-q5 | 256 | 2605 | 0.1846 | 1,386,487 | 34.846 | 0.0301 | 8,497,536 | 213.567 | 3,208 | 2,176 | 4 MiB |
+| B256 | compact | 256 | 1970 | 0.1112 | 2,302,036 | 57.857 | 0.1581 | 1,618,848 | 40.686 | 222,264 | 346,528 | 40 B |
+| B256 | gzip-l9 | 256 | 3213 | 0.1737 | 1,474,037 | 37.047 | 0.0307 | 8,340,040 | 209.609 | 3,192 | 2,032 | 32 KiB |
+| B256 | gzip-l6 | 256 | 3204 | 0.2079 | 1,231,109 | 30.941 | 0.0286 | 8,957,841 | 225.136 | 3,192 | 2,032 | 32 KiB |
+| B256 | brotli-q11 | 256 | 2167 | 6.7843 | 37,734 | 0.948 | 0.0364 | 7,035,329 | 176.818 | 3,128 | 2,048 | 4 MiB |
+| B256 | brotli-q5 | 256 | 2359 | 0.1980 | 1,292,894 | 32.494 | 0.0305 | 8,406,685 | 211.284 | 3,096 | 2,048 | 4 MiB |
+| B4096 | compact | 4096 | 30729 | 2.2563 | 1,815,388 | 45.400 | 2.9600 | 1,383,765 | 34.606 | 3,748,456 | 5,454,288 | 40 B |
+| B4096 | gzip-l9 | 4096 | 49739 | 4.8631 | 842,257 | 21.063 | 0.4222 | 9,701,991 | 242.630 | 4,736 | 4,680 | 32 KiB |
+| B4096 | gzip-l6 | 4096 | 49703 | 3.6016 | 1,137,276 | 28.441 | 0.4063 | 10,081,320 | 252.117 | 4,736 | 4,680 | 32 KiB |
+| B4096 | brotli-q11 | 4096 | 31684 | 156.6589 | 26,146 | 0.654 | 0.4536 | 9,030,724 | 225.843 | 3,968 | 4,600 | 4 MiB |
+| B4096 | brotli-q5 | 4096 | 36846 | 3.3021 | 1,240,409 | 31.021 | 0.5633 | 7,271,226 | 181.841 | 4,352 | 4,696 | 4 MiB |
+
+**Compact codec deterministic op counts** (totals and per-point, header amortized):
+
+| Fixture | N | encode total | encode / point | decode total | decode / point | encode breakdown (add, sub, shift, mul, div, bit, round, branch, bytes written) | decode breakdown (add, sub, shift, mul, bit, branch, bytes read) |
+|---|---:|---:|---:|---:|---:|---|---|
+| v0.1 | 256 | 25565 | 99.86 | 29418 | 114.91 | 2075, 3422, 2257, 768, 768, 1952, 768, 13555, 2551 | 6615, 1332, 3528, 774, 5778, 11391, 2551 |
+| B256 | 256 | 23306 | 91.04 | 25416 | 99.28 | 2075, 4068, 1676, 768, 768, 790, 768, 12393, 1970 | 5776, 1655, 2947, 774, 4616, 9648, 1970 |
+| B4096 | 4096 | 370311 | 90.41 | 404938 | 98.86 | 32795, 65198, 26595, 12288, 12288, 12228, 12288, 196631, 30729 | 91939, 26460, 47066, 12294, 73654, 153525, 30729 |
+
+On B4096 the compact encoder is 2.16× faster than gzip level 9 and 69.43× faster than brotli quality 11, and slightly faster than gzip level 6 / brotli quality 5 (3.602 / 3.302 ms). The compact *decoder in this JavaScript implementation* is **slower** than native gzip/brotli decompress (7.01× / 6.53× on B4096). Approximate JS heap deltas for compact are large because of the `number[]` Writer, larger than zlib's measured deltas; the 40-byte register figure is the algorithmic contrast, not the observed heap.
+
+
 ## 8. Integration points (all additive, all later, Level 4 untouched)
 
 Nothing in this commit wires 4D-SCP into the app. The following are the *only* integration points a later milestone may use, and each must stay additive and flag-gated.
@@ -410,6 +457,20 @@ These are research layers, not a shipping chip plan. **Hardware claims are hypot
 
 Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossing from Layer 1 to 2 is a new body of work. Crossing from 2 to 3 is a paper-grade claim, not an implementation milestone in this codebase.
 
+### 11.1 Software cost measurements feeding Layer 2 (v0.1.4)
+
+v0.1.4 is **not** a Layer 2 emulation and not an area/LUT/energy estimate. It is a Layer 1 software measurement that a later cost/latency model can compare against. Figures below are Node/JavaScript timings on one machine (see §7.9 for the table, method, and environment). They are not a fabricated-device result.
+
+What the measurements support, as inputs to a later model:
+
+- **Working set.** A streaming implementation of the compact codec needs 40 bytes of previous-value registers (64 bytes on decode including eps), versus a 32 KiB gzip window and a 4 MiB brotli window (lgwin 22). That contrast is the hardware-relevant figure.
+- **Operation count.** The compact codec's instrumented encode/decode cost is deterministic and O(n): about 90 encode ops/point and 99 decode ops/point on B4096 (adds, subs, shifts, muls, divs, bitwise ops, rounds, and branches; see §7.9). Gzip and brotli have no comparable integer op count in this check.
+- **Encode time, in this JS/Node implementation, on B4096.** Compact p50 2.256 ms is 2.16× faster than gzip level 9 and 69.43× faster than brotli quality 11, and slightly ahead of gzip level 6 and brotli quality 5.
+- **Decode time, in this JS/Node implementation, on B4096.** Compact p50 2.960 ms is **slower** than native gzip (0.422 ms, 7.01×) and brotli q11 (0.454 ms, 6.53×) decompress. A tighter native or hardware decoder could differ; this implementation does not win decode throughput.
+- **Measured JS heap.** Approximate `process.memoryUsage` deltas for compact are *larger* than zlib's (B4096 encode ~3.7 MiB vs ~5 KiB) because the current Writer uses a growing `number[]`. Do not treat those deltas as the algorithmic working set.
+
+A later Layer 2 model may use the 40-byte state, the per-point op counts, and these software timings as calibration points. It must label area/LUT/energy figures as estimates and must not present v0.1.4 as a silicon result.
+
 ## 12. Milestones
 
 | Version | Intent | Exit |
@@ -418,6 +479,7 @@ Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossin
 | **v0.1.1** | Defensible size measurement: baselines (raw JSON, compact binary, gzip-JSON, gzip-SCP canonical), honest headline versus the best general-purpose baseline, and a measured quantized compact encoding that does not change the stored chain | `check-scp-v011` + `check-scp-v01` + boundary green; v0.1 hashes unchanged; results and claims in §7.6 / §15 |
 | **v0.1.2** | Stress the v0.1.1 quantized-vs-binary claim on less regular data (6-row synthetic Medicare mapping, not padded; seeded noisy N=256 and N=4096) | `check-scp-v012` + prior SCP checks green; v0.1 hashes unchanged; per-fixture table and revised headline in §7.7 / §15 |
 | **v0.1.3** | Fair same-eps lossy baselines (fixed-width int codes and rounded float64, plus gzip/brotli) and a split of quantization gain vs encoding-structure gain | `check-scp-v013` + prior SCP checks green; v0.1 hashes unchanged; fair-baseline table and revised headline in §7.8 / §15 |
+| **v0.1.4** | Software cost/latency/memory of the compact codec vs gzip (L9, L6) and brotli (q11, q5) on the same rounded int codes, plus a deterministic op count and the algorithmic working-set comparison | `check-scp-v014` + prior SCP checks green; v0.1 hashes unchanged; cost table and revised headline in §7.9 / §11 / §15 |
 | **v0.2** | Optional read-only surface, only after v0.1 passes (decision 5). Still no Level 4 edits. Which surface (export field, inspect page, both, or neither) is decided later. | Additive, off by default, existing export bytes unchanged when the flag is off |
 | **v0.3** | Layer 2 cost/latency model first, bit-accurate model later, against Layer 1 measurements | Documented model; later bit-accurate work agrees with Layer 1 hashes or explains bounded diffs |
 | **v0.4** | Hardware research proposition (writing and evidence, not a tape-out) | Proposition reviewed; claims labelled as hypotheses |
@@ -457,19 +519,21 @@ The owner accepted the recommended defaults for the eight questions below. This 
 7. For Layer 2, do you want a bit-accurate (FPGA-style) arithmetic model, a cost/latency model only, or both?
 8. Is there an external document called “Tensor Scope” or “Return on Evidence” we should follow? In this repository, Tensor Scope is `src/lib/level4/tensor.ts` and ROE is the Reciprocal Optimization Engine (`src/lib/level4/roe.ts`).
 
-## 15. Honest claims (v0.1.1–v0.1.3)
+## 15. Honest claims (v0.1.1–v0.1.4)
 
 What **can** be claimed, on these committed fixtures only:
 
 - Stored lossless reconstruction is bit-exact; stored bounded, the measured quantized compact encoding, and the v0.1.3 fair lossy baselines (fixed-width int codes and rounded float64) stay within the declared eps, with retained score 1.0 and deterministic hashes. v0.1 engine heads are unchanged.
 - At the same eps, writing already-rounded values back as float64 does **not** shrink the lossless binary packing (0.9975× on v0.1; 0.9059× on the 6-row Medicare mapping, where the extra eps header dominates). Switching to fixed-width int32 codes is a modest **quantization** gain of about 1.47× (1.2554× on n=6).
 - The compact delta/varint encoding's remaining **structure** gain versus those uncompressed int32 codes is 2.5221× (v0.1), 1.5726× (Medicare n=6), 3.2660× (noisy N=256), and 3.3335× (noisy N=4096). Versus gzip of the same int codes it is 1.3971×, 1.4701×, 1.6310×, and 1.6186×.
+- In this single-machine Node/JS run, compact encode on B4096 is faster than gzip level 9 (2.16×) and much faster than brotli quality 11 (69.43×), at essentially the same size as brotli q11 (30729 B vs 31684 B). The algorithmic streaming state is 40 bytes versus a 32 KiB gzip window and a 4 MiB brotli window. The compact codec's instrumented cost is deterministic (~90 encode ops/point, ~99 decode ops/point on B4096).
 
 What **cannot** be claimed:
 
 - That the 3.72× quantized-vs-lossless-binary figure is a fair compression ratio, or that most of it comes from a clever encoding. Much of it is “float64 → int32 codes plus allowing eps,” and almost none of it is from storing rounded values as float64.
 - That the compact encoding beats a general-purpose compressor of the **same quantized integers**. On the regular v0.1 fixture it **loses** to brotli quality 11 of the int32 codes (2551 B vs 2492 B, 0.9769×). On noisy N=256 / N=4096 it is only 1.1000× / 1.0311× ahead of that brotli baseline.
 - That the compact encoding is the smallest representation, or that it is stored or in production. gzip/brotli of the compact bytes are still much smaller on the large fixtures (115 B / 122 B on v0.1); on the 6-row Medicare mapping gzip expanded 117 B to 126 B.
+- That compact is faster or leaner on every axis in this implementation. **Decode is slower** than native gzip/brotli (7.01× / 6.53× on B4096). Approximate JS heap deltas for compact are *larger* than zlib's because of the `number[]` Writer; the 40-byte figure is algorithmic state, not the observed heap. These are not lab numbers, not an SLA, and not a silicon result.
 - Production datasets, a Medicare/CMS encoder, hardware results, or a product surface (still decision 5 / v0.2).
 
-**Headline (one sentence).** At the same eps, packing already-rounded values as float64 does not shrink the lossless binary packing (v0.1 0.9975×); switching to fixed-width int32 codes is only a 1.4736× quantization gain; the compact delta/varint encoding is 2.5221× / 1.5726× / 3.2660× / 3.3335× vs those uncompressed int codes on v0.1 / Medicare n=6 / noisy N=256 / N=4096 and 1.3971×–1.6310× vs gzip of them, but on the regular v0.1 fixture it loses to brotli of the same codes (0.9769×, 2551 B vs 2492 B) and is only 1.1000× / 1.0311× ahead of brotli on noisy N=256 / N=4096.
+**Headline (one sentence).** On B4096 in this single-machine Node process, the compact quantized codec (30729 B, 3.3335× vs the 102434 B int32 packing) encodes at p50 2.256 ms (1,815,388 points/s, 45.40 MB/s) versus gzip-l9 4.863 ms (2.16× faster) and brotli-q11 156.659 ms (69.43× faster); decode p50 is 2.960 ms versus gzip-l9 0.422 ms (7.01× slower) and brotli-q11 0.454 ms (6.53× slower). Algorithmic working set is 40 B of previous-value registers versus a 32768 B gzip window and a 4194304 B brotli window; gzip-l6 / brotli-q5 encode p50 on the same fixture are 3.602 / 3.302 ms. These are JS/Node timings, not a silicon result.
