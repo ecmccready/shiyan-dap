@@ -1,0 +1,100 @@
+# 4D state compression: scheduled state-chain sync (scripts/sync-state-chains.ts).
+# Inert until configured: without the repository secrets SHIYAN_STORAGE_URL and SHIYAN_ANCHOR_URL and the
+# repository variable SHIYAN_SYNC_TENANTS, the job skips cleanly (success, nothing read).
+# Writes only when explicitly enabled:
+#   - scheduled runs write only if the repository variable SHIYAN_SYNC_WRITE == 'true' (otherwise READ ONLY dry run);
+#   - manual runs write only if dispatched with write=true (default false).
+# Secrets are written to 0600 files under $RUNNER_TEMP, passed by path, and deleted in an always() step.
+# Nothing here enables shell tracing or prints the environment.
+name: state-chain-sync
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      write:
+        description: "Append sealed segments and anchor the head (false = READ ONLY dry run)"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: state-chain-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HAS_STORAGE_URL: ${{ secrets.SHIYAN_STORAGE_URL != '' }}
+      HAS_ANCHOR_URL: ${{ secrets.SHIYAN_ANCHOR_URL != '' }}
+      SHIYAN_SYNC_TENANTS: ${{ vars.SHIYAN_SYNC_TENANTS }}
+      SYNC_WRITE: ${{ (github.event_name == 'schedule' && vars.SHIYAN_SYNC_WRITE == 'true') || (github.event_name == 'workflow_dispatch' && inputs.write == true) }}
+    steps:
+      - name: Check configuration
+        id: config
+        shell: bash
+        run: |
+          if [ "$HAS_STORAGE_URL" != "true" ] || [ "$HAS_ANCHOR_URL" != "true" ] || [ -z "$SHIYAN_SYNC_TENANTS" ]; then
+            echo "state-chain sync is not configured (secrets SHIYAN_STORAGE_URL/SHIYAN_ANCHOR_URL or variable SHIYAN_SYNC_TENANTS missing); skipping"
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.config.outputs.configured == 'true'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        if: steps.config.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        if: steps.config.outputs.configured == 'true'
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Write database URL files
+        if: steps.config.outputs.configured == 'true'
+        shell: bash
+        env:
+          STORAGE_URL: ${{ secrets.SHIYAN_STORAGE_URL }}
+          ANCHOR_URL: ${{ secrets.SHIYAN_ANCHOR_URL }}
+        run: |
+          umask 077
+          echo "::add-mask::$STORAGE_URL"
+          echo "::add-mask::$ANCHOR_URL"
+          printf '%s' "$STORAGE_URL" > "$RUNNER_TEMP/shiyan-storage-url"
+          printf '%s' "$ANCHOR_URL" > "$RUNNER_TEMP/shiyan-anchor-url"
+
+      - name: Sync state chains
+        if: steps.config.outputs.configured == 'true'
+        shell: bash
+        env:
+          SHIYAN_STATE_COMPRESSION: "1"
+        run: |
+          WRITE_FLAG=""
+          if [ "$SYNC_WRITE" = "true" ]; then WRITE_FLAG="--write"; fi
+          npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/sync-state-chains.ts \
+            --storage-file "$RUNNER_TEMP/shiyan-storage-url" \
+            --anchor-file "$RUNNER_TEMP/shiyan-anchor-url" \
+            $WRITE_FLAG
+
+      - name: Remove database URL files
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/shiyan-storage-url" "$RUNNER_TEMP/shiyan-anchor-url"
+
+
+
+
