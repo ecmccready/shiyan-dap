@@ -1,6 +1,6 @@
 /** TEST ONLY. Shared v0.1 fixture and measurement helpers for 4D-SCP checks.
  * Hand-written committed fixtures; no network, no production data, no writes.
- * Used by scripts/check-scp-v01.ts and scripts/check-scp-v011.ts.
+ * Used by scripts/check-scp-v01.ts, scripts/check-scp-v011.ts, and scripts/check-scp-v012.ts.
  */
 import { createHash } from "node:crypto";
 import {
@@ -61,11 +61,12 @@ export function fixturePoint(i: number): { predicted: number; observed: number; 
   };
 }
 
-export function makeRow(i: number): SourceRow {
-  const f = fixturePoint(i);
-  const id = fid(i);
+export type FixturePoint = { predicted: number; observed: number; phi: number; step: number; t: number; verdict: StateVerdict };
+
+/** Build a SourceRow with the same experience-record shape the v0.1 fixture uses. */
+export function makeSourceRow(tenant: string, id: string, f: FixturePoint): SourceRow {
   const record = {
-    experience_id: id, tenant_id: TENANT, repo: "workbench:fixture-bench", commit_sha: "1.0.0",
+    experience_id: id, tenant_id: tenant, repo: "workbench:fixture-bench", commit_sha: "1.0.0",
     goal: "FIXTURE-PAYLOAD-goal", baseline: `predicted=${f.predicted}`, action: "FIXTURE-PAYLOAD-action",
     predicted_outcome: String(f.predicted), observed_outcome: String(f.observed),
     delta_e: Math.abs(f.predicted - f.observed), metrics: { transformations: 8 },
@@ -82,12 +83,16 @@ export function makeRow(i: number): SourceRow {
   };
   const record_json = JSON.stringify(record);
   return {
-    tenant_id: TENANT,
+    tenant_id: tenant,
     experience_id: id,
     record_json,
     content_sha256: sha(record_json),
     proof_timestamp: new Date(f.t).toISOString(),
   };
+}
+
+export function makeRow(i: number): SourceRow {
+  return makeSourceRow(TENANT, fid(i), fixturePoint(i));
 }
 
 export const FIXTURE_ROWS: SourceRow[] = Array.from({ length: N }, (_, i) => makeRow(i));

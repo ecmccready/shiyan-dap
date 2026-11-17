@@ -1,6 +1,6 @@
 # 4D State Compression Processor (4D-SCP): architecture
 
-Status: **v0.1 fixture proof plus v0.1.1 defensible size measurement** (`scripts/check-scp-v01.ts`, `scripts/check-scp-v011.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format and v0.1 hashes are unchanged. No read-only surface until v0.1 passes (decision 5); v0.1 has passed its software-proof check, but a surface still needs a separate v0.2 approval.
+Status: **v0.1 fixture proof, v0.1.1 defensible baselines, and v0.1.2 stress measurement** (`scripts/check-scp-v01.ts`, `scripts/check-scp-v011.ts`, `scripts/check-scp-v012.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval).
 
 Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. The eight owner questions and their accepted answers are in §14 (history preserved).
 
@@ -12,7 +12,7 @@ Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §
 
 **Scope of this document and of `src/scp/` today.**
 
-- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`) that calls the existing engine from the test script, a v0.1.1 baseline-and-quantized measurement (`scripts/check-scp-v011.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format), and the accepted decisions in §14.
+- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), a v0.1.1 baseline-and-quantized measurement (`scripts/check-scp-v011.ts`), a v0.1.2 stress measurement on less regular fixtures (`scripts/check-scp-v012.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format), and the accepted decisions in §14.
 - Out: any replacement of the stored chain encoder; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result; any read-only product surface (decision 5).
 
 **v0.1 (first milestone) is a software proof** that measures compression ratio, fidelity, latency, retained task performance, and determinism/verifiability (see §7). Fixtures only in tests. Proposed pass thresholds are stated in §7 and in the check script.
@@ -270,6 +270,58 @@ Latency (harness only, N=256, K=21, hang bound 30_000 ms; one run on the check m
 Bounded max_abs_err on this fixture (engine and quantized agree): `x = 3.552713678800501e-15`, `y = 0.00044444444444557973`, `z = 1.1102230246251565e-16`, with `eps = { predicted: 0.001, observed: 0.001, phi: 0.0001 }`.
 
 
+### 7.7 Stress measurement (v0.1.2)
+
+`scripts/check-scp-v012.ts` re-runs the v0.1.1 encodings and baselines on four fixtures, without changing the stored chain format or the v0.1 heads. gzip(binary) is a first-class general-purpose baseline (in v0.1.1 it was an extra). The best general-purpose baseline is `min(compact binary, gzip(JSON), gzip(binary))`.
+
+**Fixtures.**
+
+| Id | Source | N | Notes |
+|---|---|---:|---|
+| v0.1 | Hand-written `scp-v01-fixture` | 256 | Same regular fixture as v0.1 / v0.1.1; engine heads frozen |
+| A | `fixtures/medicare/sample-rows.json` | 6 | SYNTHETIC, test-only mapping below. Too few to stress size; **not padded** |
+| B256 | Seeded PRNG | 256 | mulberry32 seed `20261117`, Box–Muller gaussian, random walk + jumps |
+| B4096 | Same generator and seed | 4096 | B256 is the prefix of this series |
+
+**Fixture A mapping** (TEST-ONLY, SYNTHETIC; not a production encoder, not CMS data, not a clinical or fraud finding): `predicted = avg_submitted_charge`, `observed = avg_medicare_payment`, `phi = (observed − predicted) / max(|predicted|, 1)`, `t = Date.parse(retrieved_at) + i × 1000`, `step = i`, verdict = empty `hcpcs_code` → `INCONCLUSIVE`; `observed < 0` or `observed > predicted` → `FAIL`; else `PASS`.
+
+**Fixture B algorithm.** Start `predicted=1`, `observed=1`, `phi=0.5`, `t=T0`. For `i>0`: `predicted += 0.01 N(0,1)` and a ±0.5 jump every 37th step; `observed = predicted + 0.05 N(0,1)` and a ±2.0 outlier every 53rd step; `phi += 0.002 N(0,1)`, then if `|phi| < 0.05` push to `sign(phi)×0.05` so quantization cannot flip the Φ class; `t += 1000` ms, plus an extra 3_600_000 ms with probability 0.02. Verdict from one uniform: `u<0.15` FAIL, `u<0.25` INCONCLUSIVE, else PASS.
+
+**Pass thresholds (v0.1.2):** fidelity (lossless bit-exact; bounded and quantized `max_abs_err ≤ eps`; binary bit-exact), retained score = 1.0, determinism (repeat + shuffled rows in canonical order), v0.1 engine heads unchanged, latency p95 under the 30_000 ms hang bound. Ratios are reported, not asserted. If quantized is larger than compact binary on a fixture, that is printed honestly and is not a failure.
+
+**Results** (bytes exact; ratios to 4 decimals). One run of the check harness; latency will move slightly on re-runs.
+
+Baselines (bytes):
+
+| Fixture | N | raw JSON | compact binary | gzip(JSON) | gzip(binary) | gzip(SCP lossless) | gzip(SCP bounded) | gzip(quantized) | Best GP |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| v0.1 | 256 | 227075 | 9481 | 10063 | 4589 | 2651 | 1746 | 115 | gzip(binary) 4589 |
+| A-medicare | 6 | 5074 | 231 | 770 | 159 | 375 | 420 | 126 | gzip(binary) 159 |
+| B256 | 256 | 243638 | 9481 | 18164 | 7417 | 6433 | 2087 | 991 | gzip(binary) 7417 |
+| B4096 | 4096 | 3911822 | 151561 | 278510 | 118686 | 98490 | 26877 | 13511 | gzip(binary) 118686 |
+
+Encodings (ratio = baseline / encoding; >1 means smaller than that baseline):
+
+| Fixture | Encoding | Bytes | vs raw JSON | vs binary | vs gzip-JSON | vs gzip-binary | vs gzip(SCP canonical) | Fidelity | Retained |
+|---|---|---:|---:|---:|---:|---:|---:|---|---:|
+| v0.1 | stored lossless | 17676 | 12.8465 | 0.5364 | 0.5693 | 0.2596 | 0.1500 | exact | 1.0 |
+| v0.1 | stored bounded | 17873 | 12.7049 | 0.5305 | 0.5630 | 0.2568 | 0.0977 | ≤ eps | 1.0 |
+| v0.1 | quantized compact | 2551 | 89.0141 | 3.7166 | 3.9447 | 1.7989 | 0.6844 | ≤ eps | 1.0 |
+| A-medicare | stored lossless | 745 | 6.8107 | 0.3101 | 1.0336 | 0.2134 | 0.5034 | exact | 1.0 |
+| A-medicare | stored bounded | 895 | 5.6693 | 0.2581 | 0.8603 | 0.1777 | 0.4693 | ≤ eps | 1.0 |
+| A-medicare | quantized compact | 117 | 43.3675 | 1.9744 | 6.5812 | 1.3590 | 3.5897 | ≤ eps | 1.0 |
+| B256 | stored lossless | 17564 | 13.8714 | 0.5398 | 1.0342 | 0.4223 | 0.3663 | exact | 1.0 |
+| B256 | stored bounded | 17562 | 13.8730 | 0.5399 | 1.0343 | 0.4223 | 0.1188 | ≤ eps | 1.0 |
+| B256 | quantized compact | 1970 | 123.6741 | 4.8127 | 9.2203 | 3.7650 | 1.0594 | ≤ eps | 1.0 |
+| B4096 | stored lossless | 275293 | 14.2097 | 0.5505 | 1.0117 | 0.4311 | 0.3578 | exact | 1.0 |
+| B4096 | stored bounded | 275201 | 14.2144 | 0.5507 | 1.0120 | 0.4313 | 0.0977 | ≤ eps | 1.0 |
+| B4096 | quantized compact | 30729 | 127.3007 | 4.9322 | 9.0634 | 3.8623 | 0.8746 | ≤ eps | 1.0 |
+
+Latency (K=21, hang bound 30_000 ms; one later run of the same check, not an SLA): v0.1 engine p95 ≈ 15–20 ms; A p95 < 1 ms; B256 engine p95 ≈ 18 ms; B4096 engine p95 ≈ 210 ms; quantized encode+decode p95 ≈ 1 ms (v0.1 / B256), ≈ 9 ms (B4096).
+
+On fixture A, gzip(quantized) is 126 B against a 117 B payload (gzip expanded a tiny buffer). That is expected and is not a ratio gate.
+
+
 ## 8. Integration points (all additive, all later, Level 4 untouched)
 
 Nothing in this commit wires 4D-SCP into the app. The following are the *only* integration points a later milestone may use, and each must stay additive and flag-gated.
@@ -302,7 +354,7 @@ Implemented as `scripts/check-scp-v01.ts`. Rules:
 How: treat the vertical as a *labelled source of fixtures and of a retained-performance definition*, not as a production feed.
 
 - **Classification fixture.** Build an `aethel.global.snapshot.v1` from hand-written `GlobalRow` values (the same shape `buildGlobalSnapshot` already accepts). Reconstruct a parallel set of e / Δe / Φ from compressed `(predicted, observed, phi)` if those are encoded, and assert statuses that should be stable. The snapshot module is pure and is not Level 4.
-- **Medicare fixture.** Not used in v0.1. The five administrative fields are not `(predicted, observed, Φ)` (decisions 1 and 2). A later encoder would be required before those rows could be compressed.
+- **Medicare fixture.** Not used as a default encoder in v0.1. The five administrative fields are not `(predicted, observed, Φ)` (decisions 1 and 2). v0.1.2 derives 4D points from the committed 6-row *synthetic* file with an explicit test-only mapping (§7.7). That mapping is not a production or CMS encoder, and the file is not padded with invented Medicare rows.
 - **Recorded snapshots from a running node** are still out of scope (decision 2: committed fixtures only, never production). “Misdiagnosis rejected” keeps its existing classification meaning; v0.1 does not add a compression-specific redefinition.
 
 Guardrail, copied from the existing vertical: a well-formed snapshot or a detected Medicare pattern is not a clinical diagnosis and not a finding of fraud.
@@ -325,6 +377,7 @@ Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossin
 |---|---|---|
 | **v0.1** (this path’s first implementation milestone) | Software proof on fixtures: ratio, fidelity, latency (reported), retained agreement, determinism. The test script is the thin wrapper over the existing engine; `src/scp` stubs stay unwired from app/Level 4. | `check-scp-v01` + boundary green against the proposed pass thresholds in §7 |
 | **v0.1.1** | Defensible size measurement: baselines (raw JSON, compact binary, gzip-JSON, gzip-SCP canonical), honest headline versus the best general-purpose baseline, and a measured quantized compact encoding that does not change the stored chain | `check-scp-v011` + `check-scp-v01` + boundary green; v0.1 hashes unchanged; results and claims in §7.6 / §15 |
+| **v0.1.2** | Stress the v0.1.1 quantized-vs-binary claim on less regular data (6-row synthetic Medicare mapping, not padded; seeded noisy N=256 and N=4096) | `check-scp-v012` + prior SCP checks green; v0.1 hashes unchanged; per-fixture table and revised headline in §7.7 / §15 |
 | **v0.2** | Optional read-only surface, only after v0.1 passes (decision 5). Still no Level 4 edits. Which surface (export field, inspect page, both, or neither) is decided later. | Additive, off by default, existing export bytes unchanged when the flag is off |
 | **v0.3** | Layer 2 cost/latency model first, bit-accurate model later, against Layer 1 measurements | Documented model; later bit-accurate work agrees with Layer 1 hashes or explains bounded diffs |
 | **v0.4** | Hardware research proposition (writing and evidence, not a tape-out) | Proposition reviewed; claims labelled as hypotheses |
@@ -338,7 +391,7 @@ Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossin
 - **Latency gates.** Timing in CI is noisy. v0.1 reports p50/p95 and fails only on the generous hang bound in §7.3.
 - **Over-claiming hardware.** Layer 3 language can outrun evidence. Keep hypotheses labelled.
 - **Scope creep into routes.** Wiring a page before v0.1 measurements exist would mix product surface with an unproven wrapper.
-- **Inflated ratio vs JSON.** Quoting only `record_json / canonical(segment)` (12.85x on this fixture) overstates 4D-state compression. The v0.1.1 headline is versus the best general-purpose baseline (§7.6, §15).
+- **Inflated ratio vs JSON.** Quoting only `record_json / canonical(segment)` (12.85x on this fixture) overstates 4D-state compression. The headline is versus the best general-purpose baseline (§7.6, §7.7, §15).
 
 ## 14. Decisions (accepted 2026-11-17)
 
@@ -364,21 +417,21 @@ The owner accepted the recommended defaults for the eight questions below. This 
 7. For Layer 2, do you want a bit-accurate (FPGA-style) arithmetic model, a cost/latency model only, or both?
 8. Is there an external document called “Tensor Scope” or “Return on Evidence” we should follow? In this repository, Tensor Scope is `src/lib/level4/tensor.ts` and ROE is the Reciprocal Optimization Engine (`src/lib/level4/roe.ts`).
 
-## 15. Honest claims (v0.1.1)
+## 15. Honest claims (v0.1.1–v0.1.2)
 
-What **can** be claimed, on this committed 256-point fixture only:
+What **can** be claimed, on these committed fixtures only:
 
-- The stored lossless chain reconstructs bit-exactly; the stored bounded chain and the measured quantized encoding stay within the declared eps; retained task performance is 1.0 (verdict / Φ-sign class and Global snapshot status unchanged).
-- The v0.1 and v0.1.1 checks are deterministic: the same engine heads, and the same binary / quantized sha256, across repeated runs and shuffled row order.
-- The stored lossless form is 12.8465× smaller than raw `record_json` (17676 B vs 227075 B). That figure is real, and it is mostly JSON envelope, not a property of the 4D state.
-- The measured quantized compact encoding (2551 B, not stored) is 3.7166× smaller than the best general-purpose baseline on this fixture (compact binary, 9481 B) and 3.9447× smaller than gzip(JSON) at level 9 (10063 B), with error ≤ eps.
+- Stored lossless reconstruction is bit-exact; stored bounded and the measured quantized encoding stay within the declared eps; retained task performance is 1.0 on the v0.1 fixture, the 6-row synthetic Medicare mapping, and both noisy fixtures.
+- The v0.1 engine heads, and the v0.1 binary / quantized sha256 values, are unchanged. v0.1.2 hashes for A / B256 / B4096 are deterministic across repeated runs and shuffled row order.
+- On the regular v0.1 fixture, quantized compact is 3.7166× smaller than compact binary (2551 B vs 9481 B) and 1.7989× smaller than the best general-purpose baseline, which is gzip(binary) at 4589 B.
+- On less regular data, quantized vs compact binary is 1.9744× (Medicare n=6), 4.8127× (noisy N=256), and 4.9322× (noisy N=4096). Versus gzip(binary) — the best general-purpose baseline on every fixture here — those figures are 1.3590×, 3.7650×, and 3.8623×.
 
 What **cannot** be claimed:
 
-- That the **stored** SCP canonical form compresses the 4D state better than a general-purpose encoding. It does not: 17676 B (lossless) and 17873 B (bounded) are larger than the 9481 B binary packing and the 10063 B gzip of the same JSON. Versus that binary baseline the stored lossless form is 0.5364× (it expands).
-- That bounded stored text is smaller than lossless stored text. It is slightly larger (17873 vs 17676) because quantization still sits in UTF-8 hex in `canonical(segment)`.
-- That 12.85× is the “SCP compression ratio” of predicted / observed / Φ. It is the ratio versus the full experience JSON.
-- That the measured quantized encoding is the smallest possible representation, or that it is in production. gzip of the quantized bytes is 115 B on this highly regular fixture (constant deltas), and gzip of the stored bounded canonical is 1746 B — both are reported extras, and the quantized helper is not the stored chain.
-- Production, Medicare, or any other dataset; a hardware latency, area, or energy result; or a product surface (still decision 5 / v0.2).
+- That 3.72× vs compact binary is *the* SCP ratio, or that it is a lower or upper bound. It is one comparison on one regular fixture. The honest headline uses the best general-purpose baseline per fixture, which in this set is always gzip(binary), and the Medicare file has only 6 rows (not a size-stress sample, not padded).
+- That the **stored** canonical form beats general-purpose compression in general. It never beats compact binary or gzip(binary) here. It *does* slightly beat gzip(JSON) on the noisy fixtures (about 1.01–1.03×) and on Medicare lossless (1.0336×), and it loses to gzip(JSON) on the regular v0.1 fixture and on Medicare bounded.
+- That the measured quantized encoding is the smallest possible representation, or that it is stored or in production. gzip of the quantized bytes is still smaller on the large fixtures (115 B, 991 B, 13511 B); on the 6-row Medicare mapping gzip expanded the 117 B payload to 126 B.
+- That Fixture A is a Medicare or CMS encoder, a clinical finding, or a fraud finding. The mapping is test-only and synthetic, and the committed file has only six invented rows.
+- Production datasets, hardware latency/area/energy, or a product surface (still decision 5 / v0.2).
 
-**Headline (one sentence).** On this 256-point fixture, the stored SCP canonical form is 12.85× smaller than raw `record_json` but does not beat a compact binary packing of the same 4D points (0.54× vs 9481 B) or gzip(JSON); the measured, not-stored quantized compact encoding is 3.72× smaller than that binary baseline, with error ≤ eps and retained score 1.0.
+**Headline (one sentence).** The v0.1.1 3.72× claim is quantized vs compact binary on the regular v0.1 fixture (3.7166×, 2551 B vs 9481 B); versus the best general-purpose baseline, which is gzip(binary) on every fixture here, quantized is 1.7989× (v0.1), 1.3590× (6-row synthetic Medicare mapping, not padded), 3.7650× (noisy N=256), and 3.8623× (noisy N=4096); stored canonical never beats compact binary or gzip(binary), and fidelity ≤ eps with retained score 1.0 held on every fixture.
