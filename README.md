@@ -43,7 +43,7 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
     - **Least-privilege roles (migration 006):** create non-admin Neon roles `shiyan_sync` (storage project) and `shiyan_anchor_sync` (anchors project) in the Console so Neon generates the passwords, then apply `db/migrations/006_shiyan_sync_role.sql` and `db/migrations/006_shiyan_anchor_sync_role.sql` as each project's owner. Confirm with `scripts/verify-sync-roles.ts --storage-file <sync-url> --anchor-file <anchor-sync-url>`, then point the `SHIYAN_STORAGE_URL` and `SHIYAN_ANCHOR_URL` Actions secrets at those role URLs. Apply steps: `docs/design/4d-state-compression.md`.
     - Disable with `gh workflow disable state-chain-sync.yml`, or return to dry runs with `gh variable delete SHIYAN_SYNC_WRITE`.
   - Design and decisions: `docs/design/4d-state-compression.md`.
-  - **4D-SCP (v0.1 fixture proof, unwired):** architecture at `docs/design/4d-scp-architecture.md`. Isolated stubs in `src/scp/` are imported by no route and no Level 4 module. Boundary check: `scripts/check-scp-boundary.ts`. Software proof (fixtures only): `scripts/check-scp-v01.ts`.
+  - **4D-SCP (v0.1 fixture proof + v0.1.1 baselines, unwired):** architecture at `docs/design/4d-scp-architecture.md` (§7.6, §15 honest claims). Isolated stubs and measured packing helpers in `src/scp/` are imported by no route and no Level 4 module. Boundary check: `scripts/check-scp-boundary.ts`. Software proof (fixtures only): `scripts/check-scp-v01.ts`. Defensible size baselines and quantized compact encoding (not the stored chain): `scripts/check-scp-v011.ts`.
 
 ## Surfaces and the Domains dropdown
 
@@ -193,7 +193,7 @@ npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
 npx tsx scripts/check-compression.ts && npx tsx scripts/check-compression-boundary.ts
 npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts && npx tsx scripts/check-compression-m5.ts && npx tsx scripts/check-state-chain-sync.ts && npx tsx scripts/check-sync-roles.ts
-npx tsx scripts/check-scp-boundary.ts && npx tsx scripts/check-scp-v01.ts
+npx tsx scripts/check-scp-boundary.ts && npx tsx scripts/check-scp-v01.ts && npx tsx scripts/check-scp-v011.ts
 # 4D compression, local and read-only (off by default; prints hashes, ids and counts only, writes nothing):
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/compress-tenant.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
 # opt-in bounded-loss example: add  --loss bounded --eps 0.001,0.001,0.0001

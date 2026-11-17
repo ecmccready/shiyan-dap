@@ -12,3 +12,9 @@ export {
   notImplementedCompressor, notImplementedDecoder, notImplementedEncoder,
   notImplementedProcessor, notImplementedScheduler, notImplementedVerifier, scpNotImplemented,
 } from "./not-implemented";
+export type { PackedEps, PackedPoint, PackedVerdict, QuantizedEncodeResult } from "./pack";
+export {
+  decodeBinaryBaseline, decodeQuantized, encodeBinaryBaseline, encodeQuantized,
+  isBinaryBaseline, isQuantizedEncoding,
+} from "./pack";
+

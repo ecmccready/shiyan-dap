@@ -1,6 +1,6 @@
 # 4D State Compression Processor (4D-SCP): architecture
 
-Status: **accepted v0.1 decisions (2026-11-17) plus isolated stubs and the fixture-only software-proof check** `scripts/check-scp-v01.ts`. No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The check is a thin wrapper over the existing engine; it does not change production behaviour or claim hardware results. No read-only surface until v0.1 passes (decision 5).
+Status: **v0.1 fixture proof plus v0.1.1 defensible size measurement** (`scripts/check-scp-v01.ts`, `scripts/check-scp-v011.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format and v0.1 hashes are unchanged. No read-only surface until v0.1 passes (decision 5); v0.1 has passed its software-proof check, but a surface still needs a separate v0.2 approval.
 
 Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. The eight owner questions and their accepted answers are in §14 (history preserved).
 
@@ -12,8 +12,8 @@ Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §
 
 **Scope of this document and of `src/scp/` today.**
 
-- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`) that calls the existing engine from the test script, and the accepted decisions in §14.
-- Out: any compressor reimplementation inside `src/scp`; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result; any read-only product surface (decision 5).
+- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`) that calls the existing engine from the test script, a v0.1.1 baseline-and-quantized measurement (`scripts/check-scp-v011.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format), and the accepted decisions in §14.
+- Out: any replacement of the stored chain encoder; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result; any read-only product surface (decision 5).
 
 **v0.1 (first milestone) is a software proof** that measures compression ratio, fidelity, latency, retained task performance, and determinism/verifiability (see §7). Fixtures only in tests. Proposed pass thresholds are stated in §7 and in the check script.
 
@@ -190,6 +190,8 @@ Let `raw_bytes` be the UTF-8 byte length of `record_json` for the rows included 
 
 Also report `bytes_per_point = compressed_bytes / sealed_point_count`. **Pass threshold (lossless):** fidelity exact (see §7.2) and the ratio is reported. There is no hard ratio ceiling in v0.1; a ratio below 1.0 is printed, not failed, so a small or incompressible fixture cannot flake the proof. The number is still part of the `ScpMeasurement` record.
 
+The v0.1 ratio versus `record_json` is dominated by JSON envelope overhead (the experience record, not the 4D state). v0.1.1 reports additional baselines and an honest headline in §7.6 / §15. The stored `canonical(segment)` definition above is unchanged, and so are the v0.1 chain hashes.
+
 ### 7.2 Fidelity / reconstruction error
 
 - Lossless: `verifyReconstruction` must pass; every reconstructed `predicted`, `observed`, `phi`, `t`, `step`, `verdict` is bit-identical (or, for floats, the same IEEE-754 value the engine already uses).
@@ -226,6 +228,47 @@ This is the ROE *pattern* (a gated improvement on measured error). v0.1 must not
 ### 7.5 Determinism / verifiability (fifth property)
 
 Same fixture, any row order, two runs: `head_sha256` equal, `verifyChain` ok, and (if anchors are used in the test) the comparison status is not `mismatch`. **Pass threshold:** 100% match on fixtures (`verifyChain` / `verifyTenantChain` / `verifyReconstruction` pass; shuffled input and a repeated run produce the same head). This reuses M1–M5 proof. v0.1 does not persist or anchor the fixture chain. Never write synthetic production data to the live databases.
+
+### 7.6 Defensible size baselines (v0.1.1)
+
+`scripts/check-scp-v011.ts` keeps the v0.1 engine format and hashes and reports every encoding against four baselines, using the same ratio convention (`baseline_bytes / encoding_bytes`, greater than 1 means smaller than that baseline):
+
+| Id | Baseline | Definition |
+|---|---|---|
+| (a) | raw JSON | UTF-8 `record_json` of included fixture rows (same as v0.1 `raw_bytes`) |
+| (b) | compact binary | Fixed-width packing of the same 4D points: float64 `x,y,z` + int64 `t` + int32 `step` + a verdict byte (`src/scp/pack.ts`, magic `SCPB`) |
+| (c) | gzip(JSON) | `zlib.gzipSync` of the concatenated `record_json` bytes, level 9, MTIME=0, OS=0xff (deterministic) |
+| (d) | gzip(SCP canonical) | The same gzip of `canonical(segment)` for the stored engine form |
+
+The **honest headline** is the encoding versus the **best general-purpose baseline**, `min((b), (c))` — not versus raw JSON. gzip of an encoding itself (including gzip of (b) and gzip of the quantized variant) is reported as an extra, not as the named headline baseline.
+
+A **measured quantized compact encoding** (magic `SCPQ` in `src/scp/pack.ts`) is also reported: `q = round(v / eps)`, `v' = q * eps`, then zigzag-delta varints for `t`, `step`, and the three quantized axes, plus a verdict byte. It is a measurement variant only. It must not be written to `shiyan.state_segments`, and it must not change `segment_sha256` or engine behaviour.
+
+**Pass thresholds (v0.1.1):** v0.1 engine heads unchanged; lossless engine fidelity exact; bounded engine and quantized variant `max_abs_err ≤ eps`; retained score = 1.0; binary baseline bit-exact; quantized and baseline hashes identical across repeated runs and shuffled rows in canonical point order. Ratios are reported, not gated on beating a baseline.
+
+**Results on the committed 256-point v0.1 fixture** (bytes are exact; ratios to 4 decimals). Engine chain heads are the v0.1 values: lossless `36b67ee814ccf664c5fac0c80488e793ae59808f2712b6035d5a3e6883a1f6f5`, bounded `f286cf831a4bdcbc60a454335405ddd967671173fba75368b0d9d54f595d46bb`. Quantized sha256 `07a3d04147714747a4823e6e934dc6144740eb2f6243e7113106aed06369d6bc`. Binary sha256 `26be17586ff79c3568e96a05ab858b6f9816922cacdf986c5f1f06ec853fea15`.
+
+| Item | Bytes |
+|---|---:|
+| (a) raw JSON | 227075 |
+| (b) compact binary | 9481 |
+| (c) gzip(JSON), level 9 | 10063 |
+| (d) gzip(SCP lossless canonical) | 2651 |
+| (d) gzip(SCP bounded canonical) | 1746 |
+| gzip(quantized) (extra) | 115 |
+| gzip(binary) (extra) | 4589 |
+| Best general-purpose baseline, min((b),(c)) | **9481 (compact binary)** |
+
+| Encoding | Bytes | vs raw JSON | vs binary | vs gzip-JSON | vs gzip(SCP canonical) | Fidelity | Retained |
+|---|---:|---:|---:|---:|---:|---|---:|
+| Engine lossless canonical (stored) | 17676 | 12.8465 | 0.5364 | 0.5693 | 0.1500 | exact | 1.0 |
+| Engine bounded canonical (stored) | 17873 | 12.7049 | 0.5305 | 0.5630 | 0.0977 | max_abs_err ≤ eps | 1.0 |
+| Quantized compact (measured, not stored) | 2551 | 89.0141 | 3.7166 | 3.9447 | 0.6844 | max_abs_err ≤ eps | 1.0 |
+
+Latency (harness only, N=256, K=21, hang bound 30_000 ms; one run on the check machine, not an SLA): engine lossless p50 11.202 ms / p95 14.533 ms; engine bounded p50 10.909 ms / p95 11.984 ms; quantized encode+decode p50 0.421 ms / p95 0.732 ms. Re-runs will move these clock numbers slightly.
+
+Bounded max_abs_err on this fixture (engine and quantized agree): `x = 3.552713678800501e-15`, `y = 0.00044444444444557973`, `z = 1.1102230246251565e-16`, with `eps = { predicted: 0.001, observed: 0.001, phi: 0.0001 }`.
+
 
 ## 8. Integration points (all additive, all later, Level 4 untouched)
 
@@ -281,6 +324,7 @@ Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossin
 | Version | Intent | Exit |
 |---|---|---|
 | **v0.1** (this path’s first implementation milestone) | Software proof on fixtures: ratio, fidelity, latency (reported), retained agreement, determinism. The test script is the thin wrapper over the existing engine; `src/scp` stubs stay unwired from app/Level 4. | `check-scp-v01` + boundary green against the proposed pass thresholds in §7 |
+| **v0.1.1** | Defensible size measurement: baselines (raw JSON, compact binary, gzip-JSON, gzip-SCP canonical), honest headline versus the best general-purpose baseline, and a measured quantized compact encoding that does not change the stored chain | `check-scp-v011` + `check-scp-v01` + boundary green; v0.1 hashes unchanged; results and claims in §7.6 / §15 |
 | **v0.2** | Optional read-only surface, only after v0.1 passes (decision 5). Still no Level 4 edits. Which surface (export field, inspect page, both, or neither) is decided later. | Additive, off by default, existing export bytes unchanged when the flag is off |
 | **v0.3** | Layer 2 cost/latency model first, bit-accurate model later, against Layer 1 measurements | Documented model; later bit-accurate work agrees with Layer 1 hashes or explains bounded diffs |
 | **v0.4** | Hardware research proposition (writing and evidence, not a tape-out) | Proposition reviewed; claims labelled as hypotheses |
@@ -294,6 +338,7 @@ Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossin
 - **Latency gates.** Timing in CI is noisy. v0.1 reports p50/p95 and fails only on the generous hang bound in §7.3.
 - **Over-claiming hardware.** Layer 3 language can outrun evidence. Keep hypotheses labelled.
 - **Scope creep into routes.** Wiring a page before v0.1 measurements exist would mix product surface with an unproven wrapper.
+- **Inflated ratio vs JSON.** Quoting only `record_json / canonical(segment)` (12.85x on this fixture) overstates 4D-state compression. The v0.1.1 headline is versus the best general-purpose baseline (§7.6, §15).
 
 ## 14. Decisions (accepted 2026-11-17)
 
@@ -318,3 +363,22 @@ The owner accepted the recommended defaults for the eight questions below. This 
 6. Confirm that the fifth measurable property is determinism / verifiability via the existing hash chain (the v0.1 request listed four operational metrics; this spec added the fifth for the reason in §7).
 7. For Layer 2, do you want a bit-accurate (FPGA-style) arithmetic model, a cost/latency model only, or both?
 8. Is there an external document called “Tensor Scope” or “Return on Evidence” we should follow? In this repository, Tensor Scope is `src/lib/level4/tensor.ts` and ROE is the Reciprocal Optimization Engine (`src/lib/level4/roe.ts`).
+
+## 15. Honest claims (v0.1.1)
+
+What **can** be claimed, on this committed 256-point fixture only:
+
+- The stored lossless chain reconstructs bit-exactly; the stored bounded chain and the measured quantized encoding stay within the declared eps; retained task performance is 1.0 (verdict / Φ-sign class and Global snapshot status unchanged).
+- The v0.1 and v0.1.1 checks are deterministic: the same engine heads, and the same binary / quantized sha256, across repeated runs and shuffled row order.
+- The stored lossless form is 12.8465× smaller than raw `record_json` (17676 B vs 227075 B). That figure is real, and it is mostly JSON envelope, not a property of the 4D state.
+- The measured quantized compact encoding (2551 B, not stored) is 3.7166× smaller than the best general-purpose baseline on this fixture (compact binary, 9481 B) and 3.9447× smaller than gzip(JSON) at level 9 (10063 B), with error ≤ eps.
+
+What **cannot** be claimed:
+
+- That the **stored** SCP canonical form compresses the 4D state better than a general-purpose encoding. It does not: 17676 B (lossless) and 17873 B (bounded) are larger than the 9481 B binary packing and the 10063 B gzip of the same JSON. Versus that binary baseline the stored lossless form is 0.5364× (it expands).
+- That bounded stored text is smaller than lossless stored text. It is slightly larger (17873 vs 17676) because quantization still sits in UTF-8 hex in `canonical(segment)`.
+- That 12.85× is the “SCP compression ratio” of predicted / observed / Φ. It is the ratio versus the full experience JSON.
+- That the measured quantized encoding is the smallest possible representation, or that it is in production. gzip of the quantized bytes is 115 B on this highly regular fixture (constant deltas), and gzip of the stored bounded canonical is 1746 B — both are reported extras, and the quantized helper is not the stored chain.
+- Production, Medicare, or any other dataset; a hardware latency, area, or energy result; or a product surface (still decision 5 / v0.2).
+
+**Headline (one sentence).** On this 256-point fixture, the stored SCP canonical form is 12.85× smaller than raw `record_json` but does not beat a compact binary packing of the same 4D points (0.54× vs 9481 B) or gzip(JSON); the measured, not-stored quantized compact encoding is 3.72× smaller than that binary baseline, with error ≤ eps and retained score 1.0.
