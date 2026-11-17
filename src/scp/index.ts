@@ -7,6 +7,7 @@ export type {
   ScpMeasurement, ScpProcessor, StateCompressor, StateDecoder, StateEncoder,
   StateScheduler, TemporalState,
 } from "./types";
+export { frameFromStateVector } from "./types";
 export {
   notImplementedCompressor, notImplementedDecoder, notImplementedEncoder,
   notImplementedProcessor, notImplementedScheduler, notImplementedVerifier, scpNotImplemented,

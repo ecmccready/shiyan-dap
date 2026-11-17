@@ -1,6 +1,12 @@
 /** TEST ONLY. Import-boundary check for src/scp/** (4D-SCP stubs). Reads source files; no network, no writes.
  * Fails (exit 1) if a file under src/scp imports Level 4, an app route, MetamorphicEngine / metamorphic-runtime,
  * or uses process.env; or if anything outside tests/scripts imports src/scp.
+ *
+ * Decision 4 (owner, 2026-11-17): src/scp may use type-only imports from the compression engine's
+ * public surface (src/core/compression/index.ts and types.ts). Runtime imports of that surface,
+ * and any import of writers (store.ts, source.ts, anchor-store.ts) or other non-public modules,
+ * remain forbidden in src/scp. Runtime engine calls belong in scripts/tests only.
+ *
  * Run: npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-boundary.ts
  */
 import assert from "node:assert/strict";
@@ -24,6 +30,11 @@ const BANNED_TOKENS: [RegExp, string][] = [
   [/\bDate\.now\s*\(/, "Date.now"],
   [/\bMath\.random\s*\(/, "Math.random"],
 ];
+/** Public surface only (decision 4). Type-only imports of these are allowed in src/scp. */
+const PUBLIC_COMPRESSION = new Set([
+  "src/core/compression/index.ts",
+  "src/core/compression/types.ts",
+]);
 
 function listTs(dir: string): string[] {
   const out: string[] = [];
@@ -53,16 +64,37 @@ function listProjectTs(): string[] {
   return walk(root);
 }
 
-export function specifiers(text: string): string[] {
-  const out: string[] = [];
-  const res = [
-    /(?:^|[\s;])(?:import|export)\s+(?:type\s+)?[^'";]*?\sfrom\s*["']([^"']+)["']/g,
-    /(?:^|[\s;])import\s*["']([^"']+)["']/g,
-    /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g,
-    /\brequire\s*\(\s*["']([^"']+)["']\s*\)/g,
-  ];
-  for (const re of res) for (const m of text.matchAll(re)) out.push(m[1]);
+export interface ImportRef { spec: string; typeOnly: boolean }
+
+function isTypeOnlyClause(clause: string): boolean {
+  const inner = clause.trim();
+  if (!inner.startsWith("{")) return false;
+  const end = inner.lastIndexOf("}");
+  if (end < 0) return false;
+  const parts = inner.slice(1, end).split(",").map((s) => s.trim()).filter(Boolean);
+  return parts.length > 0 && parts.every((p) => /^type\s+/.test(p));
+}
+
+/** Classify static and dynamic imports. `import type` / `export type` and `{ type A, type B }` are type-only. */
+export function importRefs(text: string): ImportRef[] {
+  const out: ImportRef[] = [];
+  const fromRe = /(?:^|[\s;])(?:export\s+)?import\s+(type\s+)?(?:([^'"();]+?)\s+from\s*)?["']([^"']+)["']/g;
+  for (const m of text.matchAll(fromRe)) {
+    const typeKw = Boolean(m[1]);
+    const clause = (m[2] ?? "").trim();
+    out.push({ spec: m[3], typeOnly: typeKw || isTypeOnlyClause(clause) });
+  }
+  const side = /(?:^|[\s;])import\s*["']([^"']+)["']/g;
+  for (const m of text.matchAll(side)) out.push({ spec: m[1], typeOnly: false });
+  const dyn = /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
+  for (const m of text.matchAll(dyn)) out.push({ spec: m[1], typeOnly: false });
+  const req = /\brequire\s*\(\s*["']([^"']+)["']\s*\)/g;
+  for (const m of text.matchAll(req)) out.push({ spec: m[1], typeOnly: false });
   return out;
+}
+
+export function specifiers(text: string): string[] {
+  return importRefs(text).map((r) => r.spec);
 }
 
 function resolveSpec(fromFile: string, spec: string): string | null {
@@ -91,7 +123,7 @@ function checkScpFile(file: string, text: string): string[] {
   const rel = posix(file);
   const v: string[] = [];
   for (const [re, name] of BANNED_TOKENS) if (re.test(text)) v.push(`${rel}: uses ${name}`);
-  for (const spec of specifiers(text)) {
+  for (const { spec, typeOnly } of importRefs(text)) {
     const target = resolveSpec(file, spec);
     if (target === null) {
       if (spec.startsWith("node:") || spec === "node:crypto") continue;
@@ -100,7 +132,13 @@ function checkScpFile(file: string, text: string): string[] {
     }
     const t = posix(target);
     if (isForbidden(t)) v.push(`${rel}: imports forbidden module ${t}`);
-    else if (!t.startsWith("src/scp/")) v.push(`${rel}: imports outside src/scp (${t})`);
+    else if (t.startsWith("src/scp/")) continue;
+    else if (PUBLIC_COMPRESSION.has(t) && typeOnly) continue;
+    else if (PUBLIC_COMPRESSION.has(t)) {
+      v.push(`${rel}: runtime import of compression public surface ${t} (type-only imports only)`);
+    } else {
+      v.push(`${rel}: imports outside src/scp (${t})`);
+    }
   }
   return v;
 }
@@ -128,17 +166,42 @@ function checkImporters(): string[] {
 // ---------- Self-test ----------
 {
   const fake = join(scpDir, "types.ts");
-  const cases: [string, string, RegExp][] = [
+  const forbidden: [string, string, RegExp][] = [
     [fake, 'import { autonomousStep } from "@/lib/level4/roe";', /forbidden module src\/lib\/level4\//],
     [fake, 'import Route from "@/app/workbench/global/page";', /forbidden module src\/app\//],
     [fake, 'import { MetamorphicEngine } from "../core/metamorphic";', /forbidden module src\/core\/metamorphic\.ts/],
     [fake, "const x = process.env.SHIYAN_SCP;", /process\.env/],
   ];
-  for (const [file, text, re] of cases) {
+  for (const [file, text, re] of forbidden) {
     const v = checkScpFile(file, text);
     assert.ok(v.some((x) => re.test(x)), `self-test: expected ${re} for: ${text}\n got: ${v.join("; ")}`);
   }
-  console.log(`PASS self-test (${cases.length} forbidden patterns rejected)`);
+  console.log(`PASS self-test (${forbidden.length} forbidden patterns rejected)`);
+
+  const allowedTypeOnly = [
+    'import type { StateVector } from "../core/compression";',
+    'import type { StateVector } from "@/core/compression";',
+    'import { type StateVector } from "../core/compression/types";',
+    'export type { StateVector } from "../core/compression";',
+  ];
+  for (const text of allowedTypeOnly) {
+    const v = checkScpFile(fake, text);
+    assert.equal(v.length, 0, `self-test: type-only public-surface import should be allowed: ${text}\n got: ${v.join("; ")}`);
+  }
+  console.log(`PASS self-test (${allowedTypeOnly.length} type-only public-surface imports allowed)`);
+
+  const runtimeOrPrivate: [string, RegExp][] = [
+    ['import { compressPoints } from "../core/compression";', /runtime import of compression public surface/],
+    ['import { type StateVector, compressPoints } from "../core/compression";', /runtime import of compression public surface/],
+    ['import type { PersistResult } from "../core/compression/store";', /imports outside src\/scp \(src\/core\/compression\/store\.ts\)/],
+    ['import type { SourceRow } from "../core/compression/source";', /imports outside src\/scp \(src\/core\/compression\/source\.ts\)/],
+    ['import type { AnchorWrite } from "../core/compression/anchor-store";', /imports outside src\/scp \(src\/core\/compression\/anchor-store\.ts\)/],
+  ];
+  for (const [text, re] of runtimeOrPrivate) {
+    const v = checkScpFile(fake, text);
+    assert.ok(v.some((x) => re.test(x)), `self-test: expected ${re} for: ${text}\n got: ${v.join("; ")}`);
+  }
+  console.log(`PASS self-test (${runtimeOrPrivate.length} runtime / non-public compression imports rejected)`);
 }
 
 // ---------- Real tree ----------
@@ -150,7 +213,7 @@ if (scpViolations.length) {
   for (const x of scpViolations) console.error(`FAIL ${x}`);
   process.exit(1);
 }
-console.log(`PASS scp package (${scpFiles.length} files: ${scpFiles.map((f) => posix(f).replace("src/scp/", "")).join(", ")}): no Level 4 / app / engine imports, no process.env`);
+console.log(`PASS scp package (${scpFiles.length} files: ${scpFiles.map((f) => posix(f).replace("src/scp/", "")).join(", ")}): no Level 4 / app / engine runtime imports, no process.env`);
 
 const importViolations = checkImporters();
 if (importViolations.length) {

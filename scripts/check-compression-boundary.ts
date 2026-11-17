@@ -7,6 +7,8 @@
  * M5: anchor-store.ts may only INSERT INTO shiyan_anchor.state_chain_anchors and is imported only by
  *     scripts/anchor-state-chain.ts. export-reader.ts is the ONE read-only module the app may import, and only from
  *     src/app/api/v1/customer-proof/[id]/route.ts; it never reaches a writer (store.ts, anchor-store.ts) or source.ts.
+ * 4D-SCP (decision 4): src/scp may use type-only imports of the public surface (index.ts, types.ts). Runtime
+ *     imports and writers remain forbidden there.
  * M4: store.ts is the only module allowed any write SQL, and only INSERT INTO shiyan.state_segments; only
  *     scripts/persist-tenant-segments.ts may import it. Every other compression file and the read-only CLI contain no write SQL.
  * M3: the pure core may not import source.ts (the only I/O module); new core files are covered automatically.
@@ -49,6 +51,30 @@ export function specifiers(text: string): string[] {
     /\brequire\s*\(\s*["']([^"']+)["']\s*\)/g,
   ];
   for (const re of res) for (const m of text.matchAll(re)) out.push(m[1]);
+  return out;
+}
+
+const PUBLIC_COMPRESSION_SURFACE = new Set([
+  "src/core/compression/index.ts",
+  "src/core/compression/types.ts",
+]);
+
+function isTypeOnlyClause(clause: string): boolean {
+  const inner = clause.trim();
+  if (!inner.startsWith("{")) return false;
+  const end = inner.lastIndexOf("}");
+  if (end < 0) return false;
+  const parts = inner.slice(1, end).split(",").map((s) => s.trim()).filter(Boolean);
+  return parts.length > 0 && parts.every((part) => /^type\s+/.test(part));
+}
+
+/** Specifiers of static `import type` / `export type` / `{ type A }` imports (not dynamic import or require). */
+function typeOnlySpecs(text: string): Set<string> {
+  const out = new Set<string>();
+  const fromRe = /(?:^|[\s;])(?:export\s+)?import\s+(type\s+)?(?:([^'"();]+?)\s+from\s*)?["']([^"']+)["']/g;
+  for (const m of text.matchAll(fromRe)) {
+    if (Boolean(m[1]) || isTypeOnlyClause((m[2] ?? "").trim())) out.add(m[3]);
+  }
   return out;
 }
 
@@ -346,19 +372,22 @@ console.log("PASS edge boundary (source.ts, store.ts, anchor-store.ts, export-re
 
 // ---------- M4/M5: repo-wide wiring check ----------
 // Nothing in src/ outside src/core/compression imports the compression modules, EXCEPT exactly one consumer:
-// the customer proof export route may import exactly export-reader.ts. Writers are imported only by their CLIs
+// the customer proof export route may import exactly export-reader.ts, and src/scp may use type-only imports of the public surface. Writers are imported only by their CLIs
 // and test-only check scripts. The export reader's transitive imports never reach a writer or source.ts.
 const wiring: string[] = [];
 const consumers: string[] = [];
 for (const f of [...listTs(src), ...listTs(join(root, "scripts"))]) {
   const rel = posix(f);
   if (rel.startsWith("src/core/compression/")) continue;
-  for (const spec of specifiers(readFileSync(f, "utf8"))) {
+  const srcText = readFileSync(f, "utf8");
+  const typeOnly = typeOnlySpecs(srcText);
+  for (const spec of specifiers(srcText)) {
     const target = resolveSpec(f, spec);
     if (target === null) continue;
     const t = posix(target);
     if (rel.startsWith("src/") && t.startsWith("src/core/compression/")) {
       if (rel === EXPORT_CONSUMER && t === EXPORT_READER_FILE) consumers.push(rel);
+      else if (rel.startsWith("src/scp/") && PUBLIC_COMPRESSION_SURFACE.has(t) && typeOnly.has(spec)) continue;
       else wiring.push(`${rel}: imports ${t} (only ${EXPORT_CONSUMER} may import, and only ${EXPORT_READER_FILE})`);
     }
     if (WRITER_IMPORTERS[t] && !WRITER_IMPORTERS[t].includes(rel) && !/^scripts\/check-[a-z0-9-]+\.ts$/.test(rel)) wiring.push(`${rel}: imports the writer ${t}`);
@@ -385,4 +414,4 @@ if (wiring.length) {
   for (const x of wiring) console.error(`FAIL ${x}`);
   process.exit(1);
 }
-console.log("PASS wiring (only the customer-proof export route imports compression, and only export-reader.ts, which never reaches a writer or source.ts; store.ts imported only by the persist/anchor/sync CLIs, anchor-store.ts only by the anchor/sync CLIs, plus check scripts)");
+console.log("PASS wiring (only the customer-proof export route imports compression, and only export-reader.ts, which never reaches a writer or source.ts; store.ts imported only by the persist/anchor/sync CLIs, anchor-store.ts only by the anchor/sync CLIs, plus check scripts; src/scp may type-only import the public surface)");

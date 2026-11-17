@@ -1,13 +1,19 @@
 /**
- * 4D-SCP interfaces only. No runtime behaviour, no I/O, no env.
+ * 4D-SCP interfaces plus a pure v0.1 mapping helper. No I/O, no env, no engine runtime calls.
  * See docs/design/4d-scp-architecture.md. This package is unwired: app routes and
  * Level 4 must not import it (enforced by scripts/check-scp-boundary.ts).
  *
  * 4D-SCP builds on src/core/compression (M1–M5). These types describe the wrapper
  * and the measurement record; they do not replace StateVector, TenantCompression,
- * or src/lib/level4/measured.ts Measurement. Default v0.1 axis mapping (proposed):
- * x = predicted, y = observed, z = phi, t = proof_timestamp (ms).
+ * or src/lib/level4/measured.ts Measurement.
+ *
+ * Accepted v0.1 axis mapping (owner, 2026-11-17): x = predicted, y = observed,
+ * z = phi, t = proof_timestamp (ms). Literal spatial axes are out of scope until
+ * a later encoder is defined. src/scp may use type-only imports from the
+ * compression engine's public surface; runtime engine calls stay in scripts/tests.
  */
+
+import type { StateVector } from "../core/compression";
 
 /** One 4-axis frame. Encoders must document their x/y/z/t mapping; missing axes are not silently zeroed. */
 export interface ScpFrame {
@@ -19,6 +25,19 @@ export interface ScpFrame {
   /** Optional identity of the source point; never required to invent one. */
   experience_id?: string;
   content_sha256?: string;
+}
+
+/** Accepted v0.1 mapping: X=predicted, Y=observed, Z=phi, T=t. Pure; does not call the engine. */
+export function frameFromStateVector(
+  p: Pick<StateVector, "predicted" | "observed" | "phi" | "t"> & {
+    experience_id?: string;
+    content_sha256?: string;
+  },
+): ScpFrame {
+  const frame: ScpFrame = { x: p.predicted, y: p.observed, z: p.phi, t: p.t };
+  if (p.experience_id !== undefined) frame.experience_id = p.experience_id;
+  if (p.content_sha256 !== undefined) frame.content_sha256 = p.content_sha256;
+  return frame;
 }
 
 export interface ScpEncodeOptions {

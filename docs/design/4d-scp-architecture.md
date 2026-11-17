@@ -1,8 +1,8 @@
 # 4D State Compression Processor (4D-SCP): architecture
 
-Status: **spec plus isolated, unwired interface stubs** (`src/scp/`). No route, CLI, or Level 4 module imports this package. Nothing here is live on https://shiyan-dap.vercel.app. This document is the first commitable step toward 4D-SCP v0.1, a software proof. It does not implement compression, change existing behaviour, or claim hardware results.
+Status: **accepted v0.1 decisions (2026-11-17) plus isolated stubs and the fixture-only software-proof check** `scripts/check-scp-v01.ts`. No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The check is a thin wrapper over the existing engine; it does not change production behaviour or claim hardware results. No read-only surface until v0.1 passes (decision 5).
 
-Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. Open questions for the owner are numbered in §14.
+Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. The eight owner questions and their accepted answers are in §14 (history preserved).
 
 ## 1. Purpose and scope
 
@@ -12,10 +12,10 @@ Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §
 
 **Scope of this document and of `src/scp/` today.**
 
-- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, and a v0.1 proof test *plan*.
-- Out: any implementation of encode/compress/decode; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result.
+- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`) that calls the existing engine from the test script, and the accepted decisions in §14.
+- Out: any compressor reimplementation inside `src/scp`; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result; any read-only product surface (decision 5).
 
-**v0.1 (first milestone) is a software proof** that measures compression ratio, fidelity, latency, retained task performance, and determinism/verifiability (see §7 for why the fifth is listed). Fixtures only in tests. Thresholds are TBD-proposed, not commitments.
+**v0.1 (first milestone) is a software proof** that measures compression ratio, fidelity, latency, retained task performance, and determinism/verifiability (see §7). Fixtures only in tests. Proposed pass thresholds are stated in §7 and in the check script.
 
 ## 2. Inventory (read-only; what exists, what does not)
 
@@ -133,21 +133,21 @@ v0.1 must not invent production coordinates. The only numeric state that is both
 | t | `proof_timestamp` (ms) | yes |
 | step, verdict | step index; `PASS` / `FAIL` / `INCONCLUSIVE` | yes, not a spatial axis |
 
-**Default mapping for v0.1 (proposed, see Q1):** `X = predicted`, `Y = observed`, `Z = phi`, `T = t`. This uses existing data, stays compatible with M1–M5, and treats X/Y/Z as **feature axes**, not literal metres.
+**Default mapping for v0.1 (accepted 2026-11-17, decision 1):** `X = predicted`, `Y = observed`, `Z = phi`, `T = t`. This uses existing data, stays compatible with M1–M5, and treats X/Y/Z as **feature axes**, not literal metres. Literal spatial coordinates are deferred until a later encoder is defined.
 
-**Other real vectors in the repo that are *not* used by the compression engine today** (open whether they should be):
+**Other real vectors in the repo that are *not* used by the compression engine today** (not used as the v0.1 default):
 
 - Level 4 demo sensor tensor `[completeness, contradiction, missing, independent_check]` — a 4-D feature vector, still not spatial; lives under Level 4, so `src/scp` must not import it.
 - Global snapshot `(final_e, delta_e, phi, verified_at)` — a run summary, not a per-step frame.
 - Medicare fixture rows — five administrative fields, **no coordinates**.
 
-**Open (not assumed):** a literal spatial embedding (lat/lon/height, a plant layout, a 3D world pose). No such fields were found in the Medicare fixture, the Global snapshot schema, or `StateVector`. If they appear later, they belong in an explicit new encoder, not in silent default values.
+**Literal spatial embedding** (lat/lon/height, a plant layout, a 3D world pose) is out of scope for v0.1. No such fields were found in the Medicare fixture, the Global snapshot schema, or `StateVector`. If they appear later, they belong in an explicit new encoder, not in silent default values.
 
 `ScpFrame` in `src/scp/types.ts` therefore names `x, y, z, t` as numbers plus optional `source` identity. Encoders document their mapping. There is no hidden fill-in of zeros for missing spatial axes.
 
 ## 5. Component architecture (interfaces)
 
-Stubs: `src/scp/types.ts` (interfaces only), `src/scp/not-implemented.ts` (throws a clear error), `src/scp/index.ts` (re-exports). Imported by nothing in `src/app/**` or Level 4.
+Stubs: `src/scp/types.ts` (interfaces plus a pure `frameFromStateVector` mapping helper; type-only import of `StateVector` from the compression public surface), `src/scp/not-implemented.ts` (throws a clear error), `src/scp/index.ts` (re-exports). Imported by nothing in `src/app/**` or Level 4. Runtime engine calls stay in `scripts/check-scp-v01.ts` (and other tests), not in `src/scp`.
 
 | Component | Interface | Responsibility in v0.1 |
 |---|---|---|
@@ -178,17 +178,17 @@ A v0.1 test builds this record after a fixture run. It is not written to `shiyan
 
 ## 7. Five measurable properties
 
-The v0.1 request named four operational metrics: compression ratio, fidelity, latency, retained task performance. This spec adds a fifth, **determinism / verifiability via the hash chain**, because that is already how this stack proves a sealed trajectory and because a “processor” proof without a stable hash is not checkable. If the owner wants a different fifth property, that is open question 6.
+The v0.1 request named four operational metrics: compression ratio, fidelity, latency, retained task performance. The fifth property is **determinism / verifiability via the hash chain** (accepted 2026-11-17, decision 6), because that is already how this stack proves a sealed trajectory and because a “processor” proof without a stable hash is not checkable.
 
-Thresholds below are **TBD-proposed**, not pass criteria until the owner accepts them.
+Proposed pass thresholds below are the criteria `scripts/check-scp-v01.ts` gates on, except latency (reported, with a generous hang bound only).
 
 ### 7.1 Compression ratio
 
-Let `raw_bytes` be the UTF-8 byte length of the canonical source used for the window (the existing `canonical()` of the points or the `record_json` bytes the engine already hashes — the test must pick one and keep it). Let `compressed_bytes` be the UTF-8 byte length of `canonical(segment)` (the same text `segment_sha256` hashes), summed over sealed segments. Pending points are reported separately and are not counted as compressed.
+Let `raw_bytes` be the UTF-8 byte length of `record_json` for the rows included in sealed windows (the bytes the engine already hashes as `content_sha256`). Let `compressed_bytes` be the UTF-8 byte length of `canonical(segment)` (the same text `segment_sha256` hashes), summed over sealed segments. Pending points are reported separately and are not counted as compressed. The v0.1 check uses this definition exclusively.
 
 `compression_ratio = raw_bytes / compressed_bytes`  (dimensionless; greater than 1 means shrinkage).
 
-Also report `bytes_per_point = compressed_bytes / sealed_point_count`. TBD-proposed for v0.1 lossless fixtures: ratio ≥ 1.0 (do not expand) and a recorded bytes-per-point, no ceiling yet.
+Also report `bytes_per_point = compressed_bytes / sealed_point_count`. **Pass threshold (lossless):** fidelity exact (see §7.2) and the ratio is reported. There is no hard ratio ceiling in v0.1; a ratio below 1.0 is printed, not failed, so a small or incompressible fixture cannot flake the proof. The number is still part of the `ScpMeasurement` record.
 
 ### 7.2 Fidelity / reconstruction error
 
@@ -196,32 +196,36 @@ Also report `bytes_per_point = compressed_bytes / sealed_point_count`. TBD-propo
 - Bounded: for each axis `a ∈ {predicted, observed, phi}`, `max |a − a'| ≤ eps_a`, as the engine already records in `max_abs_err`.
 - Optional tensor-scope-style check (pattern only): `d = sqrt(Σ_i (out_i − ref_i)²)` on a declared vector, pass iff `d ≤ ε`. This is the same idea as Frobenius distance on a 1-D flattening; SCP tests may implement it locally.
 
-TBD-proposed: lossless fixtures 100% bit-exact; bounded fixtures 100% within the declared eps.
+**Pass thresholds:** lossless fixtures 100% bit-exact; bounded fixtures 100% within the declared eps (`max_abs_err[a] ≤ eps[a]` for `predicted`, `observed`, `phi`; `t`, `step`, and verdict stay exact). The v0.1 bounded fixture uses `eps = { predicted: 0.001, observed: 0.001, phi: 0.0001 }`.
 
 ### 7.3 Latency (p50 / p95)
 
-Measured only in the test or CLI harness (clocks are not allowed inside `src/core/compression/**` or `src/scp/**`). For a fixed fixture of N points (proposed N = 256, the default window size), run encode + compress + verify K times (proposed K = 21, wall-clock ms), then:
+Measured only in the test or CLI harness (clocks are not allowed inside `src/core/compression/**` or `src/scp/**`). For a fixed fixture of N points (N = 256, the default window size), run encode + compress + verify K times (K = 21, wall-clock ms), then:
 
-`p50 = percentile(samples, 0.50)`, `p95 = percentile(samples, 0.95)`.
+`p50 = percentile(samples, 0.50)`, `p95 = percentile(samples, 0.95)` (nearest-rank: `ceil(p · K) − 1`, clamped).
 
-TBD-proposed: record the numbers first; a starting budget of p95 < 500 ms for N = 256 on the CI machine, subject to revision. Do not fail v0.1 CI on latency until the owner accepts a budget (the first runs should print, not gate).
+**Pass threshold:** report p50 and p95. Do not hard-fail on an absolute performance budget. The check fails only if p95 ≥ 30_000 ms, a generous hang detector, not an SLA. A future tighter budget (for example p95 < 500 ms) needs an explicit later acceptance.
 
 ### 7.4 Retained task performance
 
 The task the current stack already measures is error reduction and a verdict, not a SIMA-style 0–100 rubric.
 
-**Proposed default (see Q3):** on a fixture, compare the original and reconstructed points.
+**Accepted definition (decision 3, 2026-11-17):** retained task performance is **unchanged replay verdict / Φ class plus unchanged Global snapshot status**.
 
-- `agreement = (number of points whose verdict and sign-of-Φ class are unchanged) / n`
-- when `e0`, `e` are present on the fixture, also `delta_e_rel = 1 − min(1, |Δe − Δe'| / max(|Δe|, ε_stab))`
+On a fixture, compare the original and reconstructed points:
 
-Report both; the headline score is `agreement` for v0.1. For a Global · misdiagnosis fixture, `agreement` may instead be “snapshot `status` unchanged after reconstruction.” TBD-proposed: lossless agreement = 1.0; bounded agreement TBD after the first numbers.
+- `agreement_verdict_phi = (number of points whose verdict and sign-of-Φ class are unchanged) / n`, where Φ class is `sign(phi)` (`−1` / `0` / `+1`)
+- `agreement_snapshot = (number of runs whose `buildGlobalSnapshot` `status` is unchanged) / n_runs`
+
+The fixture rule used to derive snapshot rows from a point (hand-written, not a production feed) is: `eligible = (verdict === "PASS" && phi > 0)`, `state = (verdict === "INCONCLUSIVE" ? "CONTINUE" : "COMPLETE")`, `e = |predicted − observed|`. The snapshot module is called from the test script only.
+
+The headline `score` is `min(agreement_verdict_phi, agreement_snapshot)`. **Pass threshold:** score = 1.0 for both lossless and the v0.1 bounded fixture (Φ values are kept well above `eps.phi` so signs cannot flip; verdicts stay lossless in both modes).
 
 This is the ROE *pattern* (a gated improvement on measured error). v0.1 must not call the Level 4 loop or write experience rows.
 
 ### 7.5 Determinism / verifiability (fifth property)
 
-Same fixture, any row order, two runs: `head_sha256` equal, `verifyChain` ok, and (if anchors are used in the test) the comparison status is not `mismatch`. TBD-proposed: 100% match on fixtures. This reuses M1–M5 proof, including the option to persist and independently anchor a fixture chain in tests only — never with synthetic production data in the live databases.
+Same fixture, any row order, two runs: `head_sha256` equal, `verifyChain` ok, and (if anchors are used in the test) the comparison status is not `mismatch`. **Pass threshold:** 100% match on fixtures (`verifyChain` / `verifyTenantChain` / `verifyReconstruction` pass; shuffled input and a repeated run produce the same head). This reuses M1–M5 proof. v0.1 does not persist or anchor the fixture chain. Never write synthetic production data to the live databases.
 
 ## 8. Integration points (all additive, all later, Level 4 untouched)
 
@@ -229,10 +233,10 @@ Nothing in this commit wires 4D-SCP into the app. The following are the *only* i
 
 | Point | File / route | How | When |
 |---|---|---|---|
-| Engine (reuse) | `src/core/compression/**` (public surface `index.ts`: `compressPoints`, `buildTenantChain`, `verifyTenantChain`, `reconstruct`, `planWindows`, types) | SCP compressor/decoder call these from tests/scripts, or later from `src/scp` via type-only or narrow imports of the public surface — never `store.ts` / `source.ts` / `anchor-store.ts` from `src/scp` | v0.1 tests |
+| Engine (reuse) | `src/core/compression/**` (public surface `index.ts`: `compressPoints`, `buildTenantChain`, `verifyTenantChain`, `reconstruct`, `planWindows`, types) | Runtime calls from tests/scripts only. `src/scp` may use type-only imports of the public surface (`index.ts` / `types.ts`) — never runtime imports, and never `store.ts` / `source.ts` / `anchor-store.ts` (decision 4) | v0.1 tests |
 | Persist / anchor | `scripts/persist-tenant-segments.ts`, `scripts/anchor-state-chain.ts`, `scripts/sync-state-chains.ts` | Existing CLIs; SCP does not gain write SQL | optional, not v0.1 required |
 | Customer proof (future, optional) | `src/app/api/v1/customer-proof/[id]/route.ts` | Same pattern as `state_compression`: additive field, off unless a flag is `"1"`, outside `content_sha256`, must not fail the export | not before v0.2, and only with owner approval |
-| Global · misdiagnosis (test environment) | snapshot types + Medicare fixture; pages stay read-only | Tests may import `global-snapshot.ts` (pure, not Level 4) and the Medicare fixture. They must not POST to live APIs or write production DB rows | v0.1 tests |
+| Global · misdiagnosis (test environment) | snapshot types; pages stay read-only | The v0.1 check imports `global-snapshot.ts` (pure, not Level 4) and builds hand-written `GlobalRow` values from the committed experience fixture. It does not encode the Medicare fixture (no `(predicted, observed, Φ)` mapping). Tests must not POST to live APIs or write production DB rows | v0.1 tests |
 | Tensor scope / ROE | patterns only | Formulas in §7; no import of `src/lib/level4/**` from `src/scp` | v0.1 |
 | Workbench page | none today | A future inspect page would be new and read-only | not v0.1 |
 | Level 4 plant, MetamorphicEngine, `metamorphic-runtime.ts`, core run routes | — | **Do not modify. Do not import from `src/scp`.** | never in this programme without an explicit later decision |
@@ -241,22 +245,22 @@ Proposed flag for a future edge only: `SHIYAN_SCP=1`.
 
 ## 9. v0.1 proof test plan
 
-A later commit, not this one, should add `scripts/check-scp-v01.ts` (or equivalent). Rules:
+Implemented as `scripts/check-scp-v01.ts`. Rules:
 
-1. **Fixtures only.** Hand-written points in the test file, and optionally the committed synthetic Medicare fixture / a synthetic Global snapshot. No live Neon, no production `shiyan.experiences`, no invented “realistic” prod-a rows.
-2. **Exercise the real engine** on those fixtures (lossless and, separately, bounded). Assert `verifyChain` / `verifyReconstruction`.
-3. **Fill `ScpMeasurement`** for ratio, fidelity, latency samples, retained agreement, and determinism (shuffled input order).
-4. **Print** the measurement. Gate only the hard invariants (bit-exact lossless, determinism, verify pass). Latency and ratio ceilings stay TBD-proposed until accepted.
-5. **Proof.** The test’s chain hashes are the proof for v0.1. Anchoring a fixture in a scratch or ephemeral store is optional; it must not write to production. If a hash is published, it is the fixture chain head, clearly labelled as a test.
-6. **Boundary.** `scripts/check-scp-boundary.ts` stays green: `src/scp` still imports no Level 4 / app routes, has no `process.env`, and is imported only from tests/scripts.
+1. **Fixtures only** (decision 2). Hand-written points in the test file, plus hand-written Global snapshot rows derived from those points by the documented fixture rule. No live Neon, no production `shiyan.experiences`, no invented “realistic” prod-a rows, no Medicare encoder in v0.1.
+2. **Exercise the real engine** on those fixtures (lossless and, separately, bounded). Assert `verifyChain` / `verifyTenantChain` / `verifyReconstruction`. Runtime calls stay in the script, not in `src/scp`.
+3. **Fill `ScpMeasurement`** for ratio, fidelity, latency samples, retained agreement, and determinism (shuffled input order and a repeated run).
+4. **Print** the measurement. Gate the proposed pass thresholds in §7 (bit-exact lossless, bounded error ≤ eps, retained score = 1.0, determinism). Latency is reported; fail only on the generous hang bound. Ratio is reported with no ceiling.
+5. **Proof.** The test’s chain hashes are the proof for v0.1. Anchoring a fixture in a scratch or ephemeral store is optional and is not done in v0.1; it must not write to production. If a hash is published, it is the fixture chain head, clearly labelled as a test.
+6. **Boundary.** `scripts/check-scp-boundary.ts` stays green: `src/scp` still imports no Level 4 / app routes, has no `process.env`, allows type-only public-surface imports only, and is imported only from tests/scripts.
 
 ## 10. Global · misdiagnosis as the initial test environment
 
 How: treat the vertical as a *labelled source of fixtures and of a retained-performance definition*, not as a production feed.
 
 - **Classification fixture.** Build an `aethel.global.snapshot.v1` from hand-written `GlobalRow` values (the same shape `buildGlobalSnapshot` already accepts). Reconstruct a parallel set of e / Δe / Φ from compressed `(predicted, observed, phi)` if those are encoded, and assert statuses that should be stable. The snapshot module is pure and is not Level 4.
-- **Medicare fixture.** Use `fixtures/medicare/sample-rows.json` only if an encoder is defined for those five fields (that mapping is **open**: they are not `(predicted, observed, Φ)`). Until Q2/Q1 are answered, Medicare is a candidate source, not a silent default.
-- **What is open:** whether any *recorded* Global snapshot from a running node may be checked in (still not production DB writes); whether Medicare rows should be encoded at all in v0.1; whether “misdiagnosis rejected” has a compression-specific meaning beyond the existing classification.
+- **Medicare fixture.** Not used in v0.1. The five administrative fields are not `(predicted, observed, Φ)` (decisions 1 and 2). A later encoder would be required before those rows could be compressed.
+- **Recorded snapshots from a running node** are still out of scope (decision 2: committed fixtures only, never production). “Misdiagnosis rejected” keeps its existing classification meaning; v0.1 does not add a compression-specific redefinition.
 
 Guardrail, copied from the existing vertical: a well-formed snapshot or a detected Medicare pattern is not a clinical diagnosis and not a finding of fraud.
 
@@ -267,7 +271,7 @@ These are research layers, not a shipping chip plan. **Hardware claims are hypot
 | Layer | What it is | Evidence gate (required before talking about the next layer) |
 |---|---|---|
 | **1. Software reference** (v0.1–v0.2) | This spec, the existing compression engine, fixture measurements, hash-chained proofs | Reproducible `ScpMeasurement` on committed fixtures; lossless fidelity and determinism pass; design reviewed; Level 4 still untouched |
-| **2. Emulation** (v0.3) | A bit-accurate or operator-accurate model of the encode/compress/verify data path (FPGA-style or a cycle/cost model in software), plus a cost model (area/LUT/memory/energy *estimates*, labelled as estimates) | Bit-exact agreement with Layer 1 hashes on the same fixtures *or* a documented, bounded divergence; published cost model with assumptions; no claim of a fabricated device |
+| **2. Emulation** (v0.3) | A **cost/latency model first** (decision 7); a bit-accurate (FPGA-style) arithmetic model may follow later. Cost figures (area/LUT/memory/energy) are *estimates* and must be labelled as estimates | Documented cost/latency model with assumptions, compared against Layer 1 fixture measurements; a later bit-accurate model must agree with Layer 1 hashes or document a bounded divergence; no claim of a fabricated device |
 | **3. Hardware research proposition** (v0.4) | A written proposition: what could be specialized (e.g. XOR-delta float coding, Merkle hashing, window seal), what remains in software, predicted cost/latency, and what would falsify the claim | Layer 2 evidence plus an explicit threat/assumption list. Still not a product, not a medical device, not a measured silicon result unless a later, separate programme produces one |
 
 Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossing from Layer 1 to 2 is a new body of work. Crossing from 2 to 3 is a paper-grade claim, not an implementation milestone in this codebase.
@@ -276,22 +280,35 @@ Honesty: this repo has no FPGA sources, no HDL, and no lab measurements. Crossin
 
 | Version | Intent | Exit |
 |---|---|---|
-| **v0.1** (this path’s first implementation milestone) | Software proof on fixtures: ratio, fidelity, latency (reported), retained agreement, determinism. Stubs become a thin wrapper over the existing engine, still unwired from app/Level 4. | `check-scp-v01` + boundary green; thresholds accepted or still explicitly TBD |
-| **v0.2** | Optional read-only surface (flag-gated export field and/or inspect page). Still no Level 4 edits. | Additive, off by default, existing export bytes unchanged when the flag is off |
-| **v0.3** | Layer 2 emulation + cost model against Layer 1 hashes | Documented model; fixture hash agreement or bounded, explained diffs |
+| **v0.1** (this path’s first implementation milestone) | Software proof on fixtures: ratio, fidelity, latency (reported), retained agreement, determinism. The test script is the thin wrapper over the existing engine; `src/scp` stubs stay unwired from app/Level 4. | `check-scp-v01` + boundary green against the proposed pass thresholds in §7 |
+| **v0.2** | Optional read-only surface, only after v0.1 passes (decision 5). Still no Level 4 edits. Which surface (export field, inspect page, both, or neither) is decided later. | Additive, off by default, existing export bytes unchanged when the flag is off |
+| **v0.3** | Layer 2 cost/latency model first, bit-accurate model later, against Layer 1 measurements | Documented model; later bit-accurate work agrees with Layer 1 hashes or explains bounded diffs |
 | **v0.4** | Hardware research proposition (writing and evidence, not a tape-out) | Proposition reviewed; claims labelled as hypotheses |
 
 ## 13. Risks
 
-- **Axis confusion.** Treating X/Y/Z as spatial when the only real data is `(predicted, observed, Φ)` would invent coordinates. v0.1 uses an explicit mapping (Q1).
+- **Axis confusion.** Treating X/Y/Z as spatial when the only real data is `(predicted, observed, Φ)` would invent coordinates. v0.1 uses the accepted mapping in §4 (decision 1).
 - **Duplicate engine.** A second compressor would diverge hashes and break proof. Wrappers must call M1–M5.
 - **Level 4 coupling.** Importing tensor/ROE/plant modules from `src/scp` would violate the isolation constraint. Pattern reuse only.
 - **Production data.** Using live tenant rows or fabricating “prod-like” runs would violate the no-synthetic-production-data rule. Fixtures only, until the owner says otherwise.
-- **Latency gates.** Timing in CI is noisy. Do not fail the build on p95 until a budget is accepted.
+- **Latency gates.** Timing in CI is noisy. v0.1 reports p50/p95 and fails only on the generous hang bound in §7.3.
 - **Over-claiming hardware.** Layer 3 language can outrun evidence. Keep hypotheses labelled.
 - **Scope creep into routes.** Wiring a page before v0.1 measurements exist would mix product surface with an unproven wrapper.
 
-## 14. Open questions for the owner
+## 14. Decisions (accepted 2026-11-17)
+
+The owner accepted the recommended defaults for the eight questions below. This section is the record of those answers. The original wording is kept under “History” so the questions are not silently rewritten.
+
+1. **Axes.** v0.1 maps `X = predicted`, `Y = observed`, `Z = Φ`, `T = t`. Literal spatial coordinates are deferred until a later encoder is defined.
+2. **Fixtures.** v0.1 uses committed fixtures only, never production `shiyan.experiences` or live Medicare/CMS data. The software proof uses a hand-written experience fixture and Global snapshot rows derived from it. The Medicare fixture is not encoded in v0.1 (those rows are not `(predicted, observed, Φ)`).
+3. **Retained task performance.** The score is unchanged replay verdict / Φ class **plus** unchanged Global snapshot status, as defined in §7.4.
+4. **Imports.** `src/scp` may use type-only imports from the compression engine’s public surface (`src/core/compression/index.ts` and `types.ts`). Runtime engine calls stay in scripts and tests. Writers (`store.ts`, `source.ts`, `anchor-store.ts`) must not be imported from `src/scp`, even as types. Enforced by `scripts/check-scp-boundary.ts`.
+5. **Surface.** No read-only product surface until v0.1 passes. A later v0.2 choice (export field, inspect page, both, or neither) still needs a separate approval.
+6. **Fifth property.** Determinism / verifiability via the existing hash chain, as in §7.5.
+7. **Layer 2.** Cost/latency model first; a bit-accurate model may follow later (§11).
+8. **External docs.** No external “Tensor Scope” or “Return on Evidence” document is in force. Follow the in-repo definitions: Tensor Scope is `src/lib/level4/tensor.ts`; ROE is the Reciprocal Optimization Engine (`src/lib/level4/roe.ts`).
+
+### History — questions as asked (before 2026-11-17)
 
 1. Should v0.1 map X/Y/Z/T onto the existing `(predicted, observed, Φ, t)` axes, or do you want literal spatial coordinates from a source that is not in the repo today?
 2. As the initial test environment, may v0.1 use only committed fixtures (hand-written Global snapshot rows and/or `fixtures/medicare/sample-rows.json`), and never production `shiyan.experiences` or live Medicare/CMS data?
