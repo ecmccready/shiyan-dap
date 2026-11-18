@@ -193,7 +193,8 @@ npx tsx scripts/check-roe-lookback.ts
 npx tsx scripts/check-robotics-experiment.ts
 npx tsx scripts/check-compression.ts && npx tsx scripts/check-compression-boundary.ts
 npx tsx scripts/check-compression-source.ts && npx tsx scripts/check-compression-m3.ts && npx tsx scripts/check-compression-m4.ts && npx tsx scripts/check-compression-m5.ts && npx tsx scripts/check-state-chain-sync.ts && npx tsx scripts/check-sync-roles.ts
-npx tsx scripts/check-scp-boundary.ts && npx tsx scripts/check-scp-v01.ts && npx tsx scripts/check-scp-v011.ts && npx tsx scripts/check-scp-v012.ts && npx tsx scripts/check-scp-v013.ts && npx tsx scripts/check-scp-v014.ts && npx tsx scripts/check-scp-v015.ts && npx tsx scripts/check-scp-v016.ts && npx tsx scripts/check-scp-v017.ts && npx tsx scripts/check-scp-v018.ts
+# all 4D-SCP checks in one run; prints each script's pinned check count and fails on any drift:
+npx tsx scripts/check-scp-all.ts
 # 4D compression, local and read-only (off by default; prints hashes, ids and counts only, writes nothing):
 SHIYAN_STATE_COMPRESSION=1 npx tsx scripts/compress-tenant.ts --tenant <tenant-id> --storage-file ~/.shiyan-storage-url --anchor-file ~/.shiyan-anchor-url
 # opt-in bounded-loss example: add  --loss bounded --eps 0.001,0.001,0.0001

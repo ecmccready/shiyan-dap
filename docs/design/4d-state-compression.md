@@ -1,4 +1,4 @@
-# 4D State Compression Engine: design (draft, not implemented)
+# 4D State Compression Engine: design (M1–M5 implemented)
 
 Status: M1 to M5 are implemented:
 - M1: pure core.
