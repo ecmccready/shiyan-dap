@@ -1,0 +1,305 @@
+{
+  "format": "4d-scp-v0.1.8-golden-vectors",
+  "version": 1,
+  "note": "TEST ONLY. Bit-accurate integer-model input/output pairs for future RTL verification. Not production data. pack.ts remains the stored reference; this file is a verification aid. t/step/verdict and IEEE bit patterns are exact; bytes_hex is the SCPQ encoding.",
+  "widths": {
+    "ieee_sign_bits": 1,
+    "ieee_exp_bits": 11,
+    "ieee_frac_bits": 52,
+    "ieee_mant_bits": 53,
+    "q_signed_bits": 55,
+    "t_storage_bits": 64,
+    "t_legal_signed_bits": 54,
+    "step_signed_bits": 32,
+    "verdict_bits": 2,
+    "verdict_storage_bits": 8,
+    "n_bits": 32,
+    "varint_accum_bits": 64,
+    "recip_bits": 64,
+    "product_compare_bits": 108,
+    "reconstruct_mant_bits": 107
+  },
+  "v01_full_sha256": "07a3d04147714747a4823e6e934dc6144740eb2f6243e7113106aed06369d6bc",
+  "vectors": [
+    {
+      "id": "v0.1-first-8",
+      "note": "First 8 sealed points of the v0.1 fixture.",
+      "eps": {
+        "x_bits": "3f50624dd2f1a9fc",
+        "y_bits": "3f50624dd2f1a9fc",
+        "z_bits": "3f1a36e2eb1c432d"
+      },
+      "points": [
+        {
+          "x_bits": "3ff0000000000000",
+          "y_bits": "3ff0000000000000",
+          "z_bits": "bfd999999999999a",
+          "t": "1780272000000",
+          "step": "0",
+          "verdict": "FAIL"
+        },
+        {
+          "x_bits": "3ff199999999999a",
+          "y_bits": "3ff1c71c71c71c72",
+          "z_bits": "3fe000d1b71758e2",
+          "t": "1780272001000",
+          "step": "1",
+          "verdict": "INCONCLUSIVE"
+        },
+        {
+          "x_bits": "3ff3333333333333",
+          "y_bits": "3ff38e38e38e38e4",
+          "z_bits": "3fe001a36e2eb1c4",
+          "t": "1780272002000",
+          "step": "2",
+          "verdict": "PASS"
+        },
+        {
+          "x_bits": "3ff4cccccccccccd",
+          "y_bits": "3ff5555555555555",
+          "z_bits": "3fe0027525460aa6",
+          "t": "1780272003000",
+          "step": "3",
+          "verdict": "PASS"
+        },
+        {
+          "x_bits": "3ff6666666666666",
+          "y_bits": "3ff71c71c71c71c7",
+          "z_bits": "3fe00346dc5d6388",
+          "t": "1780272004000",
+          "step": "4",
+          "verdict": "PASS"
+        },
+        {
+          "x_bits": "3ff8000000000000",
+          "y_bits": "3ff8e38e38e38e39",
+          "z_bits": "bfd9916872b020c5",
+          "t": "1780272005000",
+          "step": "5",
+          "verdict": "PASS"
+        },
+        {
+          "x_bits": "3ff999999999999a",
+          "y_bits": "3ffaaaaaaaaaaaaa",
+          "z_bits": "3fe004ea4a8c154d",
+          "t": "1780272006000",
+          "step": "6",
+          "verdict": "PASS"
+        },
+        {
+          "x_bits": "3ffb333333333333",
+          "y_bits": "3ffc71c71c71c71c",
+          "z_bits": "3fe005bc01a36e2f",
+          "t": "1780272007000",
+          "step": "7",
+          "verdict": "FAIL"
+        }
+      ],
+      "q": [
+        {
+          "x": "1000",
+          "y": "1000",
+          "z": "-4000"
+        },
+        {
+          "x": "1100",
+          "y": "1111",
+          "z": "5001"
+        },
+        {
+          "x": "1200",
+          "y": "1222",
+          "z": "5002"
+        },
+        {
+          "x": "1300",
+          "y": "1333",
+          "z": "5003"
+        },
+        {
+          "x": "1400",
+          "y": "1444",
+          "z": "5004"
+        },
+        {
+          "x": "1500",
+          "y": "1556",
+          "z": "-3995"
+        },
+        {
+          "x": "1600",
+          "y": "1667",
+          "z": "5006"
+        },
+        {
+          "x": "1700",
+          "y": "1778",
+          "z": "5007"
+        }
+      ],
+      "bytes_hex": "534350510108000000fca9f1d24d62503ffca9f1d24d62503f2d431cebe2361a3f00ec7a809e010000d00fd00fd00fd00fd00fd00fd00f00000000020202020202020102000000000001d00fc801c801c801c801c801c801c801d00fde01de01de01de01e001de01de01bf3ed28c01020202cd8c01d28c0102"
+    },
+    {
+      "id": "cex--0.0045000000000000005-0.001",
+      "note": "v0.1.6 counterexample now matched: v=-0.0045000000000000005 eps=0.001 pack_q=-4.",
+      "eps": {
+        "x_bits": "3f50624dd2f1a9fc",
+        "y_bits": "3f50624dd2f1a9fc",
+        "z_bits": "3f1a36e2eb1c432d"
+      },
+      "points": [
+        {
+          "x_bits": "bf726e978d4fdf3c",
+          "y_bits": "0000000000000000",
+          "z_bits": "0000000000000000",
+          "t": "0",
+          "step": "0",
+          "verdict": "PASS"
+        }
+      ],
+      "q": [
+        {
+          "x": "-4",
+          "y": "0",
+          "z": "0"
+        }
+      ],
+      "bytes_hex": "534350510101000000fca9f1d24d62503ffca9f1d24d62503f2d431cebe2361a3f00000000000000000000000000070000"
+    },
+    {
+      "id": "cex-0.0000014999999999999998-0.000001",
+      "note": "v0.1.6 counterexample now matched: v=0.0000014999999999999998 eps=0.000001 pack_q=2.",
+      "eps": {
+        "x_bits": "3eb0c6f7a0b5ed8d",
+        "y_bits": "3f50624dd2f1a9fc",
+        "z_bits": "3f1a36e2eb1c432d"
+      },
+      "points": [
+        {
+          "x_bits": "3eb92a737110e453",
+          "y_bits": "0000000000000000",
+          "z_bits": "0000000000000000",
+          "t": "0",
+          "step": "0",
+          "verdict": "PASS"
+        }
+      ],
+      "q": [
+        {
+          "x": "2",
+          "y": "0",
+          "z": "0"
+        }
+      ],
+      "bytes_hex": "5343505101010000008dedb5a0f7c6b03efca9f1d24d62503f2d431cebe2361a3f00000000000000000000000000040000"
+    },
+    {
+      "id": "cex-0.0045-0.001",
+      "note": "v0.1.6 counterexample now matched: v=0.0045 eps=0.001 pack_q=5.",
+      "eps": {
+        "x_bits": "3f50624dd2f1a9fc",
+        "y_bits": "3f50624dd2f1a9fc",
+        "z_bits": "3f1a36e2eb1c432d"
+      },
+      "points": [
+        {
+          "x_bits": "3f726e978d4fdf3b",
+          "y_bits": "0000000000000000",
+          "z_bits": "0000000000000000",
+          "t": "0",
+          "step": "0",
+          "verdict": "PASS"
+        }
+      ],
+      "q": [
+        {
+          "x": "5",
+          "y": "0",
+          "z": "0"
+        }
+      ],
+      "bytes_hex": "534350510101000000fca9f1d24d62503ffca9f1d24d62503f2d431cebe2361a3f000000000000000000000000000a0000"
+    },
+    {
+      "id": "zero",
+      "note": "Signed and unsigned zero on x, y, z.",
+      "eps": {
+        "x_bits": "3f50624dd2f1a9fc",
+        "y_bits": "3f50624dd2f1a9fc",
+        "z_bits": "3f1a36e2eb1c432d"
+      },
+      "points": [
+        {
+          "x_bits": "0000000000000000",
+          "y_bits": "8000000000000000",
+          "z_bits": "0000000000000000",
+          "t": "0",
+          "step": "0",
+          "verdict": "PASS"
+        }
+      ],
+      "q": [
+        {
+          "x": "0",
+          "y": "0",
+          "z": "0"
+        }
+      ],
+      "bytes_hex": "534350510101000000fca9f1d24d62503ffca9f1d24d62503f2d431cebe2361a3f00000000000000000000000000000000"
+    },
+    {
+      "id": "negative-halfway",
+      "note": "Negative halfway case at the fixture predicted eps.",
+      "eps": {
+        "x_bits": "3f50624dd2f1a9fc",
+        "y_bits": "3f50624dd2f1a9fc",
+        "z_bits": "3f1a36e2eb1c432d"
+      },
+      "points": [
+        {
+          "x_bits": "bf726e978d4fdf3c",
+          "y_bits": "0000000000000000",
+          "z_bits": "0000000000000000",
+          "t": "0",
+          "step": "0",
+          "verdict": "PASS"
+        }
+      ],
+      "q": [
+        {
+          "x": "-4",
+          "y": "0",
+          "z": "0"
+        }
+      ],
+      "bytes_hex": "534350510101000000fca9f1d24d62503ffca9f1d24d62503f2d431cebe2361a3f00000000000000000000000000070000"
+    },
+    {
+      "id": "unit-step",
+      "note": "Simple integer-like values.",
+      "eps": {
+        "x_bits": "3f50624dd2f1a9fc",
+        "y_bits": "3f50624dd2f1a9fc",
+        "z_bits": "3f1a36e2eb1c432d"
+      },
+      "points": [
+        {
+          "x_bits": "3f60624dd2f1a9fc",
+          "y_bits": "bf50624dd2f1a9fc",
+          "z_bits": "3f2a36e2eb1c432d",
+          "t": "1700000000000",
+          "step": "3",
+          "verdict": "FAIL"
+        }
+      ],
+      "q": [
+        {
+          "x": "2",
+          "y": "-1",
+          "z": "2"
+        }
+      ],
+      "bytes_hex": "534350510101000000fca9f1d24d62503ffca9f1d24d62503f2d431cebe2361a3f0068e5cf8b0100000300000001040104"
+    }
+  ]
+}

@@ -143,6 +143,10 @@ export interface CostAssumptions {
     n_fp_muls: Labeled<number>;
     n_fp_divs_encode: Labeled<number>;
     n_fp_divs_decode: Labeled<number>;
+    n_int_muls: Labeled<number>;
+    int_mul_width_factor: Labeled<number>;
+    n_int_divs: Labeled<number>;
+    int_div_width_factor: Labeled<number>;
     reg_accesses_per_point_low: Labeled<number>;
     reg_accesses_per_point_high: Labeled<number>;
     adder_width_factor: Labeled<number>;
@@ -229,6 +233,10 @@ export function defaultAssumptions(): CostAssumptions {
       n_fp_muls: L(1, "units", "assumption", "Shared FP/integer multiplier for q·eps (and integer muls)."),
       n_fp_divs_encode: L(1, "units", "assumption", "Shared divider for v/eps quantization on encode. Large; a later design could iterate a multiplier instead."),
       n_fp_divs_decode: L(0, "units", "assumption", "Decode reconstructs v' = q·eps and does not divide."),
+      n_int_muls: L(0, "units", "assumption", "Shared integer multiplier. Default 0 so v0.1.5–v0.1.7 keep billing the shared multiplier as n_fp_muls. v0.1.8 sets this to 1 and n_fp_muls to 0."),
+      int_mul_width_factor: L(1, "x", "assumption", "Area of the integer multiplier as a multiple of a 32-bit integer mul. Unused when n_int_muls is 0."),
+      n_int_divs: L(0, "units", "assumption", "Shared integer divider. Default 0 so earlier cost models are unchanged. v0.1.8 sets this to 1 (integer RN-div of 53-bit significands) and n_fp_divs_* to 0."),
+      int_div_width_factor: L(1, "x", "assumption", "Area of the integer divider as a multiple of a 32-bit integer mul. Unused when n_int_divs is 0. Horowitz has no divider row."),
       reg_accesses_per_point_low: L(10, "accesses", "assumption", "Assumed ~5 previous-value reads + writes per point."),
       reg_accesses_per_point_high: L(20, "accesses", "assumption", "Assumed upper bound including temporaries / varint accumulator."),
       adder_width_factor: L(2, "x", "assumption", "t is 64-bit; area of the integer adder is modelled as 2× the 32-bit add unit."),
@@ -355,6 +363,8 @@ function compactLogicAreaUm2(a: CostAssumptions, side: "encode" | "decode", corn
   const ff = corner === "low" ? ar.ff_per_bit_low.value : ar.ff_per_bit_high.value;
   const stateBytes = side === "encode" ? c.encode_state_bytes.value : c.decode_state_bytes.value;
   return c.n_int_adders.value * c.adder_width_factor.value * ar.int32_add.value
+    + c.n_int_muls.value * c.int_mul_width_factor.value * ar.int32_mul.value
+    + c.n_int_divs.value * c.int_div_width_factor.value * ar.int32_mul.value
     + c.n_fp_adders.value * ar.fp32_add.value
     + c.n_fp_muls.value * ar.fp32_mul.value
     + divs * divFactor * ar.fp32_mul.value

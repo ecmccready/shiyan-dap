@@ -1,6 +1,6 @@
 # 4D State Compression Processor (4D-SCP): architecture
 
-Status: **v0.1 fixture proof plus v0.1.1–v0.1.7 size, software-cost, Layer 2 analytical hardware-cost model, a test-only divider-free residual variant, and a rounding-exact divider-free reciprocal variant** (`scripts/check-scp-v01.ts` … `scripts/check-scp-v017.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format, `src/scp/pack.ts`, and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval). Area and energy figures in §11.2–§11.4 are parameterized estimates, not measured silicon.
+Status: **v0.1 fixture proof plus v0.1.1–v0.1.8 size, software-cost, Layer 2 analytical hardware-cost model, divider-free variants, and a bit-accurate integer-only golden model** (`scripts/check-scp-v01.ts` … `scripts/check-scp-v018.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format, `src/scp/pack.ts`, and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval). Area and energy figures in §11.2–§11.5 are parameterized estimates, not measured silicon or an FPGA result.
 
 Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. The eight owner questions and their accepted answers are in §14 (history preserved).
 
@@ -12,7 +12,7 @@ Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §
 
 **Scope of this document and of `src/scp/` today.**
 
-- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), v0.1.1–v0.1.7 size, software-cost, analytical hardware-cost, and divider-free variant work (`scripts/check-scp-v011.ts` through `scripts/check-scp-v017.ts`, plus `scripts/scp-v014-ops.ts`, `scripts/scp-v015-cost-model.ts`, `scripts/scp-v016-recip.ts`, and `scripts/scp-v017-exact-recip.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format; unchanged in v0.1.6 and v0.1.7), and the accepted decisions in §14.
+- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), v0.1.1–v0.1.8 size, software-cost, analytical hardware-cost, divider-free variant, and integer-only golden-model work (`scripts/check-scp-v011.ts` through `scripts/check-scp-v018.ts`, plus `scripts/scp-v014-ops.ts`, `scripts/scp-v015-cost-model.ts`, `scripts/scp-v016-recip.ts`, `scripts/scp-v017-exact-recip.ts`, and `scripts/scp-v018-integer-model.ts`), golden vectors at `fixtures/scp/golden-vectors.json` (tests only), pure measured packing helpers in `src/scp/pack.ts` (not the stored format; unchanged in v0.1.6–v0.1.8), and the accepted decisions in §14.
 - Out: any replacement of the stored chain encoder; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result; any read-only product surface (decision 5).
 
 **v0.1 (first milestone) is a software proof** that measures compression ratio, fidelity, latency, retained task performance, and determinism/verifiability (see §7). Fixtures only in tests. Proposed pass thresholds are stated in §7 and in the check script.
@@ -622,6 +622,53 @@ Encode ops/point rose from v0.1.6's 103.90 to 144.41 because two exact bound che
 
 This variant is a hardware-oriented experiment, not a stored-format change, and not a silicon result.
 
+### 11.5 Integer-only golden model (v0.1.8)
+
+v0.1.7 proved a rounding-exact *software* path, but it still used JavaScript floating-point in the runtime (`v * inv`, `Math.round`). v0.1.8 is a **bit-accurate, integer-only reference model** of the compact encoder and decoder, suitable as the golden model an FPGA/RTL implementation would be verified against.
+
+**Front-end (documented, not the runtime datapath).** A finite float64 is converted to an exact IEEE-754 record by bit extraction: 1-bit sign, 11-bit exponent, 53-bit significand (including the hidden 1), plus the raw 64-bit pattern. `t`, `step`, and `verdict` are already integers. This is the only place payload floats are accepted.
+
+**Runtime.** Only BigInt / fixed-width integer arithmetic. Per point, the official `q` is integer correctly-rounded division `RN(v/eps)` of the 53-bit significands, followed by integer `Math.round` (half toward +∞). That is pack.ts, in integers. The SCPQ bitstream (magic, version, `n`, little-endian eps bit patterns, i64 `t0`, zigzag-delta varints, verdict bytes) is written and read with only integer operations. Decode reconstructs `v' = q * eps` as an exact rational; a documented back-end (correctly-rounded float64) exists only so software tests can compare with pack.ts's `Number` outputs.
+
+**Register widths** (legal domain, and no overflow on the four fixtures):
+
+| Field | Width | Role |
+|---|---:|---|
+| IEEE sign / exp / frac (mant) | 1 / 11 / 52 (53) | Front-end record and stored eps bits |
+| `q` | 55-bit signed | `\|q\| ≤ 2^53` inclusive |
+| `t` | 64-bit storage (legal values are 54-bit safe integers) | i64 stream |
+| `step` | 32-bit signed | i32 stream |
+| verdict | 2 bits (stored as u8) | PASS/FAIL/INCONCLUSIVE |
+| `n` | 32-bit | header count |
+| varint accumulator | 64-bit | pack.ts cap (`shift ≤ 63`) |
+| product-compare / reconstruct | 108 / 107 bits | residual and `q·eps` mantissas |
+
+Fixture census (all four fixtures, no overflow): `max \|q\| = 210,000` (19-bit signed), `max \|t\| = 1,793,232,005,000` (42-bit signed), `max \|Δt\| = 3,601,000`, `max \|step\| = 4,095`, `max \|Δstep\| = 1`, `max varint = 7,202,000`, product 107 bits, reconstruct 70 bits.
+
+**Equivalence.** Byte-identical to `pack.ts` on all four fixtures (v0.1 quantized sha `07a3d04147714747a4823e6e934dc6144740eb2f6243e7113106aed06369d6bc` unchanged). Decode round-trips exactly and matches pack.ts after the back-end RN. Zero `q` mismatches on the v0.1.7 scan sets: v0.1.6 full legal grid `tested = 1,508,132`, focused edge battery `tested = 3,229`, larger random scan `tested = 2,000,000` (seed 20261118). A finite scan is not exhaustion of every float64 pair. `src/scp/pack.ts` is **not** changed; swapping it remains an owner decision.
+
+**Golden vectors.** `fixtures/scp/golden-vectors.json` (tests only; not production data): seven small input/output pairs (v0.1 first 8 points, the three v0.1.6 counterexamples, zero, a negative halfway case, and a unit-step record), plus the v0.1 full-payload SHA-256. Each vector stores IEEE bit patterns, integer `q`, and SCPQ `bytes_hex`.
+
+**What an FPGA proof would do next with those vectors.** (1) Drive a testbench from the JSON and require bit-identical SCPQ bytes and `q`. (2) Replay the scan sets, or a subset exported in the same format, against the RTL. (3) Formally or co-simulate the integer RN-div + round against this model. (4) Optionally implement the v0.1.7 mul-and-correct datapath and prove it matches the same golden vectors (that path has no divider). (5) Synthesize at a real node and compare LUT/FF/DSP / measured energy to the §11.5 estimates. None of that is done here, and doing it would still not be a tape-out or a product.
+
+**Revised cost model** (v0.1.5 Horowitz-45nm assumptions, *no FP units*: `n_fp_adders = n_fp_muls = n_fp_divs_* = 0`). The integer golden model's official quantize uses a 53-bit integer divider, so this estimate includes `n_int_divs = 1` at an assumed 3× 32-bit integer-mul area, plus `n_int_muls = 1` at 3×, and a 128-bit adder (4× a 32-bit add). Integer mul energy is 3.1 pJ at both corners; integer-div energy is assumed 3.1–12.4 pJ. An RTL that matches the golden vectors with mul-and-correct could instead use the smaller v0.1.7-style no-divider area. All figures are estimates.
+
+B4096 encode op mix (integer model, per point): add 13.00, sub 10.92, shift 12.50, mul 6, **div 3** (one integer RN-div per axis), bit 5.99, round 3, branch 44.49, total 98.90, bytes_written 7.50.
+
+| Codec | State | Ops / pt | Area µm² (est.) | Rel. area vs compact-enc | Energy pJ/pt (est.) | Rel. energy vs compact same side |
+|---|---:|---:|---|---|---|---|
+| compact-encode (v0.1.8 integer) | 40 B | 98.90 (int div = 3) | 22,798–26,638 | 1 | 37.57–76.29 | 1 |
+| compact-decode | 64 B | 68.47 | 23,566–29,710 | 0.89–1.30 | 16.52–27.35 | 1 |
+| gzip-l6-encode | 32 KiB | — | 70,536–826,432 | 2.65–36.3 | 250–8,003 | 3.28–213 |
+| gzip-l9-encode | 32 KiB | — | 70,536–826,432 | 2.65–36.3 | 500–256,085 | 6.56–6,817 |
+| gzip-l9-decode | 32 KiB | — | 70,536–826,432 | 2.65–36.3 | 62.5–250 | 2.29–15.1 |
+| brotli-q11-encode | 4 MiB | — | 8.40–67.19 mm² | 315–2,947 | 6,602–8,322,763 | 86.5–221,555 |
+| brotli-q11-decode | 4 MiB | — | 8.40–67.19 mm² | 315–2,947 | 413–32,511 | 15.1–1,968 |
+
+Area is higher than the v0.1.7 divider-free estimate (13,438–17,278 µm²) because this golden model includes an integer divider unit. The FP-divider area flip remains eliminated (`n_fp_divs_encode = 0`). Remaining flips: gzip.l9_accesses_low→1; gzip.decode_accesses_low→0.25; energy_pj.div_high→156 (integer RN-div energy, not an FP unit); area_um2.sram_per_bit_low→0.08; brotli.decode_accesses_low→0.05.
+
+This is a golden software model, not a stored-format change, not measured silicon, and not an FPGA result.
+
 
 ## 12. Milestones
 
@@ -635,6 +682,7 @@ This variant is a hardware-oriented experiment, not a stored-format change, and 
 | **v0.1.5** | Layer 2 analytical hardware cost model: parameterized area/energy estimates from v0.1.4 op counts and working sets, with ranges, cited/assumed constants, and sensitivity | `check-scp-v015` + prior SCP checks green; v0.1 hashes and `pack.ts` unchanged; estimate table and headline in §11.2 / §15; not a silicon/FPGA result |
 | **v0.1.6** | Test-only divider-free reciprocal quantize (mul + residual correction); byte-identity on fixtures; counterexamples documented; pack.ts unchanged; cost model re-run with div=0 | `check-scp-v016` + prior SCP checks green; fixture bytes match pack.ts; known counterexamples reproduced; revised estimate table and remaining flips in §11.3 / §15 |
 | **v0.1.7** | Test-only rounding-exact divider-free quantize (mul + IEEE-aware bound correction); zero mismatches on the v0.1.6 scan and a larger random scan; pack.ts unchanged pending owner decision; cost model re-run with div=0 | `check-scp-v017` + prior SCP checks green; fixture bytes match pack.ts; all 22,944 prior residual mismatches now match; revised estimate table and remaining flips in §11.4 / §15 |
+| **v0.1.8** | Bit-accurate integer-only golden model of the compact encoder/decoder, documented widths, golden vectors, cost model with no FP units | `check-scp-v018` + prior SCP checks green; fixture bytes and scan q match pack.ts; widths and golden file in §11.5 / `fixtures/scp/golden-vectors.json`; pack.ts unchanged |
 | **v0.2** | Optional read-only surface, only after v0.1 passes (decision 5). Still no Level 4 edits. Which surface (export field, inspect page, both, or neither) is decided later. | Additive, off by default, existing export bytes unchanged when the flag is off |
 | **v0.3** | Layer 2 cost/latency model first, bit-accurate model later, against Layer 1 measurements | Documented model; later bit-accurate work agrees with Layer 1 hashes or explains bounded diffs |
 | **v0.4** | Hardware research proposition (writing and evidence, not a tape-out) | Proposition reviewed; claims labelled as hypotheses |
@@ -674,23 +722,24 @@ The owner accepted the recommended defaults for the eight questions below. This 
 7. For Layer 2, do you want a bit-accurate (FPGA-style) arithmetic model, a cost/latency model only, or both?
 8. Is there an external document called “Tensor Scope” or “Return on Evidence” we should follow? In this repository, Tensor Scope is `src/lib/level4/tensor.ts` and ROE is the Reciprocal Optimization Engine (`src/lib/level4/roe.ts`).
 
-## 15. Honest claims (v0.1.1–v0.1.7)
+## 15. Honest claims (v0.1.1–v0.1.8)
 
 What **can** be claimed, on these committed fixtures only:
 
-- Stored lossless reconstruction is bit-exact; stored bounded, the measured quantized compact encoding, and the v0.1.3 fair lossy baselines (fixed-width int codes and rounded float64) stay within the declared eps, with retained score 1.0 and deterministic hashes. v0.1 engine heads are unchanged. `src/scp/pack.ts` is unchanged in v0.1.6 and v0.1.7.
+- Stored lossless reconstruction is bit-exact; stored bounded, the measured quantized compact encoding, and the v0.1.3 fair lossy baselines (fixed-width int codes and rounded float64) stay within the declared eps, with retained score 1.0 and deterministic hashes. v0.1 engine heads are unchanged. `src/scp/pack.ts` is unchanged in v0.1.6–v0.1.8.
 - At the same eps, writing already-rounded values back as float64 does **not** shrink the lossless binary packing (0.9975× on v0.1; 0.9059× on the 6-row Medicare mapping, where the extra eps header dominates). Switching to fixed-width int32 codes is a modest **quantization** gain of about 1.47× (1.2554× on n=6).
 - The compact delta/varint encoding's remaining **structure** gain versus those uncompressed int32 codes is 2.5221× (v0.1), 1.5726× (Medicare n=6), 3.2660× (noisy N=256), and 3.3335× (noisy N=4096). Versus gzip of the same int codes it is 1.3971×, 1.4701×, 1.6310×, and 1.6186×.
 - In this single-machine Node/JS run, compact encode on B4096 is faster than gzip level 9 (2.16×) and much faster than brotli quality 11 (69.43×), at essentially the same size as brotli q11 (30729 B vs 31684 B). The algorithmic streaming state is 40 bytes versus a 32 KiB gzip window and a 4 MiB brotli window.
 - A test-only divider-free residual variant (v0.1.6: precomputed `1/eps`, multiply, residual correction) is **byte-identical** to `pack.ts` on all four fixtures, but not for every legal input (§11.3). A test-only *rounding-exact* divider-free variant (v0.1.7: same reciprocal estimate, plus an exact IEEE-aware bound check) is **byte-identical** on those fixtures and matched pack.ts `q` on every tested legal input in the v0.1.6 scan (1,494,828 points, all 22,944 prior residual mismatches), the full pack.ts-legal v0.1.6 grid (1,508,132), a focused edge battery (2,907), and a 2,000,000-point random scan, with zero mismatches. Under the v0.1.5 Horowitz-45nm-style *assumptions* with the divider unit removed, its **estimated** B4096 encode energy is 51.1–71.5 pJ/point versus gzip-l9 500–256,085 pJ (6.99–5,010×) and its **estimated** area is 13,438–17,278 µm² versus gzip 70,536–826,432 µm² (4.08–61.5×). The old gzip area flip (divider ≳ 7× an FP mul) remains eliminated. `pack.ts` is still unchanged; swapping it for this implementation is an owner decision.
+- A test-only **integer-only golden model** (v0.1.8) of the compact encoder and decoder is **byte-identical** to `pack.ts` on the same fixtures, decode round-trips exactly, and matched pack.ts `q` with zero mismatches on the v0.1.6 legal grid (1,508,132), a focused edge battery (3,229), and a 2,000,000-point random scan. Documented widths cover the legal domain and the fixture census; golden vectors are at `fixtures/scp/golden-vectors.json`. Under the v0.1.5 assumptions with *no FP units* (but with an integer divider for RN(v/eps)), estimated B4096 encode energy is 37.6–76.3 pJ/point versus gzip-l9 500–256,085 pJ (6.56–6,817×) and estimated area is 22,798–26,638 µm² versus gzip 70,536–826,432 µm² (2.65–36.3×). An RTL that matches the golden vectors with the v0.1.7 mul-and-correct datapath could use the smaller no-divider area. `pack.ts` is unchanged.
 
 What **cannot** be claimed:
 
 - That the 3.72× quantized-vs-lossless-binary figure is a fair compression ratio, or that most of it comes from a clever encoding. Much of it is “float64 → int32 codes plus allowing eps,” and almost none of it is from storing rounded values as float64.
 - That the compact encoding beats a general-purpose compressor of the **same quantized integers**. On the regular v0.1 fixture it **loses** to brotli quality 11 of the int32 codes (2551 B vs 2492 B, 0.9769×). On noisy N=256 / N=4096 it is only 1.1000× / 1.0311× ahead of that brotli baseline.
 - That compact is faster or leaner on every axis in the v0.1.4 JS/Node timings. Decode was slower than native gzip/brotli. JS heap deltas are not the algorithmic working set. Those timings are not lab numbers, not an SLA, and not a silicon result.
-- That the v0.1.5/v0.1.6/v0.1.7 tables are a measured chip, an FPGA result, or a bit-accurate model. Remaining v0.1.7 flips: gzip-l9 encode energy at ~1 access/input-byte (this flip had been eliminated in v0.1.6 and returns because exact correction raises encode energy high to 71.54 pJ); gzip decode energy below ~0.5 accesses/output-byte; gzip area if SRAM is assumed ≲ 0.046 µm²/bit; brotli decode energy at an extreme 0.05 accesses/byte. All pJ and µm² constants are assumptions.
+- That the v0.1.5–v0.1.8 tables are a measured chip, an FPGA result, or (for v0.1.5–v0.1.7) a bit-accurate *hardware* model. v0.1.8 is a bit-accurate *software* golden model, not synthesized RTL. Remaining v0.1.8 flips: gzip-l9 encode energy at ~1 access/input-byte; gzip decode energy below ~0.25 accesses/output-byte; integer-div energy if `div_high` is assumed ≳ 156 pJ; gzip area if SRAM is assumed ≲ 0.08 µm²/bit; brotli decode energy at an extreme 0.05 accesses/byte. All pJ and µm² constants are assumptions.
 - That the v0.1.6 residual variant can replace `pack.ts` for all legal inputs. It cannot. Example: `v = -0.0045000000000000005`, `eps = 0.001` yields pack.ts `q = -4` and residual `q = -5`. That scan found 22,944 such mismatches in 1,494,828 in-range tests. The v0.1.7 exact variant matches pack.ts on those cases, but a finite scan is not a proof over every float64 pair, and `pack.ts` has not been swapped.
 - Production datasets, a Medicare/CMS encoder, hardware results, or a product surface (still decision 5 / v0.2).
 
-**Headline (one sentence).** A rounding-exact divider-free compact encode variant (precomputed 1/eps, multiply, and an exact IEEE-aware boundary correction) is byte-identical to pack.ts on all four fixtures and matches pack.ts q on every tested legal input — the v0.1.6 scan (1,494,828 points, all 22,944 prior residual mismatches including the three named counterexamples), the full pack.ts-legal v0.1.6 grid (1,508,132, including 13,304 inputs the residual variant rejected), a focused edge battery (2,907), and a larger random scan (2,000,000), with zero mismatches — so the algorithm is a drop-in candidate, but pack.ts is left unchanged pending an owner decision to swap the implementation (observable bytes would stay the same). Under the v0.1.5 45 nm assumptions with the divider unit removed, estimated B4096 encode energy is 51.1–71.5 pJ/point versus gzip-l9 500.2–256085.0 pJ (6.99–5009.9×) and brotli-q11 6602.2–8322762.5 pJ, and estimated area is 13438–17278 µm² versus gzip 70536–826432 µm² (4.08–61.5×) and brotli 8.40–67.19 mm² (486–5000×); the old gzip area flip (divider ≳ 7× an FP mul) remains eliminated, and the remaining flips are gzip.l9_accesses_low→1; gzip.decode_accesses_low→0.5; area_um2.sram_per_bit_low→0.046; brotli.decode_accesses_low→0.05. These area and energy figures are estimates, not measured silicon. A finite scan is not a proof over every float64 pair.
+**Headline (one sentence).** A bit-accurate integer-only golden model of the compact codec (IEEE front-end, integer correctly-rounded division RN(v/eps) plus integer Math.round, integer zigzag-delta varint, no payload floating point at runtime) is byte-identical to pack.ts on all four fixtures (v0.1 quantized sha 07a3d04147714747a4823e6e934dc6144740eb2f6243e7113106aed06369d6bc unchanged), decode round-trips exactly, and matches pack.ts q with zero mismatches on the v0.1.7 scan sets (v0.1.6 legal grid 1,508,132, focused edges 3,229, random 2,000,000). Documented register widths cover the legal domain and the fixture census; golden vectors are in fixtures/scp/golden-vectors.json. pack.ts is unchanged pending an owner decision. Under the v0.1.5 45 nm assumptions with no FP units, estimated B4096 encode energy is 37.6–76.3 pJ/point versus gzip-l9 500.2–256085.0 pJ (6.56–6817.1×) and brotli-q11 6602.2–8322762.5 pJ, and estimated area is 22798–26638 µm² versus gzip 70536–826432 µm² (2.65–36.3×) and brotli 8.40–67.19 mm² (315–2947×); remaining flips are gzip.l9_accesses_low→1; gzip.decode_accesses_low→0.25; energy_pj.div_high→156; area_um2.sram_per_bit_low→0.08; brotli.decode_accesses_low→0.05. These area and energy figures are estimates, not measured silicon or an FPGA result. A finite scan is not a proof over every float64 pair.
