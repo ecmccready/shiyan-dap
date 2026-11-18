@@ -1,0 +1,7063 @@
+{
+  "format": "4d-scp-v0.1.10-int-report",
+  "version": 1,
+  "note": "TEST ONLY. Deterministic outputs of scripts/check-scp-v0110.ts. No timings. Energy and area are MODEL ESTIMATES, not measurements. Environment fixtures are SYNTHETIC.",
+  "energy_label": "MODEL ESTIMATE from the v0.1.5 45 nm assumption table (Horowitz ISSCC 2014 plus labelled assumptions); integer ops priced as int32 add 0.1 pJ / int32 mul 3.1 pJ; state memory priced per byte by working-set size; not silicon, not FPGA.",
+  "env_label": "TEST-ONLY SYNTHETIC 4D environment (seeded mulberry32 20261118). Not production data; not a real sensor, patient, provider or tenant feed.",
+  "env_seed": 20261118,
+  "search": {
+    "G": [
+      4,
+      8
+    ],
+    "ranks": [
+      0,
+      1,
+      2,
+      4,
+      8
+    ],
+    "predictors": [
+      "zero",
+      "last",
+      "linear"
+    ],
+    "relations": [
+      false,
+      true
+    ]
+  },
+  "ingest": {
+    "note": "Shared front-end for all strategies: v0.1.8 integer RN quantizer, per value.",
+    "ops": {
+      "add": 2,
+      "sub": 1,
+      "shift": 2,
+      "mul": 2,
+      "div": 1,
+      "bit": 1,
+      "round": 1,
+      "branch": 6,
+      "bytes_written": 0,
+      "bytes_read": 0
+    },
+    "ops_total": 16,
+    "pj_per_value": [
+      10.6,
+      24.3
+    ]
+  },
+  "fixtures": {
+    "v0.1": {
+      "T": 256,
+      "D": 3,
+      "label": "TEST-ONLY hand-written v0.1 fixture",
+      "rows": [
+        {
+          "strategy": "full_q (integer)",
+          "bytes": 2982,
+          "ratio_vs_full_q": 1,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            3.55271e-12,
+            0.444444,
+            1.11022e-12
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 13.8138,
+            "pj_per_ef": [
+              1.57552,
+              2.15794
+            ],
+            "pj_per_ef_incl_ingest": [
+              12.1755,
+              26.4579
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 13.8138,
+            "pj_per_ef": [
+              1.57552,
+              2.15794
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "max_register_bits": {
+            "code": 16,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 17,
+            "header_varint": 43
+          },
+          "sha256_16": "9285466b49ce0829",
+          "decode_resident_surface": {
+            "ops_per_ef": 13.8138,
+            "pj_per_ef": [
+              6.57552,
+              7.15794
+            ],
+            "state_bytes_per_ef": 4,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1185,
+              4329
+            ]
+          }
+        },
+        {
+          "strategy": "delta (integer)",
+          "bytes": 2556,
+          "ratio_vs_full_q": 1.16667,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            3.55271e-12,
+            0.444444,
+            1.11022e-12
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 14.1497,
+            "pj_per_ef": [
+              11.5814,
+              12.0806
+            ],
+            "pj_per_ef_incl_ingest": [
+              22.1814,
+              36.3806
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 14.1497,
+            "pj_per_ef": [
+              11.5814,
+              12.0806
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          },
+          "max_register_bits": {
+            "code": 16,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 16,
+            "header_varint": 43
+          },
+          "sha256_16": "ff4fe24b3fd6e7b6",
+          "decode_resident_surface": {
+            "ops_per_ef": 14.1497,
+            "pj_per_ef": [
+              11.5814,
+              12.0806
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          }
+        },
+        {
+          "strategy": "scp4d-int (v0.1.10)",
+          "bytes": 2153,
+          "ratio_vs_full_q": 1.38504,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "events": 241,
+          "event_fraction": 0.313802,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            3.55271e-12,
+            0.888889,
+            1.11022e-12
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 20.4622,
+            "pj_per_ef": [
+              42.7958,
+              43.2163
+            ],
+            "pj_per_ef_incl_ingest": [
+              53.3958,
+              67.5163
+            ],
+            "state_bytes_per_ef": 31.6875,
+            "working_set_bytes": 60,
+            "area_um2": [
+              5324,
+              8756
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 16.8346,
+            "pj_per_ef": [
+              36.157,
+              36.5775
+            ],
+            "state_bytes_per_ef": 26.6667,
+            "working_set_bytes": 36,
+            "area_um2": [
+              5276,
+              8564
+            ]
+          },
+          "max_register_bits": {
+            "code": 20,
+            "q": 16,
+            "weight": 18,
+            "rel_product": 31,
+            "rel_acc": 36,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 17,
+            "header_varint": 43
+          },
+          "sha256_16": "1d1941531d4d0b74"
+        },
+        {
+          "strategy": "scp4d-int event-driven +relations",
+          "bytes": 2305,
+          "ratio_vs_full_q": 1.29371,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "events": 767,
+          "event_fraction": 0.998698,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            3.55271e-12,
+            0.444444,
+            1.11022e-12
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 21.8099,
+            "pj_per_ef": [
+              43.2985,
+              43.7487
+            ],
+            "pj_per_ef_incl_ingest": [
+              53.8985,
+              68.0487
+            ],
+            "state_bytes_per_ef": 31.974,
+            "working_set_bytes": 44,
+            "area_um2": [
+              5292,
+              8628
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 17.8138,
+            "pj_per_ef": [
+              29.603,
+              30.0532
+            ],
+            "state_bytes_per_ef": 21.3372,
+            "working_set_bytes": 27,
+            "area_um2": [
+              5258,
+              8492
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 17.8138,
+            "pj_per_ef": [
+              29.603,
+              30.0532
+            ],
+            "state_bytes_per_ef": 21.3372,
+            "working_set_bytes": 27,
+            "area_um2": [
+              5258,
+              8492
+            ]
+          },
+          "max_register_bits": {
+            "code": 20,
+            "q": 15,
+            "weight": 18,
+            "rel_product": 31,
+            "rel_acc": 36,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 16,
+            "header_varint": 43
+          },
+          "sha256_16": "975519997c5c6389"
+        },
+        {
+          "strategy": "scp4d-int event-driven temporal-only",
+          "bytes": 2561,
+          "ratio_vs_full_q": 1.16439,
+          "config": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "events": 768,
+          "event_fraction": 1,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            3.55271e-12,
+            0.444444,
+            1.11022e-12
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 20.1497,
+            "pj_per_ef": [
+              32.1817,
+              32.6819
+            ],
+            "pj_per_ef_incl_ingest": [
+              42.7817,
+              56.9819
+            ],
+            "state_bytes_per_ef": 24,
+            "working_set_bytes": 36,
+            "area_um2": [
+              1644,
+              4932
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 15.1497,
+            "pj_per_ef": [
+              11.6817,
+              12.1819
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1596,
+              4740
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 15.1497,
+            "pj_per_ef": [
+              11.6817,
+              12.1819
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1596,
+              4740
+            ]
+          },
+          "max_register_bits": {
+            "code": 20,
+            "q": 15,
+            "weight": 18,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 16,
+            "header_varint": 43
+          },
+          "sha256_16": "cb0f2af3e1327a44"
+        }
+      ],
+      "v019": {
+        "full_q": {
+          "bytes": 2982,
+          "config": null,
+          "max_abs_err": [
+            3.55271e-15,
+            0.000444444,
+            1.11022e-16
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094
+            }
+          ],
+          "encode_ops_per_ef": 7,
+          "decode_ops_per_ef": 3,
+          "pj_per_ef": {
+            "encode": [
+              8.29414,
+              21.3766
+            ],
+            "decode": [
+              4.09414,
+              4.67656
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 1,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "delta": {
+          "bytes": 2556,
+          "config": null,
+          "max_abs_err": [
+            3.55271e-15,
+            0.000444444,
+            1.11022e-16
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094
+            }
+          ],
+          "encode_ops_per_ef": 8,
+          "decode_ops_per_ef": 4,
+          "pj_per_ef": {
+            "encode": [
+              28.3664,
+              41.3656
+            ],
+            "decode": [
+              24.1664,
+              24.6656
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 1,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "scp4d": {
+          "bytes": 2067,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear"
+          },
+          "max_abs_err": [
+            2.8777e-13,
+            0.001,
+            3.65818e-14
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094
+            }
+          ],
+          "encode_ops_per_ef": 8.5,
+          "decode_ops_per_ef": 5.875,
+          "pj_per_ef": {
+            "encode": [
+              40.7637,
+              45.0737
+            ],
+            "decode": [
+              38.7637,
+              39.1674
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 1,
+          "area_um2_float_datapath": {
+            "encode": [
+              32958,
+              52006
+            ],
+            "decode": [
+              17558,
+              21206
+            ]
+          },
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        }
+      },
+      "search": [
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 2987,
+          "events": 768
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 2561,
+          "events": 768
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 2155,
+          "events": 242
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 2790,
+          "events": 767
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 2305,
+          "events": 767
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 2153,
+          "events": 241
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 2812,
+          "events": 768
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 2761,
+          "events": 309
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 2963,
+          "events": 470
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 3062,
+          "events": 767
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 2761,
+          "events": 461
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 2913,
+          "events": 387
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 3127,
+          "events": 0
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 3127,
+          "events": 0
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 3127,
+          "events": 0
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 3377,
+          "events": 255
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 3127,
+          "events": 255
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 3127,
+          "events": 57
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 2987,
+          "events": 768
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 2561,
+          "events": 768
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 2155,
+          "events": 242
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 2790,
+          "events": 767
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 2305,
+          "events": 767
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 2153,
+          "events": 241
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 2814,
+          "events": 768
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 2763,
+          "events": 309
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 2965,
+          "events": 470
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 3064,
+          "events": 767
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 2763,
+          "events": 461
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 2915,
+          "events": 380
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 3129,
+          "events": 0
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 3129,
+          "events": 0
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 3129,
+          "events": 0
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 3379,
+          "events": 255
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 3129,
+          "events": 255
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 3129,
+          "events": 69
+        }
+      ],
+      "g_sweep": [
+        {
+          "G": 1,
+          "bytes": 2153,
+          "events": 213,
+          "bound_over_eps": 0.75,
+          "code_bits": 17
+        },
+        {
+          "G": 2,
+          "bytes": 2153,
+          "events": 213,
+          "bound_over_eps": 0.875,
+          "code_bits": 18
+        },
+        {
+          "G": 4,
+          "bytes": 2153,
+          "events": 241,
+          "bound_over_eps": 0.96875,
+          "code_bits": 20
+        },
+        {
+          "G": 6,
+          "bytes": 2153,
+          "events": 241,
+          "bound_over_eps": 0.992188,
+          "code_bits": 22
+        },
+        {
+          "G": 8,
+          "bytes": 2153,
+          "events": 241,
+          "bound_over_eps": 0.998047,
+          "code_bits": 24
+        }
+      ]
+    },
+    "A-medicare": {
+      "T": 6,
+      "D": 3,
+      "label": "TEST-ONLY SYNTHETIC 6-row Medicare-shaped file (not CMS data; not padded)",
+      "rows": [
+        {
+          "strategy": "full_q (integer)",
+          "bytes": 119,
+          "ratio_vs_full_q": 1,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            0,
+            3.55271e-12,
+            0.421053
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 15,
+            "pj_per_ef": [
+              1.83056,
+              2.82222
+            ],
+            "pj_per_ef_incl_ingest": [
+              12.4306,
+              27.1222
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 15,
+            "pj_per_ef": [
+              1.83056,
+              2.82222
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "max_register_bits": {
+            "code": 19,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 20,
+            "header_varint": 43
+          },
+          "sha256_16": "965b2c3b2e23d07a",
+          "decode_resident_surface": {
+            "ops_per_ef": 15,
+            "pj_per_ef": [
+              6.83056,
+              7.82222
+            ],
+            "state_bytes_per_ef": 4,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1185,
+              4329
+            ]
+          }
+        },
+        {
+          "strategy": "delta (integer)",
+          "bytes": 122,
+          "ratio_vs_full_q": 0.97541,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            0,
+            3.55271e-12,
+            0.421053
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 17.5,
+            "pj_per_ef": [
+              12.0889,
+              13.1056
+            ],
+            "pj_per_ef_incl_ingest": [
+              22.6889,
+              37.4056
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 17.5,
+            "pj_per_ef": [
+              12.0889,
+              13.1056
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          },
+          "max_register_bits": {
+            "code": 19,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 20,
+            "header_varint": 43
+          },
+          "sha256_16": "7632f0e61ca1f3d3",
+          "decode_resident_surface": {
+            "ops_per_ef": 17.5,
+            "pj_per_ef": [
+              12.0889,
+              13.1056
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          }
+        },
+        {
+          "strategy": "scp4d-int (v0.1.10)",
+          "bytes": 124,
+          "ratio_vs_full_q": 0.959677,
+          "config": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "events": 18,
+          "event_fraction": 1,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            0,
+            3.55271e-12,
+            0.421053
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 23,
+            "pj_per_ef": [
+              22.6444,
+              23.6778
+            ],
+            "pj_per_ef_incl_ingest": [
+              33.2444,
+              47.9778
+            ],
+            "state_bytes_per_ef": 16,
+            "working_set_bytes": 24,
+            "area_um2": [
+              1620,
+              4836
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 18,
+            "pj_per_ef": [
+              2.14444,
+              3.17778
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1572,
+              4644
+            ]
+          },
+          "max_register_bits": {
+            "code": 23,
+            "q": 19,
+            "weight": 18,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 20,
+            "header_varint": 43
+          },
+          "sha256_16": "4309767b1018a6af"
+        },
+        {
+          "strategy": "scp4d-int event-driven +relations",
+          "bytes": 127,
+          "ratio_vs_full_q": 0.937008,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "events": 18,
+          "event_fraction": 1,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            0,
+            3.55271e-12,
+            0.421053
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 26.1667,
+            "pj_per_ef": [
+              43.9694,
+              45.0278
+            ],
+            "pj_per_ef_incl_ingest": [
+              54.5694,
+              69.3278
+            ],
+            "state_bytes_per_ef": 32,
+            "working_set_bytes": 44,
+            "area_um2": [
+              5292,
+              8628
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 22.2778,
+            "pj_per_ef": [
+              31.0806,
+              32.1389
+            ],
+            "state_bytes_per_ef": 22,
+            "working_set_bytes": 27,
+            "area_um2": [
+              5258,
+              8492
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 22.2778,
+            "pj_per_ef": [
+              31.0806,
+              32.1389
+            ],
+            "state_bytes_per_ef": 22,
+            "working_set_bytes": 27,
+            "area_um2": [
+              5258,
+              8492
+            ]
+          },
+          "max_register_bits": {
+            "code": 23,
+            "q": 19,
+            "weight": 18,
+            "rel_product": 39,
+            "rel_acc": 39,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 20,
+            "header_varint": 43
+          },
+          "sha256_16": "3f40f231770a0dac"
+        },
+        {
+          "strategy": "scp4d-int event-driven temporal-only",
+          "bytes": 127,
+          "ratio_vs_full_q": 0.937008,
+          "config": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "events": 18,
+          "event_fraction": 1,
+          "dirty_fraction": 1,
+          "max_err_over_eps": [
+            0,
+            3.55271e-12,
+            0.421053
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 23.5,
+            "pj_per_ef": [
+              32.7028,
+              33.7611
+            ],
+            "pj_per_ef_incl_ingest": [
+              43.3028,
+              58.0611
+            ],
+            "state_bytes_per_ef": 24,
+            "working_set_bytes": 36,
+            "area_um2": [
+              1644,
+              4932
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 18.5,
+            "pj_per_ef": [
+              12.2028,
+              13.2611
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1596,
+              4740
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 18.5,
+            "pj_per_ef": [
+              12.2028,
+              13.2611
+            ],
+            "state_bytes_per_ef": 8,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1596,
+              4740
+            ]
+          },
+          "max_register_bits": {
+            "code": 23,
+            "q": 19,
+            "weight": 18,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 20,
+            "header_varint": 43
+          },
+          "sha256_16": "64c151c5e3d7ac7d"
+        }
+      ],
+      "v019": {
+        "full_q": {
+          "bytes": 119,
+          "config": null,
+          "max_abs_err": [
+            0,
+            3.55271e-15,
+            0.0000421053
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1
+            }
+          ],
+          "encode_ops_per_ef": 7,
+          "decode_ops_per_ef": 3,
+          "pj_per_ef": {
+            "encode": [
+              8.43056,
+              21.9222
+            ],
+            "decode": [
+              4.23056,
+              5.22222
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 1,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "delta": {
+          "bytes": 122,
+          "config": null,
+          "max_abs_err": [
+            0,
+            3.55271e-15,
+            0.0000421053
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1
+            }
+          ],
+          "encode_ops_per_ef": 8,
+          "decode_ops_per_ef": 4,
+          "pj_per_ef": {
+            "encode": [
+              28.5389,
+              42.0556
+            ],
+            "decode": [
+              24.3389,
+              25.3556
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 1,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "scp4d": {
+          "bytes": 124,
+          "config": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero"
+          },
+          "max_abs_err": [
+            0,
+            3.55271e-15,
+            0.0000421053
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1
+            }
+          ],
+          "encode_ops_per_ef": 11.3333,
+          "decode_ops_per_ef": 1.33333,
+          "pj_per_ef": {
+            "encode": [
+              30.4778,
+              44.0111
+            ],
+            "decode": [
+              21.2778,
+              22.3111
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 1,
+          "area_um2_float_datapath": {
+            "encode": [
+              32910,
+              51814
+            ],
+            "decode": [
+              17510,
+              21014
+            ]
+          },
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        }
+      },
+      "search": [
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 124,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 127,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 127,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 125,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 127,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 125,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 157,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 157,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 157,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 158,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 158,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 156,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 160,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 163,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 162,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 168,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 169,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 168,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 124,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 127,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 127,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 125,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 127,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 125,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 159,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 159,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 159,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 160,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 160,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 158,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 162,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 165,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 164,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 170,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 171,
+          "events": 18
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 170,
+          "events": 18
+        }
+      ],
+      "g_sweep": [
+        {
+          "G": 1,
+          "bytes": 124,
+          "events": 18,
+          "bound_over_eps": 0.75,
+          "code_bits": 20
+        },
+        {
+          "G": 2,
+          "bytes": 124,
+          "events": 18,
+          "bound_over_eps": 0.875,
+          "code_bits": 21
+        },
+        {
+          "G": 4,
+          "bytes": 124,
+          "events": 18,
+          "bound_over_eps": 0.96875,
+          "code_bits": 23
+        },
+        {
+          "G": 6,
+          "bytes": 124,
+          "events": 18,
+          "bound_over_eps": 0.992188,
+          "code_bits": 25
+        },
+        {
+          "G": 8,
+          "bytes": 124,
+          "events": 18,
+          "bound_over_eps": 0.998047,
+          "code_bits": 27
+        }
+      ]
+    },
+    "B256": {
+      "T": 256,
+      "D": 3,
+      "label": "TEST-ONLY seeded noisy fixture N=256",
+      "rows": [
+        {
+          "strategy": "full_q (integer)",
+          "bytes": 2615,
+          "ratio_vs_full_q": 1,
+          "dirty_fraction": 0.976471,
+          "max_err_over_eps": [
+            0.497473,
+            0.499958,
+            0.498174
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 12.3802,
+            "pj_per_ef": [
+              1.40827,
+              1.91901
+            ],
+            "pj_per_ef_incl_ingest": [
+              12.0083,
+              26.219
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 12.3802,
+            "pj_per_ef": [
+              1.40827,
+              1.91901
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "max_register_bits": {
+            "code": 14,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "16eb70cf446310b3",
+          "decode_resident_surface": {
+            "ops_per_ef": 12.3802,
+            "pj_per_ef": [
+              6.40827,
+              6.91901
+            ],
+            "state_bytes_per_ef": 4,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1185,
+              4329
+            ]
+          }
+        },
+        {
+          "strategy": "delta (integer)",
+          "bytes": 1975,
+          "ratio_vs_full_q": 1.32405,
+          "dirty_fraction": 0.976471,
+          "max_err_over_eps": [
+            0.497473,
+            0.499958,
+            0.498174
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 11.8802,
+            "pj_per_ef": [
+              11.1994,
+              11.5852
+            ],
+            "pj_per_ef_incl_ingest": [
+              21.7994,
+              35.8852
+            ],
+            "state_bytes_per_ef": 7.90625,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 11.8802,
+            "pj_per_ef": [
+              11.1994,
+              11.5852
+            ],
+            "state_bytes_per_ef": 7.90625,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          },
+          "max_register_bits": {
+            "code": 14,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "77cc817abd200df5",
+          "decode_resident_surface": {
+            "ops_per_ef": 11.8802,
+            "pj_per_ef": [
+              11.1994,
+              11.5852
+            ],
+            "state_bytes_per_ef": 7.90625,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          }
+        },
+        {
+          "strategy": "scp4d-int (v0.1.10)",
+          "bytes": 1968,
+          "ratio_vs_full_q": 1.32876,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 736,
+          "event_fraction": 0.958333,
+          "dirty_fraction": 0.963399,
+          "max_err_over_eps": [
+            0.85571,
+            0.832062,
+            0.881467
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 20.2878,
+            "pj_per_ef": [
+              41.666,
+              42.0504
+            ],
+            "pj_per_ef_incl_ingest": [
+              52.266,
+              66.3504
+            ],
+            "state_bytes_per_ef": 30.8542,
+            "working_set_bytes": 44,
+            "area_um2": [
+              5292,
+              8628
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 15.3711,
+            "pj_per_ef": [
+              22.0077,
+              22.3921
+            ],
+            "state_bytes_per_ef": 15.5208,
+            "working_set_bytes": 20,
+            "area_um2": [
+              5244,
+              8436
+            ]
+          },
+          "max_register_bits": {
+            "code": 22,
+            "q": 14,
+            "weight": 18,
+            "rel_product": 35,
+            "rel_acc": 37,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "8e4746fb8902b2f6"
+        },
+        {
+          "strategy": "scp4d-int event-driven +relations",
+          "bytes": 1968,
+          "ratio_vs_full_q": 1.32876,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 736,
+          "event_fraction": 0.958333,
+          "dirty_fraction": 0.963399,
+          "max_err_over_eps": [
+            0.85571,
+            0.832062,
+            0.881467
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 20.2878,
+            "pj_per_ef": [
+              41.666,
+              42.0504
+            ],
+            "pj_per_ef_incl_ingest": [
+              52.266,
+              66.3504
+            ],
+            "state_bytes_per_ef": 30.8542,
+            "working_set_bytes": 44,
+            "area_um2": [
+              5292,
+              8628
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 16.3281,
+            "pj_per_ef": [
+              28.5487,
+              28.9331
+            ],
+            "state_bytes_per_ef": 20.6771,
+            "working_set_bytes": 27,
+            "area_um2": [
+              5258,
+              8492
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 16.3281,
+            "pj_per_ef": [
+              28.5487,
+              28.9331
+            ],
+            "state_bytes_per_ef": 20.6771,
+            "working_set_bytes": 27,
+            "area_um2": [
+              5258,
+              8492
+            ]
+          },
+          "max_register_bits": {
+            "code": 22,
+            "q": 14,
+            "weight": 18,
+            "rel_product": 35,
+            "rel_acc": 37,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "8e4746fb8902b2f6"
+        },
+        {
+          "strategy": "scp4d-int event-driven temporal-only",
+          "bytes": 1980,
+          "ratio_vs_full_q": 1.32071,
+          "config": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 739,
+          "event_fraction": 0.96224,
+          "dirty_fraction": 0.962092,
+          "max_err_over_eps": [
+            0.85571,
+            0.990195,
+            0.881467
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 17.7292,
+            "pj_per_ef": [
+              30.9578,
+              31.3445
+            ],
+            "pj_per_ef_incl_ingest": [
+              41.5578,
+              55.6445
+            ],
+            "state_bytes_per_ef": 23.2448,
+            "working_set_bytes": 36,
+            "area_um2": [
+              1644,
+              4932
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 12.8047,
+            "pj_per_ef": [
+              11.0318,
+              11.4185
+            ],
+            "state_bytes_per_ef": 7.69792,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1596,
+              4740
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 12.8047,
+            "pj_per_ef": [
+              11.0318,
+              11.4185
+            ],
+            "state_bytes_per_ef": 7.69792,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1596,
+              4740
+            ]
+          },
+          "max_register_bits": {
+            "code": 22,
+            "q": 14,
+            "weight": 18,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "92ecd5b13a8a11cb"
+        }
+      ],
+      "v019": {
+        "full_q": {
+          "bytes": 2615,
+          "config": null,
+          "max_abs_err": [
+            0.000497473,
+            0.000499958,
+            0.0000498174
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094
+            }
+          ],
+          "encode_ops_per_ef": 7,
+          "decode_ops_per_ef": 3,
+          "pj_per_ef": {
+            "encode": [
+              8.27025,
+              21.281
+            ],
+            "decode": [
+              4.07025,
+              4.58099
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.976471,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "delta": {
+          "bytes": 1975,
+          "config": null,
+          "max_abs_err": [
+            0.000497473,
+            0.000499958,
+            0.0000498174
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094
+            }
+          ],
+          "encode_ops_per_ef": 8,
+          "decode_ops_per_ef": 4,
+          "pj_per_ef": {
+            "encode": [
+              28.3286,
+              41.2143
+            ],
+            "decode": [
+              24.1286,
+              24.5143
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.976471,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "scp4d": {
+          "bytes": 1968,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last"
+          },
+          "max_abs_err": [
+            0.00085571,
+            0.000832062,
+            0.0000881467
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1
+            }
+          ],
+          "encode_ops_per_ef": 11.6667,
+          "decode_ops_per_ef": 2,
+          "pj_per_ef": {
+            "encode": [
+              31.4531,
+              43.8167
+            ],
+            "decode": [
+              22.5948,
+              22.9792
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.963399,
+          "area_um2_float_datapath": {
+            "encode": [
+              32910,
+              51814
+            ],
+            "decode": [
+              17510,
+              21014
+            ]
+          },
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        }
+      },
+      "search": [
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 2620,
+          "events": 768
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 1980,
+          "events": 739
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 2045,
+          "events": 754
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 2425,
+          "events": 763
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 1969,
+          "events": 735
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 2037,
+          "events": 754
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 2692,
+          "events": 756
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 2549,
+          "events": 746
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 2668,
+          "events": 759
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 2733,
+          "events": 757
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 2629,
+          "events": 747
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 2757,
+          "events": 756
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 3156,
+          "events": 697
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 3003,
+          "events": 433
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 3014,
+          "events": 532
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 3217,
+          "events": 733
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 3112,
+          "events": 604
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 3182,
+          "events": 657
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 2620,
+          "events": 768
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 1980,
+          "events": 739
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 2045,
+          "events": 751
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 2425,
+          "events": 763
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 1968,
+          "events": 736
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 2037,
+          "events": 750
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 2693,
+          "events": 756
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 2550,
+          "events": 745
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 2669,
+          "events": 762
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 2734,
+          "events": 757
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 2630,
+          "events": 746
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 2759,
+          "events": 760
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 3157,
+          "events": 695
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 3004,
+          "events": 425
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 3015,
+          "events": 525
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 3218,
+          "events": 733
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 3114,
+          "events": 602
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 3183,
+          "events": 648
+        }
+      ],
+      "g_sweep": [
+        {
+          "G": 1,
+          "bytes": 1970,
+          "events": 738,
+          "bound_over_eps": 0.75,
+          "code_bits": 15
+        },
+        {
+          "G": 2,
+          "bytes": 1970,
+          "events": 737,
+          "bound_over_eps": 0.875,
+          "code_bits": 16
+        },
+        {
+          "G": 4,
+          "bytes": 1969,
+          "events": 735,
+          "bound_over_eps": 0.96875,
+          "code_bits": 18
+        },
+        {
+          "G": 6,
+          "bytes": 1969,
+          "events": 735,
+          "bound_over_eps": 0.992188,
+          "code_bits": 20
+        },
+        {
+          "G": 8,
+          "bytes": 1968,
+          "events": 736,
+          "bound_over_eps": 0.998047,
+          "code_bits": 22
+        }
+      ]
+    },
+    "B4096": {
+      "T": 4096,
+      "D": 3,
+      "label": "TEST-ONLY seeded noisy fixture N=4096",
+      "rows": [
+        {
+          "strategy": "full_q (integer)",
+          "bytes": 41094,
+          "ratio_vs_full_q": 1,
+          "dirty_fraction": 0.976882,
+          "max_err_over_eps": [
+            0.499999,
+            0.499958,
+            0.499688
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998291,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 12.3556,
+            "pj_per_ef": [
+              1.40277,
+              1.9044
+            ],
+            "pj_per_ef_incl_ingest": [
+              12.0028,
+              26.2044
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 12.3556,
+            "pj_per_ef": [
+              1.40277,
+              1.9044
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "max_register_bits": {
+            "code": 15,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 16,
+            "header_varint": 43
+          },
+          "sha256_16": "44ff1c2e2cf23dc1",
+          "decode_resident_surface": {
+            "ops_per_ef": 12.3556,
+            "pj_per_ef": [
+              6.40277,
+              6.9044
+            ],
+            "state_bytes_per_ef": 4,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1185,
+              4329
+            ]
+          }
+        },
+        {
+          "strategy": "delta (integer)",
+          "bytes": 30734,
+          "ratio_vs_full_q": 1.33709,
+          "dirty_fraction": 0.976882,
+          "max_err_over_eps": [
+            0.499999,
+            0.499958,
+            0.499688
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998291,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 11.8263,
+            "pj_per_ef": [
+              11.1921,
+              11.5673
+            ],
+            "pj_per_ef_incl_ingest": [
+              21.7921,
+              35.8673
+            ],
+            "state_bytes_per_ef": 7.90755,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 11.8263,
+            "pj_per_ef": [
+              11.1921,
+              11.5673
+            ],
+            "state_bytes_per_ef": 7.90755,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          },
+          "max_register_bits": {
+            "code": 15,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "3f879ae42b82d75b",
+          "decode_resident_surface": {
+            "ops_per_ef": 11.8263,
+            "pj_per_ef": [
+              11.1921,
+              11.5673
+            ],
+            "state_bytes_per_ef": 7.90755,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1322,
+              4466
+            ]
+          }
+        },
+        {
+          "strategy": "scp4d-int (v0.1.10)",
+          "bytes": 30616,
+          "ratio_vs_full_q": 1.34224,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 11759,
+          "event_fraction": 0.95695,
+          "dirty_fraction": 0.958242,
+          "max_err_over_eps": [
+            0.994433,
+            0.9942,
+            0.997617
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998047,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 20.2337,
+            "pj_per_ef": [
+              41.4578,
+              41.8315
+            ],
+            "pj_per_ef_incl_ingest": [
+              52.0578,
+              66.1315
+            ],
+            "state_bytes_per_ef": 30.7119,
+            "working_set_bytes": 44,
+            "area_um2": [
+              5292,
+              8628
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 15.3198,
+            "pj_per_ef": [
+              21.8274,
+              22.2011
+            ],
+            "state_bytes_per_ef": 15.4007,
+            "working_set_bytes": 20,
+            "area_um2": [
+              5244,
+              8436
+            ]
+          },
+          "max_register_bits": {
+            "code": 23,
+            "q": 14,
+            "weight": 18,
+            "rel_product": 35,
+            "rel_acc": 38,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "cbb2e310a0758d58"
+        },
+        {
+          "strategy": "scp4d-int event-driven +relations",
+          "bytes": 30616,
+          "ratio_vs_full_q": 1.34224,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 11759,
+          "event_fraction": 0.95695,
+          "dirty_fraction": 0.958242,
+          "max_err_over_eps": [
+            0.994433,
+            0.9942,
+            0.997617
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998047,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 20.2337,
+            "pj_per_ef": [
+              41.4578,
+              41.8315
+            ],
+            "pj_per_ef_incl_ingest": [
+              52.0578,
+              66.1315
+            ],
+            "state_bytes_per_ef": 30.7119,
+            "working_set_bytes": 44,
+            "area_um2": [
+              5292,
+              8628
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 16.2614,
+            "pj_per_ef": [
+              28.3274,
+              28.7011
+            ],
+            "state_bytes_per_ef": 20.5254,
+            "working_set_bytes": 27,
+            "area_um2": [
+              5258,
+              8492
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 16.2614,
+            "pj_per_ef": [
+              28.3274,
+              28.7011
+            ],
+            "state_bytes_per_ef": 20.5254,
+            "working_set_bytes": 27,
+            "area_um2": [
+              5258,
+              8492
+            ]
+          },
+          "max_register_bits": {
+            "code": 23,
+            "q": 14,
+            "weight": 18,
+            "rel_product": 35,
+            "rel_acc": 38,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "cbb2e310a0758d58"
+        },
+        {
+          "strategy": "scp4d-int event-driven temporal-only",
+          "bytes": 30739,
+          "ratio_vs_full_q": 1.33687,
+          "config": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 11761,
+          "event_fraction": 0.957113,
+          "dirty_fraction": 0.957102,
+          "max_err_over_eps": [
+            0.994433,
+            0.990195,
+            0.997617
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998047,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 17.6547,
+            "pj_per_ef": [
+              30.8184,
+              31.1936
+            ],
+            "pj_per_ef_incl_ingest": [
+              41.4184,
+              55.4936
+            ],
+            "state_bytes_per_ef": 23.1423,
+            "working_set_bytes": 36,
+            "area_um2": [
+              1644,
+              4932
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 12.7405,
+            "pj_per_ef": [
+              10.9703,
+              11.3455
+            ],
+            "state_bytes_per_ef": 7.6569,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1596,
+              4740
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 12.7405,
+            "pj_per_ef": [
+              10.9703,
+              11.3455
+            ],
+            "state_bytes_per_ef": 7.6569,
+            "working_set_bytes": 12,
+            "area_um2": [
+              1596,
+              4740
+            ]
+          },
+          "max_register_bits": {
+            "code": 23,
+            "q": 14,
+            "weight": 18,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 15,
+            "header_varint": 43
+          },
+          "sha256_16": "9e0981b69d8b76b9"
+        }
+      ],
+      "v019": {
+        "full_q": {
+          "bytes": 41094,
+          "config": null,
+          "max_abs_err": [
+            0.000499999,
+            0.000499958,
+            0.0000499688
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998291
+            }
+          ],
+          "encode_ops_per_ef": 7,
+          "decode_ops_per_ef": 3,
+          "pj_per_ef": {
+            "encode": [
+              8.26721,
+              21.2688
+            ],
+            "decode": [
+              4.06721,
+              4.56885
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.976882,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "delta": {
+          "bytes": 30734,
+          "config": null,
+          "max_abs_err": [
+            0.000499999,
+            0.000499958,
+            0.0000499688
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998291
+            }
+          ],
+          "encode_ops_per_ef": 8,
+          "decode_ops_per_ef": 4,
+          "pj_per_ef": {
+            "encode": [
+              28.3251,
+              41.2002
+            ],
+            "decode": [
+              24.1251,
+              24.5002
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.976882,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "scp4d": {
+          "bytes": 30616,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last"
+          },
+          "max_abs_err": [
+            0.000994433,
+            0.0009942,
+            0.0000997617
+          ],
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.999268
+            }
+          ],
+          "encode_ops_per_ef": 11.6549,
+          "decode_ops_per_ef": 2,
+          "pj_per_ef": {
+            "encode": [
+              31.4376,
+              43.7722
+            ],
+            "decode": [
+              22.5912,
+              22.965
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.95816,
+          "area_um2_float_datapath": {
+            "encode": [
+              32910,
+              51814
+            ],
+            "decode": [
+              17510,
+              21014
+            ]
+          },
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        }
+      },
+      "search": [
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 41099,
+          "events": 12284
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 30739,
+          "events": 11784
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 31881,
+          "events": 11941
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 37955,
+          "events": 12209
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 30617,
+          "events": 11780
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 31795,
+          "events": 11930
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 44348,
+          "events": 12174
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 39738,
+          "events": 11967
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 41876,
+          "events": 12086
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 44245,
+          "events": 12146
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 40823,
+          "events": 12015
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 42992,
+          "events": 12125
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 46999,
+          "events": 10062
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 47581,
+          "events": 10621
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 49463,
+          "events": 11279
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 47733,
+          "events": 10125
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 48711,
+          "events": 10643
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 50671,
+          "events": 11303
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 41099,
+          "events": 12284
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 30739,
+          "events": 11761
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 31880,
+          "events": 11930
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 37955,
+          "events": 12210
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 30616,
+          "events": 11759
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 31798,
+          "events": 11915
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 44349,
+          "events": 12170
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 39740,
+          "events": 11955
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 41882,
+          "events": 12094
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 44248,
+          "events": 12143
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 40827,
+          "events": 12004
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 42991,
+          "events": 12123
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 47000,
+          "events": 10003
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 47580,
+          "events": 10574
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 49462,
+          "events": 11279
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 47737,
+          "events": 10067
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 48713,
+          "events": 10596
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 50669,
+          "events": 11304
+        }
+      ],
+      "g_sweep": [
+        {
+          "G": 1,
+          "bytes": 30623,
+          "events": 11876,
+          "bound_over_eps": 0.75,
+          "code_bits": 16
+        },
+        {
+          "G": 2,
+          "bytes": 30620,
+          "events": 11826,
+          "bound_over_eps": 0.875,
+          "code_bits": 17
+        },
+        {
+          "G": 4,
+          "bytes": 30617,
+          "events": 11780,
+          "bound_over_eps": 0.96875,
+          "code_bits": 19
+        },
+        {
+          "G": 6,
+          "bytes": 30618,
+          "events": 11763,
+          "bound_over_eps": 0.992188,
+          "code_bits": 21
+        },
+        {
+          "G": 8,
+          "bytes": 30616,
+          "events": 11759,
+          "bound_over_eps": 0.998047,
+          "code_bits": 23
+        }
+      ]
+    },
+    "env-16x16x2-T64": {
+      "T": 64,
+      "D": 2048,
+      "label": "TEST-ONLY SYNTHETIC 4D environment (seeded mulberry32 20261118). Not production data; not a real sensor, patient, provider or tenant feed.",
+      "rows": [
+        {
+          "strategy": "full_q (integer)",
+          "bytes": 149596,
+          "ratio_vs_full_q": 1,
+          "dirty_fraction": 0.38568,
+          "max_err_over_eps": [
+            0.499999,
+            0.499924,
+            0,
+            0.499976
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.9375,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 5.42379,
+            "pj_per_ef": [
+              0.599445,
+              0.770644
+            ],
+            "pj_per_ef_incl_ingest": [
+              11.1994,
+              25.0706
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 5.42379,
+            "pj_per_ef": [
+              0.599445,
+              0.770644
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "max_register_bits": {
+            "code": 9,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 10,
+            "header_varint": 43
+          },
+          "sha256_16": "13a488b1bd14cfbf",
+          "decode_resident_surface": {
+            "ops_per_ef": 5.42379,
+            "pj_per_ef": [
+              5.59945,
+              5.77064
+            ],
+            "state_bytes_per_ef": 4,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17545,
+              69769
+            ]
+          }
+        },
+        {
+          "strategy": "delta (integer)",
+          "bytes": 131643,
+          "ratio_vs_full_q": 1.13638,
+          "dirty_fraction": 0.38568,
+          "max_err_over_eps": [
+            0.499999,
+            0.499924,
+            0,
+            0.499976
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.9375,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 7.01288,
+            "pj_per_ef": [
+              7.70787,
+              7.85853
+            ],
+            "pj_per_ef_incl_ingest": [
+              18.3079,
+              32.1585
+            ],
+            "state_bytes_per_ef": 5.56509,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17682,
+              69906
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 7.01288,
+            "pj_per_ef": [
+              7.70787,
+              7.85853
+            ],
+            "state_bytes_per_ef": 5.56509,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17682,
+              69906
+            ]
+          },
+          "max_register_bits": {
+            "code": 9,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 10,
+            "header_varint": 43
+          },
+          "sha256_16": "c0a366778f4d5004",
+          "decode_resident_surface": {
+            "ops_per_ef": 7.01288,
+            "pj_per_ef": [
+              7.70787,
+              7.85853
+            ],
+            "state_bytes_per_ef": 5.56509,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17682,
+              69906
+            ]
+          }
+        },
+        {
+          "strategy": "scp4d-int (v0.1.10)",
+          "bytes": 29948,
+          "ratio_vs_full_q": 4.99519,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 14686,
+          "event_fraction": 0.112045,
+          "dirty_fraction": 0.272662,
+          "max_err_over_eps": [
+            0.997905,
+            0.956325,
+            0,
+            0.998002
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.921875,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 7.2731,
+            "pj_per_ef": [
+              36.1274,
+              36.1617
+            ],
+            "pj_per_ef_incl_ingest": [
+              46.7274,
+              60.4617
+            ],
+            "state_bytes_per_ef": 14.3874,
+            "working_set_bytes": 28672,
+            "area_um2": [
+              62548,
+              237652
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 4.37625,
+            "pj_per_ef": [
+              21.9495,
+              21.9837
+            ],
+            "state_bytes_per_ef": 12.5947,
+            "working_set_bytes": 12288,
+            "area_um2": [
+              29780,
+              106580
+            ]
+          },
+          "max_register_bits": {
+            "code": 17,
+            "q": 9,
+            "weight": 17,
+            "rel_product": 31,
+            "rel_acc": 32,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 12,
+            "header_varint": 43
+          },
+          "sha256_16": "df857c6d7138a6c2"
+        },
+        {
+          "strategy": "scp4d-int event-driven +relations",
+          "bytes": 29948,
+          "ratio_vs_full_q": 4.99519,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 14686,
+          "event_fraction": 0.112045,
+          "dirty_fraction": 0.272662,
+          "max_err_over_eps": [
+            0.997905,
+            0.956325,
+            0,
+            0.998002
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.921875,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 7.2731,
+            "pj_per_ef": [
+              36.1274,
+              36.1617
+            ],
+            "pj_per_ef_incl_ingest": [
+              46.7274,
+              60.4617
+            ],
+            "state_bytes_per_ef": 14.3874,
+            "working_set_bytes": 28672,
+            "area_um2": [
+              62548,
+              237652
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 3.7458,
+            "pj_per_ef": [
+              21.9011,
+              21.9353
+            ],
+            "state_bytes_per_ef": 11.1848,
+            "working_set_bytes": 15424,
+            "area_um2": [
+              36052,
+              131668
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 3.7458,
+            "pj_per_ef": [
+              21.9011,
+              21.9353
+            ],
+            "state_bytes_per_ef": 11.1848,
+            "working_set_bytes": 15424,
+            "area_um2": [
+              36052,
+              131668
+            ]
+          },
+          "max_register_bits": {
+            "code": 17,
+            "q": 9,
+            "weight": 17,
+            "rel_product": 31,
+            "rel_acc": 32,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 12,
+            "header_varint": 43
+          },
+          "sha256_16": "df857c6d7138a6c2"
+        },
+        {
+          "strategy": "scp4d-int event-driven temporal-only",
+          "bytes": 54985,
+          "ratio_vs_full_q": 2.72067,
+          "config": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 27590,
+          "event_fraction": 0.210495,
+          "dirty_fraction": 0.202381,
+          "max_err_over_eps": [
+            0.997905,
+            0.997948,
+            0,
+            0.998002
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.921875,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 7.21915,
+            "pj_per_ef": [
+              19.138,
+              19.2009
+            ],
+            "pj_per_ef_incl_ingest": [
+              29.738,
+              43.5009
+            ],
+            "state_bytes_per_ef": 8.2099,
+            "working_set_bytes": 24576,
+            "area_um2": [
+              50724,
+              201252
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 2.52344,
+            "pj_per_ef": [
+              2.37827,
+              2.44119
+            ],
+            "state_bytes_per_ef": 1.68396,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17956,
+              70180
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 2.52344,
+            "pj_per_ef": [
+              2.37827,
+              2.44119
+            ],
+            "state_bytes_per_ef": 1.68396,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17956,
+              70180
+            ]
+          },
+          "max_register_bits": {
+            "code": 17,
+            "q": 9,
+            "weight": 17,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 13,
+            "header_varint": 43
+          },
+          "sha256_16": "812c3fcc501bebaf"
+        }
+      ],
+      "v019": {
+        "full_q": {
+          "bytes": 149596,
+          "config": null,
+          "max_abs_err": [
+            0.00499999,
+            0.00499924,
+            0,
+            0.00499976
+          ],
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.9375
+            }
+          ],
+          "encode_ops_per_ef": 7,
+          "decode_ops_per_ef": 3,
+          "pj_per_ef": {
+            "encode": [
+              8.15707,
+              20.8283
+            ],
+            "decode": [
+              3.95707,
+              4.12827
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.38568,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "delta": {
+          "bytes": 131643,
+          "config": null,
+          "max_abs_err": [
+            0.00499999,
+            0.00499924,
+            0,
+            0.00499976
+          ],
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.9375
+            }
+          ],
+          "encode_ops_per_ef": 8,
+          "decode_ops_per_ef": 4,
+          "pj_per_ef": {
+            "encode": [
+              38.2784,
+              50.929
+            ],
+            "decode": [
+              34.0784,
+              34.229
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.38568,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "scp4d": {
+          "bytes": 29885,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last"
+          },
+          "max_abs_err": [
+            0.00999992,
+            0.00956325,
+            0,
+            0.00999759
+          ],
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.921875
+            }
+          ],
+          "encode_ops_per_ef": 5.76996,
+          "decode_ops_per_ef": 3.54634,
+          "pj_per_ef": {
+            "encode": [
+              47.1858,
+              48.6177
+            ],
+            "decode": [
+              45.8281,
+              45.8623
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.27229,
+          "area_um2_float_datapath": {
+            "encode": [
+              98366,
+              313638
+            ],
+            "decode": [
+              82966,
+              282838
+            ]
+          },
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        }
+      },
+      "search": [
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 149734,
+          "events": 94873
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 56776,
+          "events": 28487
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 79598,
+          "events": 39858
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 135290,
+          "events": 62528
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 30907,
+          "events": 15165
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 43716,
+          "events": 21526
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 77719,
+          "events": 35070
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 59417,
+          "events": 25947
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 82697,
+          "events": 37548
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 46173,
+          "events": 19294
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 35757,
+          "events": 14118
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 47779,
+          "events": 20087
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 77123,
+          "events": 33289
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 63009,
+          "events": 26221
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 85577,
+          "events": 37465
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 47275,
+          "events": 18363
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 39351,
+          "events": 14390
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 51159,
+          "events": 20254
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 74467,
+          "events": 28567
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 67869,
+          "events": 25244
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 90355,
+          "events": 36449
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 49262,
+          "events": 15964
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 45441,
+          "events": 14030
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 57045,
+          "events": 19792
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 65924,
+          "events": 17416
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 74040,
+          "events": 21467
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 94393,
+          "events": 31612
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 51897,
+          "events": 10406
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 55834,
+          "events": 12366
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 66698,
+          "events": 17763
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 149730,
+          "events": 94730
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 54985,
+          "events": 27590
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 78277,
+          "events": 39196
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 135020,
+          "events": 62394
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 29948,
+          "events": 14686
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 43026,
+          "events": 21181
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 76899,
+          "events": 34185
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 58674,
+          "events": 25098
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 82284,
+          "events": 36866
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 46207,
+          "events": 18836
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 35850,
+          "events": 13688
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 48122,
+          "events": 19783
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 76296,
+          "events": 32399
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 62240,
+          "events": 25360
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 85463,
+          "events": 36932
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 47303,
+          "events": 17900
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 39373,
+          "events": 13925
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 51620,
+          "events": 20006
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 73611,
+          "events": 27668
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 66981,
+          "events": 24328
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 90019,
+          "events": 35811
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 49299,
+          "events": 15511
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 45499,
+          "events": 13587
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 57333,
+          "events": 19466
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 65315,
+          "events": 16645
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 73313,
+          "events": 20639
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 93799,
+          "events": 30849
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 52026,
+          "events": 10002
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 55885,
+          "events": 11926
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 66861,
+          "events": 17379
+        }
+      ],
+      "g_sweep": [
+        {
+          "G": 1,
+          "bytes": 41226,
+          "events": 20304,
+          "bound_over_eps": 0.75,
+          "code_bits": 10
+        },
+        {
+          "G": 2,
+          "bytes": 34352,
+          "events": 16887,
+          "bound_over_eps": 0.875,
+          "code_bits": 11
+        },
+        {
+          "G": 4,
+          "bytes": 30907,
+          "events": 15165,
+          "bound_over_eps": 0.96875,
+          "code_bits": 13
+        },
+        {
+          "G": 6,
+          "bytes": 30120,
+          "events": 14772,
+          "bound_over_eps": 0.992188,
+          "code_bits": 15
+        },
+        {
+          "G": 8,
+          "bytes": 29948,
+          "events": 14686,
+          "bound_over_eps": 0.998047,
+          "code_bits": 17
+        }
+      ]
+    },
+    "env-16x16x2-T256": {
+      "T": 256,
+      "D": 2048,
+      "label": "TEST-ONLY SYNTHETIC 4D environment (seeded mulberry32 20261118). Not production data; not a real sensor, patient, provider or tenant feed.",
+      "rows": [
+        {
+          "strategy": "full_q (integer)",
+          "bytes": 569532,
+          "ratio_vs_full_q": 1,
+          "dirty_fraction": 0.390026,
+          "max_err_over_eps": [
+            0.499999,
+            0.499992,
+            0,
+            0.499996
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.800781,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 5.25957,
+            "pj_per_ef": [
+              0.580272,
+              0.743217
+            ],
+            "pj_per_ef_incl_ingest": [
+              11.1803,
+              25.0432
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 5.25957,
+            "pj_per_ef": [
+              0.580272,
+              0.743217
+            ],
+            "state_bytes_per_ef": 0,
+            "working_set_bytes": 0,
+            "area_um2": [
+              1161,
+              4233
+            ]
+          },
+          "max_register_bits": {
+            "code": 9,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 10,
+            "header_varint": 43
+          },
+          "sha256_16": "67eecb716d8f14bb",
+          "decode_resident_surface": {
+            "ops_per_ef": 5.25957,
+            "pj_per_ef": [
+              5.58027,
+              5.74322
+            ],
+            "state_bytes_per_ef": 4,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17545,
+              69769
+            ]
+          }
+        },
+        {
+          "strategy": "delta (integer)",
+          "bytes": 525567,
+          "ratio_vs_full_q": 1.08365,
+          "dirty_fraction": 0.390026,
+          "max_err_over_eps": [
+            0.499999,
+            0.499992,
+            0,
+            0.499996
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.800781,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 7.008,
+            "pj_per_ef": [
+              7.70796,
+              7.85832
+            ],
+            "pj_per_ef_incl_ingest": [
+              18.308,
+              32.1583
+            ],
+            "state_bytes_per_ef": 5.56563,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17682,
+              69906
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 7.008,
+            "pj_per_ef": [
+              7.70796,
+              7.85832
+            ],
+            "state_bytes_per_ef": 5.56563,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17682,
+              69906
+            ]
+          },
+          "max_register_bits": {
+            "code": 9,
+            "q": 0,
+            "weight": 0,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 10,
+            "header_varint": 43
+          },
+          "sha256_16": "264e940b3bc526d2",
+          "decode_resident_surface": {
+            "ops_per_ef": 7.008,
+            "pj_per_ef": [
+              7.70796,
+              7.85832
+            ],
+            "state_bytes_per_ef": 5.56563,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17682,
+              69906
+            ]
+          }
+        },
+        {
+          "strategy": "scp4d-int (v0.1.10)",
+          "bytes": 100391,
+          "ratio_vs_full_q": 5.67314,
+          "config": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 42672,
+          "event_fraction": 0.0813904,
+          "dirty_fraction": 0.801293,
+          "max_err_over_eps": [
+            0.998031,
+            0.988451,
+            0.996094,
+            0.99744
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.777344,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 13.9437,
+            "pj_per_ef": [
+              119.139,
+              119.168
+            ],
+            "pj_per_ef_incl_ingest": [
+              129.739,
+              143.468
+            ],
+            "state_bytes_per_ef": 30.5966,
+            "working_set_bytes": 48128,
+            "area_um2": [
+              105092,
+              396932
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 11.292,
+            "pj_per_ef": [
+              80.843,
+              80.8718
+            ],
+            "state_bytes_per_ef": 29.2943,
+            "working_set_bytes": 31744,
+            "area_um2": [
+              72324,
+              265860
+            ]
+          },
+          "max_register_bits": {
+            "code": 17,
+            "q": 8,
+            "weight": 17,
+            "rel_product": 31,
+            "rel_acc": 32,
+            "factor": 16,
+            "lr_product": 31,
+            "lr_acc": 32,
+            "varint": 11,
+            "header_varint": 43
+          },
+          "sha256_16": "b685bbe592f0c185"
+        },
+        {
+          "strategy": "scp4d-int event-driven +relations",
+          "bytes": 119757,
+          "ratio_vs_full_q": 4.75573,
+          "config": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 59040,
+          "event_fraction": 0.11261,
+          "dirty_fraction": 0.281338,
+          "max_err_over_eps": [
+            0.99804,
+            0.981664,
+            0,
+            0.998014
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.804688,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 7.30271,
+            "pj_per_ef": [
+              36.5875,
+              36.6218
+            ],
+            "pj_per_ef_incl_ingest": [
+              47.1875,
+              60.9218
+            ],
+            "state_bytes_per_ef": 14.5663,
+            "working_set_bytes": 28672,
+            "area_um2": [
+              62548,
+              237652
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 3.80099,
+            "pj_per_ef": [
+              22.3269,
+              22.3611
+            ],
+            "state_bytes_per_ef": 11.3984,
+            "working_set_bytes": 15424,
+            "area_um2": [
+              36052,
+              131668
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 3.80099,
+            "pj_per_ef": [
+              22.3269,
+              22.3611
+            ],
+            "state_bytes_per_ef": 11.3984,
+            "working_set_bytes": 15424,
+            "area_um2": [
+              36052,
+              131668
+            ]
+          },
+          "max_register_bits": {
+            "code": 17,
+            "q": 9,
+            "weight": 17,
+            "rel_product": 31,
+            "rel_acc": 32,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 12,
+            "header_varint": 43
+          },
+          "sha256_16": "37b54fecfe6890ba"
+        },
+        {
+          "strategy": "scp4d-int event-driven temporal-only",
+          "bytes": 224843,
+          "ratio_vs_full_q": 2.53302,
+          "config": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "events": 111964,
+          "event_fraction": 0.213554,
+          "dirty_fraction": 0.211562,
+          "max_err_over_eps": [
+            0.99804,
+            0.998015,
+            0,
+            0.998014
+          ],
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.804688,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "encode": {
+            "ops_per_ef": 7.28122,
+            "pj_per_ef": [
+              19.2818,
+              19.3461
+            ],
+            "pj_per_ef_incl_ingest": [
+              29.8818,
+              43.6461
+            ],
+            "state_bytes_per_ef": 8.27109,
+            "working_set_bytes": 24576,
+            "area_um2": [
+              50724,
+              201252
+            ]
+          },
+          "decode": {
+            "ops_per_ef": 2.56948,
+            "pj_per_ef": [
+              2.41393,
+              2.47826
+            ],
+            "state_bytes_per_ef": 1.70844,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17956,
+              70180
+            ]
+          },
+          "decode_resident_surface": {
+            "ops_per_ef": 2.56948,
+            "pj_per_ef": [
+              2.41393,
+              2.47826
+            ],
+            "state_bytes_per_ef": 1.70844,
+            "working_set_bytes": 8192,
+            "area_um2": [
+              17956,
+              70180
+            ]
+          },
+          "max_register_bits": {
+            "code": 17,
+            "q": 9,
+            "weight": 17,
+            "rel_product": 0,
+            "rel_acc": 0,
+            "factor": 0,
+            "lr_product": 0,
+            "lr_acc": 0,
+            "varint": 13,
+            "header_varint": 43
+          },
+          "sha256_16": "575fe1646976e064"
+        }
+      ],
+      "v019": {
+        "full_q": {
+          "bytes": 569532,
+          "config": null,
+          "max_abs_err": [
+            0.00499999,
+            0.00499992,
+            0,
+            0.00499996
+          ],
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.800781
+            }
+          ],
+          "encode_ops_per_ef": 7,
+          "decode_ops_per_ef": 3,
+          "pj_per_ef": {
+            "encode": [
+              8.15431,
+              20.8173
+            ],
+            "decode": [
+              3.95431,
+              4.11726
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.390026,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "delta": {
+          "bytes": 525567,
+          "config": null,
+          "max_abs_err": [
+            0.00499999,
+            0.00499992,
+            0,
+            0.00499996
+          ],
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.800781
+            }
+          ],
+          "encode_ops_per_ef": 8,
+          "decode_ops_per_ef": 4,
+          "pj_per_ef": {
+            "encode": [
+              38.2783,
+              50.9286
+            ],
+            "decode": [
+              34.0783,
+              34.2286
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.390026,
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        },
+        "scp4d": {
+          "bytes": 99808,
+          "config": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last"
+          },
+          "max_abs_err": [
+            0.00999997,
+            0.00958474,
+            0.00999962,
+            0.00999877
+          ],
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.773438
+            }
+          ],
+          "encode_ops_per_ef": 2295.15,
+          "decode_ops_per_ef": 6.36884,
+          "pj_per_ef": {
+            "encode": [
+              6588.08,
+              13402
+            ],
+            "decode": [
+              111.572,
+              111.6
+            ],
+            "label": "estimate"
+          },
+          "dirty_fraction": 0.809082,
+          "area_um2_float_datapath": {
+            "encode": [
+              10649700,
+              42518900
+            ],
+            "decode": [
+              148518,
+              545046
+            ]
+          },
+          "basis": "v0.1.9 float model (f64 state, FP ops, ingest division inside encode); copied from fixtures/scp/v019-bench-report.json"
+        }
+      },
+      "search": [
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 570102,
+          "events": 376357
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 231426,
+          "events": 115259
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 322664,
+          "events": 160691
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 520487,
+          "events": 247185
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 123229,
+          "events": 60776
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 174704,
+          "events": 86316
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 477408,
+          "events": 241262
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 198181,
+          "events": 94499
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 295213,
+          "events": 142834
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 293336,
+          "events": 140674
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 117052,
+          "events": 53730
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 173986,
+          "events": 82004
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 352456,
+          "events": 169438
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 159067,
+          "events": 72464
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 254525,
+          "events": 120038
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 217555,
+          "events": 100918
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 102709,
+          "events": 44311
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 157511,
+          "events": 71525
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 299638,
+          "events": 138502
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 157951,
+          "events": 68014
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 250410,
+          "events": 114099
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 192327,
+          "events": 84844
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 108724,
+          "events": 43425
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 160964,
+          "events": 69370
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 230157,
+          "events": 96272
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 167279,
+          "events": 64833
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 260526,
+          "events": 111312
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "zero",
+            "G": 4
+          },
+          "bytes": 164657,
+          "events": 63539
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "last",
+            "G": 4
+          },
+          "bytes": 123684,
+          "events": 43058
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "linear",
+            "G": 4
+          },
+          "bytes": 177170,
+          "events": 69627
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 570051,
+          "events": 375751
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 224843,
+          "events": 111964
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 317079,
+          "events": 157897
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 519351,
+          "events": 246630
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 119757,
+          "events": 59040
+        },
+        {
+          "cfg": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 171450,
+          "events": 84688
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 474963,
+          "events": 238639
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 193007,
+          "events": 91425
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 290049,
+          "events": 139770
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 290645,
+          "events": 138858
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 114440,
+          "events": 51948
+        },
+        {
+          "cfg": {
+            "rank": 1,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 170939,
+          "events": 80010
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 347818,
+          "events": 166475
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 154522,
+          "events": 69716
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 250101,
+          "events": 117354
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 215195,
+          "events": 99266
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 100391,
+          "events": 42672
+        },
+        {
+          "cfg": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 155055,
+          "events": 69825
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 293960,
+          "events": 135185
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 153851,
+          "events": 65493
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 246663,
+          "events": 111755
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 189763,
+          "events": 83091
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 106622,
+          "events": 41903
+        },
+        {
+          "cfg": {
+            "rank": 4,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 159191,
+          "events": 68013
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 224747,
+          "events": 93091
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 163093,
+          "events": 62258
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": false,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 255371,
+          "events": 108262
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "zero",
+            "G": 8
+          },
+          "bytes": 162304,
+          "events": 61886
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "last",
+            "G": 8
+          },
+          "bytes": 121630,
+          "events": 41553
+        },
+        {
+          "cfg": {
+            "rank": 8,
+            "relations": true,
+            "predictor": "linear",
+            "G": 8
+          },
+          "bytes": 174729,
+          "events": 67933
+        }
+      ],
+      "g_sweep": [
+        {
+          "G": 1,
+          "bytes": 146846,
+          "events": 66587,
+          "bound_over_eps": 0.75,
+          "code_bits": 10
+        },
+        {
+          "G": 2,
+          "bytes": 114968,
+          "events": 50660,
+          "bound_over_eps": 0.875,
+          "code_bits": 11
+        },
+        {
+          "G": 4,
+          "bytes": 102709,
+          "events": 44311,
+          "bound_over_eps": 0.96875,
+          "code_bits": 13
+        },
+        {
+          "G": 6,
+          "bytes": 100407,
+          "events": 43017,
+          "bound_over_eps": 0.992188,
+          "code_bits": 15
+        },
+        {
+          "G": 8,
+          "bytes": 100391,
+          "events": 42672,
+          "bound_over_eps": 0.998047,
+          "code_bits": 17
+        }
+      ]
+    }
+  },
+  "low_rank_decision": {
+    "fixture": "env-16x16x2-T256",
+    "with_low_rank": {
+      "config": {
+        "rank": 2,
+        "relations": true,
+        "predictor": "last",
+        "G": 8
+      },
+      "bytes": 100391,
+      "events": 42672,
+      "dirty_fraction": 0.801293,
+      "decode_pj_per_ef": [
+        80.843,
+        80.8718
+      ],
+      "encode_pj_per_ef": [
+        119.139,
+        119.168
+      ],
+      "decode_ops_per_ef": 11.292,
+      "decode_working_set_bytes": 31744,
+      "host_fit": "float SVD on host (batch, whole window); not in the datapath"
+    },
+    "relations_event_only": {
+      "config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last",
+        "G": 8
+      },
+      "bytes": 119757,
+      "events": 59040,
+      "dirty_fraction": 0.281338,
+      "decode_pj_per_ef": [
+        22.2579,
+        22.2922
+      ],
+      "encode_pj_per_ef": [
+        36.5875,
+        36.6218
+      ],
+      "decode_ops_per_ef": 4.40134,
+      "decode_working_set_bytes": 12288,
+      "host_fit": "none (streaming)"
+    },
+    "byte_saving_of_low_rank": 0.161711,
+    "decode_energy_ratio_low_rank_over_rank0": 3.63211
+  },
+  "verdict": {
+    "claim": "4D-SCP lowers compute energy per element-frame versus conventional full-state (full_q) and delta processing, without losing the agent's decisions",
+    "overall": "MIXED",
+    "resident_surface_decode": "HOLDS on the environment for the temporal-only event path (rank 0, last-value hold, event-driven decoder): 2.37827 pJ/ef vs delta 7.70787 and full_q 5.59945 at T=64, with a stream 2.72× smaller than full_q. It FAILS for the byte-optimal path with relations (21.9011 pJ/ef): every source event fans out into accumulator read-modify-writes and a multiply, so relations buy 1.84× fewer bytes for ~9× the decode energy.",
+    "frame_fixtures": "FAILS on the single-cell frame fixtures (v0.1, Medicare, B256, B4096): almost every element changes every frame, so event-driven bookkeeping only adds cost",
+    "stream_out_decode": "FAILS: when every decoded value must be streamed out each frame, no scp4d-int path beats full_q, which keeps no state",
+    "encode": "FAILS vs delta and FAILS vs full_q on the environment (temporal-only path, incl. the shared ingest quantizer): the encoder must still read the hold state for every element of every input frame",
+    "vs_v019_float": "integer arithmetic makes the byte-optimal scp4d decode cheaper than the v0.1.9 float estimate on every fixture",
+    "with_offchip_stream": "With the stream priced as off-chip (DRAM-class) traffic, the relations path is the cheapest on the environment: fewer bytes outweigh its on-chip cost (labelled scenario)",
+    "low_rank": "Keep low-rank OUT of the hardware datapath (host-side option only): in fixed point it stays within eps, but it changes ~80% of elements every frame and costs ~3.6× the decode energy of the rank-0 path for 16% fewer bytes.",
+    "per_fixture": [
+      {
+        "fixture": "v0.1",
+        "bytes": {
+          "scp4d_int_byte_optimal": 2153,
+          "event_driven_relations": 2305,
+          "event_driven_temporal_only": 2561,
+          "delta": 2556,
+          "full_q": 2982
+        },
+        "decode_stream_out_pj_low": {
+          "scp4d_int_byte_optimal": 36.157,
+          "delta": 11.5814,
+          "full_q": 1.57552,
+          "v019_scp4d_float": 38.7637
+        },
+        "decode_resident_surface_pj_low": {
+          "event_driven_relations": 29.603,
+          "event_driven_temporal_only": 11.6817,
+          "delta": 11.5814,
+          "full_q": 6.57552
+        },
+        "encode_incl_ingest_pj_low": {
+          "scp4d_int_byte_optimal": 53.3958,
+          "event_driven_relations": 53.8985,
+          "event_driven_temporal_only": 42.7817,
+          "delta": 22.1814,
+          "full_q": 12.1755,
+          "v019_scp4d_float": 40.7637
+        },
+        "scp4d_int_over_v019_decode": 0.932754,
+        "stream_out_beats_full_q": false,
+        "resident_temporal_beats_both": false,
+        "resident_relations_beats_both": false,
+        "encode_temporal_beats_delta": false,
+        "encode_temporal_beats_full_q": false
+      },
+      {
+        "fixture": "A-medicare",
+        "bytes": {
+          "scp4d_int_byte_optimal": 124,
+          "event_driven_relations": 127,
+          "event_driven_temporal_only": 127,
+          "delta": 122,
+          "full_q": 119
+        },
+        "decode_stream_out_pj_low": {
+          "scp4d_int_byte_optimal": 2.14444,
+          "delta": 12.0889,
+          "full_q": 1.83056,
+          "v019_scp4d_float": 21.2778
+        },
+        "decode_resident_surface_pj_low": {
+          "event_driven_relations": 31.0806,
+          "event_driven_temporal_only": 12.2028,
+          "delta": 12.0889,
+          "full_q": 6.83056
+        },
+        "encode_incl_ingest_pj_low": {
+          "scp4d_int_byte_optimal": 33.2444,
+          "event_driven_relations": 54.5694,
+          "event_driven_temporal_only": 43.3028,
+          "delta": 22.6889,
+          "full_q": 12.4306,
+          "v019_scp4d_float": 30.4778
+        },
+        "scp4d_int_over_v019_decode": 0.100783,
+        "stream_out_beats_full_q": false,
+        "resident_temporal_beats_both": false,
+        "resident_relations_beats_both": false,
+        "encode_temporal_beats_delta": false,
+        "encode_temporal_beats_full_q": false
+      },
+      {
+        "fixture": "B256",
+        "bytes": {
+          "scp4d_int_byte_optimal": 1968,
+          "event_driven_relations": 1968,
+          "event_driven_temporal_only": 1980,
+          "delta": 1975,
+          "full_q": 2615
+        },
+        "decode_stream_out_pj_low": {
+          "scp4d_int_byte_optimal": 22.0077,
+          "delta": 11.1994,
+          "full_q": 1.40827,
+          "v019_scp4d_float": 22.5948
+        },
+        "decode_resident_surface_pj_low": {
+          "event_driven_relations": 28.5487,
+          "event_driven_temporal_only": 11.0318,
+          "delta": 11.1994,
+          "full_q": 6.40827
+        },
+        "encode_incl_ingest_pj_low": {
+          "scp4d_int_byte_optimal": 52.266,
+          "event_driven_relations": 52.266,
+          "event_driven_temporal_only": 41.5578,
+          "delta": 21.7994,
+          "full_q": 12.0083,
+          "v019_scp4d_float": 31.4531
+        },
+        "scp4d_int_over_v019_decode": 0.974016,
+        "stream_out_beats_full_q": false,
+        "resident_temporal_beats_both": false,
+        "resident_relations_beats_both": false,
+        "encode_temporal_beats_delta": false,
+        "encode_temporal_beats_full_q": false
+      },
+      {
+        "fixture": "B4096",
+        "bytes": {
+          "scp4d_int_byte_optimal": 30616,
+          "event_driven_relations": 30616,
+          "event_driven_temporal_only": 30739,
+          "delta": 30734,
+          "full_q": 41094
+        },
+        "decode_stream_out_pj_low": {
+          "scp4d_int_byte_optimal": 21.8274,
+          "delta": 11.1921,
+          "full_q": 1.40277,
+          "v019_scp4d_float": 22.5912
+        },
+        "decode_resident_surface_pj_low": {
+          "event_driven_relations": 28.3274,
+          "event_driven_temporal_only": 10.9703,
+          "delta": 11.1921,
+          "full_q": 6.40277
+        },
+        "encode_incl_ingest_pj_low": {
+          "scp4d_int_byte_optimal": 52.0578,
+          "event_driven_relations": 52.0578,
+          "event_driven_temporal_only": 41.4184,
+          "delta": 21.7921,
+          "full_q": 12.0028,
+          "v019_scp4d_float": 31.4376
+        },
+        "scp4d_int_over_v019_decode": 0.96619,
+        "stream_out_beats_full_q": false,
+        "resident_temporal_beats_both": false,
+        "resident_relations_beats_both": false,
+        "encode_temporal_beats_delta": false,
+        "encode_temporal_beats_full_q": false
+      },
+      {
+        "fixture": "env-16x16x2-T64",
+        "bytes": {
+          "scp4d_int_byte_optimal": 29948,
+          "event_driven_relations": 29948,
+          "event_driven_temporal_only": 54985,
+          "delta": 131643,
+          "full_q": 149596
+        },
+        "decode_stream_out_pj_low": {
+          "scp4d_int_byte_optimal": 21.9495,
+          "delta": 7.70787,
+          "full_q": 0.599445,
+          "v019_scp4d_float": 45.8281
+        },
+        "decode_resident_surface_pj_low": {
+          "event_driven_relations": 21.9011,
+          "event_driven_temporal_only": 2.37827,
+          "delta": 7.70787,
+          "full_q": 5.59945
+        },
+        "encode_incl_ingest_pj_low": {
+          "scp4d_int_byte_optimal": 46.7274,
+          "event_driven_relations": 46.7274,
+          "event_driven_temporal_only": 29.738,
+          "delta": 18.3079,
+          "full_q": 11.1994,
+          "v019_scp4d_float": 47.1858
+        },
+        "scp4d_int_over_v019_decode": 0.478953,
+        "stream_out_beats_full_q": false,
+        "resident_temporal_beats_both": true,
+        "resident_relations_beats_both": false,
+        "encode_temporal_beats_delta": false,
+        "encode_temporal_beats_full_q": false
+      },
+      {
+        "fixture": "env-16x16x2-T256",
+        "bytes": {
+          "scp4d_int_byte_optimal": 100391,
+          "event_driven_relations": 119757,
+          "event_driven_temporal_only": 224843,
+          "delta": 525567,
+          "full_q": 569532
+        },
+        "decode_stream_out_pj_low": {
+          "scp4d_int_byte_optimal": 80.843,
+          "delta": 7.70796,
+          "full_q": 0.580272,
+          "v019_scp4d_float": 111.572
+        },
+        "decode_resident_surface_pj_low": {
+          "event_driven_relations": 22.3269,
+          "event_driven_temporal_only": 2.41393,
+          "delta": 7.70796,
+          "full_q": 5.58027
+        },
+        "encode_incl_ingest_pj_low": {
+          "scp4d_int_byte_optimal": 129.739,
+          "event_driven_relations": 47.1875,
+          "event_driven_temporal_only": 29.8818,
+          "delta": 18.308,
+          "full_q": 11.1803,
+          "v019_scp4d_float": 6588.08
+        },
+        "scp4d_int_over_v019_decode": 0.724581,
+        "stream_out_beats_full_q": false,
+        "resident_temporal_beats_both": true,
+        "resident_relations_beats_both": false,
+        "encode_temporal_beats_delta": false,
+        "encode_temporal_beats_full_q": false
+      }
+    ],
+    "system_view_offchip_stream": {
+      "label": "Labelled scenario: stream bytes priced at DRAM 162.5–325 pJ/B (Horowitz 1.3–2.6 nJ per 64-bit access).",
+      "rows": [
+        {
+          "fixture": "v0.1",
+          "decode_resident_plus_offchip_stream_pj_per_ef": {
+            "event_driven_relations": [
+              517.315,
+              1005.48
+            ],
+            "event_driven_temporal_only": [
+              553.56,
+              1095.94
+            ],
+            "delta": [
+              552.402,
+              1093.72
+            ],
+            "full_q": [
+              637.533,
+              1269.07
+            ]
+          }
+        },
+        {
+          "fixture": "A-medicare",
+          "decode_resident_plus_offchip_stream_pj_per_ef": {
+            "event_driven_relations": [
+              1177.61,
+              2325.19
+            ],
+            "event_driven_temporal_only": [
+              1158.73,
+              2306.32
+            ],
+            "delta": [
+              1113.48,
+              2215.88
+            ],
+            "full_q": [
+              1081.14,
+              2156.43
+            ]
+          }
+        },
+        {
+          "fixture": "B256",
+          "decode_resident_plus_offchip_stream_pj_per_ef": {
+            "event_driven_relations": [
+              444.955,
+              861.746
+            ],
+            "event_driven_temporal_only": [
+              429.977,
+              849.309
+            ],
+            "delta": [
+              429.087,
+              847.36
+            ],
+            "full_q": [
+              559.712,
+              1113.53
+            ]
+          }
+        },
+        {
+          "fixture": "B4096",
+          "decode_resident_plus_offchip_stream_pj_per_ef": {
+            "event_driven_relations": [
+              433.202,
+              838.45
+            ],
+            "event_driven_temporal_only": [
+              417.472,
+              824.348
+            ],
+            "delta": [
+              417.627,
+              824.438
+            ],
+            "full_q": [
+              549.841,
+              1093.78
+            ]
+          }
+        },
+        {
+          "fixture": "env-16x16x2-T64",
+          "decode_resident_plus_offchip_stream_pj_per_ef": {
+            "event_driven_relations": [
+              59.0299,
+              96.193
+            ],
+            "event_driven_temporal_only": [
+              70.5474,
+              138.779
+            ],
+            "delta": [
+              170.916,
+              334.274
+            ],
+            "full_q": [
+              191.065,
+              376.702
+            ]
+          }
+        },
+        {
+          "fixture": "env-16x16x2-T256",
+          "decode_resident_plus_offchip_stream_pj_per_ef": {
+            "event_driven_relations": [
+              59.4449,
+              96.5971
+            ],
+            "event_driven_temporal_only": [
+              72.1027,
+              141.856
+            ],
+            "delta": [
+              170.604,
+              333.651
+            ],
+            "full_q": [
+              182.103,
+              358.789
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
