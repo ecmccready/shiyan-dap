@@ -1,0 +1,2992 @@
+{
+  "format": "4d-scp-v0.1.9-bench-report",
+  "version": 1,
+  "note": "TEST ONLY. Deterministic outputs of scripts/check-scp-v019-bench.ts on committed / seeded fixtures. No timings (reported on stdout only). Energy values are model estimates, not measurements. The environment fixture is SYNTHETIC.",
+  "energy_label": "MODEL ESTIMATE from the v0.1.5 45 nm assumption table (Horowitz ISSCC 2014 plus labelled assumptions); not silicon, not FPGA.",
+  "env_label": "TEST-ONLY SYNTHETIC 4D environment (seeded mulberry32 20261118). Not production data; not a real sensor, patient, provider or tenant feed.",
+  "env_seed": 20261118,
+  "eps": {
+    "frames": [
+      0.001,
+      0.001,
+      0.0001
+    ],
+    "env": [
+      0.01,
+      0.01,
+      0.01,
+      0.01
+    ]
+  },
+  "truth": {
+    "env-16x16x2-T64": {
+      "anomalies": 2,
+      "breaks": 2,
+      "moves": 49
+    },
+    "env-16x16x2-T256": {
+      "anomalies": 19,
+      "breaks": 4,
+      "moves": 195
+    }
+  },
+  "fixtures": {
+    "v0.1": {
+      "T": 256,
+      "D": 3,
+      "label": "TEST-ONLY hand-written v0.1 fixture",
+      "rows": [
+        {
+          "strategy": "full_f64",
+          "bytes": 7215,
+          "ratio_vs_full_f64": 1,
+          "ratio_vs_full_q": 0.413306,
+          "bits_per_element_frame": 75.1563,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            0,
+            0
+          ],
+          "rmse": [
+            0,
+            0,
+            0
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 0,
+          "decode_ops_per_element_frame": 0,
+          "encode_working_set_bytes": 8,
+          "decode_working_set_bytes": 8,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              0.469727,
+              1.87891
+            ],
+            "decode": [
+              0.469727,
+              1.87891
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "f24257168a6823a3"
+        },
+        {
+          "strategy": "full_q",
+          "bytes": 2982,
+          "ratio_vs_full_f64": 2.41952,
+          "ratio_vs_full_q": 1,
+          "bits_per_element_frame": 31.0625,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            3.55271e-15,
+            0.000444444,
+            1.11022e-16
+          ],
+          "rmse": [
+            1.07084e-15,
+            0.000285821,
+            3.86341e-17
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 7,
+          "decode_ops_per_element_frame": 3,
+          "encode_working_set_bytes": 32,
+          "decode_working_set_bytes": 32,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              8.29414,
+              21.3766
+            ],
+            "decode": [
+              4.09414,
+              4.67656
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "9285466b49ce0829"
+        },
+        {
+          "strategy": "delta",
+          "bytes": 2556,
+          "ratio_vs_full_f64": 2.82277,
+          "ratio_vs_full_q": 1.16667,
+          "bits_per_element_frame": 26.625,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            3.55271e-15,
+            0.000444444,
+            1.11022e-16
+          ],
+          "rmse": [
+            1.07084e-15,
+            0.000285821,
+            3.86341e-17
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 765,
+          "event_fraction": 0.996094,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 8,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 48,
+          "decode_working_set_bytes": 48,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              28.3664,
+              41.3656
+            ],
+            "decode": [
+              24.1664,
+              24.6656
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "ff4fe24b3fd6e7b6"
+        },
+        {
+          "strategy": "tensor_bound",
+          "bytes": 3169,
+          "ratio_vs_full_f64": 2.27674,
+          "ratio_vs_full_q": 0.940991,
+          "bits_per_element_frame": 33.0104,
+          "rank": 2,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            9.22699e-7,
+            0.00000106629,
+            3.88456e-8
+          ],
+          "rmse": [
+            2.55622e-7,
+            3.31589e-7,
+            9.4122e-9
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 19.125,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 6288,
+          "decode_working_set_bytes": 56,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              64.8587,
+              65.7061
+            ],
+            "decode": [
+              19.4063,
+              20.0253
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "34fa34849e1f860d"
+        },
+        {
+          "strategy": "tensor_energy",
+          "bytes": 3169,
+          "ratio_vs_full_f64": 2.27674,
+          "ratio_vs_full_q": 0.940991,
+          "bits_per_element_frame": 33.0104,
+          "rank": 2,
+          "scp4d": null,
+          "bounded_claim": false,
+          "max_abs_err": [
+            9.22699e-7,
+            0.00000106629,
+            3.88456e-8
+          ],
+          "rmse": [
+            2.55622e-7,
+            3.31589e-7,
+            9.4122e-9
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 19.125,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 6288,
+          "decode_working_set_bytes": 56,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              64.8587,
+              65.7061
+            ],
+            "decode": [
+              19.4063,
+              20.0253
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "76d370688deea782"
+        },
+        {
+          "strategy": "scp4d",
+          "bytes": 2067,
+          "ratio_vs_full_f64": 3.49057,
+          "ratio_vs_full_q": 1.44267,
+          "bits_per_element_frame": 21.5313,
+          "rank": 0,
+          "scp4d": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "linear"
+          },
+          "bounded_claim": true,
+          "max_abs_err": [
+            2.8777e-13,
+            0.001,
+            3.65818e-14
+          ],
+          "rmse": [
+            1.48384e-13,
+            0.000633012,
+            2.11075e-14
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 240,
+          "event_fraction": 0.3125,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 8.5,
+          "decode_ops_per_element_frame": 5.875,
+          "encode_working_set_bytes": 96,
+          "decode_working_set_bytes": 96,
+          "encode_batch": false,
+          "search_tried": 18,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              40.7637,
+              45.0737
+            ],
+            "decode": [
+              38.7637,
+              39.1674
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "f6e537bc2ba8fe6a"
+        }
+      ]
+    },
+    "A-medicare": {
+      "T": 6,
+      "D": 3,
+      "label": "TEST-ONLY SYNTHETIC 6-row Medicare-shaped file (not CMS data; not padded)",
+      "rows": [
+        {
+          "strategy": "full_f64",
+          "bytes": 215,
+          "ratio_vs_full_f64": 1,
+          "ratio_vs_full_q": 0.553488,
+          "bits_per_element_frame": 95.5556,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            0,
+            0
+          ],
+          "rmse": [
+            0,
+            0,
+            0
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 0,
+          "decode_ops_per_element_frame": 0,
+          "encode_working_set_bytes": 8,
+          "decode_working_set_bytes": 8,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              0.597222,
+              2.38889
+            ],
+            "decode": [
+              0.597222,
+              2.38889
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "6e6600372db9e377"
+        },
+        {
+          "strategy": "full_q",
+          "bytes": 119,
+          "ratio_vs_full_f64": 1.80672,
+          "ratio_vs_full_q": 1,
+          "bits_per_element_frame": 52.8889,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            3.55271e-15,
+            0.0000421053
+          ],
+          "rmse": [
+            0,
+            1.45039e-15,
+            0.0000214779
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 7,
+          "decode_ops_per_element_frame": 3,
+          "encode_working_set_bytes": 32,
+          "decode_working_set_bytes": 32,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              8.43056,
+              21.9222
+            ],
+            "decode": [
+              4.23056,
+              5.22222
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "965b2c3b2e23d07a"
+        },
+        {
+          "strategy": "delta",
+          "bytes": 122,
+          "ratio_vs_full_f64": 1.7623,
+          "ratio_vs_full_q": 0.97541,
+          "bits_per_element_frame": 54.2222,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            3.55271e-15,
+            0.0000421053
+          ],
+          "rmse": [
+            0,
+            1.45039e-15,
+            0.0000214779
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 15,
+          "event_fraction": 0.833333,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 8,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 48,
+          "decode_working_set_bytes": 48,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              28.5389,
+              42.0556
+            ],
+            "decode": [
+              24.3389,
+              25.3556
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "7632f0e61ca1f3d3"
+        },
+        {
+          "strategy": "tensor_bound",
+          "bytes": 205,
+          "ratio_vs_full_f64": 1.04878,
+          "ratio_vs_full_q": 0.580488,
+          "bits_per_element_frame": 91.1111,
+          "rank": 3,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00000336426,
+            0.00000190091,
+            4.10075e-8
+          ],
+          "rmse": [
+            0.00000221823,
+            9.03325e-7,
+            2.15405e-8
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 32.5,
+          "decode_ops_per_element_frame": 6,
+          "encode_working_set_bytes": 288,
+          "decode_working_set_bytes": 72,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              109.119,
+              128.378
+            ],
+            "decode": [
+              29.3694,
+              31.0778
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "820bc11ad0646d33"
+        },
+        {
+          "strategy": "tensor_energy",
+          "bytes": 169,
+          "ratio_vs_full_f64": 1.27219,
+          "ratio_vs_full_q": 0.704142,
+          "bits_per_element_frame": 75.1111,
+          "rank": 2,
+          "scp4d": null,
+          "bounded_claim": false,
+          "max_abs_err": [
+            0.000564972,
+            0.00145952,
+            0.141294
+          ],
+          "rmse": [
+            0.000342754,
+            0.000885216,
+            0.0856814
+          ],
+          "within_eps": 0.555556,
+          "bound_ok": false,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 29.5,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 288,
+          "decode_working_set_bytes": 56,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              94.3194,
+              113.278
+            ],
+            "decode": [
+              19.6694,
+              21.0778
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "5cfd4fffec5f4b3b"
+        },
+        {
+          "strategy": "scp4d",
+          "bytes": 124,
+          "ratio_vs_full_f64": 1.73387,
+          "ratio_vs_full_q": 0.959677,
+          "bits_per_element_frame": 55.1111,
+          "rank": 0,
+          "scp4d": {
+            "rank": 0,
+            "relations": false,
+            "predictor": "zero"
+          },
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            3.55271e-15,
+            0.0000421053
+          ],
+          "rmse": [
+            0,
+            1.45039e-15,
+            0.0000214779
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 6,
+              "safe_slots": 6,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 18,
+          "event_fraction": 1,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 11.3333,
+          "decode_ops_per_element_frame": 1.33333,
+          "encode_working_set_bytes": 72,
+          "decode_working_set_bytes": 72,
+          "encode_batch": false,
+          "search_tried": 18,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              30.4778,
+              44.0111
+            ],
+            "decode": [
+              21.2778,
+              22.3111
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "9a95b1f6fae53e4f"
+        }
+      ]
+    },
+    "B256": {
+      "T": 256,
+      "D": 3,
+      "label": "TEST-ONLY seeded noisy fixture N=256",
+      "rows": [
+        {
+          "strategy": "full_f64",
+          "bytes": 7223,
+          "ratio_vs_full_f64": 1,
+          "ratio_vs_full_q": 0.362038,
+          "bits_per_element_frame": 75.2396,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            0,
+            0
+          ],
+          "rmse": [
+            0,
+            0,
+            0
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 0,
+          "decode_ops_per_element_frame": 0,
+          "encode_working_set_bytes": 8,
+          "decode_working_set_bytes": 8,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              0.470247,
+              1.88099
+            ],
+            "decode": [
+              0.470247,
+              1.88099
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "e14f039540cca74d"
+        },
+        {
+          "strategy": "full_q",
+          "bytes": 2615,
+          "ratio_vs_full_f64": 2.76214,
+          "ratio_vs_full_q": 1,
+          "bits_per_element_frame": 27.2396,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.000497473,
+            0.000499958,
+            0.0000498174
+          ],
+          "rmse": [
+            0.000287506,
+            0.000286333,
+            0.0000288528
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.976471,
+          "encode_ops_per_element_frame": 7,
+          "decode_ops_per_element_frame": 3,
+          "encode_working_set_bytes": 32,
+          "decode_working_set_bytes": 32,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              8.27025,
+              21.281
+            ],
+            "decode": [
+              4.07025,
+              4.58099
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "16eb70cf446310b3"
+        },
+        {
+          "strategy": "delta",
+          "bytes": 1975,
+          "ratio_vs_full_f64": 3.65722,
+          "ratio_vs_full_q": 1.32405,
+          "bits_per_element_frame": 20.5729,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.000497473,
+            0.000499958,
+            0.0000498174
+          ],
+          "rmse": [
+            0.000287506,
+            0.000286333,
+            0.0000288528
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.996094,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 747,
+          "event_fraction": 0.972656,
+          "dirty_fraction": 0.976471,
+          "encode_ops_per_element_frame": 8,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 48,
+          "decode_working_set_bytes": 48,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              28.3286,
+              41.2143
+            ],
+            "decode": [
+              24.1286,
+              24.5143
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "77cc817abd200df5"
+        },
+        {
+          "strategy": "tensor_bound",
+          "bytes": 4213,
+          "ratio_vs_full_f64": 1.71446,
+          "ratio_vs_full_q": 0.620698,
+          "bits_per_element_frame": 43.8854,
+          "rank": 3,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            4.58994e-8,
+            6.50847e-8,
+            1.29861e-9
+          ],
+          "rmse": [
+            1.45628e-8,
+            1.99922e-8,
+            3.19097e-10
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 22.2461,
+          "decode_ops_per_element_frame": 6,
+          "encode_working_set_bytes": 6288,
+          "decode_working_set_bytes": 72,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              79.9669,
+              81.201
+            ],
+            "decode": [
+              29.0743,
+              29.8971
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "f1a7223018d1b904"
+        },
+        {
+          "strategy": "tensor_energy",
+          "bytes": 3177,
+          "ratio_vs_full_f64": 2.27353,
+          "ratio_vs_full_q": 0.823104,
+          "bits_per_element_frame": 33.0938,
+          "rank": 2,
+          "scp4d": null,
+          "bounded_claim": false,
+          "max_abs_err": [
+            0.0000819805,
+            0.0000588891,
+            0.0209034
+          ],
+          "rmse": [
+            0.0000375589,
+            0.0000269849,
+            0.00957777
+          ],
+          "within_eps": 0.669271,
+          "bound_ok": false,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 19.2461,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 6288,
+          "decode_working_set_bytes": 56,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              65.1994,
+              66.2313
+            ],
+            "decode": [
+              19.4068,
+              20.0273
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "95f57e9f8373453c"
+        },
+        {
+          "strategy": "scp4d",
+          "bytes": 1968,
+          "ratio_vs_full_f64": 3.67022,
+          "ratio_vs_full_q": 1.32876,
+          "bits_per_element_frame": 20.5,
+          "rank": 0,
+          "scp4d": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last"
+          },
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00085571,
+            0.000832062,
+            0.0000881467
+          ],
+          "rmse": [
+            0.00030409,
+            0.000290828,
+            0.0000300977
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 256,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 255,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 736,
+          "event_fraction": 0.958333,
+          "dirty_fraction": 0.963399,
+          "encode_ops_per_element_frame": 11.6667,
+          "decode_ops_per_element_frame": 2,
+          "encode_working_set_bytes": 72,
+          "decode_working_set_bytes": 72,
+          "encode_batch": false,
+          "search_tried": 18,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              31.4531,
+              43.8167
+            ],
+            "decode": [
+              22.5948,
+              22.9792
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "90bf74d169dd3ee9"
+        }
+      ]
+    },
+    "B4096": {
+      "T": 4096,
+      "D": 3,
+      "label": "TEST-ONLY seeded noisy fixture N=4096",
+      "rows": [
+        {
+          "strategy": "full_f64",
+          "bytes": 114927,
+          "ratio_vs_full_f64": 1,
+          "ratio_vs_full_q": 0.357566,
+          "bits_per_element_frame": 74.8223,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            0,
+            0
+          ],
+          "rmse": [
+            0,
+            0,
+            0
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 0,
+          "decode_ops_per_element_frame": 0,
+          "encode_working_set_bytes": 8,
+          "decode_working_set_bytes": 8,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              0.467639,
+              1.87056
+            ],
+            "decode": [
+              0.467639,
+              1.87056
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "e9d44263bd50ebef"
+        },
+        {
+          "strategy": "full_q",
+          "bytes": 41094,
+          "ratio_vs_full_f64": 2.79669,
+          "ratio_vs_full_q": 1,
+          "bits_per_element_frame": 26.7539,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.000499999,
+            0.000499958,
+            0.0000499688
+          ],
+          "rmse": [
+            0.000287553,
+            0.000290595,
+            0.0000288228
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998291,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.976882,
+          "encode_ops_per_element_frame": 7,
+          "decode_ops_per_element_frame": 3,
+          "encode_working_set_bytes": 32,
+          "decode_working_set_bytes": 32,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              8.26721,
+              21.2688
+            ],
+            "decode": [
+              4.06721,
+              4.56885
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "44ff1c2e2cf23dc1"
+        },
+        {
+          "strategy": "delta",
+          "bytes": 30734,
+          "ratio_vs_full_f64": 3.73941,
+          "ratio_vs_full_q": 1.33709,
+          "bits_per_element_frame": 20.0091,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.000499999,
+            0.000499958,
+            0.0000499688
+          ],
+          "rmse": [
+            0.000287553,
+            0.000290595,
+            0.0000288228
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.998291,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 12001,
+          "event_fraction": 0.976644,
+          "dirty_fraction": 0.976882,
+          "encode_ops_per_element_frame": 8,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 48,
+          "decode_working_set_bytes": 48,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              28.3251,
+              41.2002
+            ],
+            "decode": [
+              24.1251,
+              24.5002
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "3f879ae42b82d75b"
+        },
+        {
+          "strategy": "tensor_bound",
+          "bytes": 65837,
+          "ratio_vs_full_f64": 1.74563,
+          "ratio_vs_full_q": 0.624178,
+          "bits_per_element_frame": 42.8626,
+          "rank": 3,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            3.58755e-7,
+            2.39784e-7,
+            9.74361e-9
+          ],
+          "rmse": [
+            1.03775e-7,
+            6.70234e-8,
+            2.92968e-9
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 22.0229,
+          "decode_ops_per_element_frame": 6,
+          "encode_working_set_bytes": 98448,
+          "decode_working_set_bytes": 72,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              220.905,
+              221.746
+            ],
+            "decode": [
+              29.0679,
+              29.8716
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "c12a701164bbf09a"
+        },
+        {
+          "strategy": "tensor_energy",
+          "bytes": 49441,
+          "ratio_vs_full_f64": 2.32453,
+          "ratio_vs_full_q": 0.831173,
+          "bits_per_element_frame": 32.1882,
+          "rank": 2,
+          "scp4d": null,
+          "bounded_claim": false,
+          "max_abs_err": [
+            0.00239929,
+            0.000432117,
+            0.116432
+          ],
+          "rmse": [
+            0.000811125,
+            0.000146077,
+            0.039363
+          ],
+          "within_eps": 0.60262,
+          "bound_ok": false,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.999023,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 1,
+          "encode_ops_per_element_frame": 19.0229,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 98448,
+          "decode_working_set_bytes": 56,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              170.745,
+              171.386
+            ],
+            "decode": [
+              19.4012,
+              20.0047
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "92e23a02d8c8ea73"
+        },
+        {
+          "strategy": "scp4d",
+          "bytes": 30616,
+          "ratio_vs_full_f64": 3.75382,
+          "ratio_vs_full_q": 1.34224,
+          "bits_per_element_frame": 19.9323,
+          "rank": 0,
+          "scp4d": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last"
+          },
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.000994433,
+            0.0009942,
+            0.0000997617
+          ],
+          "rmse": [
+            0.000317798,
+            0.000295256,
+            0.0000306152
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "phi-class(sign z)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "eligible(PASS and phi>0)",
+              "agreement": 1,
+              "slots": 4096,
+              "safe_slots": 4096,
+              "safe_disagree": 0
+            },
+            {
+              "task": "large-gap(|x-y|>0.1)",
+              "agreement": 0.999268,
+              "slots": 4096,
+              "safe_slots": 4064,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 11758,
+          "event_fraction": 0.956868,
+          "dirty_fraction": 0.95816,
+          "encode_ops_per_element_frame": 11.6549,
+          "decode_ops_per_element_frame": 2,
+          "encode_working_set_bytes": 72,
+          "decode_working_set_bytes": 72,
+          "encode_batch": false,
+          "search_tried": 18,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              31.4376,
+              43.7722
+            ],
+            "decode": [
+              22.5912,
+              22.965
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "229974650a0dfbb2"
+        }
+      ]
+    },
+    "env-16x16x2-T64": {
+      "T": 64,
+      "D": 2048,
+      "label": "TEST-ONLY SYNTHETIC 4D environment (seeded mulberry32 20261118). Not production data; not a real sensor, patient, provider or tenant feed.",
+      "rows": [
+        {
+          "strategy": "full_f64",
+          "bytes": 1048759,
+          "ratio_vs_full_f64": 1,
+          "ratio_vs_full_q": 0.142641,
+          "bits_per_element_frame": 64.0112,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "rmse": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 1,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.750744,
+          "encode_ops_per_element_frame": 0,
+          "decode_ops_per_element_frame": 0,
+          "encode_working_set_bytes": 8,
+          "decode_working_set_bytes": 8,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              0.40007,
+              1.60028
+            ],
+            "decode": [
+              0.40007,
+              1.60028
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "8b7e40afb4ed8cda"
+        },
+        {
+          "strategy": "full_q",
+          "bytes": 149596,
+          "ratio_vs_full_f64": 7.01061,
+          "ratio_vs_full_q": 1,
+          "bits_per_element_frame": 9.13062,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00499999,
+            0.00499924,
+            0,
+            0.00499976
+          ],
+          "rmse": [
+            0.00289816,
+            0.0028938,
+            0,
+            0.00288226
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.9375,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.38568,
+          "encode_ops_per_element_frame": 7,
+          "decode_ops_per_element_frame": 3,
+          "encode_working_set_bytes": 40,
+          "decode_working_set_bytes": 40,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              8.15707,
+              20.8283
+            ],
+            "decode": [
+              3.95707,
+              4.12827
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "13a488b1bd14cfbf"
+        },
+        {
+          "strategy": "delta",
+          "bytes": 131643,
+          "ratio_vs_full_f64": 7.96669,
+          "ratio_vs_full_q": 1.13638,
+          "bits_per_element_frame": 8.03485,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00499999,
+            0.00499924,
+            0,
+            0.00499976
+          ],
+          "rmse": [
+            0.00289816,
+            0.0028938,
+            0,
+            0.00288226
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.9375,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 49762,
+          "event_fraction": 0.379654,
+          "dirty_fraction": 0.38568,
+          "encode_ops_per_element_frame": 8,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 16416,
+          "decode_working_set_bytes": 16416,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              38.2784,
+              50.929
+            ],
+            "decode": [
+              34.0784,
+              34.229
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "c0a366778f4d5004"
+        },
+        {
+          "strategy": "tensor_bound",
+          "bytes": 346041,
+          "ratio_vs_full_f64": 3.03074,
+          "ratio_vs_full_q": 0.432307,
+          "bits_per_element_frame": 21.1207,
+          "rank": 39,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00648965,
+            0.00425052,
+            0.000549727,
+            0.00607794
+          ],
+          "rmse": [
+            0.00122718,
+            0.000631612,
+            0.0000284081,
+            0.00121927
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.984375,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.773926,
+          "encode_ops_per_element_frame": 411.146,
+          "decode_ops_per_element_frame": 78,
+          "encode_working_set_bytes": 1114112,
+          "decode_working_set_bytes": 336028,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              4956.97,
+              104909
+            ],
+            "decode": [
+              1617.3,
+              1617.69
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "c62d1270dc0df496"
+        },
+        {
+          "strategy": "tensor_energy",
+          "bytes": 312249,
+          "ratio_vs_full_f64": 3.35873,
+          "ratio_vs_full_q": 0.479092,
+          "bits_per_element_frame": 19.0582,
+          "rank": 35,
+          "scp4d": null,
+          "bounded_claim": false,
+          "max_abs_err": [
+            0.00808823,
+            0.185658,
+            0.113397,
+            0.0146519
+          ],
+          "rmse": [
+            0.00146816,
+            0.00205484,
+            0.00303703,
+            0.00134175
+          ],
+          "within_eps": 0.995361,
+          "bound_ok": false,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.984375,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.773926,
+          "encode_ops_per_element_frame": 399.146,
+          "decode_ops_per_element_frame": 70,
+          "encode_working_set_bytes": 1114112,
+          "decode_working_set_bytes": 303244,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              4532.56,
+              94490.6
+            ],
+            "decode": [
+              1409.95,
+              1410.31
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "b690252f1e7f8f1b"
+        },
+        {
+          "strategy": "scp4d",
+          "bytes": 29885,
+          "ratio_vs_full_f64": 35.0932,
+          "ratio_vs_full_q": 5.00572,
+          "bits_per_element_frame": 1.82404,
+          "rank": 0,
+          "scp4d": {
+            "rank": 0,
+            "relations": true,
+            "predictor": "last"
+          },
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00999992,
+            0.00956325,
+            0,
+            0.00999759
+          ],
+          "rmse": [
+            0.00456219,
+            0.0030991,
+            0,
+            0.00413423
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 32768,
+              "safe_slots": 32768,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.921875,
+              "slots": 64,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 14655,
+          "event_fraction": 0.111809,
+          "dirty_fraction": 0.27229,
+          "encode_ops_per_element_frame": 5.76996,
+          "decode_ops_per_element_frame": 3.54634,
+          "encode_working_set_bytes": 32800,
+          "decode_working_set_bytes": 32800,
+          "encode_batch": false,
+          "search_tried": 30,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              47.1858,
+              48.6177
+            ],
+            "decode": [
+              45.8281,
+              45.8623
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "54ad1da1091bc82d"
+        }
+      ]
+    },
+    "env-16x16x2-T256": {
+      "T": 256,
+      "D": 2048,
+      "label": "TEST-ONLY SYNTHETIC 4D environment (seeded mulberry32 20261118). Not production data; not a real sensor, patient, provider or tenant feed.",
+      "rows": [
+        {
+          "strategy": "full_f64",
+          "bytes": 4194871,
+          "ratio_vs_full_f64": 1,
+          "ratio_vs_full_q": 0.135769,
+          "bits_per_element_frame": 64.0087,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "rmse": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 1,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.750739,
+          "encode_ops_per_element_frame": 0,
+          "decode_ops_per_element_frame": 0,
+          "encode_working_set_bytes": 8,
+          "decode_working_set_bytes": 8,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              0.400054,
+              1.60022
+            ],
+            "decode": [
+              0.400054,
+              1.60022
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "1366d7349afb74e9"
+        },
+        {
+          "strategy": "full_q",
+          "bytes": 569532,
+          "ratio_vs_full_f64": 7.36547,
+          "ratio_vs_full_q": 1,
+          "bits_per_element_frame": 8.69037,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00499999,
+            0.00499992,
+            0,
+            0.00499996
+          ],
+          "rmse": [
+            0.00288534,
+            0.00288469,
+            0,
+            0.00289068
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.800781,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.390026,
+          "encode_ops_per_element_frame": 7,
+          "decode_ops_per_element_frame": 3,
+          "encode_working_set_bytes": 40,
+          "decode_working_set_bytes": 40,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              8.15431,
+              20.8173
+            ],
+            "decode": [
+              3.95431,
+              4.11726
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "67eecb716d8f14bb"
+        },
+        {
+          "strategy": "delta",
+          "bytes": 525567,
+          "ratio_vs_full_f64": 7.98161,
+          "ratio_vs_full_q": 1.08365,
+          "bits_per_element_frame": 8.01952,
+          "rank": 0,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00499999,
+            0.00499992,
+            0,
+            0.00499996
+          ],
+          "rmse": [
+            0.00288534,
+            0.00288469,
+            0,
+            0.00289068
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.800781,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 203687,
+          "event_fraction": 0.388502,
+          "dirty_fraction": 0.390026,
+          "encode_ops_per_element_frame": 8,
+          "decode_ops_per_element_frame": 4,
+          "encode_working_set_bytes": 16416,
+          "decode_working_set_bytes": 16416,
+          "encode_batch": false,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              38.2783,
+              50.9286
+            ],
+            "decode": [
+              34.0783,
+              34.2286
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "264e940b3bc526d2"
+        },
+        {
+          "strategy": "tensor_bound",
+          "bytes": 1168953,
+          "ratio_vs_full_f64": 3.58857,
+          "ratio_vs_full_q": 0.487215,
+          "bits_per_element_frame": 17.8368,
+          "rank": 125,
+          "scp4d": null,
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00769817,
+            0.00450258,
+            0.00824792,
+            0.0069817
+          ],
+          "rmse": [
+            0.00141748,
+            0.000733122,
+            0.000196132,
+            0.00140381
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.90625,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.809082,
+          "encode_ops_per_element_frame": 3156.62,
+          "decode_ops_per_element_frame": 250,
+          "encode_working_set_bytes": 5242880,
+          "decode_working_set_bytes": 1040884,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              25201.3,
+              335561
+            ],
+            "decode": [
+              6814.49,
+              6814.82
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "5104fcbc0eb40a40"
+        },
+        {
+          "strategy": "tensor_energy",
+          "bytes": 956985,
+          "ratio_vs_full_f64": 4.38342,
+          "ratio_vs_full_q": 0.595132,
+          "bits_per_element_frame": 14.6024,
+          "rank": 102,
+          "scp4d": null,
+          "bounded_claim": false,
+          "max_abs_err": [
+            0.00811614,
+            0.230809,
+            0.157147,
+            0.110313
+          ],
+          "rmse": [
+            0.00157641,
+            0.00231228,
+            0.00510724,
+            0.00237994
+          ],
+          "within_eps": 0.985731,
+          "bound_ok": false,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.894531,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 0,
+          "event_fraction": 0,
+          "dirty_fraction": 0.809082,
+          "encode_ops_per_element_frame": 3087.62,
+          "decode_ops_per_element_frame": 204,
+          "encode_working_set_bytes": 5242880,
+          "decode_working_set_bytes": 852376,
+          "encode_batch": true,
+          "search_tried": 1,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              21938.7,
+              275653
+            ],
+            "decode": [
+              5325.41,
+              5325.69
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "6a9c075da62df4ce"
+        },
+        {
+          "strategy": "scp4d",
+          "bytes": 99808,
+          "ratio_vs_full_f64": 42.0294,
+          "ratio_vs_full_q": 5.70628,
+          "bits_per_element_frame": 1.52295,
+          "rank": 2,
+          "scp4d": {
+            "rank": 2,
+            "relations": true,
+            "predictor": "last"
+          },
+          "bounded_claim": true,
+          "max_abs_err": [
+            0.00999997,
+            0.00958474,
+            0.00999962,
+            0.00999877
+          ],
+          "rmse": [
+            0.0046739,
+            0.00325942,
+            0.00216825,
+            0.00387
+          ],
+          "within_eps": 1,
+          "bound_ok": true,
+          "decisions": [
+            {
+              "task": "anomaly(c3>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "relation-break(|c1-mean4(c0)|>0.25)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "occupied(c2>0.5)",
+              "agreement": 1,
+              "slots": 131072,
+              "safe_slots": 131072,
+              "safe_disagree": 0
+            },
+            {
+              "task": "hotspot(argmax c0)",
+              "agreement": 0.773438,
+              "slots": 256,
+              "safe_slots": 0,
+              "safe_disagree": 0
+            }
+          ],
+          "events": 43110,
+          "event_fraction": 0.0822258,
+          "dirty_fraction": 0.809082,
+          "encode_ops_per_element_frame": 2295.15,
+          "decode_ops_per_element_frame": 6.36884,
+          "encode_working_set_bytes": 5308456,
+          "decode_working_set_bytes": 65576,
+          "encode_batch": true,
+          "search_tried": 30,
+          "energy_estimate_pj_per_element_frame": {
+            "encode": [
+              6588.08,
+              13402
+            ],
+            "decode": [
+              111.572,
+              111.6
+            ],
+            "label": "estimate"
+          },
+          "sha256_16": "b690d421a483ddba"
+        }
+      ]
+    }
+  },
+  "ablation": {
+    "env-16x16x2-T64": [
+      {
+        "name": "temporal only (rank 0, no relations, last)",
+        "bytes": 54851,
+        "events": 27523
+      },
+      {
+        "name": "+ relations (rank 0, relations, last)",
+        "bytes": 29885,
+        "events": 14655
+      },
+      {
+        "name": "+ low-rank base rank 2 (relations, last)",
+        "bytes": 37647,
+        "events": 13959
+      },
+      {
+        "name": "+ low-rank base rank 4 (relations, last)",
+        "bytes": 44440,
+        "events": 13847
+      }
+    ],
+    "env-16x16x2-T256": [
+      {
+        "name": "temporal only (rank 0, no relations, last)",
+        "bytes": 224488,
+        "events": 111786
+      },
+      {
+        "name": "+ relations (rank 0, relations, last)",
+        "bytes": 119567,
+        "events": 58945
+      },
+      {
+        "name": "+ low-rank base rank 2 (relations, last)",
+        "bytes": 99808,
+        "events": 43110
+      },
+      {
+        "name": "+ low-rank base rank 4 (relations, last)",
+        "bytes": 107206,
+        "events": 42415
+      }
+    ]
+  },
+  "fairness_probe_half_eps": [
+    {
+      "fixture": "v0.1",
+      "scp4d_half_eps_bytes": 2029,
+      "full_q_bytes": 2982,
+      "delta_bytes": 2556,
+      "bound_ok_at_half_eps": true,
+      "max_abs_err": [
+        2.8777e-13,
+        0.000444444,
+        3.65818e-14
+      ],
+      "vs_delta": 1.25973,
+      "config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "linear"
+      },
+      "decisions": [
+        {
+          "task": "phi-class(sign z)",
+          "agreement": 1
+        },
+        {
+          "task": "eligible(PASS and phi>0)",
+          "agreement": 1
+        },
+        {
+          "task": "large-gap(|x-y|>0.1)",
+          "agreement": 0.996094
+        }
+      ]
+    },
+    {
+      "fixture": "B4096",
+      "scp4d_half_eps_bytes": 32228,
+      "full_q_bytes": 41094,
+      "delta_bytes": 30734,
+      "bound_ok_at_half_eps": true,
+      "max_abs_err": [
+        0.000499704,
+        0.000441897,
+        0.0000498174
+      ],
+      "vs_delta": 0.953643,
+      "config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "decisions": [
+        {
+          "task": "phi-class(sign z)",
+          "agreement": 1
+        },
+        {
+          "task": "eligible(PASS and phi>0)",
+          "agreement": 1
+        },
+        {
+          "task": "large-gap(|x-y|>0.1)",
+          "agreement": 0.999023
+        }
+      ]
+    },
+    {
+      "fixture": "env-16x16x2-T64",
+      "scp4d_half_eps_bytes": 52896,
+      "full_q_bytes": 149596,
+      "delta_bytes": 131643,
+      "bound_ok_at_half_eps": true,
+      "max_abs_err": [
+        0.00499993,
+        0.00458679,
+        0,
+        0.00499976
+      ],
+      "vs_delta": 2.48871,
+      "config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "decisions": [
+        {
+          "task": "anomaly(c3>0.5)",
+          "agreement": 1
+        },
+        {
+          "task": "relation-break(|c1-mean4(c0)|>0.25)",
+          "agreement": 1
+        },
+        {
+          "task": "occupied(c2>0.5)",
+          "agreement": 1
+        },
+        {
+          "task": "hotspot(argmax c0)",
+          "agreement": 0.953125
+        }
+      ]
+    },
+    {
+      "fixture": "env-16x16x2-T256",
+      "scp4d_half_eps_bytes": 198286,
+      "full_q_bytes": 569532,
+      "delta_bytes": 525567,
+      "bound_ok_at_half_eps": true,
+      "max_abs_err": [
+        0.00499997,
+        0.0049026,
+        0.00499944,
+        0.00499996
+      ],
+      "vs_delta": 2.65055,
+      "config": {
+        "rank": 2,
+        "relations": true,
+        "predictor": "last"
+      },
+      "decisions": [
+        {
+          "task": "anomaly(c3>0.5)",
+          "agreement": 1
+        },
+        {
+          "task": "relation-break(|c1-mean4(c0)|>0.25)",
+          "agreement": 1
+        },
+        {
+          "task": "occupied(c2>0.5)",
+          "agreement": 1
+        },
+        {
+          "task": "hotspot(argmax c0)",
+          "agreement": 0.894531
+        }
+      ]
+    }
+  ],
+  "scaling": [
+    {
+      "series": "spatial",
+      "cells": 128,
+      "T": 64,
+      "D": 512,
+      "full_q": 38023,
+      "delta": 33062,
+      "scp4d": 7405,
+      "scp4d_vs_full_q": 5.13477,
+      "scp4d_vs_delta": 4.46482,
+      "scp4d_config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "threshold_agreement": 1
+    },
+    {
+      "series": "spatial",
+      "cells": 512,
+      "T": 64,
+      "D": 2048,
+      "full_q": 149596,
+      "delta": 131643,
+      "scp4d": 29885,
+      "scp4d_vs_full_q": 5.00572,
+      "scp4d_vs_delta": 4.40499,
+      "scp4d_config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "threshold_agreement": 1
+    },
+    {
+      "series": "spatial",
+      "cells": 2048,
+      "T": 64,
+      "D": 8192,
+      "full_q": 595442,
+      "delta": 525925,
+      "scp4d": 128792,
+      "scp4d_vs_full_q": 4.62328,
+      "scp4d_vs_delta": 4.08352,
+      "scp4d_config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "threshold_agreement": 1
+    },
+    {
+      "series": "temporal",
+      "cells": 512,
+      "T": 16,
+      "D": 2048,
+      "full_q": 37523,
+      "delta": 33165,
+      "scp4d": 8542,
+      "scp4d_vs_full_q": 4.39277,
+      "scp4d_vs_delta": 3.88258,
+      "scp4d_config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "threshold_agreement": 1
+    },
+    {
+      "series": "temporal",
+      "cells": 512,
+      "T": 32,
+      "D": 2048,
+      "full_q": 74949,
+      "delta": 65995,
+      "scp4d": 16387,
+      "scp4d_vs_full_q": 4.57369,
+      "scp4d_vs_delta": 4.02728,
+      "scp4d_config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "threshold_agreement": 1
+    },
+    {
+      "series": "temporal",
+      "cells": 512,
+      "T": 64,
+      "D": 2048,
+      "full_q": 149596,
+      "delta": 131643,
+      "scp4d": 29885,
+      "scp4d_vs_full_q": 5.00572,
+      "scp4d_vs_delta": 4.40499,
+      "scp4d_config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "threshold_agreement": 1
+    },
+    {
+      "series": "temporal",
+      "cells": 512,
+      "T": 128,
+      "D": 2048,
+      "full_q": 293586,
+      "delta": 262949,
+      "scp4d": 58100,
+      "scp4d_vs_full_q": 5.05312,
+      "scp4d_vs_delta": 4.5258,
+      "scp4d_config": {
+        "rank": 0,
+        "relations": true,
+        "predictor": "last"
+      },
+      "threshold_agreement": 1
+    },
+    {
+      "series": "temporal",
+      "cells": 512,
+      "T": 256,
+      "D": 2048,
+      "full_q": 569532,
+      "delta": 525567,
+      "scp4d": 99808,
+      "scp4d_vs_full_q": 5.70628,
+      "scp4d_vs_delta": 5.26578,
+      "scp4d_config": {
+        "rank": 2,
+        "relations": true,
+        "predictor": "last"
+      },
+      "threshold_agreement": 1
+    }
+  ],
+  "intrinsic_dimensionality": {
+    "env-16x16x2-T64 all channels (with events)": {
+      "k90": 7,
+      "k99": 24,
+      "k999": 35,
+      "participation_ratio": 2.86455,
+      "top8_cumulative": [
+        0.5623,
+        0.712172,
+        0.788964,
+        0.837272,
+        0.866254,
+        0.888213,
+        0.903641,
+        0.916139
+      ]
+    },
+    "env-16x16x2-T64 all channels (events off, same seed)": {
+      "k90": 2,
+      "k99": 3,
+      "k999": 46,
+      "participation_ratio": 1.32576,
+      "top8_cumulative": [
+        0.863424,
+        0.936726,
+        0.995116,
+        0.995246,
+        0.995368,
+        0.995488,
+        0.995605,
+        0.995719
+      ]
+    },
+    "env-16x16x2-T64 c0 field only": {
+      "k90": 1,
+      "k99": 3,
+      "k999": 13,
+      "participation_ratio": 1.10308,
+      "top8_cumulative": [
+        0.951473,
+        0.983379,
+        0.99866,
+        0.9987,
+        0.998737,
+        0.998773,
+        0.998808,
+        0.998842
+      ]
+    },
+    "B4096 (x, y, z)": {
+      "k90": 1,
+      "k99": 1,
+      "k999": 2,
+      "participation_ratio": 1.00751,
+      "top8_cumulative": [
+        0.996259,
+        0.999856,
+        1
+      ]
+    }
+  },
+  "five_properties": {
+    "state_fidelity": {
+      "verdict": "PASS",
+      "evidence": "full_q, delta and scp4d meet |v − v′| ≤ eps on every element-frame of all 6 bench fixtures (scp4d also on the 6 scaling fixtures); tensor_bound meets eps where its search succeeded (rank listed); full_f64 bit-exact."
+    },
+    "compression_scaling": {
+      "verdict": "PASS (bounded range measured; not a law)",
+      "evidence": "scp4d vs full_q stays within 4.39–5.71× across 128–2048 cells and T = 16–256; it grows with T once the low-rank base pays for itself (T=256)."
+    },
+    "temporal_compression": {
+      "verdict": "PASS on the environment; tie on single-cell frame streams",
+      "evidence": "env-16x16x2-T64: scp4d events cover 11.18% of element-frames vs 37.97% nonzero deltas; 4.40× smaller than delta. Frame fixtures: within ±25% of delta."
+    },
+    "computational_efficiency": {
+      "verdict": "MIXED (estimate): fewer bytes and fewer downstream updates, more per-element decode work",
+      "evidence": "env-16x16x2-T64: downstream dirty fraction scp4d 27.23% vs full_q 38.57% vs tensor 77.39%; but at T=256 the rank-2 base changes every element each frame (dirty 80.91%). Decode estimate 45.8281–45.8623 pJ/element-frame vs delta 34.0784–34.229 and full_q 3.95707–4.12827 (model estimates). Software decode latency is also slower than delta on single-cell streams (stdout)."
+    },
+    "intelligence_preservation": {
+      "verdict": "PASS for threshold decisions; argmax over a smooth field is not preserved by any lossy strategy",
+      "evidence": "No bounded strategy flips a decision whose margin exceeds its guarantee (all fixtures). Environment threshold tasks: 100% agreement for scp4d. Hotspot argmax has 0 margin-safe frames."
+    }
+  }
+}

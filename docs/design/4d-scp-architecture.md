@@ -1,6 +1,6 @@
 # 4D State Compression Processor (4D-SCP): architecture
 
-Status: **v0.1 fixture proof plus v0.1.1–v0.1.8 size, software-cost, Layer 2 analytical hardware-cost model, divider-free variants, and a bit-accurate integer-only golden model** (`scripts/check-scp-v01.ts` … `scripts/check-scp-v018.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format, `src/scp/pack.ts`, and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval). Area and energy figures in §11.2–§11.5 are parameterized estimates, not measured silicon or an FPGA result.
+Status: **v0.1 fixture proof plus v0.1.1–v0.1.8 size, software-cost, Layer 2 analytical hardware-cost model, divider-free variants, a bit-accurate integer-only golden model, and (v0.1.9) the isolated subsystem with a four-strategy proof bench** (`scripts/check-scp-v01.ts` … `scripts/check-scp-v019-bench.ts`; all at once: `scripts/check-scp-all.ts`; v0.1.9 is §16). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format, `src/scp/pack.ts`, and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval). Area and energy figures in §11.2–§11.5 are parameterized estimates, not measured silicon or an FPGA result.
 
 Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. The eight owner questions and their accepted answers are in §14 (history preserved).
 
@@ -683,6 +683,7 @@ This is a golden software model, not a stored-format change, not measured silico
 | **v0.1.6** | Test-only divider-free reciprocal quantize (mul + residual correction); byte-identity on fixtures; counterexamples documented; pack.ts unchanged; cost model re-run with div=0 | `check-scp-v016` + prior SCP checks green; fixture bytes match pack.ts; known counterexamples reproduced; revised estimate table and remaining flips in §11.3 / §15 |
 | **v0.1.7** | Test-only rounding-exact divider-free quantize (mul + IEEE-aware bound correction); zero mismatches on the v0.1.6 scan and a larger random scan; pack.ts unchanged pending owner decision; cost model re-run with div=0 | `check-scp-v017` + prior SCP checks green; fixture bytes match pack.ts; all 22,944 prior residual mismatches now match; revised estimate table and remaining flips in §11.4 / §15 |
 | **v0.1.8** | Bit-accurate integer-only golden model of the compact encoder/decoder, documented widths, golden vectors, cost model with no FP units | `check-scp-v018` + prior SCP checks green; fixture bytes and scan q match pack.ts; widths and golden file in §11.5 / `fixtures/scp/golden-vectors.json`; pack.ts unchanged |
+| **v0.1.9** | Isolated subsystem in `src/scp/subsystem/` (state_encoder, state_compressor, temporal_state, state_reconstructor, state_predictor, compression_bench) and the four-strategy bench (full state, delta, tensor, combined 4D-SCP) on the v0.1/Medicare/B256/B4096 fixtures plus a seeded synthetic 4D environment; deterministic report | `check-scp-v019-bench` + prior SCP checks green (`check-scp-all`); pack.ts and v0.1 hashes unchanged; §16 |
 | **v0.2** | Optional read-only surface, only after v0.1 passes (decision 5). Still no Level 4 edits. Which surface (export field, inspect page, both, or neither) is decided later. | Additive, off by default, existing export bytes unchanged when the flag is off |
 | **v0.3** | Layer 2 cost/latency model first, bit-accurate model later, against Layer 1 measurements | Documented model; later bit-accurate work agrees with Layer 1 hashes or explains bounded diffs |
 | **v0.4** | Hardware research proposition (writing and evidence, not a tape-out) | Proposition reviewed; claims labelled as hypotheses |
@@ -722,7 +723,7 @@ The owner accepted the recommended defaults for the eight questions below. This 
 7. For Layer 2, do you want a bit-accurate (FPGA-style) arithmetic model, a cost/latency model only, or both?
 8. Is there an external document called “Tensor Scope” or “Return on Evidence” we should follow? In this repository, Tensor Scope is `src/lib/level4/tensor.ts` and ROE is the Reciprocal Optimization Engine (`src/lib/level4/roe.ts`).
 
-## 15. Honest claims (v0.1.1–v0.1.8)
+## 15. Honest claims (v0.1.1–v0.1.8; v0.1.9 claims and caveats are in §16.8–§16.10)
 
 What **can** be claimed, on these committed fixtures only:
 
@@ -743,3 +744,137 @@ What **cannot** be claimed:
 - Production datasets, a Medicare/CMS encoder, hardware results, or a product surface (still decision 5 / v0.2).
 
 **Headline (one sentence).** A bit-accurate integer-only golden model of the compact codec (IEEE front-end, integer correctly-rounded division RN(v/eps) plus integer Math.round, integer zigzag-delta varint, no payload floating point at runtime) is byte-identical to pack.ts on all four fixtures (v0.1 quantized sha 07a3d04147714747a4823e6e934dc6144740eb2f6243e7113106aed06369d6bc unchanged), decode round-trips exactly, and matches pack.ts q with zero mismatches on the v0.1.7 scan sets (v0.1.6 legal grid 1,508,132, focused edges 3,229, random 2,000,000). Documented register widths cover the legal domain and the fixture census; golden vectors are in fixtures/scp/golden-vectors.json. pack.ts is unchanged pending an owner decision. Under the v0.1.5 45 nm assumptions with no FP units, estimated B4096 encode energy is 37.6–76.3 pJ/point versus gzip-l9 500.2–256085.0 pJ (6.56–6817.1×) and brotli-q11 6602.2–8322762.5 pJ, and estimated area is 22798–26638 µm² versus gzip 70536–826432 µm² (2.65–36.3×) and brotli 8.40–67.19 mm² (315–2947×); remaining flips are gzip.l9_accesses_low→1; gzip.decode_accesses_low→0.25; energy_pj.div_high→156; area_um2.sram_per_bit_low→0.08; brotli.decode_accesses_low→0.05. These area and energy figures are estimates, not measured silicon or an FPGA result. A finite scan is not a proof over every float64 pair.
+
+## 16. Aethel Node 4D-SCP architecture (v0.1.9): isolated subsystem, physical layers, four-strategy proof bench
+
+Status: software simulation only, fixtures only, unwired. Check: `scripts/check-scp-v019-bench.ts` (71 checks). Deterministic results: `fixtures/scp/v019-bench-report.json`. `pack.ts`, the stored chain, the v0.1 heads and the quantized sha `07a3d041…69d6bc` are unchanged and re-asserted by the check. Energy figures are model estimates, not silicon or FPGA measurements.
+
+### 16.1 Why "v0.1.9" and not "v0.2"
+
+The owner's first milestone is "4D-SCP v0.1 — Four-Dimensional State Compression Proof". This is still that proof, now with the four-strategy comparison and the named interfaces, so it continues the v0.1.x numbering. v0.2 stays reserved for the separately approved read-only surface (decision 5). Nothing here changes that decision.
+
+### 16.2 State model S(x, y, z, t)
+
+| Axis | In the subsystem | Notes |
+|---|---|---|
+| Spatial | grid cell (x, y, z) of `GridShape` | Defined for the first time here, for a **test-only synthetic** environment. Decision 1 still governs real data: no production spatial encoder exists, and the v0.1 frames keep x = predicted, y = observed, z = Φ. |
+| State | `channels` per cell | Environment: c0 field, c1 relation, c2 occupancy, c3 sensor. v0.1 frames: 1×1×1 grid with 3 channels. |
+| Relational | `Relation4D` (target ≈ bias + Σ w·source, same frame) | Schema, agreed out of band like a codebook; not stored in the stream. One level only (a source cannot be a target). |
+| Time | frame index + integer epoch-ms `times` | Delta-varint coded; step/verdict side data round-trips losslessly. |
+
+### 16.3 Subsystem interfaces (one entry module: `src/scp/subsystem/index.ts`, also re-exported as `subsystem` from `src/scp/index.ts`)
+
+| Owner's name | File | What it does |
+|---|---|---|
+| state_encoder | `state-encoder.ts` | `gridEncoder` (environment → surface, validates shape/finite/relations); `encodeFramesAsSurface` (accepted v0.1 mapping); `encodeScpFrames` (existing `ScpFrame` type; invents no meta) |
+| state_compressor | `state-compressor.ts`, `format.ts` | `full_f64`, `full_q`, `delta`, `tensor_bound`, `tensor_energy`, `scp4d` into one `S4DS` stream format. scp4d searches rank {0,1,2,4,8} × relations × predictor {zero,last,linear} and keeps the smallest; frames are written dense or sparse, whichever is smaller |
+| temporal_state | `temporal-state.ts` | Append-only, event-driven surface. Closed loop: encoder and decoder predict from the same reconstructed history, so \|v − v′\| ≤ eps always. SHA-256-chained updates; out-of-order apply refused |
+| state_reconstructor | `state-reconstructor.ts` | Decodes any stream from bytes plus the relation schema; `fidelity()` reports per-channel max abs error, RMSE, fraction within eps, bound_ok |
+| state_predictor | `state-predictor.ts` | zero (base only), last value, linear extrapolation |
+| compression_bench | `compression-bench.ts` | decision agreement with margin guarantees, dirty fraction, energy estimate from a caller-supplied table |
+
+Reuse, not rewrite: the quantizer is the `pack.ts` rule (q = round(v/eps), −0 normalised, error checked); on the four frame fixtures the subsystem's `delta` values are asserted identical to `pack.ts decodeQuantized`, and the v0.1.8 integer golden model is asserted byte-identical to `pack.ts` on v0.1 and Medicare. The energy table is the v0.1.5 `defaultAssumptions()`.
+
+Boundary: the subsystem imports only `./*`, `../pack`, `../types` and `node:crypto`; no clocks, randomness, env, Level 4, app or engine runtime (checked by both `check-scp-boundary` and `check-scp-v019-bench`). Nothing outside `scripts/` imports it.
+
+### 16.4 Integration points (Workspace / Aethel Node / Workbench) — all future, additive, flag-gated, owner-approved
+
+| Component | Existing place in the repo | How 4D-SCP would attach | Status |
+|---|---|---|---|
+| Workspace | `/workspace` (redirects to `/`), `/workspace/channel` | Where a tenant declares its environment schema (grid, channels, eps per channel, relations) for `gridEncoder` | not wired |
+| Aethel Node | `src/product/saas.ts` (Aethel Node SaaS, MCP server `scripts/mcp-stdio.ts`), `src/core/compression/**` M1–M5, `scripts/sync-state-chains.ts`, anchors | Node-side service: one `TemporalStateSurface` per tenant stream; its update head could be anchored with the existing anchor flow; the customer-proof export could gain a `scp` field behind `SHIYAN_SCP=1` (same pattern as `state_compression`) | not wired; needs decision 5 |
+| Workbench | `/workbench/global` (Global · misdiagnosis), `/workbench/medicare` | Read-only inspect page over `fixtures/scp/v019-bench-report.json`; the vertical's decisions (Φ class, eligibility, Medicare DQ rules in `src/lib/medicare/dq.ts`) become `DecisionTask4D`s run on reconstructed state | not wired; v0.2 |
+
+Global · misdiagnosis stays the first test environment: the bench already runs its fixture decision rule (`fixtureEligible`, `phiClass`) and the 6-row synthetic Medicare file (not padded) as decision tasks.
+
+### 16.5 Three-layer physical architecture (hypothesis; not the §11 evidence stages)
+
+§11 uses "Layer 1/2/3" for **evidence stages** (software → emulation → proposition), and §11.2's "Layer 2 cost model" is that stage. The owner's physical chip layers are a different axis, so they are named **L1-Memory, L2-Compute, L3-Intelligence** here.
+
+| Physical layer | Holds / does | Part of S(x, y, z, t) it carries | Software counterpart today |
+|---|---|---|---|
+| **L1-Memory** | Compressed state, near the compute: low-rank base (mean, B factors), held residuals H per element, current reconstructed frame, relation schema, append-only event log + hash head | The stable part (relations, low-rank spatial structure) and the latest state; never the full T×D history | `format.ts` blocks, `TemporalStateSurface` registers; working sets in the report (e.g. env T64 scp4d decode ≈ 32.8 KB vs tensor ≈ 1.1 MB batch encode) |
+| **L2-Compute** | Per-element datapath: base MAC (rank-k or relation), predictor, subtract, deadband compare, quantize/dequantize, zigzag-varint codec | The change: residuals and events | `TemporalStateSurface.append/apply`, `writeFrameEvents`; the compact codec's integer golden model (v0.1.8) is the template for an integer-only version |
+| **L3-Intelligence** | Agent-directed processing: picks eps per channel, the region of interest and the encoder config; consumes only events and dirty elements; runs decisions | The decision-relevant view | `DecisionTask4D`, the scp4d config search, `dirtyFraction` |
+
+The 4D representation is distributed: structure (relations, low-rank modes) lives in L1 once; time is carried by events that L2 detects; L3 sees decisions computed from the reconstructed surface or directly from events.
+
+### 16.6 Differentiation — what is demonstrated vs hypothesis
+
+| Element | Demonstrated in software (v0.1.9) | Still a hypothesis |
+|---|---|---|
+| 4D state representation | S(x, y, z, t) surface with spatial, state, relational and time axes, round-trip from bytes | That real tenant data has this structure |
+| Temporal + relational compression | Ablation, env T64: temporal only 54,851 B → + relations 29,885 B (1.84×). At T=256 a rank-2 low-rank base adds another 1.20× (119,567 → 99,808 B) | Gains on non-synthetic data |
+| Event-driven computation | 11.2 % of element-frames are events at T64 (delta has 38.0 % nonzero) | Hardware energy saving from computing only on events |
+| Adaptive reconstruction | Per-stream config search (rank/relations/predictor), dense/sparse frames, per-channel eps | Run-time adaptation by an agent |
+| Agent-directed processing | Decision tasks with margin guarantees decide what "decision-relevant" means | An agent choosing eps/ROI on line |
+
+Versus "just stacking three processor layers": the claim is about what moves between layers (events and residuals, not frames), not about the stacking.
+
+### 16.7 Measurement → Outcome → Optimization
+
+- **Measurement**: `BenchRow` (bytes, ratios, fidelity, events, dirty fraction, op counts, working sets, energy estimate) per strategy per fixture; compatible with the §6 `ScpMeasurement` fields.
+- **Outcome**: decision agreement on the fixture's decision tasks, split into margin-safe slots (must be 100 % for bounded strategies; asserted) and near-boundary slots (reported).
+- **Optimization**: the encoder search minimises bytes subject to eps; the next step is to minimise estimated energy subject to "no margin-safe decision flips", with eps per channel set from the decision margins.
+
+### 16.8 Results (deterministic; full table in the JSON report and on stdout)
+
+Bounded = meets \|v − v′\| ≤ eps on every element-frame. Ratios are vs `full_q` (same eps, every element every frame). Agreement is per task.
+
+| Fixture (T × D) | full_f64 | full_q | delta | tensor_bound | tensor_energy (99.9 %) | scp4d |
+|---|---|---|---|---|---|---|
+| v0.1 (256 × 3) | 7,215 B | 2,982 B (1.00×) | 2,556 B (1.17×) | 3,169 B (0.94×, rank 2) | same as bound | **2,067 B (1.44×)** |
+| A-medicare (6 × 3) | 215 B | **119 B** | 122 B | 205 B | 169 B, not bounded | 124 B (0.96×) |
+| B256 (256 × 3) | 7,223 B | 2,615 B | 1,975 B (1.32×) | 4,213 B | 3,177 B, not bounded | **1,968 B (1.33×)** |
+| B4096 (4096 × 3) | 114,927 B | 41,094 B | 30,734 B (1.34×) | 65,837 B | 49,441 B, not bounded | **30,616 B (1.34×)** |
+| env 16×16×2, T64 (64 × 2048) | 1,048,759 B | 149,596 B | 131,643 B (1.14×) | 346,041 B (rank 39) | 312,249 B, not bounded | **29,885 B (5.01×)** |
+| env 16×16×2, T256 (256 × 2048) | 4,194,871 B | 569,532 B | 525,567 B (1.08×) | 1,168,953 B (rank 125) | 956,985 B, not bounded | **99,808 B (5.71×, rank 2)** |
+
+Decisions on the environment (anomaly, relation-break, occupancy, hotspot argmax): every strategy, scp4d included, keeps 100 % on the three threshold tasks. Hotspot argmax drops for every lossy strategy (T64: full_q/delta 93.8 %, tensor 98.4 %, scp4d 92.2 %) because the field is smooth and the top two cells are always within 2·eps (0 margin-safe frames). Frame fixtures: Φ class and eligibility are 100 % everywhere; the |x − y| > 0.1 gap task loses a few near-boundary rows (at most 0.4 %) for some strategies, never a margin-safe one.
+
+Fairness probe (scp4d uses its whole eps as a deadband; full_q/delta round to eps/2): with scp4d run at eps/2 (the same worst-case error), it is still 2.49× (T64) and 2.65× (T256) smaller than delta on the environment and 1.26× on v0.1, but 0.95× (loses) on B4096.
+
+Scaling: scp4d vs full_q 5.13× / 5.01× / 4.62× at 128 / 512 / 2048 cells (T64) and 4.39× / 4.57× / 5.01× / 5.05× / 5.71× at T = 16 / 32 / 64 / 128 / 256 (512 cells). The low-rank base is chosen only at T=256, once its factor cost is amortised.
+
+Intrinsic dimensionality (centred energy, env T64): all channels with events k90 = 7, k99 = 24, k99.9 = 35; same seed with events off k90 = 2, k99 = 3; field channel alone k99 = 3. Low intrinsic dimensionality is real for the smooth part, and the sparse events are what raise it. Pure low-rank (tensor_energy) therefore compresses the stable part but is **not** eps-bounded: it smears the sparse events (relation channel max error 0.19 at T64). Combining a small base with event coding keeps the events exact to eps.
+
+### 16.9 The five properties (verdicts)
+
+| Property | Verdict | Evidence |
+|---|---|---|
+| State fidelity | **PASS** | full_q, delta and scp4d bounded on all 6 bench fixtures (scp4d also on the 6 scaling fixtures); tensor_bound bounded where its search succeeded; full_f64 bit-exact |
+| Compression scaling | **PASS (measured range, not a law)** | 4.39–5.71× vs full_q over 128–2048 cells and T 16–256 |
+| Temporal compression | **PASS on the environment; tie on single-cell streams** | 4.40× smaller than delta at T64; frame fixtures within ±25 % of delta (Medicare loses to full_q: 6 rows) |
+| Computational efficiency | **MIXED (model estimate)** | Fewer bytes and fewer downstream updates at T64 (dirty 27.2 % vs full_q 38.6 %, tensor 77.4 %). But per element-frame decode is ≈ 45.8 pJ vs delta ≈ 34.1 and full_q ≈ 4.0 (estimates), the rank-2 base at T256 makes 80.9 % of elements dirty, and software scp4d decode was ~13× slower than delta on B4096 in one run (latency on stdout, not asserted) |
+| Intelligence preservation | **PASS for threshold decisions** | No bounded strategy flips a margin-safe decision on any fixture; argmax over a smooth field is not preserved by any lossy strategy |
+
+Critical success criterion ("reduce computational cost without degrading the agent's ability"): demonstrated for **bytes moved** and **downstream updates** on the synthetic environment with no margin-safe decision loss. **Not** demonstrated for per-element compute energy, which the model estimates is higher than delta/full_q. An integer-only, hash-free datapath (16.11) is needed before that can be argued.
+
+### 16.10 Honest caveats
+
+- The environment is synthetic and built to have structure (smooth modes, a declared neighbour relation, sparse events). The 5× result shows the mechanism, not real-world performance.
+- On single-cell streams (v0.1, B256, B4096) there is no spatial structure to exploit; scp4d ties delta, and on 6 Medicare rows it loses to full_q.
+- scp4d's encoder tries 18–30 configurations; its encode op counts and latency are for the chosen configuration only.
+- Op counts are analytic formulas, not instrumented. Energy uses the v0.1.5 45 nm table with labelled assumptions. Latency is JS on one machine, reported only.
+- `tensor_bound` keeps factors in float32 and its encode is batch (needs the whole T × D window). scp4d with rank > 0 is also batch at encode; with rank 0 it streams.
+- The software temporal surface hashes every frame (SHA-256), which dominates its decode latency; a hardware design would hash per window.
+
+### 16.11 Path: software simulation → golden vectors → FPGA/RTL
+
+| Step | Deliverable | Evidence gate |
+|---|---|---|
+| 1. Software simulation (this) | Subsystem + bench + report | Deterministic report pinned; bounded strategies never flip a margin-safe decision |
+| 2. Integer-only scp4d golden model | Fixed-point predictor, relation MAC, deadband compare, quantize and codec, like the v0.1.8 compact codec; byte-identical to the float path or a documented bounded divergence | Zero mismatches on fixtures plus a large seeded scan; widths documented |
+| 3. Golden vectors | `fixtures/scp/` input/output pairs for L2-Compute (per element: base, H, v → event, q) and for full streams | Re-generated by a check, sha-pinned |
+| 4. Cycle-approximate L1/L2 model | Memory traffic per frame (L1 reads/writes), events per cycle, dirty-set size | Agrees with the analytic op counts within a stated tolerance |
+| 5. RTL on FPGA (L2 datapath + L1 SRAM) | Event detector + codec + MAC, verified against the golden vectors | Bit-exact on all vectors; measured LUT/FF/BRAM and power on a named board |
+| 6. Hardware research proposition | §11 stage 3 | Claims only from step 5 measurements, labelled hypotheses otherwise |
+
+This repo still has no HDL, no FPGA sources and no lab measurements.
+
+### 16.12 Open decisions for the owner
+
+1. Swap the v0.1.7/v0.1.8 exact divider-free quantizer into `pack.ts` (still open; not done here).
+2. Approve a real-data encoder for Medicare / Global · misdiagnosis (decision 1/2 still apply; nothing here encodes production data).
+3. v0.2 read-only surface: Workbench inspect page over the report, an export field, both, or neither (decision 5).
+4. Whether step 2 (integer-only scp4d golden model) is the next milestone.
