@@ -1,6 +1,6 @@
 # 4D State Compression Processor (4D-SCP): architecture
 
-Status: **v0.1 fixture proof plus v0.1.1–v0.1.5 size, software-cost, and Layer 2 analytical hardware-cost model** (`scripts/check-scp-v01.ts` … `scripts/check-scp-v015.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval). Area and energy figures in §11.2 are parameterized estimates, not measured silicon.
+Status: **v0.1 fixture proof plus v0.1.1–v0.1.6 size, software-cost, Layer 2 analytical hardware-cost model, and a test-only divider-free reciprocal variant** (`scripts/check-scp-v01.ts` … `scripts/check-scp-v016.ts`). No route, CLI, or Level 4 module imports `src/scp`. Nothing here is live on https://shiyan-dap.vercel.app. The stored chain format, `src/scp/pack.ts`, and v0.1 hashes are unchanged. No read-only surface (decision 5 / v0.2 still needs a separate approval). Area and energy figures in §11.2–§11.3 are parameterized estimates, not measured silicon.
 
 Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §1. The eight owner questions and their accepted answers are in §14 (history preserved).
 
@@ -12,7 +12,7 @@ Inventory date: 2026-11-17, repo `main`. Exact in-tree names and paths are in §
 
 **Scope of this document and of `src/scp/` today.**
 
-- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), v0.1.1–v0.1.5 size, software-cost, and analytical hardware-cost work (`scripts/check-scp-v011.ts` through `scripts/check-scp-v015.ts`, plus `scripts/scp-v014-ops.ts` and `scripts/scp-v015-cost-model.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format), and the accepted decisions in §14.
+- In: architecture, TypeScript interfaces, a not-implemented reference that throws, a boundary check, a v0.1 fixture proof (`scripts/check-scp-v01.ts`), v0.1.1–v0.1.6 size, software-cost, analytical hardware-cost, and divider-free variant work (`scripts/check-scp-v011.ts` through `scripts/check-scp-v016.ts`, plus `scripts/scp-v014-ops.ts`, `scripts/scp-v015-cost-model.ts`, and `scripts/scp-v016-recip.ts`), pure measured packing helpers in `src/scp/pack.ts` (not the stored format; unchanged in v0.1.6), and the accepted decisions in §14.
 - Out: any replacement of the stored chain encoder; any import from `src/app/**` or `src/lib/level4/**`; any new production data; any change to `MetamorphicEngine`, `metamorphic-runtime.ts`, or the Level 4 plant; any hardware claim presented as a result; any read-only product surface (decision 5).
 
 **v0.1 (first milestone) is a software proof** that measures compression ratio, fidelity, latency, retained task performance, and determinism/verifiability (see §7). Fixtures only in tests. Proposed pass thresholds are stated in §7 and in the check script.
@@ -539,6 +539,51 @@ B4096 compact encode op mix / point (header amortized, from v0.1.4 instrumentati
 This model may be compared against those later measurements; until they exist, treat every µm² and pJ figure above as an assumption-driven estimate.
 
 
+### 11.3 Divider-free reciprocal quantization (v0.1.6)
+
+v0.1.5's compact encode area was dominated by an assumed floating-point divider (the `v / eps` in `Math.round(v / eps)`), and the gzip area advantage flipped if that divider was modelled at ≳ 7× an FP mul. v0.1.6 asks whether the divider can leave the *datapath* by replacing per-point division with a precomputed reciprocal, a multiply, and a residual correction.
+
+**Variant (test-only).** `scripts/scp-v016-recip.ts`, checked by `scripts/check-scp-v016.ts`. For each axis, once: `inv = 1/eps`, `half = 0.5*eps` (setup; three divisions per encode, not per point). Per point: `q = Math.round(v * inv)`, then `rem = v - q*eps` and adjust `q` by ±1 while `rem` is outside `[-half, half)`. `src/scp/pack.ts` is **not** changed.
+
+**Equivalence.**
+
+- On all four committed fixtures (v0.1, A-medicare 6-row, B256, B4096) the variant is **byte-identical** to `encodeQuantized` in `pack.ts` (same SHA-256 of the SCPQ bytes; v0.1 quantized sha `07a3d04147714747a4823e6e934dc6144740eb2f6243e7113106aed06369d6bc` unchanged).
+- It is **not** byte-identical for every legal input. Float64 `v/eps` already rounds before `Math.round`, and a multiply-by-reciprocal path (with or without residual correction) disagrees at halfway cases. The check reproduces these counterexamples and a deterministic edge/random scan (`tested = 1,494,828`, `recip_mismatches = 22,944`, `naive_mismatches = 19,206`). `pack.ts` therefore stays the stored reference.
+
+Documented counterexamples (all satisfy `err ≤ eps` and `|q| ≤ 2^53`):
+
+| v | eps | pack.ts `Math.round(v/eps)` | mul+round (naive) | mul+round+residual (variant) |
+|---|---:|---:|---:|---:|
+| `-0.0045000000000000005` | 0.001 (fixture predicted/observed eps) | −4 | −5 | −5 |
+| `0.0000014999999999999998` | 0.000001 | 2 | 1 | 1 |
+| `0.0045` | 0.001 | 5 | 5 | 4 |
+
+The third row shows that residual correction can also diverge from *both* pack.ts and naive mul-by-reciprocal when `0.5*eps` is inexact. A multiply-only datapath cannot always recover `Math.round(v / eps)`, so claiming a silent swap of the stored encoder would be dishonest.
+
+**Revised cost model** (same v0.1.5 Horowitz-45nm assumptions, but `n_fp_divs_encode = 0` and the variant's measured encode op mix, `div/point = 0`; decode is unchanged). Setup's three divisions are negligible if amortized (~0.01 pJ/point on B4096) and are not a datapath unit. All figures are estimates.
+
+B4096 (area is fixture-independent under a shared datapath):
+
+| Codec | State | Ops / pt (variant) | Area µm² (est.) | Rel. area vs compact-enc | Energy pJ/pt (est.) | Rel. energy vs compact same side |
+|---|---:|---:|---|---|---|---|
+| compact-encode (v0.1.6 variant) | 40 B | 103.90 (div = 0) | 13,438–17,278 | 1 | 29.07–45.89 | 1 |
+| compact-decode | 64 B | 98.86 | 14,206–20,350 | 0.82–1.51 | 19.57–32.19 | 1 |
+| gzip-l6-encode | 32 KiB | — | 70,536–826,432 | 4.08–61.5 | 250–8,003 | 5.45–275 |
+| gzip-l9-encode | 32 KiB | — | 70,536–826,432 | 4.08–61.5 | 500–256,085 | 10.90–8,811 |
+| gzip-l9-decode | 32 KiB | — | 70,536–826,432 | 4.08–61.5 | 62.5–250 | 1.94–12.8 |
+| brotli-q11-encode | 4 MiB | — | 8.40–67.19 mm² | 486–5,000 | 6,602–8,322,763 | 144–286,346 |
+| brotli-q11-decode | 4 MiB | — | 8.40–67.19 mm² | 486–5,000 | 413–32,511 | 12.8–1,662 |
+
+Encode ops/point rose from 90.41 to 103.90 because residual correction adds multiplies and compares; encode energy high *fell* (45.89 vs 77.84 pJ) because the expensive divider energy is gone. Area high fell from 48,078 to 17,278 µm² (no divider unit). The gzip area adverse-corner ratio improved from 1.47× to 4.08×.
+
+**Sensitivity, what remains.**
+
+- The v0.1.5 gzip area flip (divider ≳ 7× an FP mul) is **eliminated** (`fp_div_factor_high` does not flip; there is no divider to inflate). Inflating divider *energy* also no longer flips (`div_high`, no per-point divs). The gzip-l9 *encode* energy flip at ~1 access/input-byte is also gone (compact high is now 45.89 pJ, below the 1-access low corner).
+- Remaining flips: gzip **decode** energy still flips below ~0.5 accesses/output-byte; gzip **area** still flips if SRAM is assumed ≲ 0.046 µm²/bit (more extreme than the old 0.16, and well below the 0.25 assumed cell floor); brotli decode energy still flips only at an extreme 0.05 accesses/byte.
+
+This variant is a hardware-oriented experiment, not a stored-format change, not a silicon result, and not a proof that a chip would match `pack.ts` on every input. A later RTL path that wanted byte-identity with `pack.ts` would have to emulate `Math.round(v / eps)` (i.e. keep a correctly rounded divider, or document bounded divergence on the halfway class above).
+
+
 ## 12. Milestones
 
 | Version | Intent | Exit |
@@ -549,6 +594,7 @@ This model may be compared against those later measurements; until they exist, t
 | **v0.1.3** | Fair same-eps lossy baselines (fixed-width int codes and rounded float64, plus gzip/brotli) and a split of quantization gain vs encoding-structure gain | `check-scp-v013` + prior SCP checks green; v0.1 hashes unchanged; fair-baseline table and revised headline in §7.8 / §15 |
 | **v0.1.4** | Software cost/latency/memory of the compact codec vs gzip (L9, L6) and brotli (q11, q5) on the same rounded int codes, plus a deterministic op count and the algorithmic working-set comparison | `check-scp-v014` + prior SCP checks green; v0.1 hashes unchanged; cost table and revised headline in §7.9 / §11 / §15 |
 | **v0.1.5** | Layer 2 analytical hardware cost model: parameterized area/energy estimates from v0.1.4 op counts and working sets, with ranges, cited/assumed constants, and sensitivity | `check-scp-v015` + prior SCP checks green; v0.1 hashes and `pack.ts` unchanged; estimate table and headline in §11.2 / §15; not a silicon/FPGA result |
+| **v0.1.6** | Test-only divider-free reciprocal quantize (mul + residual correction); byte-identity on fixtures; counterexamples documented; pack.ts unchanged; cost model re-run with div=0 | `check-scp-v016` + prior SCP checks green; fixture bytes match pack.ts; known counterexamples reproduced; revised estimate table and remaining flips in §11.3 / §15 |
 | **v0.2** | Optional read-only surface, only after v0.1 passes (decision 5). Still no Level 4 edits. Which surface (export field, inspect page, both, or neither) is decided later. | Additive, off by default, existing export bytes unchanged when the flag is off |
 | **v0.3** | Layer 2 cost/latency model first, bit-accurate model later, against Layer 1 measurements | Documented model; later bit-accurate work agrees with Layer 1 hashes or explains bounded diffs |
 | **v0.4** | Hardware research proposition (writing and evidence, not a tape-out) | Proposition reviewed; claims labelled as hypotheses |
@@ -588,23 +634,23 @@ The owner accepted the recommended defaults for the eight questions below. This 
 7. For Layer 2, do you want a bit-accurate (FPGA-style) arithmetic model, a cost/latency model only, or both?
 8. Is there an external document called “Tensor Scope” or “Return on Evidence” we should follow? In this repository, Tensor Scope is `src/lib/level4/tensor.ts` and ROE is the Reciprocal Optimization Engine (`src/lib/level4/roe.ts`).
 
-## 15. Honest claims (v0.1.1–v0.1.5)
+## 15. Honest claims (v0.1.1–v0.1.6)
 
 What **can** be claimed, on these committed fixtures only:
 
-- Stored lossless reconstruction is bit-exact; stored bounded, the measured quantized compact encoding, and the v0.1.3 fair lossy baselines (fixed-width int codes and rounded float64) stay within the declared eps, with retained score 1.0 and deterministic hashes. v0.1 engine heads are unchanged.
+- Stored lossless reconstruction is bit-exact; stored bounded, the measured quantized compact encoding, and the v0.1.3 fair lossy baselines (fixed-width int codes and rounded float64) stay within the declared eps, with retained score 1.0 and deterministic hashes. v0.1 engine heads are unchanged. `src/scp/pack.ts` is unchanged in v0.1.6.
 - At the same eps, writing already-rounded values back as float64 does **not** shrink the lossless binary packing (0.9975× on v0.1; 0.9059× on the 6-row Medicare mapping, where the extra eps header dominates). Switching to fixed-width int32 codes is a modest **quantization** gain of about 1.47× (1.2554× on n=6).
 - The compact delta/varint encoding's remaining **structure** gain versus those uncompressed int32 codes is 2.5221× (v0.1), 1.5726× (Medicare n=6), 3.2660× (noisy N=256), and 3.3335× (noisy N=4096). Versus gzip of the same int codes it is 1.3971×, 1.4701×, 1.6310×, and 1.6186×.
-- In this single-machine Node/JS run, compact encode on B4096 is faster than gzip level 9 (2.16×) and much faster than brotli quality 11 (69.43×), at essentially the same size as brotli q11 (30729 B vs 31684 B). The algorithmic streaming state is 40 bytes versus a 32 KiB gzip window and a 4 MiB brotli window. The compact codec's instrumented cost is deterministic (~90 encode ops/point, ~99 decode ops/point on B4096).
-- Under the v0.1.5 Horowitz-45nm-style *assumptions*, the compact codec's **estimated** B4096 encode energy is 27.7–77.8 pJ/point versus gzip-l9 500–256,085 pJ and brotli-q11 6,602–8,322,763 pJ, and its **estimated** area is 28,838–48,078 µm² versus gzip 70,536–826,432 µm² and brotli 8.40–67.19 mm². The brotli gap is driven by the 4 MiB vs 40 B working set and is robust on the explored grid.
+- In this single-machine Node/JS run, compact encode on B4096 is faster than gzip level 9 (2.16×) and much faster than brotli quality 11 (69.43×), at essentially the same size as brotli q11 (30729 B vs 31684 B). The algorithmic streaming state is 40 bytes versus a 32 KiB gzip window and a 4 MiB brotli window.
+- A test-only divider-free variant (precomputed `1/eps`, multiply, residual correction) is **byte-identical** to `pack.ts` on all four fixtures. Under the v0.1.5 Horowitz-45nm-style *assumptions* with the divider unit removed, its **estimated** B4096 encode energy is 29.1–45.9 pJ/point versus gzip-l9 500–256,085 pJ (10.90–8,811×) and its **estimated** area is 13,438–17,278 µm² versus gzip 70,536–826,432 µm² (4.08–61.5×). The old gzip area flip (divider ≳ 7× an FP mul) is eliminated for this variant.
 
 What **cannot** be claimed:
 
 - That the 3.72× quantized-vs-lossless-binary figure is a fair compression ratio, or that most of it comes from a clever encoding. Much of it is “float64 → int32 codes plus allowing eps,” and almost none of it is from storing rounded values as float64.
 - That the compact encoding beats a general-purpose compressor of the **same quantized integers**. On the regular v0.1 fixture it **loses** to brotli quality 11 of the int32 codes (2551 B vs 2492 B, 0.9769×). On noisy N=256 / N=4096 it is only 1.1000× / 1.0311× ahead of that brotli baseline.
-- That the compact encoding is the smallest representation, or that it is stored or in production. gzip/brotli of the compact bytes are still much smaller on the large fixtures (115 B / 122 B on v0.1); on the 6-row Medicare mapping gzip expanded 117 B to 126 B.
-- That compact is faster or leaner on every axis in this implementation. **Decode is slower** than native gzip/brotli in the v0.1.4 JS/Node timings (7.01× / 6.53× on B4096). Approximate JS heap deltas for compact are *larger* than zlib's because of the `number[]` Writer; the 40-byte figure is algorithmic state, not the observed heap. These are not lab numbers, not an SLA, and not a silicon result.
-- That the v0.1.5 table is a measured chip, an FPGA result, or a bit-accurate model. The gzip **area** advantage is modest (1.47× in the adverse corner) and **flips** if SRAM is assumed ≲ 0.16 µm²/bit or the compact divider is modelled at ≳ 7× an FP mul. Gzip encode-energy robustness fails if match-search is only ~1 access/input-byte. Gzip decode energy is only barely robust and flips below ~0.5 access/output-byte. All pJ and µm² constants are assumptions.
+- That compact is faster or leaner on every axis in the v0.1.4 JS/Node timings. Decode was slower than native gzip/brotli. JS heap deltas are not the algorithmic working set. Those timings are not lab numbers, not an SLA, and not a silicon result.
+- That the v0.1.5/v0.1.6 tables are a measured chip, an FPGA result, or a bit-accurate model. Remaining v0.1.6 flips: gzip decode energy below ~0.5 accesses/output-byte; gzip area if SRAM is assumed ≲ 0.046 µm²/bit; brotli decode energy at an extreme 0.05 accesses/byte. All pJ and µm² constants are assumptions.
+- That the divider-free variant can replace `pack.ts` for all legal inputs. It cannot. Example: `v = -0.0045000000000000005`, `eps = 0.001` (the fixture predicted/observed eps) yields pack.ts `q = -4` and reciprocal `q = -5`. An edge/random scan found 22,944 such mismatches in 1,494,828 in-range tests. Residual correction can also disagree with naive mul-by-reciprocal (`v = 0.0045`, `eps = 0.001`: pack.ts and naive give 5, residual gives 4). The stored encoder is unchanged.
 - Production datasets, a Medicare/CMS encoder, hardware results, or a product surface (still decision 5 / v0.2).
 
-**Headline (one sentence).** Under Horowitz-45nm-style assumptions (estimates, not measured silicon), the compact quantized codec on B4096 has estimated encode energy 27.7–77.8 pJ/point versus gzip-l9 500.2–256085.0 pJ (6.43–9239.6×) and brotli-q11 6602.2–8322762.5 pJ (84.8–300288×), and estimated area 28838–48078 µm² versus gzip 70536–826432 µm² (1.47–28.7×) and brotli 8.40–67.19 mm² (175–2330×); the 4 MiB vs 40 B working set drives a robust brotli gap, but the gzip area win is modest and flips if SRAM is assumed ≲0.16 µm²/bit or the compact divider is modelled at ≳7× an FP mul, gzip encode energy robustness fails if match-search drops to ~1 access/input-byte, and gzip decode energy is only barely robust (flips below ~0.5 access/output-byte).
+**Headline (one sentence).** A divider-free compact encode variant (precomputed 1/eps, multiply, and residual correction) is byte-identical to pack.ts on all four fixtures, but not for every legal input — e.g. v=-0.0045000000000000005, eps=0.001 gives pack.ts q=-4 vs reciprocal q=-5 — so pack.ts is unchanged. Under the v0.1.5 45 nm assumptions with the divider unit removed, estimated B4096 encode energy is 29.1–45.9 pJ/point versus gzip-l9 500.2–256085.0 pJ (10.90–8810.6×) and brotli-q11 6602.2–8322762.5 pJ, and estimated area is 13438–17278 µm² versus gzip 70536–826432 µm² (4.08–61.5×) and brotli 8.40–67.19 mm² (486–5000×); the old gzip area flip (divider ≳ 7× an FP mul) is eliminated, and the remaining flips are gzip.decode_accesses_low→0.5; area_um2.sram_per_bit_low→0.046; brotli.decode_accesses_low→0.05. These area and energy figures are estimates, not measured silicon.

@@ -271,6 +271,8 @@ function checkEps(eps: PackedEps, c: OpCounts): void {
   c.branch++; // for-test exit
 }
 
+export type QuantizeCountedFn = (v: number, eps: number, c: OpCounts) => { q: number; err: number };
+
 function quantize(v: number, eps: number, c: OpCounts): { q: number; err: number } {
   const q0 = Math.round(v / eps); c.div++; c.round++;
   c.branch++;
@@ -283,7 +285,7 @@ function quantize(v: number, eps: number, c: OpCounts): { q: number; err: number
   return { q, err };
 }
 
-export function encodeQuantizedCounted(points: readonly PackedPoint[], eps: PackedEps): { bytes: Uint8Array; max_abs_err: { x: number; y: number; z: number }; counts: OpCounts } {
+export function encodeQuantizedCounted(points: readonly PackedPoint[], eps: PackedEps, quantizeFn: QuantizeCountedFn = quantize): { bytes: Uint8Array; max_abs_err: { x: number; y: number; z: number }; counts: OpCounts } {
   const c = emptyCounts();
   c.branch++;
   if (points.length < 1) throw new RangeError("need at least one point");
@@ -299,7 +301,7 @@ export function encodeQuantizedCounted(points: readonly PackedPoint[], eps: Pack
   for (let i = 0; i < points.length; i++) {
     c.branch++;
     const p = points[i];
-    const x = quantize(p.x, eps.x, c), y = quantize(p.y, eps.y, c), z = quantize(p.z, eps.z, c);
+    const x = quantizeFn(p.x, eps.x, c), y = quantizeFn(p.y, eps.y, c), z = quantizeFn(p.z, eps.z, c);
     qx.push(x.q); qy.push(y.q); qz.push(z.q);
     c.branch++; if (x.err > max_abs_err.x) max_abs_err.x = x.err;
     c.branch++; if (y.err > max_abs_err.y) max_abs_err.y = y.err;
