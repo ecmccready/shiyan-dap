@@ -352,7 +352,7 @@ A scratch PostgreSQL 17 run (PGlite, not committed) checked:
   - It uses one connection per database for the run, and each step is its own transaction. The two URLs must reach different databases with different roles.
 - **`.github/workflows/state-chain-sync.yml`:**
   - It is committed staged at `ops/github/state-chain-sync.yml`, because the automation token cannot write workflow files. The owner installs it with `git mv`. `check-state-chain-sync` checks whichever copy exists, and requires both to be identical if both exist.
-  - Runs hourly (`17 * * * *`) and on `workflow_dispatch`, with a `write` boolean input (default false).
+  - Runs every 6 hours (`17 */6 * * *`; was hourly until 2026-11-17) and on `workflow_dispatch`, with a `write` boolean input (default false).
   - Scheduled runs write only if the repository variable `SHIYAN_SYNC_WRITE` is `true`. Otherwise they are dry runs.
   - `permissions: contents: read`; concurrency group `state-chain-sync` with no cancellation (runs never overlap or get cut mid-transaction); `timeout-minutes: 10`.
   - `actions/checkout@v4` with `persist-credentials: false`, `actions/setup-node@v4` (Node 22), then `npm ci --ignore-scripts`.

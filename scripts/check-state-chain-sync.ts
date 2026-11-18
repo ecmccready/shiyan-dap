@@ -342,7 +342,7 @@ async function main(): Promise<void> {
   console.log(`  (workflow checked at ${existsSync(installedPath) ? ".github/workflows" : "ops/github (staged, not yet installed)"})`);
   const code = yml.split("\n").filter((l) => !l.trim().startsWith("#")).join("\n");
   await check("workflow: hourly + manual, contents: read, no overlap, pinned actions, timeout, npm ci", () => {
-    assert.match(code, /schedule:\n\s+- cron: "17 \* \* \* \*"/);
+    assert.match(code, /schedule:\n\s+- cron: "17 \*\/6 \* \* \*"/);
     assert.match(code, /workflow_dispatch:\n\s+inputs:\n\s+write:\n(\s+.+\n)*?\s+type: boolean\n(\s+.+\n)*?\s+default: false/);
     assert.match(code, /^permissions:\n  contents: read\n/m);
     assert.equal((code.match(/permissions:/g) ?? []).length, 1);
