@@ -1190,3 +1190,115 @@ Without a simulator it prints `SKIP sim` and runs the same 27 counted checks aga
 2. Smaller program memories, so the relations decoder fits the iCE40-HX8K at D = 2048. Options are packing ORD and FAN, or deriving the order from a target bitmap.
 3. Relations with the linear predictor, which the v0.1.10 byte-optimal search picks on some fixtures.
 4. A board and a power measurement, the first non-model energy number.
+
+## 20. v0.1.13: a front end that reads W = 1, 2 or 4 bytes per cycle
+
+**What it is.** A W-byte-per-cycle input front end, `hw/scp4d/rtl/scp4d_fe_w.v`, and two decoders built on it. `hw/scp4d/rtl/scp4d_tdec_w.v` is the temporal-only path (zero / last / linear). `hw/scp4d/rtl/scp4d_rdec_w.v` is the relations path (rank 0, last-value hold). Both were measured at W = 1, 2 and 4 in Icarus Verilog against the v0.1.10 model's vectors. `scp4d_tdec.v`, `scp4d_rdec.v`, their testbenches, synthesis scripts, vectors and reports (v0.1.11 / v0.1.12) are unchanged and sha256-pinned. Check: `scripts/check-scp-v0113-rtl.ts` (27 counted checks, pinned in `check-scp-all`, same count with or without a simulator). Report: `fixtures/scp/v0113-rtl-report.json`. Cycle model: `scripts/scp-v0113-rtl-model.ts`. No new vectors: every input is an existing v0.1.10 / v0.1.11 / v0.1.12 vector or a corrupted copy of one.
+
+### 20.1 Microarchitecture
+
+- **Front end (`scp4d_fe_w`).** W-byte valid/ready beats (`in_nbytes` ≤ W) go into a 2W-byte queue. Header bytes are delivered one per cycle. After the layout byte, a tokenizer cuts up to W bytes per cycle into LEB128 varint tokens and carries partial varints across beats (more than 5 bytes → error 13). It also pre-decodes zigzag q, q ≠ 0 and the 32-bit range, and pushes the result to a (2W + K)-token queue. `in_ready` and the push enable depend only on registered counts.
+- **`scp4d_tdec_w`.** The state memory is split into P = W banks (element e → bank e mod P). Each cycle an issue chain takes up to W steps, each a sparse event (one token pair) or one element of a dense or sweep run. The chain stops early when tokens run out, at a bank conflict, at frame end or at W steps. Each bank keeps `scp4d_tdec`'s A/B pipeline with forwarding. Memory clear takes ⌈D/P⌉ cycles.
+- **`scp4d_rdec_w`.** `scp4d_rdec`'s datapath is byte-identical (program and state memories, multiply, execute, write ports, fan-out / settle / flush / pipeline tail; the check compares the source regions). The byte parser is replaced by a token parser that, for W ≥ 2, retires head + first index and q + next gap in one cycle. That's one event per cycle. A second event per cycle would need a second ORD read and more H1 / ACC ports, so W = 4 only widens the tokenizer.
+- **Cycle model.** It matches the simulator exactly for every in-scope vector at every W. It is a register-transfer model (`tdecWCycleModel`, `rdecWCycleModel`): cycles = the last frame's end cycle + 4 drain (tdec_w) or + 5 (rdec_w). The cycles split exactly into header + memory-clear wait + payload issue cycles (tdec_w: ⌈steps/W⌉ plus bank-conflict and token-starvation cycles per frame) or + parse + fan-out + settle + flush (rdec_w) + drain; the report records each class per run and the check verifies the sum.
+
+### 20.2 Measured cycles (Icarus Verilog, full-rate input; bit-exact on every row at every W, also with random input gaps)
+
+Temporal-only, `scp4d_tdec_w`. The baseline is `scp4d_tdec`, v0.1.11:
+
+| Vector | Bytes | T×D | v0.1.11 | W = 1 | W = 2 | W = 4 | W4 vs W1 |
+|---|---|---|---|---|---|---|---|
+| medicare-6 (zero) | 124 | 6×3 | 128 | 130 | 106 | 94 | 1.38× |
+| v0.1-first-16-temporal-last | 209 | 16×3 | 213 | 215 | 169 | 146 | 1.47× |
+| env-4x4x1-T8-temporal-last | 307 | 8×64 | 316 | 314 | 199 | 145 | 2.17× |
+| env-4x4x1-T8-temporal-linear | 430 | 8×64 | 759 | 746 | 414 | 250 | 2.98× |
+| edge-handwritten-G2-temporal-last | 70 | 7×2 | 74 | 76 | 65 | 61 | 1.25× |
+| **env-16x16x2-T64-temporal-last** | 54,985 | 64×2048 | 56,866 | **56,865** | **28,444** | **15,494** | **3.67×** |
+| **env-16x16x2-T256-temporal-last** | 224,843 | 256×2048 | 226,340 | **226,339** | **113,181** | **61,705** | **3.67×** |
+
+On env T64 that's 0.434 → 0.217 → 0.118 cycles per element-frame. At W = 4, 2,548 of the 14,960 payload cycles end on a bank conflict (17%). Header (189) and clear (341–1,877) are fixed costs, and they dominate the small vectors.
+
+Relations path, `scp4d_rdec_w`. The baseline is `scp4d_rdec`, v0.1.12:
+
+| Vector | Kind | Bytes | v0.1.12 | W = 1 | W = 2 | W = 4 | W2 vs W1 |
+|---|---|---|---|---|---|---|---|
+| env-4x4x1-T8-relations-last | relations | 252 | 544 | 531 | 486 | 486 | 1.09× |
+| v0.1-first-16-relations-last | relations | 193 | 294 | 268 | 267 | 267 | 1.00× |
+| medicare-6-relations-last | relations | 127 | 168 | 141 | 138 | 137 | 1.02× |
+| B256-relations-last | relations | 1,968 | 3,494 | 3,381 | 3,380 | 3,380 | 1.00× |
+| edge-handwritten-G2-relations-last | relations | 66 | 111 | 109 | 109 | 109 | 1.00× |
+| env-8x8x1-T16-relations-last | relations | 1,241 | 3,957 | 3,933 | 3,379 | 3,379 | 1.16× |
+| **env-16x16x2-T64-relations-last** | relations | 29,948 | 104,547 | **104,226** | **89,538** | **89,538** | **1.16×** |
+| **env-16x16x2-T256-relations-last** | relations | 119,757 | 419,192 | **418,354** | **359,304** | **359,304** | **1.16×** |
+| env-16x16x2-T64-temporal-last | temporal | 54,985 | 56,867 | 56,866 | 30,349 | 30,295 | 1.87× |
+| env-16x16x2-T256-temporal-last | temporal | 224,843 | 226,341 | 226,340 | 115,086 | 114,861 | 1.97× |
+
+The three small temporal-only last-value vectors also decode bit-exact (216/172/171, 315/229/228 and 77/69/69 cycles). W = 1 is never more than 4 cycles above the single-byte baselines and is often below them, because the token parser drops the per-byte state. Corrupted or out-of-scope streams are rejected with the expected code at every W: 13 on tdec_w, 17 on rdec_w. These include new token-path negatives: q = 0 (15), first index ≥ D and a gap past D (16, also in the merged head + index and q + gap cycles), and a 6-byte varint (13).
+
+**Amdahl on relations (env T64, W = 2):** header 189 + clear 1,877 + parse 14,750 (14,686 paired) = stream side. Fan-out 50,352 + settle 256 + flush 22,109 = core, **81% of cycles**. With an infinitely wide input the limit is 1.43× over W = 1. **Projection (not built, optimistic):** splitting fan-out and flush across 2 / 4 conflict-free ACC/LIST banks behind the W = 2 front end would give ~53,308 / ~35,193 cycles (0.41 / 0.27 cycles per element-frame).
+
+### 20.3 Synthesis and place-and-route (tool ESTIMATES, one seed, --freq 12; no board)
+
+Every configuration, baselines included, sits in the same thin wrapper, `hw/scp4d/synth/scp4d_pnr_wrap.v`. Outputs are registered and XOR-folded to 16 pins, and the relation program loads through a 1-bit shift register. The wrapper is needed because W = 4 has more ports than the package has pins. Baseline numbers therefore differ slightly from §18.4 / §19.4.
+
+| ECP5 LFE5U-45F, full params | LUT4 | FF | EBR | MULT18 | fmax (est.) |
+|---|---|---|---|---|---|
+| `scp4d_tdec` (v0.1.11) | 1,980 | 783 | 8 | 1 | 46.5 MHz |
+| `scp4d_tdec_w` W = 1 | 2,549 | 1,088 | 8 | 1 | 52.4 MHz |
+| `scp4d_tdec_w` W = 2 | 5,573 | 1,702 | 8 | 1 | 41.2 MHz |
+| `scp4d_tdec_w` W = 4 | 13,920 | 2,948 | 8 | 1 | 22.0 MHz |
+| `scp4d_rdec` (v0.1.12) | 3,160 | 1,283 | 18 | 3 | 54.8 MHz |
+| `scp4d_rdec_w` W = 1 | 3,630 | 1,488 | 18 | 3 | 54.8 MHz |
+| `scp4d_rdec_w` W = 2 | 4,642 | 1,622 | 18 | 3 | 50.2 MHz |
+| `scp4d_rdec_w` W = 4 | 6,233 | 1,810 | 18 | 3 | 52.7 MHz |
+
+iCE40-HX8K at ADDR_W = 9 (D ≤ 512):
+- tdec: 2,487 LC, 38.4 MHz
+- tdec_w W1: 3,131 LC, 45.1 MHz
+- tdec_w W2: 6,123 LC, 30.4 MHz
+- tdec_w W4: **does not fit** (out of logic cells)
+- rdec: 5,262 LC, 39.5 MHz
+- rdec_w W1: 5,622 LC, 40.5 MHz
+- rdec_w W2: 6,818 LC, 37.3 MHz
+- rdec_w W4: **does not fit**
+
+Xilinx 7-series LUT counts (yosys only) are in the report. Differences of a few MHz between seeds are noise; for example rdec_w W = 4 coming out above W = 2.
+
+### 20.4 Throughput (measured cycles × estimated ECP5 fmax)
+
+| env T64 | W = 1 | W = 2 | W = 4 | baseline |
+|---|---|---|---|---|
+| temporal-only, M element-frames/s (stream MB/s) | 121 (50.6) | **190 (79.6)** | 186 (78.1) | 107 (45.0) |
+| relations, M element-frames/s (stream MB/s) | 68.9 (15.8) | 73.5 (16.8) | 77.1 (17.6) | 68.6 (15.7) |
+
+T256 is within 1%.
+
+### 20.5 Verdict
+
+- **Temporal-only: wider input pays off, up to W = 2.** It takes 2.00× fewer cycles at W = 2 and 3.67× at W = 4. In time (with ECP5 estimates) that's ~1.77× over v0.1.11 at W = 2. W = 4 is no faster than W = 2 in time, because its 4-step issue chain roughly halves fmax, and it costs 2.5× the LUTs. **W = 2 is the sweet spot.**
+- **Relations: barely.** It takes 1.16× fewer cycles at W = 2 and nothing more at W = 4. The stream was already only ~19% of the cycles once tokens replace bytes.
+- **New bottleneck.** On the temporal path it's the combinational issue chain (token select → step decode → index add → bank check, repeated W times, then the queue pop), which sets fmax, plus bank conflicts at W = 4. On the relations path it's the one-accumulator-update-per-cycle fan-out and the dirty-target flush.
+- **Relations vs temporal-only: same answer, stronger.** Inside the decoder, relations are now ~2.6× slower in time at W = 2 (1.75× at W = 1). They finish first only when the link is slower than ~30.8 MB/s on T64 (W = 2; ~28.7 MB/s in v0.1.12). Temporal-only stays the hardware default. Relations only become competitive with banked fan-out and flush (§20.2 projection).
+- **Energy:** not measured.
+
+### 20.6 What this does and does not prove
+
+- **Proves:** a W-byte front end can feed both RTL decoders bit-exact at W = 1, 2, 4, on every existing temporal and relations vector, with random input gaps and corrupted streams. The cycle cost is exact and modelled. The measured cycle gains and the move of the bottleneck from the stream to the decoder core are shown in both paths.
+- **Does not prove:** timing on a board (fmax and area are one-seed tool estimates), energy or power, relations with zero / linear predictors, low-rank in RTL, or the encoder. All data is synthetic or hand-written.
+
+### 20.7 Running it (including WSL)
+
+```bash
+sudo apt install iverilog
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0113-rtl.ts --require-sim
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0113-rtl.ts --synth --write   # ~4 min; needs yosys, nextpnr-ecp5, nextpnr-ice40 (oss-cad-suite)
+```
+
+Without a simulator it prints `SKIP sim` and runs the same 27 counted checks against the committed report.
+
+### 20.8 Next steps on the §16.11 path
+
+1. A banked fan-out and flush for `scp4d_rdec_w` (2–4 ACC/LIST banks), the only lever left for relations.
+2. Pipeline the `scp4d_tdec_w` issue chain (precompute the bank pattern per token, or split it into two stages), so W = 4 keeps W = 2's fmax.
+3. Fold the header and memory clear into the wide path (one fixed ~190 + D/W cycle cost per stream).
+4. A board and a power measurement.
