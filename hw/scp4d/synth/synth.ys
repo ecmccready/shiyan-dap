@@ -1,0 +1,21 @@
+# TEST ONLY. Yosys synthesis script for hw/scp4d/rtl/scp4d_tdec.v (run by scripts/check-scp-v0111-rtl.ts --synth,
+# after read_verilog). Produces generic, iCE40 and Xilinx 7-series cell statistics. Estimates only.
+hierarchy -top scp4d_tdec
+design -save rtl
+# generic gate-level logic; the two state memories are kept as $mem cells (not flattened to flip-flops)
+synth -top scp4d_tdec -flatten -run begin:fine
+opt -fast -full
+techmap
+opt -fast
+abc
+opt_clean
+tee -o generic_stat.json stat -json
+ltp -noff
+# iCE40 (Lattice), with a JSON netlist for nextpnr-ice40
+design -load rtl
+synth_ice40 -top scp4d_tdec -json ice40.json
+tee -o ice40_stat.json stat -json
+# Xilinx 7-series
+design -load rtl
+synth_xilinx -top scp4d_tdec -family xc7
+tee -o xc7_stat.json stat -json
