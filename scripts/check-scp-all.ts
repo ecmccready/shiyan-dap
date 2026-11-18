@@ -28,6 +28,7 @@ export const EXPECTED: ReadonlyArray<readonly [string, number | null]> = [
   ["check-scp-v017", 75],
   ["check-scp-v018", 104],
   ["check-scp-v019-bench", 71],
+  ["check-scp-v0110", 101],
 ];
 
 const onlyArg = process.argv.find((a) => a.startsWith("--only="));
