@@ -19,3 +19,5 @@ export {
   isBinaryBaseline, isQuantizedEncoding, isQuantizedFloatBaseline, isQuantizedIntBaseline,
 } from "./pack";
 
+/** v0.1.9 isolated subsystem (state_encoder … compression_bench). Same boundary: scripts/tests only. */
+export * as subsystem from "./subsystem";
