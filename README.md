@@ -9,6 +9,43 @@ Repo: https://github.com/ecmccready/shiyan-dap
 
 Scope: diagnostics and the related pipelines (Level 4 plant, safety, MCP, micro-ledger, proof-to-pilot). Nothing here is a clinical product, and the system handles no PHI.
 
+## My stack: Aethel Node / Shiyan DAP — scope, propriety, and 4D-SCP
+
+This is my stack: Aethel Node, in this repository also called Shiyan DAP. Aethel Node turns a declared goal into a bounded run, measures the result against evidence, and keeps only the experience that qualifies for reuse. The loop is Connect → Execute → Prove → Learn.
+
+### Scope and boundaries
+
+The work is limited to diagnostics and related pipelines: the Level 4 plant, safety, MCP, the micro-ledger, and the proof-to-pilot journey. Nothing here is a clinical product, and the system handles no PHI. Demonstration, test, and benchmark data is synthetic or fixture data and is labelled as such.
+
+Boundaries I keep:
+
+- **Level 4 plant.** It is the authoritative execution and verification path. Other subsystems, including the commercial surfaces and the 4D-SCP proofs, do not modify it.
+- **Tenant boundary.** Production writes, proofs, and anchors are scoped per tenant.
+- **Commercial surfaces.** Workbench, customer proof export, and related pages are inspect-only or human-in-the-loop. They do not replace the closed loop or the plant.
+
+### Propriety
+
+This repository currently declares no open-source license: there is no `LICENSE` file, and `package.json` is marked private with no `license` field. The source is published here for inspection. That publication is not a grant of rights to use, copy, modify, or distribute the work beyond the terms of the host. I reserve rights in the Aethel Node stack, including the 4D state compression engine, the 4D-SCP (Four-Dimensional State Compression Processor) model and proofs, and the deterministic proof and anchoring layers, until a license is stated.
+
+### End-to-end with 4D-SCP
+
+Aethel Node and 4D-SCP are one intended pipeline, from a declared goal to a compact, reusable state:
+
+```mermaid
+flowchart TD
+  A[Goal declaration] --> B[Bounded run: Level 4 plant, untouched]
+  B --> C[Measurement against evidence / persistent self-monitoring]
+  C --> D[Retain qualifying verified experience: persistence, proof, anchoring, sync]
+  D --> E[Compressed state S(x,y,z,t) for efficiency and reuse]
+```
+
+Today that relationship is only partly in production, and I am precise about the split:
+
+- The **4D state compression engine** (M1–M5) is live in production for `prod-a`: lossless and windowed summaries, append-only segments, customer proof export, chain-head anchoring, and scheduled state-chain sync. It serves the Learn end of Connect → Execute → Prove → Learn. Design: `docs/design/4d-state-compression.md`.
+- **4D-SCP** (v0.1 through v0.1.14) is the Four-Dimensional State Compression Processor for the representation S(x,y,z,t). It is a software model with integer golden vectors plus RTL simulation and synthesis proofs, all on labelled synthetic and fixture data. The code lives in `src/scp/` and `hw/scp4d/`, is imported by no route and no Level 4 module, and is not wired into production. Cycle counts are measured in simulation. Energy and area figures are model or synthesis estimates, not measured silicon. Architecture and honest claims: `docs/design/4d-scp-architecture.md`. Check inventory: under Status below, and `scripts/check-scp-all.ts`.
+
+The value of the build is the verified software model, the bit-exact proofs, and the isolated stack, not any single hardware timing result.
+
 ## Status
 
 Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and audit summary are live. Work is focused on the proof-to-pilot journey on the existing engine. No new architectural phases are planned.
