@@ -1421,3 +1421,116 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0114-rtl.ts --writ
 ```
 
 Without a simulator, it prints `SKIP sim` and runs the same 19 counted checks against the committed report.
+
+## 22. v0.1.15: pipelined RTL encoder (W = 4 out, two sparse events per cycle) — keeping up with the decoder
+
+`hw/scp4d/rtl/scp4d_tenc_p.v` is a new encoder variant with the same function, ports, header handling and error codes as v0.1.14's `scp4d_tenc_w` (which is unchanged and sha-pinned). It is byte-exact with the v0.1.10 integer model on all 18 v0.1.14 jobs, at the four v0.1.14 configurations (W1L1, W2L2, W2L4, W2L8) plus W4L4 and W4L8. `hw/scp4d/tb/scp4d_loop_p_tb.v` closes the loop with the unchanged v0.1.13 `scp4d_tdec_w` at the same W (2 or 4). TEST ONLY and unwired, like §18–§21. All inputs are labelled synthetic or hand-written fixtures.
+
+### 22.1 What changed against v0.1.14
+
+- **Registered state read (S1r).** The state-bank read gets its own register stage before any arithmetic. One forwarding register is compared at two points: the write from three beats back at the S1r register, and the write from two beats back in S1a. The beat one cycle back never shares a bank address, except when a frame is a single group (D ≤ L). In that case the input accepts at most every other cycle.
+- **Split S1.**
+  - S1a: forwarding mux → prediction (one add) → residual, rounded residual and both deadband compares as four parallel subtractions of the prediction from x, x + half, x − k − 1 and x + k. These four values are precomputed in S1r.
+  - S1b: q (arithmetic shift), reconstruction (one add), overflow, state write.
+- **Split S2.**
+  - S2a: per-beat varint lengths, popcount and first/last event, with no recurrence.
+  - S2b: the frame accumulators and the record write. Records now also carry each lane's q varint length, so the emitter does no varint sizing.
+- **Wider output.** W = 4 bytes per cycle. At W = 4 the sparse emitter retires up to two events per cycle: the second comes from the same record or the next record in a 4-entry prefetch FIFO, and up to 2 records leave the FIFO per cycle.
+- **Output queue.** 32 bytes. An append is allowed iff queue + staged ≤ 32 − MA, where MA is the largest single-cycle append (7 / 10 / 20 bytes at W = 1 / 2 / 4). The threshold is a constant, so no append length sits on the stall path.
+- **Latency.** A frame's descriptor is usable 7 edges after its last beat is accepted (4 in v0.1.14).
+
+**Cycle model.** `scripts/scp-v0115-rtl-model.ts` (`tencpCycleModel`) equals the simulated count on all 18 jobs × 6 configurations.
+
+### 22.2 Measured cycles
+
+Icarus Verilog, full rate. Every row is byte-exact at every configuration, and also with random input/header gaps plus random output backpressure. The 9 corrupted inputs from v0.1.14 stop with the expected error code at every configuration.
+
+| vector | bytes | values | W1L1 | W2L2 | W2L4 | W2L8 | W4L4 | W4L8 | loop W4L8 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| medicare-6 | 124 | 18 | 134 | 84 | 82 | 82 | 59 | 59 | 109 |
+| v0.1-first-16-temporal-last | 209 | 48 | 243 | 169 | 161 | 161 | 125 | 125 | 203 |
+| env-4x4x1-T8-temporal-last | 307 | 512 | 557 | 291 | 209 | 181 | 171 | 131 | 189 |
+| env-4x4x1-T8-temporal-linear | 430 | 512 | 561 | 292 | 232 | 227 | 179 | 145 | 257 |
+| edge-handwritten-G2-temporal-last | 70 | 14 | 101 | 71 | 71 | 71 | 60 | 60 | 82 |
+| env-16x16x2-T64-temporal-last | 54,985 | 131,072 | 131,792 | 65,913 | 36,699 | 29,237 | 33,032 | **18,527** | 19,223 |
+| env-16x16x2-T64-zero | 149,730 | 131,072 | 151,606 | 75,812 | 75,300 | 75,044 | 37,939 | 37,683 | 37,949 |
+| env-16x16x2-T64-linear | 78,277 | 131,072 | 132,298 | 66,166 | 41,328 | 39,451 | 33,213 | 21,004 | 42,851 |
+| env-16x16x2-T256-temporal-last | 224,843 | 524,288 | 526,311 | 263,172 | 147,076 | 119,137 | 131,613 | **74,122** | 76,238 |
+
+All 18 jobs are in `fixtures/scp/v0115-rtl-report.json`.
+
+**Reading the table:**
+- At the v0.1.14 configurations the cycle counts are within ±0.2% on the env streams. The extra pipeline stages only add latency, and very small jobs take a few cycles more.
+- W4L8 on env T64 takes 18,527 cycles. That is 0.65× the W = 2 decoder's 28,444 and 0.63× v0.1.14's best (W2L8, 29,204).
+- W4L8 is input-bound (T·⌈D/8⌉ = 16,384; 1.13× that bound). The rest is one START cycle per frame, the frame-pair double buffer, and records with a single event.
+
+**Loop (env T64, last):**
+- W4L8 → `tdec_w` W4: 19,223 cycles end to end (1.04× the slower standalone run). The first frame is decoded at cycle 541, per-frame latency is 134–869 cycles, and the decoder drains 6 cycles after the encoder's last byte.
+- W2L8 → `tdec_w` W2: 30,016 cycles.
+- Decoded output is bit-exact with the model reconstruction and within the deadband for all 18 jobs at all 5 loop configurations, also with input gaps.
+
+### 22.3 Synthesis and place-and-route (tool ESTIMATES, one seed, --freq 12; no board)
+
+| config | ECP5-45F LUT4 / FF / DP16KD / MULT18 | ECP5 fmax | v0.1.14 same config | iCE40-HX8K (ADDR_W 9) |
+|---|---|---:|---:|---|
+| tenc_p W1L1 | 5,684 / 2,160 / 20 / 1 | 58.74 MHz | 40.38 MHz | fits, 6,283 LC, 43.81 MHz |
+| tenc_p W2L2 | 7,504 / 3,035 / 18 / 3 | 39.03 MHz | 37.15 MHz | does not fit (LCs) |
+| tenc_p W2L4 | 10,321 / 4,729 / 17 / 3 | 40.25 MHz | 36.03 MHz | does not fit (LCs) |
+| tenc_p W2L8 | 15,584 / 8,125 / 25 / 3 | 36.83 MHz | 35.86 MHz | does not fit (RAM) |
+| tenc_p W4L4 | 14,730 / 4,825 / 17 / 6 | 33.51 MHz | — | does not fit (LCs) |
+| tenc_p W4L8 | 21,169 / 8,221 / 25 / 6 | 28.98 MHz | — | does not fit (RAM) |
+| loop W2L8 → tdec_w W2 | 20,855 / 9,792 / 33 / 4 | 38.91 MHz | 35.87 MHz | does not fit (RAM) |
+| loop W4L8 → tdec_w W4 | 34,016 / 11,118 / 33 / 7 | 21.24 MHz | — | does not fit (RAM) |
+
+The LUT column is TRELLIS_COMB. xc7 yosys cell counts are in the report (no open-source timing).
+
+**Where the clock goes now.**
+- The registered read did its job at W = 1 (+45% fmax), but at L = 8 the gain is small: W2L8 rose only from 35.86 to 36.83 MHz.
+- The ECP5 critical path at W4L8 is no longer the state read. It is the two-event sparse emitter: the remaining-mask register → event-1 lane select → position / `e_pp` → gap → byte packing of event 2 behind event 1 → the append stage (11.9 ns logic, 22.6 ns routing).
+- yosys mapped the variable byte shift of that packing onto MULT18X18D blocks. That accounts for the extra MULT18 at W = 4. It is a synthesis mapping of `<<`, not a multiplier in the source; the per-element datapath still has no `*`.
+
+### 22.4 Throughput (measured cycles × estimated ECP5 fmax)
+
+| env T64 (last), 131,072 values | cycles | fmax (est.) | values/s (est.) | vs tdec_w W2 (189.7 M/s) | vs tdec_w W4 (186.1 M/s) |
+|---|---:|---:|---:|---:|---:|
+| v0.1.14 tenc_w W2L8 (best before) | 29,204 | 35.86 | 160.9 M | 0.85× | — |
+| tenc_p W2L8 | 29,237 | 36.83 | 165.1 M | 0.87× | 0.89× |
+| tenc_p W4L4 | 33,032 | 33.51 | 133.0 M | 0.70× | 0.71× |
+| **tenc_p W4L8** | **18,527** | **28.98** | **205.0 M (86.0 MB/s of stream)** | **1.08×** | **1.10×** |
+| loop W4L8 → tdec_w W4 | 19,223 | 21.24 | 144.8 M (905 µs) | — | — |
+
+On env T256: W4L8 reaches 205.0 M values/s, 1.08× the W = 2 decoder (190.7 M) and 1.10× the W = 4 decoder (186.9 M). No energy or power was measured.
+
+### 22.5 Verdict
+
+- **Keeps up: yes, at W = 4, L = 8 only.** On wall clock it reaches 1.08× the W = 2 decoder's values/s on both env streams, and 1.10× the W = 4 decoder's.
+  - The margin is thin and rests on one-seed fmax estimates for both designs.
+  - It comes from cycles (0.65× the decoder's), not from clock (28.98 MHz vs 41.16 MHz).
+- **No other configuration keeps up.** W2L8 is 0.87×. Everything below L = 8 is input-bound.
+- **The closed loop W4L8 is limited by the W = 4 decoder's clock** (21.24 MHz for the pair, 144.8 M values/s). So the encoder is no longer the slow end of the pipeline.
+- **Next step for clock:** register the event-1 selection, or emit the second event one cycle later from a precomputed record, and replace the variable byte shift with a one-hot byte mux. For the decoder, address its W = 4 clock.
+
+### 22.6 What this does and does not prove
+
+- **Proves:**
+  - A pipelined, wider encoder produces exactly the same S4DI v1 bytes as the v0.1.10 model, and as v0.1.14, for 18 jobs × 6 configurations, also under gaps and backpressure.
+  - It rejects 9 corrupted inputs with the right error code.
+  - Its cycle count has an exact model.
+  - Its loop with the unchanged decoder is bit-exact.
+  - At W4L8 it needs fewer cycles than the W = 2 decoder and v0.1.14 (a counted check).
+- **Does not prove:**
+  - Board timing: fmax, LUT and RAM figures are one-seed tool estimates.
+  - Energy or power.
+  - The ingest quantizer or config search in hardware.
+  - Relations or low-rank encoding.
+  - Anything about real production data.
+
+### 22.7 Running it (including WSL)
+
+```bash
+sudo apt install iverilog
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0115-rtl.ts --require-sim
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0115-rtl.ts --write --synth   # ~40 min; yosys, nextpnr-ecp5, nextpnr-ice40
+```
+
+Without a simulator, it prints `SKIP sim` and runs the same 20 counted checks against the committed report.
