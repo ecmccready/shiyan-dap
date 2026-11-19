@@ -299,16 +299,26 @@ async function runSim(iverilog: string, vvp: string): Promise<{ runs: Map<string
 // ---------- synthesis (--synth only) ----------
 type Cells = { num_cells: number; by_type: Record<string, number> };
 type Pnr = { device: string; seed: number; fits: boolean; fmax_mhz?: Record<string, number>; utilization?: Record<string, string>; error?: string };
-const SYN_CONFIGS: { name: string; wrap: string; params: string; small: string }[] = [
+// ECP5 place-and-route uses nextpnr's router2: router1 did not converge on scp4d_tenc_q W = 4, L = 8
+// within the bound (overuse stalled at ~500-900 nodes after > 25 min). For a like-for-like
+// comparison the same run re-places the v0.1.15 scp4d_tenc_p (W = 2 / 4, L = 8) and the v0.1.13
+// scp4d_tdec_w decoders (W = 2 / 4) with the identical flow (ECP5 only, "ref" rows).
+const ECP5_ROUTER = "router2";
+const REF_FILES = ["hw/scp4d/rtl/scp4d_tenc_p.v", "hw/scp4d/synth/scp4d_tenc_p_wrap.v"];
+const REF_TENC_P = (w: number) => `ref v0.1.15 scp4d_tenc_p W=${w} L=8`;
+const REF_TDEC_W = (w: number) => `ref v0.1.13 scp4d_tdec_w W=${w}`;
+const SYN_CONFIGS: { name: string; wrap: string; params: string; small: string; devs?: readonly ("ecp5" | "ice40" | "xc7")[] }[] = [
   ...ENC_CONFIGS.map((c) => ({ name: `scp4d_tenc_q W=${c.W} L=${c.L}`, wrap: "wrap_tenc_q", params: `-set W ${c.W} -set L ${c.L}`, small: "-set A 9" })),
   ...[{ W: 2, L: 8 }, { W: 4, L: 8 }].map((c) => ({ name: `loop tenc_q W=${c.W} L=${c.L} -> tdec_w W=${c.W}`, wrap: "wrap_loop_q", params: `-set W ${c.W} -set L ${c.L}`, small: "-set A 9" })),
+  ...[2, 4].map((w) => ({ name: REF_TENC_P(w), wrap: "wrap_tenc_p", params: `-set W ${w} -set L 8`, small: "", devs: ["ecp5"] as const })),
+  ...[2, 4].map((w) => ({ name: REF_TDEC_W(w), wrap: "wrap_tdec_w", params: `-set W ${w}`, small: "", devs: ["ecp5"] as const })),
 ];
 const PNR_TIMEOUT_S = 1500;
 async function runSynth(): Promise<Record<string, unknown>> {
   const yosys = findBin("yosys"), np40 = findBin("nextpnr-ice40"), np5 = findBin("nextpnr-ecp5");
   if (!yosys) throw new Error("--synth needs yosys");
   const dir = mkdtempSync(join(tmpdir(), "scp4d-encq-synth-"));
-  const files = [RTL, ...DEC, "hw/scp4d/synth/scp4d_pnr_wrap.v", WRAP].map((f) => join(root, f)).join(" ");
+  const files = [RTL, ...DEC, "hw/scp4d/synth/scp4d_pnr_wrap.v", WRAP, ...REF_FILES].map((f) => join(root, f)).join(" ");
   const cells = (f: string): Cells => {
     const j = JSON.parse(readFileSync(f, "utf8")) as { design?: { num_cells: number; num_cells_by_type: Record<string, number> } };
     const d = j.design!;
@@ -324,14 +334,14 @@ async function runSynth(): Promise<Record<string, unknown>> {
       utilization: Object.fromEntries(Object.entries(rep.utilization).filter(([k, v]) => v.used > 0 && !["GND", "VCC"].includes(k)).map(([k, v]) => [k, `${v.used}/${v.available}`])) };
   };
   try {
-    const tasks = SYN_CONFIGS.flatMap((c, n) => (["ecp5", "ice40", "xc7"] as const).map((dev) => async () => {
+    const tasks = SYN_CONFIGS.flatMap((c, n) => (c.devs ?? (["ecp5", "ice40", "xc7"] as const)).map((dev) => async () => {
       const wd = join(dir, `${n}-${dev}`); spawnSync("mkdir", ["-p", wd]);
       const ch = `chparam ${c.params}${dev === "ice40" ? ` ${c.small}` : ""} ${c.wrap}; `;
       const synth = dev === "ecp5" ? `synth_ecp5 -top ${c.wrap} -json n.json` : dev === "ice40" ? `synth_ice40 -top ${c.wrap} -json n.json` : `synth_xilinx -top ${c.wrap} -family xc7`;
       const y = await run(yosys, ["-q", "-l", join(wd, "y.log"), "-p", `read_verilog ${files}; ${ch}hierarchy -top ${c.wrap}; ${synth}; tee -q -o stat.json stat -json`], wd);
       if (y.status !== 0) throw new Error(`yosys failed (${c.name} ${dev}): ${y.out.slice(-800)}`);
       const st = cells(join(wd, "stat.json"));
-      const pr = dev === "ecp5" ? await pnrOf(np5, ["--45k", "--package", "CABGA381", "--json", join(wd, "n.json"), "--lpf-allow-unconstrained", "--freq", "12"], "ECP5 LFE5U-45F (CABGA381)", wd)
+      const pr = dev === "ecp5" ? await pnrOf(np5, ["--45k", "--package", "CABGA381", "--json", join(wd, "n.json"), "--lpf-allow-unconstrained", "--freq", "12", "--router", ECP5_ROUTER], "ECP5 LFE5U-45F (CABGA381)", wd)
         : dev === "ice40" ? await pnrOf(np40, ["--hx8k", "--package", "ct256", "--json", join(wd, "n.json"), "--pcf-allow-unconstrained", "--freq", "12"], "iCE40-HX8K (ct256)", wd) : null;
       return [c.name, dev, { synth: st, ...(pr ? { place_and_route: pr } : {}) }] as const;
     }));
@@ -339,8 +349,9 @@ async function runSynth(): Promise<Record<string, unknown>> {
     const by: Record<string, Record<string, unknown>> = {};
     for (const [name, dev, v] of res) (by[name] ??= {})[dev === "ice40" ? "ice40_hx8k_addr_w9" : dev === "ecp5" ? "ecp5_45f_full_params" : "xc7_full_params"] = v;
     return {
-      label: "SYNTHESIS / PLACE-AND-ROUTE ESTIMATES from open-source tools (one seed, --freq 12 target). Not a programmed-FPGA or silicon measurement; no board was used. xc7: yosys cell counts only (no open-source timing).",
+      label: "SYNTHESIS / PLACE-AND-ROUTE ESTIMATES from open-source tools (one seed, --freq 12 target; ECP5 with nextpnr --router router2, and the v0.1.15 encoder / v0.1.13 decoder re-placed with the same flow as 'ref' rows for a like-for-like comparison). Not a programmed-FPGA or silicon measurement; no board was used. xc7: yosys cell counts only (no open-source timing).",
       wrapper: `${WRAP}: configuration through a 1-bit shift register, the L x 32-bit code input through a 32-bit pin bus shifted into an L-word register, outputs registered and XOR-folded to 16 pins (scp4d_fold16 from hw/scp4d/synth/scp4d_pnr_wrap.v). The same wrapper logic is added to every configuration.`,
+      ecp5_router: `${ECP5_ROUTER} (router1, used for v0.1.11-v0.1.15, did not converge on scp4d_tenc_q W = 4, L = 8 within the bound)`,
       parameters: { full: "ADDR_W 11 (D <= 2048)", ice40_small: "ADDR_W 9 (D <= 512)" },
       tools: { yosys: firstLine(yosys, ["-V"]), nextpnr_ecp5: firstLine(np5, ["--version"]), nextpnr_ice40: firstLine(np40, ["--version"]) },
       configs: by,
@@ -405,6 +416,19 @@ function comparison(m: Meas, synth: Record<string, unknown> | null) {
             keeps_up_with_decoder_W2: dW2.values_per_s !== null && vps !== null ? vps >= dW2.values_per_s : null, ratio_vs_decoder_W2: dW2.values_per_s && vps ? r4(vps / dW2.values_per_s) : null,
             keeps_up_with_decoder_W4: dW4.values_per_s !== null && vps !== null ? vps >= dW4.values_per_s : null, ratio_vs_decoder_W4: dW4.values_per_s && vps ? r4(vps / dW4.values_per_s) : null,
             ratio_vs_v0115_same_config: prev?.throughput_ecp5?.values_per_s && vps ? r4(vps / prev.throughput_ecp5.values_per_s) : null } : null }]; })),
+      like_for_like_same_flow: (() => {
+        const fd2 = ecp5(synth, REF_TDEC_W(2))?.fmax_mhz ?? null, fd4 = ecp5(synth, REF_TDEC_W(4))?.fmax_mhz ?? null;
+        if (fd2 === null || fd4 === null) return null;
+        const vpsOf = (cyc: number, f: number | null) => (f ? Math.round((d.element_frames / cyc) * f * 1e6) : null);
+        const d2 = vpsOf(dW2.cycles, fd2)!, d4 = vpsOf(dW4.cycles, fd4)!;
+        return { note: `every clock from the same synthesis run and flow (ECP5, nextpnr ${ECP5_ROUTER}, seed 1); values/s = measured cycles × that estimate`,
+          decoder_W2: { fmax_mhz_estimate: fd2, values_per_s: d2 }, decoder_W4: { fmax_mhz_estimate: fd4, values_per_s: d4 },
+          encoder: Object.fromEntries(ENC_CONFIGS.map((c) => { const k = cfgKey(c), cyc = E.get(sid)![k].cycles, f = ecp5(synth, `scp4d_tenc_q W=${c.W} L=${c.L}`)?.fmax_mhz ?? null, v = vpsOf(cyc, f);
+            const pf = c.L === 8 && (c.W === 2 || c.W === 4) ? ecp5(synth, REF_TENC_P(c.W))?.fmax_mhz ?? null : null, pv = pf && o[k] ? vpsOf(o[k].cycles, pf) : null;
+            return [k, { fmax_mhz_estimate: f, values_per_s: v, ratio_vs_decoder_W2: v ? r4(v / d2) : null, ratio_vs_decoder_W4: v ? r4(v / d4) : null,
+              v0115_tenc_p: pf ? { fmax_mhz_estimate: pf, values_per_s: pv, ratio_vs_decoder_W2: pv ? r4(pv / d2) : null, ratio_vs_decoder_W4: pv ? r4(pv / d4) : null } : null,
+              clock_gain_vs_v0115: f && pf ? r4(f / pf) : null }]; })) };
+      })(),
       loop: Object.fromEntries(LOOP_CONFIGS.map((c) => { const k = cfgKey(c), l = Lp.get(sid)![k], encAlone = E.get(sid)![k].cycles, dd = c.W === 4 ? dW4 : dW2, e = ecp5(synth, `loop tenc_q W=${c.W} L=${c.L} -> tdec_w W=${c.W}`);
         return [k, { decoder: `scp4d_tdec_w W = ${c.W}`, end_to_end_cycles: l.cycles, encoder_standalone_cycles: encAlone, decoder_standalone_cycles: dd.cycles, loop_over_max_standalone: r4(l.cycles / Math.max(encAlone, dd.cycles)),
           drain_after_encoder_cycles: l.cycles - l.enc_last_out, first_decoded_cycle: l.first_dec, frame_latency_cycles: { min: l.lat_min, max: l.lat_max, mean: r2(l.lat_sum / d.T) },
@@ -426,12 +450,19 @@ function comparison(m: Meas, synth: Record<string, unknown> | null) {
       keeps_up: e48.throughput_ecp5
         ? `${keepers.length ? `Yes, at ${keepers.join(", ")}` : "No configuration"} keeps up with the v0.1.13 W = 2 decoder (${t64.decoder_W2.values_per_s !== null ? r2(t64.decoder_W2.values_per_s / 1e6) : "?"} M values/s) on env T64 (wall clock = measured cycles × ECP5 fmax estimate). W = 4, L = 8: ${e48.cycles} cycles (${e48.cycle_ratio_vs_decoder_W2}× the W = 2 decoder's ${t64.decoder_W2.cycles}), ${tp(e48)}; W = 4, L = 4: ${e44.cycles} cycles, ${tp(e44)}; W = 2, L = 8: ${e28.cycles} cycles, ${tp(e28)}. The v0.1.15 best was ${t64.v0115_encoder_best.config} at ${t64.v0115_encoder_best.values_per_s !== null ? r2(t64.v0115_encoder_best.values_per_s / 1e6) : "?"} M values/s.`
         : `No synthesis estimate committed yet: W = 4, L = 8 takes ${e48.cycles} cycles (${e48.cycle_ratio_vs_decoder_W2}× the W = 2 decoder's ${t64.decoder_W2.cycles}).`,
+      like_for_like: (() => {
+        const f = t64.like_for_like_same_flow as null | { decoder_W2: { fmax_mhz_estimate: number; values_per_s: number }; decoder_W4: { fmax_mhz_estimate: number; values_per_s: number };
+          encoder: Record<string, { fmax_mhz_estimate: number | null; values_per_s: number | null; ratio_vs_decoder_W2: number | null; ratio_vs_decoder_W4: number | null; clock_gain_vs_v0115: number | null; v0115_tenc_p: { fmax_mhz_estimate: number; values_per_s: number | null; ratio_vs_decoder_W2: number | null; ratio_vs_decoder_W4: number | null } | null }> };
+        if (!f) return "no same-flow reference rows in the synthesis section";
+        const x = f.encoder.W4L8, y = f.encoder.W2L8;
+        return `Same flow (ECP5 ${ECP5_ROUTER}, seed 1) for all four designs, env T64: decoder W = 2 ${f.decoder_W2.fmax_mhz_estimate} MHz -> ${r2(f.decoder_W2.values_per_s / 1e6)} M values/s, decoder W = 4 ${f.decoder_W4.fmax_mhz_estimate} MHz -> ${r2(f.decoder_W4.values_per_s / 1e6)} M values/s. tenc_q W = 4, L = 8: ${x.fmax_mhz_estimate} MHz -> ${x.values_per_s !== null ? r2(x.values_per_s / 1e6) : "?"} M values/s = ${x.ratio_vs_decoder_W2}× / ${x.ratio_vs_decoder_W4}× the W = 2 / W = 4 decoder (v0.1.15 tenc_p in the same run: ${x.v0115_tenc_p?.fmax_mhz_estimate ?? "?"} MHz, ${x.v0115_tenc_p?.ratio_vs_decoder_W2 ?? "?"}× / ${x.v0115_tenc_p?.ratio_vs_decoder_W4 ?? "?"}×; clock gain ${x.clock_gain_vs_v0115}×). tenc_q W = 2, L = 8: ${y.fmax_mhz_estimate} MHz, ${y.ratio_vs_decoder_W2}× / ${y.ratio_vs_decoder_W4}×.`;
+      })(),
       bottleneck: `W = 4, L = 8 on env T64 is ${e48.bound}-bound: ${e48.cycles} cycles = ${e48.over_max_bound}× max(T × ceil(D / L), ceil(bytes / W)); the remainder is one START cycle per frame, the frame-pair double buffer (frame t + 2 waits for frame t to be emitted) and sparse records with a single event. Below L = 8 every configuration is input-bound (the encoder must read every code, unlike the event-driven decoder).`,
       loop: lp48.throughput_ecp5
         ? `Closed loop W = 4, L = 8 -> scp4d_tdec_w W = 4: ${lp48.end_to_end_cycles} cycles end to end (${lp48.loop_over_max_standalone}× the slower standalone run); the pair's ECP5 estimate is ${lp48.throughput_ecp5.fmax_mhz_estimate} MHz (the W = 4 decoder's clock), ${r2(lp48.throughput_ecp5.values_per_s / 1e6)} M values/s.`
         : `Closed loop W = 4, L = 8 -> scp4d_tdec_w W = 4: ${lp48.end_to_end_cycles} cycles end to end (${lp48.loop_over_max_standalone}× the slower standalone run).`,
     },
-    energy: "not measured; no pJ figure is reported for v0.1.15",
+    energy: "not measured; no pJ figure is reported for v0.1.16",
   };
 }
 
