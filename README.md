@@ -33,10 +33,10 @@ Aethel Node and 4D-SCP are one intended pipeline, from a declared goal to a comp
 
 ```mermaid
 flowchart TD
-  A[Goal declaration] --> B[Bounded run: Level 4 plant, untouched]
-  B --> C[Measurement against evidence / persistent self-monitoring]
-  C --> D[Retain qualifying verified experience: persistence, proof, anchoring, sync]
-  D --> E[Compressed state S(x,y,z,t) for efficiency and reuse]
+  A["Goal declaration"] --> B["Bounded run: Level 4 plant, untouched"]
+  B --> C["Measurement against evidence / persistent self-monitoring"]
+  C --> D["Retain qualifying verified experience: persistence, proof, anchoring, sync"]
+  D --> E["Compressed state S(x,y,z,t) for efficiency and reuse"]
 ```
 
 Today that relationship is only partly in production, and I am precise about the split:
