@@ -1302,3 +1302,122 @@ Without a simulator it prints `SKIP sim` and runs the same 27 counted checks aga
 2. Pipeline the `scp4d_tdec_w` issue chain (precompute the bank pattern per token, or split it into two stages), so W = 4 keeps W = 2's fmax.
 3. Fold the header and memory clear into the wide path (one fixed ~190 + D/W cycle cost per stream).
 4. A board and a power measurement.
+
+## 21. v0.1.14: RTL encoder for the temporal-only path, and the closed encode → decode loop
+
+`hw/scp4d/rtl/scp4d_tenc_w.v` produces S4DI v1 temporal-only streams (rank 0, relations off; zero, last and linear predictors) byte for byte equal to the v0.1.10 integer model. It writes W = 2 bytes per cycle (W = 1 is the baseline) and reads L = 1, 2, 4 or 8 integer codes per cycle. `hw/scp4d/tb/scp4d_loop_tb.v` connects it to the unchanged v0.1.13 `scp4d_tdec_w` (W = 2), so encode and decode are both measured in RTL. TEST ONLY and unwired, like §18–§20.
+
+**Decisions.**
+- The input is integer codes, after the quantizer (grid g = eps / 2^G). The v0.1.8 ingest quantizer is not in the RTL.
+- The host fixes the configuration (shape, T, G, predictor). The v0.1.10 config search (G, predictor) stays on the host.
+- The host streams two header segments through a header port: the eps bits and the times/meta varints. The RTL writes every other header byte (magic, version, shape, G, rank 0, rel 0, predictor, FW 16, layout).
+
+### 21.1 Microarchitecture
+
+- **S0:** accepts L codes and does a synchronous state read (L banks of H1 and H2).
+- **S1:** predictor → residual → deadband test (|r| > 2^G − 1) → q → reconstruction → state write. It uses 1-cycle write forwarding.
+- **S2:** varint sizing and one event record per beat with events, written into a double-buffered record memory. Only the first event of a group can have a gap ≥ 128, so there is no serial gap chain.
+- **S3:** the dense/sparse layout decision (dense iff D + Σ(slen − 1) < Σ(ulen(gap) + slen)).
+- **Emitter:** one START (head) cycle per frame, then sparse at one event per cycle or dense at W elements per cycle. It is fed by a 3-entry record prefetch FIFO.
+- **Output:** an append stage and a 16-byte queue, W bytes out per cycle.
+- **Frame-pair rule:** frame t + 2 waits until frame t has been emitted.
+- **Errors (`err_code`):**
+  - 1: D = 0 or D > 2048
+  - 2: T = 0
+  - 3: G > 16
+  - 4: predictor 3
+  - 5: times/meta length < T + 1
+  - 6: a 32-bit register overflow
+  - 7: wrong beat lane count
+  - 8: a bad host header beat
+- **Multiplier:** the only one is the configuration-time D = nx·ny·nz·C product.
+
+**Cycle model.** `scripts/scp-v0114-rtl-model.ts` (`tencCycleModel`) is an exact cycle model that tracks the registered state each cycle: input, pipeline, close, prefetch, emitter, append stage and queue. On all 18 jobs × 4 (W, L) configurations its count equals the simulated count. Closed-form bounds:
+
+- input bound = T·⌈D/L⌉
+- output bound = ⌈bytes/W⌉
+- measured cycles ≈ max(input bound, output bound + T START cycles) + 5 configuration cycles + header
+
+### 21.2 Measured cycles
+
+Icarus Verilog, full rate. Every row is byte-exact at every configuration, and also with random input/header gaps plus random output backpressure.
+
+| vector | bytes | values | W1L1 | W2L2 | W2L4 | W2L8 | loop L8 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| medicare-6 | 124 | 18 | 134 | 78 | 76 | 76 | 113 |
+| v0.1-first-16-temporal-last | 209 | 48 | 222 | 148 | 140 | 140 | 193 |
+| env-4x4x1-T8-temporal-last | 307 | 512 | 556 | 291 | 203 | 179 | 218 |
+| env-4x4x1-T8-temporal-linear | 430 | 512 | 560 | 292 | 228 | 227 | 421 |
+| edge-handwritten-G2-temporal-last | 70 | 14 | 92 | 62 | 62 | 62 | 75 |
+| env-16x16x2-T64-temporal-last | 54,985 | 131,072 | 131,796 | 65,911 | 36,656 | 29,204 | 29,986 |
+| env-16x16x2-T64-zero | 149,730 | 131,072 | 151,603 | 75,809 | 75,297 | 75,041 | 75,823 |
+| env-16x16x2-T64-linear | 78,277 | 131,072 | 132,302 | 66,164 | 41,315 | 39,449 | 85,640 |
+| env-16x16x2-T256-temporal-last | 224,843 | 524,288 | 526,315 | 263,170 | 146,897 | 119,034 | 119,789 |
+
+All 18 jobs are in `fixtures/scp/v0114-rtl-report.json`.
+
+**What limits each width:**
+- L ≤ 4 is input-bound: the encoder must read every code.
+- L = 8 is output-bound: env T64 is within 6.2% of ⌈bytes/2⌉ = 27,493.
+- For zero/linear, the loop is decoder-bound, because `scp4d_tdec_w` reconstructs every element each frame for those predictors.
+
+**Loop (env T64, last):**
+- End to end: 65,925 cycles at L = 2, 37,182 at L = 4 and 29,986 at L = 8. That is 1.03× the slower standalone run.
+- The decoder finishes 6 cycles after the encoder's last byte.
+- The first decoded frame appears at cycle 1,053.
+- Per-frame latency at L = 8 is 160–1,959 cycles.
+- Decoded output is bit-exact with the model reconstruction and within the deadband of the input codes, for all 18 jobs at L = 2/4/8, also with input gaps.
+
+### 21.3 Synthesis and place-and-route (tool ESTIMATES, one seed, --freq 12; no board)
+
+| config | ECP5-45F LUT4 / FF / DP16KD / MULT18 | ECP5 fmax | iCE40-HX8K (ADDR_W 9) | xc7 FF / RAMB / DSP |
+|---|---|---:|---|---|
+| tenc W1L1 | 4,481 / 1,562 / 18 / 1 | 40.38 MHz | fits, 4,984 LC, 35.06 MHz | 1,316 / 9×36 / 1 |
+| tenc W2L2 | 6,646 / 2,052 / 17 / 1 | 37.15 MHz | fits, 6,782 LC, 34.68 MHz | 1,613 / 4×36 + 9×18 / 1 |
+| tenc W2L4 | 9,086 / 2,958 / 16 / 1 | 36.03 MHz | does not fit (LCs) | 2,127 / 4×36 + 8×18 / 1 |
+| tenc W2L8 | 12,360 / 4,786 / 24 / 1 | 35.86 MHz | does not fit (RAM) | 3,167 / 4×36 + 16×18 / 1 |
+| loop L4 → tdec_w W2 | 14,347 / 4,625 / 24 / 2 | 36.76 MHz | does not fit (RAM) | 3,513 / 8×36 + 8×18 / 2 |
+| loop L8 → tdec_w W2 | 17,526 / 6,453 / 32 / 2 | 35.87 MHz | does not fit (RAM) | 4,553 / 8×36 + 16×18 / 2 |
+
+The ECP5 LUT column is TRELLIS_COMB. The ECP5 critical path (W2L8) runs from the unregistered state-BRAM read through the forwarding mux, predictor, residual, deadband / reconstruction, and on to the overflow flag.
+
+### 21.4 Throughput (measured cycles × estimated ECP5 fmax), and the v0.1.10 estimate
+
+| env T64 (last) | cycles | fmax (est.) | values/s (est.) | vs tdec_w W2 (28,444 cyc × 41.16 MHz = 189.7 M/s) |
+|---|---:|---:|---:|---:|
+| encoder W2L4 | 36,656 | 36.03 | 128.8 M | 0.68× |
+| encoder W2L8 | 29,204 | 35.86 | 160.9 M (67.5 MB/s of stream) | 0.85× |
+| loop L8 | 29,986 | 35.87 | 156.8 M (836 µs) | — |
+
+The v0.1.10 op-count model puts encoding at 7.22 ops/value and 29.7 pJ/value including ingest. That is a MODEL ESTIMATE, quoted only for comparison, and ~10.6 pJ of it is the quantizer, which is not in this RTL. At L = 8 the RTL retires ~32 model ops per cycle. No energy or power was measured.
+
+### 21.5 Verdict
+
+- **Per cycle:** the encoder keeps up with the W = 2 decoder only at L = 8, at 1.03× the decoder's cycles on env T64 and 1.05× on T256. L = 2 takes 2.3× the cycles and L = 4 takes 1.29×.
+- **Wall clock:** it does not keep up. With one-seed ECP5 fmax estimates (35.9 vs 41.2 MHz), L = 8 reaches 0.85× the decoder's values/s.
+- **Bottleneck in cycles:** the input at L ≤ 4, and the 2-byte output port plus one START cycle per frame at L = 8.
+- **Bottleneck in clock:** the S1 per-element arithmetic behind the unregistered state read. The next step is a registered BRAM output with 2-deep forwarding.
+
+### 21.6 What this does and does not prove
+
+- **Proves:**
+  - A synthesizable encoder produces the v0.1.10 model's S4DI v1 temporal-only streams byte for byte. That covers 18 jobs (7 native golden configurations plus predictor and G variants) × 4 configurations, also under random gaps and backpressure.
+  - It rejects 9 corrupted configurations/inputs with the right error code.
+  - Its cycle count has an exact model.
+  - The full encode → decode loop is bit-exact in RTL simulation.
+- **Does not prove:**
+  - Timing on a board: fmax and area are one-seed tool estimates.
+  - Energy or power.
+  - The ingest quantizer or the config search in hardware.
+  - Relations or low-rank encoding.
+  - Anything about real production data: all inputs are synthetic or hand-written fixtures.
+
+### 21.7 Running it (including WSL)
+
+```bash
+sudo apt install iverilog
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0114-rtl.ts --require-sim
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0114-rtl.ts --write --synth   # ~25 min; yosys, nextpnr-ecp5, nextpnr-ice40
+```
+
+Without a simulator, it prints `SKIP sim` and runs the same 19 counted checks against the committed report.

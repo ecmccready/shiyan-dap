@@ -196,7 +196,7 @@ const negatives: SimJob[] = [];
   neg("neg-input-beat-lanes", {}, 7, ["+beat_err=1"]);
   neg("neg-host-header-empty-beat", {}, 8, ["+hdr_zero=1"]);
   // register overflow: x = 2^31 − 1 at G = 8 reconstructs to 2^31 (leaves signed 32 bits)
-  const ov = { eps: [0.01], times: [0, 1], meta: null } as const;
+  const ov: Pick<EncJob, "eps" | "times" | "meta"> = { eps: [0.01], times: [0, 1], meta: null };
   const oh = hostHeader(ov);
   neg("neg-overflow-reconstruction", { nx: 1, ny: 1, nz: 1, c: 1, t: 2, g: 8, pred: 1, tmlen: oh.tm.length, nhdr: oh.eps.length + oh.tm.length }, 6, [],
     { stream: "00\n", codes: [2 ** 31 - 1, 0].map(w32).join("\n") + "\n", hdr: hx([...oh.eps, ...oh.tm]), dec: "00000000\n" });
