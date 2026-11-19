@@ -1534,3 +1534,99 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0115-rtl.ts --writ
 ```
 
 Without a simulator, it prints `SKIP sim` and runs the same 20 counted checks against the committed report.
+
+## 23. v0.1.16: short emitter path (`scp4d_tenc_q`) — raising the encoder clock
+
+`hw/scp4d/rtl/scp4d_tenc_q.v` is a new encoder variant with the same function, ports, header handling, error codes **and cycle behaviour** as v0.1.15's `scp4d_tenc_p`. Every v0.1.14 and v0.1.15 file is unchanged and sha-pinned. Only the logic between the record FIFO and the append stage changes, because that was the ECP5 critical path in §22.3. It is byte-exact with the v0.1.10 integer model on all 18 jobs at the 6 configurations (W1L1, W2L2, W2L4, W2L8, W4L4, W4L8), also with random input/header gaps and output backpressure. The 9 corrupted inputs stop with the expected error code. `hw/scp4d/tb/scp4d_loop_q_tb.v` closes the loop with the unchanged v0.1.13 `scp4d_tdec_w` at the same W, and the loop is bit-exact. TEST ONLY and unwired, like §18–§22. All inputs are labelled synthetic or hand-written fixtures.
+
+### 23.1 What changed against v0.1.15
+
+- **The gap is computed once, in S2b, and carried in the record.**
+  - Each event record now holds its first event's gap and that gap's ≥ 128 flag.
+  - The emitter no longer keeps a running position (`e_pp` is gone) and does no wide subtraction.
+  - A later event of the same record uses (lane − previous lane − 1), which is < L. The previous lane is a register (`e_last`).
+- **No variable shifts and no constant × variable products on the emitter / packing path.**
+  - Event bytes and dense bytes are placed by explicit offset selectors, one compare per legal offset.
+  - Per-lane q varint lengths sit at a 4-bit stride and are picked by explicit lane selectors.
+  - v0.1.15's `3 * lane` selects and `<< {n, 3'b000}` packing were what yosys mapped onto MULT18X18D. At W4L8 the MULT18 count drops from 6 to 1 (the one left is the configuration-time shape product).
+- **Count-driven record FIFO pop.**
+  - Records also carry their event count, the popcount S2b already computed.
+  - The emitter keeps the head record's remaining count (`e_cnt`).
+  - "Does event 2 come from the same record" and "how many records leave the FIFO" are decided from these counts, not from two chained lowest-set-bit picks. After the packing fix, that chain feeding the 4 × record-wide FIFO mux was the next critical path.
+
+**Cycle model.** Cycles are identical to v0.1.15 by construction. `scripts/scp-v0116-rtl-model.ts` re-exports the v0.1.15 model, and a counted check compares every v0.1.16 measured count with the committed v0.1.15 one.
+
+### 23.2 Measured cycles
+
+These are identical to §22.2 for every job and configuration. On env T64, W4L8 takes **18,527** cycles (0.65× the W = 2 decoder's 28,444), W2L8 29,237, and the loop W4L8 → `tdec_w` W4 19,223. On env T256, W4L8 takes 74,122. All 18 jobs are in `fixtures/scp/v0116-rtl-report.json`.
+
+### 23.3 Synthesis and place-and-route (tool ESTIMATES, one seed, --freq 12; no board)
+
+**Flow change.** ECP5 place-and-route now uses nextpnr's `router2`. The default router1, used for v0.1.11–v0.1.15, did not converge on `tenc_q` W4L8: overuse stalled at roughly 500–900 nodes after more than 25 minutes. To keep the comparison honest, the same run re-places v0.1.15 `tenc_p` (W2L8, W4L8) and the v0.1.13 decoders `tdec_w` (W2, W4) with the identical flow ("ref" rows). On these designs router2 gives lower clocks than router1 (`tenc_p` W4L8 24.59 vs 28.98 MHz; `tdec_w` W2 30.67 vs 41.16 MHz). So comparing `tenc_q` (router2) against the committed router1 decoder figures is conservative for the encoder.
+
+| config | ECP5-45F LUT4 / FF / DP16KD / MULT18 | ECP5 fmax (router2) | v0.1.15 same config (router1 / router2) | iCE40-HX8K (ADDR_W 9) |
+|---|---|---:|---:|---|
+| tenc_q W1L1 | 5,643 / 2,231 / 22 / 1 | 51.37 MHz | 58.74 / — | fits, 6,334 LC, 41.33 MHz |
+| tenc_q W2L2 | 7,421 / 3,118 / 20 / 1 | 46.45 MHz | 39.03 / — | does not fit (LCs) |
+| tenc_q W2L4 | 10,016 / 4,822 / 18 / 1 | 48.00 MHz | 40.25 / — | does not fit (LCs) |
+| tenc_q W2L8 | 14,868 / 8,226 / 25 / 1 | 45.43 MHz | 36.83 / 34.06 | does not fit (RAM) |
+| tenc_q W4L4 | 13,190 / 4,918 / 18 / 1 | 47.56 MHz | 33.51 / — | does not fit (LCs) |
+| **tenc_q W4L8** | **19,333 / 8,322 / 25 / 1** | **39.73 MHz** | 28.98 / 24.59 | does not fit (RAM) |
+| loop W2L8 → tdec_w W2 | 20,132 / 9,893 / 33 / 2 | 33.86 MHz | 38.91 / — | does not fit (RAM) |
+| loop W4L8 → tdec_w W4 | 32,049 / 11,219 / 33 / 2 | 18.31 MHz | 21.24 / — | does not fit (RAM) |
+| ref tdec_w W2 (v0.1.13) | 5,392 / 1,702 / 8 / 1 | 30.67 MHz | (v0.1.13 router1: 41.16) | — |
+| ref tdec_w W4 (v0.1.13) | 13,227 / 2,948 / 8 / 1 | 18.97 MHz | (v0.1.13 router1: 22.00) | — |
+
+The LUT column is TRELLIS_COMB. xc7 yosys cell counts are in the report (no open-source timing). In the same flow, W4L8 gains 1.62× in clock over `tenc_p` (39.73 vs 24.59 MHz) and W2L8 gains 1.33× (45.43 vs 34.06), with about 9% fewer LUTs at W4L8.
+
+**Where the clock goes now.** At W4L8 the ECP5 critical path (router2, ~25 ns) runs from the head-record "fresh" flag through the event-count compare and the event-1 / event-2 lane picks into the append staging register (`stg_b`). The loop clock is the W = 4 decoder's: 18.31 MHz under router2, 21.24 MHz under router1 in §22.
+
+### 23.4 Throughput (measured cycles × estimated ECP5 fmax)
+
+Decoder figures are the committed v0.1.13 numbers (router1), as in §21–§22.
+
+| env T64 (last), 131,072 values | cycles | fmax (est.) | values/s (est.) | vs tdec_w W2 (189.7 M/s) | vs tdec_w W4 (186.1 M/s) |
+|---|---:|---:|---:|---:|---:|
+| v0.1.15 tenc_p W4L8 (best before) | 18,527 | 28.98 | 205.0 M | 1.08× | 1.10× |
+| tenc_q W2L4 | 36,699 | 48.00 | 171.4 M | 0.90× | 0.92× |
+| tenc_q W2L8 | 29,237 | 45.43 | 203.7 M | 1.07× | 1.09× |
+| tenc_q W4L4 | 33,032 | 47.56 | 188.7 M | 0.995× | 1.01× |
+| **tenc_q W4L8** | **18,527** | **39.73** | **281.1 M (117.9 MB/s of stream)** | **1.48×** | **1.51×** |
+| loop W4L8 → tdec_w W4 | 19,223 | 18.31 | 124.8 M (1,050 µs) | — | — |
+
+On env T256: W4L8 reaches 281.0 M values/s, 1.47× the W = 2 decoder (190.7 M) and 1.50× the W = 4 decoder (186.9 M).
+
+**Same flow throughout (router2 for all four designs, env T64).** Decoder W2 30.67 MHz → 141.3 M values/s; decoder W4 18.97 MHz → 160.5 M. `tenc_q` W4L8 is 1.99× / 1.75× those; v0.1.15 `tenc_p` W4L8 in the same run is 174.0 M (1.23× / 1.08×). No energy or power was measured.
+
+### 23.5 Verdict
+
+- **Keeps up: yes, with a real margin at W4L8.** It reaches 1.48× the W = 2 decoder's committed values/s and 1.51× the W = 4 decoder's, up from 1.08× / 1.10× in v0.1.15. In the same-flow comparison the margin is larger still (1.99× / 1.75×).
+  - The figures are still one-seed tool estimates, not board timing.
+  - The gain is all clock: cycles are unchanged.
+- **W2L8 now also keeps up, but only just:** 1.07× / 1.09×, a thin margin on one-seed estimates. W4L4 is at parity (0.995× / 1.01×). L ≤ 4 at W = 2 does not keep up (input-bound).
+- **The encoder is no longer the slow end.** The closed loop W4L8 runs at the W = 4 decoder's clock (18.31 MHz under router2, 124.8 M values/s). The next hardware step for end-to-end throughput is the W = 4 decoder clock, not the encoder.
+
+### 23.6 What this does and does not prove
+
+- **Proves:**
+  - Restructuring the emitter (gap and count carried in the record, explicit selectors) keeps the output byte-identical to the v0.1.10 model for 18 jobs × 6 configurations, also under gaps and backpressure.
+  - Cycles are identical to v0.1.15 (a counted check).
+  - The 9 negatives return the right codes.
+  - The loop with the unchanged decoder is bit-exact.
+  - In one place-and-route flow, the clock estimate rises 1.62× at W4L8 against v0.1.15.
+- **Does not prove:**
+  - Board timing: every fmax is a one-seed estimate, and the ECP5 router changed (documented above, with same-flow references).
+  - Energy or power.
+  - The ingest quantizer or config search in hardware.
+  - Relations or low-rank encoding.
+  - Anything about real production data.
+
+### 23.7 Running it (including WSL)
+
+```bash
+sudo apt install iverilog
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0116-rtl.ts --require-sim
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0116-rtl.ts --write --synth   # ~60 min; yosys, nextpnr-ecp5 (router2), nextpnr-ice40
+```
+
+Without a simulator, it prints `SKIP sim` and runs the same 22 counted checks against the committed report.

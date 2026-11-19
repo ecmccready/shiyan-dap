@@ -1,6 +1,6 @@
 # hw/scp4d — 4D-SCP RTL (TEST ONLY, unwired)
 
-This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Nothing in the Next.js app, `src/`, Level 4 or any route imports it. It contains no TS/JS, so `tsc` and `next build` never see it. Spec: `docs/design/4d-scp-architecture.md` §18 (temporal-only), §19 (relations), §20 (W-byte front end), §21 (encoder) and §22 (pipelined encoder).
+This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Nothing in the Next.js app, `src/`, Level 4 or any route imports it. It contains no TS/JS, so `tsc` and `next build` never see it. Spec: `docs/design/4d-scp-architecture.md` §18 (temporal-only), §19 (relations), §20 (W-byte front end), §21 (encoder), §22 (pipelined encoder) and §23 (short emitter path).
 
 | Milestone | What | Evidence |
 |---|---|---|
@@ -10,6 +10,7 @@ This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Not
 | **v0.1.13** | `rtl/scp4d_fe_w.v`: front end reading W = 1, 2 or 4 bytes per cycle (varint tokenizer); `rtl/scp4d_tdec_w.v` (temporal-only, W banks) and `rtl/scp4d_rdec_w.v` (relations, `scp4d_rdec` datapath unchanged) built on it | Bit-exact at W = 1, 2, 4 on every in-scope vector of both paths, also with random input gaps. Cycles measured and equal to an exact cycle model; synthesis numbers are estimates. `scripts/check-scp-v0113-rtl.ts`, `fixtures/scp/v0113-rtl-report.json` |
 | **v0.1.14** | `rtl/scp4d_tenc_w.v`: encoder for the S4DI v1 temporal-only path (rank 0, relations off; zero / last / linear). It reads L = 1/2/4/8 integer codes per cycle and writes W = 2 bytes per cycle (W = 1 baseline), with a fixed host config. `tb/scp4d_loop_tb.v`: encoder → `scp4d_tdec_w` (W = 2) | Byte-exact with the v0.1.10 model on 18 jobs × 4 configs, also with random gaps and backpressure. The loop is bit-exact and within the deadband. 9 negatives return the right error code. Cycles are measured and equal to an exact cycle model; synthesis numbers are estimates. `scripts/check-scp-v0114-rtl.ts`, `fixtures/scp/v0114-rtl-report.json` |
 | **v0.1.15** | `rtl/scp4d_tenc_p.v`: pipelined encoder variant (registered state read, split S1 / S2 arithmetic, W = 1/2/4 bytes out, two sparse events per cycle at W = 4, 32-byte queue). `tb/scp4d_loop_p_tb.v`: encoder → `scp4d_tdec_w` at the same W (2 or 4). v0.1.14 files unchanged | Byte-exact with the v0.1.10 model on 18 jobs × 6 configs (the 4 v0.1.14 configs + W4L4, W4L8), also with random gaps and backpressure. The loop is bit-exact at 5 configs. 9 negatives return the right error code. Cycles are measured and equal to an exact cycle model; synthesis numbers are estimates. `scripts/check-scp-v0115-rtl.ts`, `fixtures/scp/v0115-rtl-report.json` |
+| **v0.1.16** | `rtl/scp4d_tenc_q.v`: `tenc_p` with a short emitter path (each record carries its first-event gap and event count; count-driven FIFO pop; explicit byte / lane selectors, no variable shifts). Cycle-for-cycle identical to v0.1.15. `tb/scp4d_tenc_q_tb.v`, `tb/scp4d_loop_q_tb.v`. v0.1.14 / v0.1.15 files unchanged | Byte-exact with the v0.1.10 model on 18 jobs × 6 configs, also with random gaps and backpressure. The loop is bit-exact. 9 negatives return the right error code. Cycles are measured and equal to v0.1.15's counts (exact model); synthesis numbers are estimates (ECP5 router2, with same-flow reference rows). `scripts/check-scp-v0116-rtl.ts`, `fixtures/scp/v0116-rtl-report.json` |
 
 ## Layout
 
@@ -20,6 +21,7 @@ This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Not
 - `rtl/scp4d_fe_w.v`, `rtl/scp4d_tdec_w.v`, `rtl/scp4d_rdec_w.v`, `tb/scp4d_tdec_w_tb.v`, `tb/scp4d_rdec_w_tb.v` (parameter W): the v0.1.13 wide-input decoders and testbenches. `synth/scp4d_pnr_wrap.v` is a thin place-and-route wrapper (registered, XOR-folded outputs; serial program load) used for every configuration in `check-scp-v0113-rtl.ts --synth`, because W = 4 has more ports than the packages have pins.
 - `rtl/scp4d_tenc_w.v`, `tb/scp4d_tenc_w_tb.v`, `tb/scp4d_loop_tb.v`, `synth/scp4d_tenc_wrap.v` (wrappers `wrap_tenc_w`, `wrap_loop`): the v0.1.14 encoder, its testbench, the closed loop with `scp4d_tdec_w`, and the place-and-route wrappers.
 - `rtl/scp4d_tenc_p.v`, `tb/scp4d_tenc_p_tb.v`, `tb/scp4d_loop_p_tb.v`, `synth/scp4d_tenc_p_wrap.v` (wrappers `wrap_tenc_p`, `wrap_loop_p`): the v0.1.15 pipelined encoder, its testbench, the closed loop with `scp4d_tdec_w` at the same W, and the place-and-route wrappers.
+- `rtl/scp4d_tenc_q.v`, `tb/scp4d_tenc_q_tb.v`, `tb/scp4d_loop_q_tb.v`, `synth/scp4d_tenc_q_wrap.v` (wrappers `wrap_tenc_q`, `wrap_loop_q`): the v0.1.16 short-emitter-path encoder and its testbench, loop and wrappers.
 
 ## Scope
 
@@ -51,6 +53,17 @@ See §21.
 
 See §22.
 
+**v0.1.16, short emitter path (env T64, last):**
+- Cycles are identical to v0.1.15 (W4L8 18,527; W2L8 29,237); only the clock changes.
+- ECP5-45F estimate for W4L8 (nextpnr router2): 19,333 LUT, 8,322 FF, 25 DP16KD, 1 MULT18 at 39.73 MHz → ~281 M values/s. That is 1.48× the W = 2 decoder (189.7 M) and 1.51× the W = 4 decoder (186.1 M); v0.1.15 was 1.08× / 1.10×.
+- With every design re-placed under the same flow (router2), it is 1.99× / 1.75× the decoders, and the clock is 1.62× v0.1.15 `tenc_p` (24.59 MHz in the same run).
+- **It keeps up with a real margin at W4L8.** W2L8 keeps up only just (45.43 MHz, 1.07×), and W4L4 is at parity.
+- router1 did not converge on `tenc_q` W4L8, hence router2. On these designs router2 gives lower clocks than router1, so the comparison against the committed decoder figures is conservative.
+- Loop W4L8 → `tdec_w` W4: 18.31 MHz (router2), ~125 M values/s. The W = 4 decoder clock is now the end-to-end limit.
+- iCE40-HX8K fits only W1L1 (41.33 MHz).
+
+See §23.
+
 ## Run (Linux / WSL)
 
 ```bash
@@ -66,9 +79,11 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0114-rtl.ts --requ
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0114-rtl.ts --write --synth   # encoder + loop synthesis (estimates, ~25 min)
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0115-rtl.ts --require-sim
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0115-rtl.ts --write --synth   # pipelined encoder + loop synthesis (estimates, ~40 min)
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0116-rtl.ts --require-sim
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0116-rtl.ts --write --synth   # short-emitter encoder + loop + same-flow refs (estimates, ~60 min)
 ```
 
-Without a simulator, each check prints `SKIP sim` and runs the same counted checks against the committed report (33 for v0.1.11, 27 for v0.1.12, 27 for v0.1.13, 19 for v0.1.14, 20 for v0.1.15). The closed-form cycle model matches the measured counts exactly. The script also looks for tools in `/opt/eda/oss-cad-suite/bin`.
+Without a simulator, each check prints `SKIP sim` and runs the same counted checks against the committed report (33 for v0.1.11, 27 for v0.1.12, 27 for v0.1.13, 19 for v0.1.14, 20 for v0.1.15, 22 for v0.1.16). The closed-form cycle model matches the measured counts exactly. The script also looks for tools in `/opt/eda/oss-cad-suite/bin`.
 
 ## Honest labels
 
