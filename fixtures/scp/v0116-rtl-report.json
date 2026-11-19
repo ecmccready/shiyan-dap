@@ -3,7 +3,7 @@
   "version": 1,
   "label": "TEST ONLY. Cycles MEASURED in simulation of hw/scp4d/rtl/scp4d_tenc_q.v (and the closed loop with the unchanged v0.1.13 scp4d_tdec_w, same W); synthesis figures are ESTIMATES; no energy measured; all inputs are labelled synthetic or hand-written fixtures.",
   "rtl": {
-    "hw/scp4d/rtl/scp4d_tenc_q.v": "571b19444384dc9e37c7d17efbbf2322220c70a819e20a9947a468a679be9a78",
+    "hw/scp4d/rtl/scp4d_tenc_q.v": "2fb75974c5d21aa70d4fe8133c8b2a471d7744b4bc247bb82dfff4db88e04f46",
     "hw/scp4d/tb/scp4d_tenc_q_tb.v": "3eaecd61a58c8f230339ff183fee5f7734e3075d63369321f2f2da753215ccb1",
     "hw/scp4d/tb/scp4d_loop_q_tb.v": "82ac8d350df5aba2e0db432995645fc0010ea5902a46d2e9ee37e908c3495aef",
     "hw/scp4d/synth/scp4d_tenc_q_wrap.v": "e43f21d5cbb6626d19e77ada1c9a03cedb6e7b8337de96c682a5f18ec282e955",
@@ -17,7 +17,7 @@
     "input": "integer codes x (post-quantizer, grid g = eps / 2^G), L per cycle; the v0.1.8 ingest quantizer is not in the RTL",
     "configuration": "fixed by the host (shape, T, G, predictor; no config search in hardware); eps bits and times / meta varints are host-composed header segments streamed through",
     "scope": "S4DI v1, rank 0, relations off, zero / last / linear hold, D <= 2^ADDR_W = 2048, G <= 16",
-    "microarchitecture": "as v0.1.15 scp4d_tenc_p (S0 accept + read issue -> S1r registered read -> S1a predict / residual / deadband -> S1b q / reconstruction / write -> S2a sizing -> S2b accumulators + record write -> S3 close; 4-entry record FIFO; emitter START + sparse 1 / 2 events per cycle at W <= 2 / W = 4 or dense W elements -> 32-byte queue, append iff queue + staged <= 32 - MA, MA = 7 / 10 / 20), with a short emitter path: the record carries its first event's gap and >= 128 flag (computed in S2b), later events of a record use lane - previous lane - 1, q varint lengths sit at a 4-bit stride, and bytes are placed by explicit offset / lane selectors (no variable shift, no constant x variable product)",
+    "microarchitecture": "as v0.1.15 scp4d_tenc_p (S0 accept + read issue -> S1r registered read -> S1a predict / residual / deadband -> S1b q / reconstruction / write -> S2a sizing -> S2b accumulators + record write -> S3 close; 4-entry record FIFO; emitter START + sparse 1 / 2 events per cycle at W <= 2 / W = 4 or dense W elements -> 32-byte queue, append iff queue + staged <= 32 - MA, MA = 7 / 10 / 20), with a short emitter path: the record carries its first event's gap, >= 128 flag and event count (computed in S2b); the FIFO pop and same-record decisions use the counts instead of the lane-pick chain; later events of a record use lane - previous lane - 1, q varint lengths sit at a 4-bit stride, and bytes are placed by explicit offset / lane selectors (no variable shift, no constant x variable product)",
     "error_codes": {
       "1": "D = 0 or D > 2048",
       "2": "T = 0",

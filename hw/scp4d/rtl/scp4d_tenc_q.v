@@ -16,6 +16,10 @@
 //     (v0.1.15's `3 * lane` length selects and `<< {n, 3'b000}` packing were mapped by yosys onto
 //     MULT18X18D blocks and were on the ECP5 critical path.)
 //   * the lane of the last emitted event of the head record is a register (e_last).
+//   * the record also carries its event count (popcount of the mask, already summed in S2b), and
+//     the emitter keeps the head record's remaining count (e_cnt): the FIFO pop and the
+//     "second event from the same record" decisions use these counts instead of waiting for the
+//     two chained lowest-set-bit picks (which were the next ECP5 critical path, into the FIFO mux).
 //
 // The rest of the structure is v0.1.15's:
 // Pipeline: S0 accept + read issue -> S1r read register (+fwd t-3) -> S1a predict / residual /
@@ -75,7 +79,9 @@ module scp4d_tenc_q #(
   localparam integer RG = QL + 4 * L;             // first-event gap
   localparam integer RB = RG + AW1;               // first-event gap >= 128
   localparam integer RM = RB + 1;                 // event mask
-  localparam integer RW = RM + L + GA;            // record: {group, mask, big, gap, qlen[L] (4-bit stride), q[L]}
+  localparam integer CW = LL + 2;                 // event-count width (holds L)
+  localparam integer RC = RM + L;                 // event count (popcount of the mask)
+  localparam integer RW = RC + CW + GA;           // record: {group, count, mask, big, gap, qlen[L] (4-bit stride), q[L]}
   localparam [ADDR_W:0] MAXD = 1 << ADDR_W;
   localparam [5:0] W6 = W[5:0], ROOM6 = BQ - MA;
   localparam [2:0] W3 = W[2:0];
@@ -347,7 +353,7 @@ module scp4d_tenc_q #(
   reg [32*L-1:0] p2_q;
   reg [4*L-1:0]  p2_ql;
   reg [5:0]      p2_sl;
-  reg [LL+1:0]   p2_cnt;
+  reg [LL+1:0]   p2_cnt;           // events in the group (== popcount(p2_ev)); also stored in the record
   reg [LL:0]     p2_fc, p2_lc;
   reg [ADDR_W:0] n_acc, pp_acc;
   reg [15:0]     sp_acc, dn_acc;
@@ -378,7 +384,7 @@ module scp4d_tenc_q #(
   wire          r_en;
   wire [GA:0]   r_addr;
   always @(posedge clk) begin
-    if (rec_we) recm[{p2_half, nr2[GA-1:0]}] <= {p2_g[GA-1:0], p2_ev, big, gap, p2_ql, p2_q};
+    if (rec_we) recm[{p2_half, nr2[GA-1:0]}] <= {p2_g[GA-1:0], p2_cnt, p2_ev, big, gap, p2_ql, p2_q};
     if (r_en) rrec <= recm[r_addr];
   end
 
@@ -401,6 +407,7 @@ module scp4d_tenc_q #(
   reg [GA:0]     e_rleft, e_g;
   reg [LL:0]     e_lane;
   reg [L-1:0]    e_rem;
+  reg [CW-1:0]   e_cnt;            // events left in the head record when !e_fresh (== popcount(e_rem))
   wire           eh = e_f[0];
   // record prefetch: sequential reads of the emitted frame's records into a 4-entry register FIFO
   // (issue iff fcnt + rv <= 3 on registered counts; up to 2 records leave per cycle)
@@ -417,6 +424,7 @@ module scp4d_tenc_q #(
   wire [L-1:0]   rm0 = fq0[RM +: L],  rm1 = fq1[RM +: L];
   wire [AW1-1:0] rgap0 = fq0[RG +: AW1], rgap1 = fq1[RG +: AW1];
   wire           rbig0 = fq0[RB], rbig1 = fq1[RB];
+  wire [CW-1:0]  rc0 = fq0[RC +: CW], rc1 = fq1[RC +: CW];
   // START
   wire [ADDR_W+1:0] hv = {dsc_n[eh], dsc_dense[eh]};
   wire [2:0]     hlen = alld ? 3'd0 : (hv >= 128) ? 3'd2 : 3'd1;
@@ -428,20 +436,23 @@ module scp4d_tenc_q #(
   reg  [L-1:0]   srcm, m2, m3;
   reg  [31:0]    q1, q2;
   reg  [2:0]     ql1, ql2;
-  wire           same2 = (m2 != 0);
+  // record-advance decisions come from the carried event counts, not from the lane picks
+  wire [CW-1:0]  ecnt = e_fresh ? rc0 : e_cnt;
+  wire           same2 = (ecnt > 1);          // == (m2 != 0)
+  wire           m3z   = same2 ? (ecnt == 2) : (rc1 == 1);   // == (m3 == 0)
   integer k;
   always @(*) begin
     sb1 = 0; sb2 = 0; q1 = 0; q2 = 0; ql1 = 0; ql2 = 0;
     for (k = L - 1; k >= 0; k = k - 1) if (sm[k]) sb1 = k[LL:0];
     m2 = sm;
     for (k = 0; k < L; k = k + 1) if (sb1 == k) begin m2[k] = 1'b0; q1 = fq0[32*k +: 32]; ql1 = fq0[QL + 4*k +: 3]; end
-    srcm = (m2 != 0) ? m2 : rm1;
+    srcm = same2 ? m2 : rm1;
     for (k = L - 1; k >= 0; k = k - 1) if (srcm[k]) sb2 = k[LL:0];
     m3 = srcm;
     for (k = 0; k < L; k = k + 1) if (sb2 == k) begin
       m3[k] = 1'b0;
-      q2  = (m2 != 0) ? fq0[32*k +: 32] : fq1[32*k +: 32];
-      ql2 = (m2 != 0) ? fq0[QL + 4*k +: 3] : fq1[QL + 4*k +: 3];
+      q2  = same2 ? fq0[32*k +: 32] : fq1[32*k +: 32];
+      ql2 = same2 ? fq0[QL + 4*k +: 3] : fq1[QL + 4*k +: 3];
     end
   end
   /* verilator lint_off WIDTHEXPAND */
@@ -501,8 +512,8 @@ module scp4d_tenc_q #(
     f_pop = 2'd0;
     if (body_sp) begin
       if (!take2) f_pop = same2 ? 2'd0 : 2'd1;
-      else if (same2) f_pop = (m3 == 0) ? 2'd1 : 2'd0;
-      else f_pop = (m3 == 0) ? 2'd2 : 2'd1;
+      else if (same2) f_pop = m3z ? 2'd1 : 2'd0;
+      else f_pop = m3z ? 2'd2 : 2'd1;
     end else if (body_dn && d_gdone && d_match) f_pop = 2'd1;
   end
   wire            fin_sp = take2 ? (e_left == 2) : (e_left == 1);
@@ -558,7 +569,7 @@ module scp4d_tenc_q #(
       cl_v <= 1'b0; cl_half <= 1'b0; cl_n <= 0; cl_sp <= 0; cl_dn <= 0; cl_nr <= 0; dvalid <= 2'b00;
       dsc_n[0] <= 0; dsc_n[1] <= 0; dsc_dense[0] <= 1'b0; dsc_dense[1] <= 1'b0; dsc_nr[0] <= 0; dsc_nr[1] <= 0;
       es_body <= 1'b0; e_f <= 0; e_left <= 0; e_last <= 0; e_dense <= 1'b0; e_fresh <= 1'b0; e_rleft <= 0; e_g <= 0;
-      pf_f <= 0; pf_i <= 0; pf_n <= 0; pf_on <= 1'b0; rv <= 1'b0; fcnt <= 3'd0; fq0 <= 0; fq1 <= 0; fq2 <= 0; fq3 <= 0; e_lane <= 0; e_rem <= 0;
+      pf_f <= 0; pf_i <= 0; pf_n <= 0; pf_on <= 1'b0; rv <= 1'b0; fcnt <= 3'd0; fq0 <= 0; fq1 <= 0; fq2 <= 0; fq3 <= 0; e_lane <= 0; e_rem <= 0; e_cnt <= 0;
     end else begin
       case (st)
         T_IDLE: if (start) begin
@@ -643,10 +654,10 @@ module scp4d_tenc_q #(
           end else if (body_sp) begin
             if (!take2) begin
               e_left <= e_left - 1'b1; e_last <= sb1;
-              if (!same2) e_fresh <= 1'b1; else begin e_rem <= m2; e_fresh <= 1'b0; end
+              if (!same2) e_fresh <= 1'b1; else begin e_rem <= m2; e_cnt <= ecnt - 1'b1; e_fresh <= 1'b0; end
             end else begin
               e_left <= e_left - 2'd2; e_last <= sb2;
-              if (m3 == 0) e_fresh <= 1'b1; else begin e_rem <= m3; e_fresh <= 1'b0; end
+              if (m3z) e_fresh <= 1'b1; else begin e_rem <= m3; e_cnt <= same2 ? ecnt - 2'd2 : rc1 - 1'b1; e_fresh <= 1'b0; end
             end
             if (fin) es_body <= 1'b0;
           end else if (body_dn) begin
