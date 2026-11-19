@@ -27,6 +27,15 @@ Boundaries I keep:
 
 This repository currently declares no open-source license: there is no `LICENSE` file, and `package.json` is marked private with no `license` field. The source is published here for inspection. That publication is not a grant of rights to use, copy, modify, or distribute the work beyond the terms of the host. I reserve rights in the Aethel Node stack, including the 4D state compression engine, the 4D-SCP (Four-Dimensional State Compression Processor) model and proofs, and the deterministic proof and anchoring layers, until a license is stated.
 
+### Note: Early sole-founder and proprietary intent
+
+I stated sole-founder and proprietary intent for this stack publicly from its early days:
+
+- 2026-11-08: “I am the founder who implemented a stack to be run by Agents-Unicorn trajectory.” ([post](https://x.com/ecmccready/status/2119414352646463494))
+- 2026-11-09: “Maximize probability, learning velocity, and evidence generation as the Sole Founder of a Unicorn running an autonomous company.” ([post](https://x.com/ecmccready/status/2119921969353347499))
+- 2026-11-12: “Building, optimizing for differentiation, defensibility and proprietary” ([post](https://x.com/ecmccready/status/2120696926475874520))
+- 2026-11-14: “this stack has be the messenger boy, monopoly of proprietary.” ([post](https://x.com/ecmccready/status/2121441168940823024))
+
 ### End-to-end with 4D-SCP
 
 Aethel Node and 4D-SCP are one intended pipeline, from a declared goal to a compact, reusable state:
