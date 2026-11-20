@@ -5655,7 +5655,509 @@
       }
     ]
   },
-  "synthesis": null,
+  "synthesis": {
+    "label": "SYNTHESIS / PLACE-AND-ROUTE ESTIMATES from open-source tools (one seed, --freq 12 target; ECP5 with nextpnr --router router2; the v0.1.13 decoder, the v0.1.16 encoder and the v0.1.16 loop re-placed with the same flow as 'ref' rows for a like-for-like comparison). Not a programmed-FPGA or silicon measurement; no board was used. xc7: yosys cell counts only (no open-source timing).",
+    "wrapper": "hw/scp4d/synth/scp4d_tdec_r_wrap.v: wrap_tdec_r = wrap_tdec_w (hw/scp4d/synth/scp4d_pnr_wrap.v) with the decoder swapped; wrap_loop_r = wrap_loop_q (hw/scp4d/synth/scp4d_tenc_q_wrap.v) with the decoder swapped. Stream inputs on pins, outputs registered and XOR-folded to 16 pins. The same wrapper logic is added to the new and the reference configurations.",
+    "ecp5_router": "router2",
+    "parameters": {
+      "full": "ADDR_W 11 (D <= 2048)",
+      "ice40_small": "ADDR_W 9 (D <= 512)"
+    },
+    "tools": {
+      "yosys": "Yosys 0.71+50 (git sha1 583f380c6, Release, Clang /usr/bin/clang++ 21.1.8)",
+      "nextpnr_ecp5": "\"nextpnr-ecp5\" -- Next Generation Place and Route (Version nextpnr-0.11.1-103-ge811ba48)",
+      "nextpnr_ice40": "\"nextpnr-ice40\" -- Next Generation Place and Route (Version nextpnr-0.11.1-103-ge811ba48)"
+    },
+    "configs": {
+      "scp4d_tdec_r W=2": {
+        "ecp5_45f_full_params": {
+          "synth": {
+            "num_cells": 8084,
+            "by_type": {
+              "CCU2C": 582,
+              "DP16KD": 8,
+              "L6MUX21": 136,
+              "LUT4": 4804,
+              "MULT18X18D": 1,
+              "PFUMX": 767,
+              "TRELLIS_FF": 1783
+            }
+          },
+          "place_and_route": {
+            "device": "ECP5 LFE5U-45F (CABGA381)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk": 44.32
+            },
+            "utilization": {
+              "DCCA": "1/56",
+              "DP16KD": "8/108",
+              "MULT18X18D": "1/72",
+              "TRELLIS_COMB": "6240/43848",
+              "TRELLIS_FF": "1783/43848",
+              "TRELLIS_IO": "41/245"
+            }
+          }
+        },
+        "ice40_hx8k_addr_w9": {
+          "synth": {
+            "num_cells": 8076,
+            "by_type": {
+              "SB_CARRY": 1138,
+              "SB_DFF": 469,
+              "SB_DFFESR": 755,
+              "SB_DFFESS": 1,
+              "SB_DFFSR": 476,
+              "SB_LUT4": 5226,
+              "SB_RAM40_4K": 8
+            }
+          },
+          "place_and_route": {
+            "device": "iCE40-HX8K (ct256)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk_$glb_clk": 38.92
+            },
+            "utilization": {
+              "ICESTORM_LC": "6660/7680",
+              "ICESTORM_RAM": "8/32",
+              "SB_GB": "6/8",
+              "SB_IO": "41/206"
+            }
+          }
+        },
+        "xc7_full_params": {
+          "synth": {
+            "num_cells": 5592,
+            "by_type": {
+              "BUFG": 1,
+              "CARRY4": 217,
+              "DSP48E1": 1,
+              "FDRE": 1501,
+              "FDSE": 1,
+              "IBUF": 22,
+              "INV": 80,
+              "LUT2": 491,
+              "LUT3": 823,
+              "LUT4": 808,
+              "LUT5": 1084,
+              "LUT6": 535,
+              "MUXF7": 5,
+              "OBUF": 19,
+              "RAMB36E1": 4
+            }
+          }
+        }
+      },
+      "scp4d_tdec_r W=4": {
+        "ecp5_45f_full_params": {
+          "synth": {
+            "num_cells": 22246,
+            "by_type": {
+              "CCU2C": 1297,
+              "DP16KD": 8,
+              "L6MUX21": 492,
+              "LUT4": 14563,
+              "MULT18X18D": 1,
+              "PFUMX": 2785,
+              "TRELLIS_FF": 3097
+            }
+          },
+          "place_and_route": {
+            "device": "ECP5 LFE5U-45F (CABGA381)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk": 23.07
+            },
+            "utilization": {
+              "DCCA": "1/56",
+              "DP16KD": "8/108",
+              "MULT18X18D": "1/72",
+              "TRELLIS_COMB": "17763/43848",
+              "TRELLIS_FF": "3097/43848",
+              "TRELLIS_IO": "57/245"
+            }
+          }
+        },
+        "ice40_hx8k_addr_w9": {
+          "synth": {
+            "num_cells": 19015,
+            "by_type": {
+              "SB_CARRY": 2355,
+              "SB_DFF": 832,
+              "SB_DFFESR": 1224,
+              "SB_DFFESS": 1,
+              "SB_DFFSR": 902,
+              "SB_LUT4": 13682,
+              "SB_RAM40_4K": 16
+            }
+          },
+          "place_and_route": {
+            "device": "iCE40-HX8K (ct256)",
+            "seed": 1,
+            "fits": false,
+            "error": "ERROR: Unable to place cell 'dut.tok_mode_SB_LUT4_I1_LC', no BELs remaining to implement cell type 'ICESTORM_LC'"
+          }
+        },
+        "xc7_full_params": {
+          "synth": {
+            "num_cells": 13468,
+            "by_type": {
+              "BUFG": 1,
+              "CARRY4": 413,
+              "DSP48E1": 1,
+              "FDRE": 2532,
+              "FDSE": 1,
+              "IBUF": 38,
+              "INV": 84,
+              "LUT1": 4,
+              "LUT2": 1080,
+              "LUT3": 2006,
+              "LUT4": 2314,
+              "LUT5": 3195,
+              "LUT6": 1722,
+              "MUXF7": 34,
+              "MUXF8": 16,
+              "OBUF": 19,
+              "RAMB18E1": 8
+            }
+          }
+        }
+      },
+      "loop tenc_q W=2 L=8 -> tdec_r W=2": {
+        "ecp5_45f_full_params": {
+          "synth": {
+            "num_cells": 28706,
+            "by_type": {
+              "CCU2C": 2962,
+              "DP16KD": 33,
+              "L6MUX21": 15,
+              "LUT4": 13826,
+              "MULT18X18D": 2,
+              "PFUMX": 1890,
+              "TRELLIS_FF": 9974
+            }
+          },
+          "place_and_route": {
+            "device": "ECP5 LFE5U-45F (CABGA381)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk": 39.6
+            },
+            "utilization": {
+              "DCCA": "1/56",
+              "DP16KD": "33/108",
+              "MULT18X18D": "2/72",
+              "TRELLIS_COMB": "20838/43848",
+              "TRELLIS_FF": "9974/43848",
+              "TRELLIS_IO": "81/245"
+            }
+          }
+        },
+        "ice40_hx8k_addr_w9": {
+          "synth": {
+            "num_cells": 33071,
+            "by_type": {
+              "SB_CARRY": 5621,
+              "SB_DFF": 1729,
+              "SB_DFFE": 839,
+              "SB_DFFESR": 6769,
+              "SB_DFFESS": 1,
+              "SB_DFFSR": 477,
+              "SB_LUT4": 17571,
+              "SB_RAM40_4K": 60
+            }
+          },
+          "place_and_route": {
+            "device": "iCE40-HX8K (ct256)",
+            "seed": 1,
+            "fits": false,
+            "error": "ERROR: Unable to place cell 'enc.bank[4].m1.0.1_RAM', no BELs remaining to implement cell type 'ICESTORM_RAM'"
+          }
+        },
+        "xc7_full_params": {
+          "synth": {
+            "num_cells": 21956,
+            "by_type": {
+              "BUFG": 1,
+              "CARRY4": 1129,
+              "DSP48E1": 2,
+              "FDRE": 7973,
+              "FDSE": 1,
+              "IBUF": 61,
+              "INV": 295,
+              "LUT2": 2423,
+              "LUT3": 2039,
+              "LUT4": 2197,
+              "LUT5": 3591,
+              "LUT6": 2191,
+              "MUXF7": 4,
+              "OBUF": 20,
+              "RAMB18E1": 25,
+              "RAMB36E1": 4
+            }
+          }
+        }
+      },
+      "loop tenc_q W=4 L=8 -> tdec_r W=4": {
+        "ecp5_45f_full_params": {
+          "synth": {
+            "num_cells": 51017,
+            "by_type": {
+              "CCU2C": 3727,
+              "DP16KD": 33,
+              "L6MUX21": 820,
+              "LUT4": 29183,
+              "MULT18X18D": 2,
+              "PFUMX": 5880,
+              "TRELLIS_FF": 11368
+            }
+          },
+          "place_and_route": {
+            "device": "ECP5 LFE5U-45F (CABGA381)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk": 22.29
+            },
+            "utilization": {
+              "DCCA": "1/56",
+              "DP16KD": "33/108",
+              "MULT18X18D": "2/72",
+              "TRELLIS_COMB": "38103/43848",
+              "TRELLIS_FF": "11368/43848",
+              "TRELLIS_IO": "97/245"
+            }
+          }
+        },
+        "ice40_hx8k_addr_w9": {
+          "synth": {
+            "num_cells": 47507,
+            "by_type": {
+              "SB_CARRY": 6999,
+              "SB_DFF": 2092,
+              "SB_DFFE": 839,
+              "SB_DFFESR": 7318,
+              "SB_DFFESS": 1,
+              "SB_DFFSR": 903,
+              "SB_LUT4": 29283,
+              "SB_RAM40_4K": 68
+            }
+          },
+          "place_and_route": {
+            "device": "iCE40-HX8K (ct256)",
+            "seed": 1,
+            "fits": false,
+            "error": "ERROR: Unable to place cell 'enc.bank[1].m2.0.1_RAM', no BELs remaining to implement cell type 'ICESTORM_RAM'"
+          }
+        },
+        "xc7_full_params": {
+          "synth": {
+            "num_cells": 33448,
+            "by_type": {
+              "BUFG": 1,
+              "CARRY4": 1345,
+              "DSP48E1": 2,
+              "FDRE": 9084,
+              "FDSE": 1,
+              "IBUF": 77,
+              "INV": 304,
+              "LUT1": 2,
+              "LUT2": 3282,
+              "LUT3": 4566,
+              "LUT4": 4192,
+              "LUT5": 6979,
+              "LUT6": 3430,
+              "MUXF7": 94,
+              "MUXF8": 36,
+              "OBUF": 20,
+              "RAMB18E1": 33
+            }
+          }
+        }
+      },
+      "ref v0.1.13 scp4d_tdec_w W=2": {
+        "ecp5_45f_full_params": {
+          "synth": {
+            "num_cells": 7331,
+            "by_type": {
+              "CCU2C": 551,
+              "DP16KD": 8,
+              "L6MUX21": 67,
+              "LUT4": 4283,
+              "MULT18X18D": 1,
+              "PFUMX": 716,
+              "TRELLIS_FF": 1702
+            }
+          },
+          "place_and_route": {
+            "device": "ECP5 LFE5U-45F (CABGA381)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk": 34.66
+            },
+            "utilization": {
+              "DCCA": "1/56",
+              "DP16KD": "8/108",
+              "MULT18X18D": "1/72",
+              "TRELLIS_COMB": "5613/43848",
+              "TRELLIS_FF": "1702/43848",
+              "TRELLIS_IO": "41/245"
+            }
+          }
+        },
+        "ice40_hx8k_addr_w9": {
+          "synth": {
+            "num_cells": 7434,
+            "by_type": {
+              "SB_CARRY": 1082,
+              "SB_DFF": 469,
+              "SB_DFFESR": 740,
+              "SB_DFFESS": 1,
+              "SB_DFFSR": 448,
+              "SB_LUT4": 4683,
+              "SB_RAM40_4K": 8
+            }
+          },
+          "place_and_route": {
+            "device": "iCE40-HX8K (ct256)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk_$glb_clk": 28.49
+            },
+            "utilization": {
+              "ICESTORM_LC": "6092/7680",
+              "ICESTORM_RAM": "8/32",
+              "SB_GB": "6/8",
+              "SB_IO": "41/206"
+            }
+          }
+        }
+      },
+      "ref v0.1.13 scp4d_tdec_w W=4": {
+        "ecp5_45f_full_params": {
+          "synth": {
+            "num_cells": 17396,
+            "by_type": {
+              "CCU2C": 955,
+              "DP16KD": 8,
+              "L6MUX21": 468,
+              "LUT4": 10801,
+              "MULT18X18D": 1,
+              "PFUMX": 2212,
+              "TRELLIS_FF": 2948
+            }
+          },
+          "place_and_route": {
+            "device": "ECP5 LFE5U-45F (CABGA381)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk": 20.33
+            },
+            "utilization": {
+              "DCCA": "1/56",
+              "DP16KD": "8/108",
+              "MULT18X18D": "1/72",
+              "TRELLIS_COMB": "13103/43848",
+              "TRELLIS_FF": "2948/43848",
+              "TRELLIS_IO": "57/245"
+            }
+          }
+        },
+        "ice40_hx8k_addr_w9": {
+          "synth": {
+            "num_cells": 15338,
+            "by_type": {
+              "SB_CARRY": 1826,
+              "SB_DFF": 832,
+              "SB_DFFESR": 1209,
+              "SB_DFFESS": 1,
+              "SB_DFFSR": 842,
+              "SB_LUT4": 10609,
+              "SB_RAM40_4K": 16
+            }
+          },
+          "place_and_route": {
+            "device": "iCE40-HX8K (ct256)",
+            "seed": 1,
+            "fits": false,
+            "error": "ERROR: Unable to place cell 'dut.fe.tq_v[6]_SB_DFFESR_Q_29_D_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_LC', no BELs remaining to implement cell type 'ICESTORM_LC'"
+          }
+        }
+      },
+      "ref v0.1.16 scp4d_tenc_q W=4 L=8": {
+        "ecp5_45f_full_params": {
+          "synth": {
+            "num_cells": 26923,
+            "by_type": {
+              "CCU2C": 2429,
+              "DP16KD": 25,
+              "L6MUX21": 198,
+              "LUT4": 13509,
+              "MULT18X18D": 1,
+              "PFUMX": 2437,
+              "TRELLIS_FF": 8322
+            }
+          },
+          "place_and_route": {
+            "device": "ECP5 LFE5U-45F (CABGA381)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk": 39.58
+            },
+            "utilization": {
+              "DCCA": "1/56",
+              "DP16KD": "25/108",
+              "MULT18X18D": "1/72",
+              "TRELLIS_COMB": "19223/43848",
+              "TRELLIS_FF": "8322/43848",
+              "TRELLIS_IO": "98/245"
+            }
+          }
+        }
+      },
+      "ref v0.1.16 loop tenc_q W=4 L=8 -> tdec_w W=4": {
+        "ecp5_45f_full_params": {
+          "synth": {
+            "num_cells": 43477,
+            "by_type": {
+              "CCU2C": 3407,
+              "DP16KD": 33,
+              "L6MUX21": 480,
+              "LUT4": 23926,
+              "MULT18X18D": 2,
+              "PFUMX": 4406,
+              "TRELLIS_FF": 11219
+            }
+          },
+          "place_and_route": {
+            "device": "ECP5 LFE5U-45F (CABGA381)",
+            "seed": 1,
+            "fits": true,
+            "fmax_mhz": {
+              "clk": 19.45
+            },
+            "utilization": {
+              "DCCA": "1/56",
+              "DP16KD": "33/108",
+              "MULT18X18D": "2/72",
+              "TRELLIS_COMB": "31988/43848",
+              "TRELLIS_FF": "11219/43848",
+              "TRELLIS_IO": "97/245"
+            }
+          }
+        }
+      }
+    }
+  },
   "comparison": {
     "label": "Cycles are MEASURED in simulation (Icarus Verilog) and equal the exact cycle model (full rate) and v0.1.13's committed cycles; fmax, LUT/FF/RAM are SYNTHESIS ESTIMATES (one seed, no board); throughput = measured cycles × estimated fmax. No energy was measured.",
     "env": [
@@ -5668,54 +6170,96 @@
             "cycles": 28444,
             "cycles_per_value": 0.217,
             "v0113_cycles": 28444,
-            "tdec_r": null,
-            "ref_tdec_w_same_flow": null,
+            "tdec_r": {
+              "fmax_mhz_estimate": 44.32,
+              "lut4": 6240,
+              "ff": 1783,
+              "ebr": 8,
+              "values_per_s": 204229751,
+              "stream_MB_per_s": 85.67
+            },
+            "ref_tdec_w_same_flow": {
+              "fmax_mhz_estimate": 34.66,
+              "lut4": 5613,
+              "ff": 1702,
+              "ebr": 8,
+              "values_per_s": 159715776
+            },
             "v0113_committed_router1": {
               "fmax_mhz_estimate": 41.16,
               "values_per_s": 189668244
             },
-            "clock_gain_same_flow": null,
-            "ratio_vs_ref_same_flow": null,
-            "ratio_vs_v0113_committed": null
+            "clock_gain_same_flow": 1.2787,
+            "ratio_vs_ref_same_flow": 1.2787,
+            "ratio_vs_v0113_committed": 1.0768
           },
           "W4": {
             "cycles": 15494,
             "cycles_per_value": 0.1182,
             "v0113_cycles": 15494,
-            "tdec_r": null,
-            "ref_tdec_w_same_flow": null,
+            "tdec_r": {
+              "fmax_mhz_estimate": 23.07,
+              "lut4": 17763,
+              "ff": 3097,
+              "ebr": 8,
+              "values_per_s": 195161420,
+              "stream_MB_per_s": 81.87
+            },
+            "ref_tdec_w_same_flow": {
+              "fmax_mhz_estimate": 20.33,
+              "lut4": 13103,
+              "ff": 2948,
+              "ebr": 8,
+              "values_per_s": 171982300
+            },
             "v0113_committed_router1": {
               "fmax_mhz_estimate": 22,
               "values_per_s": 186109720
             },
-            "clock_gain_same_flow": null,
-            "ratio_vs_ref_same_flow": null,
-            "ratio_vs_v0113_committed": null
+            "clock_gain_same_flow": 1.1348,
+            "ratio_vs_ref_same_flow": 1.1348,
+            "ratio_vs_v0113_committed": 1.0486
           }
         },
         "encoder_tenc_q_W4L8": {
           "cycles": 18527,
-          "same_flow": null,
+          "same_flow": {
+            "fmax_mhz_estimate": 39.58,
+            "values_per_s": 280014560
+          },
           "v0116_committed": {
             "fmax_mhz_estimate": 39.73,
             "values_per_s": 281075758
           },
-          "decoder_W4_over_encoder_same_flow": null
+          "decoder_W4_over_encoder_same_flow": 0.697
         },
         "loop_W4L8": {
           "cycles": 19223,
-          "loop_r": null,
-          "ref_loop_q_same_flow": null,
+          "loop_r": {
+            "fmax_mhz_estimate": 22.29,
+            "lut4": 38103,
+            "ff": 11368,
+            "ebr": 33,
+            "values_per_s": 151984335,
+            "microseconds": 862.4
+          },
+          "ref_loop_q_same_flow": {
+            "fmax_mhz_estimate": 19.45,
+            "values_per_s": 132619799
+          },
           "v0116_committed": {
             "fmax_mhz_estimate": 18.31,
             "values_per_s": 124846711
           },
-          "clock_gain_same_flow": null,
-          "clock_gain_vs_v0116_committed": null
+          "clock_gain_same_flow": 1.146,
+          "clock_gain_vs_v0116_committed": 1.2174
         },
         "loop_W2L8": {
           "cycles": 30016,
-          "loop_r": null
+          "loop_r": {
+            "fmax_mhz_estimate": 39.6,
+            "values_per_s": 172922814
+          }
         }
       },
       {
@@ -5727,66 +6271,149 @@
             "cycles": 113181,
             "cycles_per_value": 0.2159,
             "v0113_cycles": 113181,
-            "tdec_r": null,
-            "ref_tdec_w_same_flow": null,
+            "tdec_r": {
+              "fmax_mhz_estimate": 44.32,
+              "lut4": 6240,
+              "ff": 1783,
+              "ebr": 8,
+              "values_per_s": 205303400,
+              "stream_MB_per_s": 88.05
+            },
+            "ref_tdec_w_same_flow": {
+              "fmax_mhz_estimate": 34.66,
+              "lut4": 5613,
+              "ff": 1702,
+              "ebr": 8,
+              "values_per_s": 160555412
+            },
             "v0113_committed_router1": {
               "fmax_mhz_estimate": 41.16,
               "values_per_s": 190665342
             },
-            "clock_gain_same_flow": null,
-            "ratio_vs_ref_same_flow": null,
-            "ratio_vs_v0113_committed": null
+            "clock_gain_same_flow": 1.2787,
+            "ratio_vs_ref_same_flow": 1.2787,
+            "ratio_vs_v0113_committed": 1.0768
           },
           "W4": {
             "cycles": 61705,
             "cycles_per_value": 0.1177,
             "v0113_cycles": 61705,
-            "tdec_r": null,
-            "ref_tdec_w_same_flow": null,
+            "tdec_r": {
+              "fmax_mhz_estimate": 23.07,
+              "lut4": 17763,
+              "ff": 3097,
+              "ebr": 8,
+              "values_per_s": 196018542,
+              "stream_MB_per_s": 84.06
+            },
+            "ref_tdec_w_same_flow": {
+              "fmax_mhz_estimate": 20.33,
+              "lut4": 13103,
+              "ff": 2948,
+              "ebr": 8,
+              "values_per_s": 172737623
+            },
             "v0113_committed_router1": {
               "fmax_mhz_estimate": 22,
               "values_per_s": 186927089
             },
-            "clock_gain_same_flow": null,
-            "ratio_vs_ref_same_flow": null,
-            "ratio_vs_v0113_committed": null
+            "clock_gain_same_flow": 1.1348,
+            "ratio_vs_ref_same_flow": 1.1348,
+            "ratio_vs_v0113_committed": 1.0486
           }
         },
         "encoder_tenc_q_W4L8": {
           "cycles": 74122,
-          "same_flow": null,
+          "same_flow": {
+            "fmax_mhz_estimate": 39.58,
+            "values_per_s": 279961672
+          },
           "v0116_committed": {
             "fmax_mhz_estimate": 39.73,
             "values_per_s": 281022669
           },
-          "decoder_W4_over_encoder_same_flow": null
+          "decoder_W4_over_encoder_same_flow": 0.7002
         },
         "loop_W4L8": {
           "cycles": 76238,
-          "loop_r": null,
-          "ref_loop_q_same_flow": null,
+          "loop_r": {
+            "fmax_mhz_estimate": 22.29,
+            "lut4": 38103,
+            "ff": 11368,
+            "ebr": 33,
+            "values_per_s": 153288118,
+            "microseconds": 3420.28
+          },
+          "ref_loop_q_same_flow": {
+            "fmax_mhz_estimate": 19.45,
+            "values_per_s": 133757465
+          },
           "v0116_committed": {
             "fmax_mhz_estimate": 18.31,
             "values_per_s": 125917696
           },
-          "clock_gain_same_flow": null,
-          "clock_gain_vs_v0116_committed": null
+          "clock_gain_same_flow": 1.146,
+          "clock_gain_vs_v0116_committed": 1.2174
         },
         "loop_W2L8": {
           "cycles": 119892,
-          "loop_r": null
+          "loop_r": {
+            "fmax_mhz_estimate": 39.6,
+            "values_per_s": 173170894
+          }
         }
       }
     ],
     "ice40": {
-      "scp4d_tdec_r W=2": null,
-      "scp4d_tdec_r W=4": null,
-      "ref v0.1.13 scp4d_tdec_w W=2": null,
-      "ref v0.1.13 scp4d_tdec_w W=4": null,
-      "loop tenc_q W=2 L=8 -> tdec_r W=2": null,
-      "loop tenc_q W=4 L=8 -> tdec_r W=4": null
+      "scp4d_tdec_r W=2": {
+        "fits": true,
+        "fmax_mhz": 38.92,
+        "lc": "6660/7680",
+        "ram": "8/32",
+        "error": null
+      },
+      "scp4d_tdec_r W=4": {
+        "fits": false,
+        "fmax_mhz": null,
+        "lc": null,
+        "ram": null,
+        "error": "ERROR: Unable to place cell 'dut.tok_mode_SB_LUT4_I1_LC', no BELs remaining to implement cell type 'ICESTORM_LC'"
+      },
+      "ref v0.1.13 scp4d_tdec_w W=2": {
+        "fits": true,
+        "fmax_mhz": 28.49,
+        "lc": "6092/7680",
+        "ram": "8/32",
+        "error": null
+      },
+      "ref v0.1.13 scp4d_tdec_w W=4": {
+        "fits": false,
+        "fmax_mhz": null,
+        "lc": null,
+        "ram": null,
+        "error": "ERROR: Unable to place cell 'dut.fe.tq_v[6]_SB_DFFESR_Q_29_D_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_LC', no BELs remaining to implement cell type 'ICESTORM_LC'"
+      },
+      "loop tenc_q W=2 L=8 -> tdec_r W=2": {
+        "fits": false,
+        "fmax_mhz": null,
+        "lc": null,
+        "ram": null,
+        "error": "ERROR: Unable to place cell 'enc.bank[4].m1.0.1_RAM', no BELs remaining to implement cell type 'ICESTORM_RAM'"
+      },
+      "loop tenc_q W=4 L=8 -> tdec_r W=4": {
+        "fits": false,
+        "fmax_mhz": null,
+        "lc": null,
+        "ram": null,
+        "error": "ERROR: Unable to place cell 'enc.bank[1].m2.0.1_RAM', no BELs remaining to implement cell type 'ICESTORM_RAM'"
+      }
     },
-    "verdict": null,
+    "verdict": {
+      "decoder_clock": "Same flow (ECP5 router2, seed 1): scp4d_tdec_r W = 4 23.07 MHz est. vs scp4d_tdec_w W = 4 20.33 MHz (1.1348×); W = 2 44.32 vs 34.66 MHz (1.2787×). Cycles unchanged (env T64 W = 4: 15494).",
+      "decoder_throughput": "env T64, W = 4: 195161420 values/s est. (v0.1.13 committed router1 figure 186109720); W = 2: 204229751.",
+      "loop": "Closed loop tenc_q W4L8 -> tdec_r W4: 19223 cycles (identical to v0.1.16), 22.29 MHz est. -> 151984335 values/s; v0.1.16 loop in the same run 19.45 MHz, committed 18.31 MHz.",
+      "limiter": "The W = 4 decoder still sets the loop's clock: standalone 23.07 MHz est. vs encoder tenc_q W4L8 39.58 MHz in the same run."
+    },
     "energy": "not measured; no pJ figure is reported for v0.1.17"
   }
 }
