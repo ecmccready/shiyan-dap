@@ -1630,3 +1630,101 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0116-rtl.ts --writ
 ```
 
 Without a simulator, it prints `SKIP sim` and runs the same 22 counted checks against the committed report.
+
+
+## 24. v0.1.17: short issue path (`scp4d_tdec_r`) — raising the W-byte decoder clock
+
+`hw/scp4d/rtl/scp4d_tdec_r.v`, with its front end `hw/scp4d/rtl/scp4d_fe_r.v`, is a new decoder variant with the same function, ports, header parser, error codes **and cycle behaviour** as v0.1.13's `scp4d_tdec_w`. Every v0.1.10–v0.1.16 file is unchanged and sha-pinned, including `scp4d_tdec_w.v`, `scp4d_fe_w.v` and `scp4d_tenc_q.v`. §23.3 left the closed W4L8 loop limited by the W = 4 decoder clock. The v0.1.16 ECP5 critical path ran from the element register, through the issue chain's 36-bit gap add / compares and the token muxes, into the front end's token-queue shift; only that path changes. TEST ONLY and unwired, like §18–§23. All inputs are labelled synthetic or hand-written fixtures.
+
+### 24.1 What changed against v0.1.13
+
+- **Tokens are range-checked against D when they enter the queue (`scp4d_fe_r`).** Each queued token carries these flags and narrow fields, computed from the registered header D and D − 1:
+  - the dense bit, head count == 0 and head count > D;
+  - value ≥ D;
+  - the value's low ADDR_W + 1 bits, the head count and head count − 1;
+  - the signed (D − 1) − value.
+
+  The issue chain no longer does any 35-bit compare or add.
+- **Narrow gap step.**
+  - S_SPGAP only follows S_SPQ, so `c_ei == c_nxt + 1` there. "c_ei + gap ≥ D" therefore becomes "gap ≥ D, or c_nxt ≥ (D − 1) − gap" (a signed compare against the precomputed field), which runs in parallel with the narrow sum.
+  - "Next element ≠ current", for a gap or a first index, is "token value ≠ 0".
+  - D − 1 is a register, and the token view is selected by a one-hot pop position.
+- **Pop-late token queue.** For each possible pop count p = 0..K, the next queue contents and occupancy are formed from registered state. The chain's pop count only picks among them in the last mux level. Occupancy limits and the push rule are v0.1.13's.
+  - A ring-buffer variant was tried: the pop moved only a read pointer, and the view was a 16:1 read mux. It came out slower (19.35 vs 23.07 MHz est.) and was not kept.
+- **Off the chain's tail.**
+  - `consumed` + (lengths of the first p tokens) is formed for every p and then selected.
+  - "This frame is the last" is a register (`fr_last`), not a 32-bit add + compare after the chain.
+  - The dequantized step (q << G) is formed in bank stage A and registered into stage B.
+
+**Cycle model.** Cycles are identical to v0.1.13 by construction. `scripts/scp-v0117-rtl-model.ts` re-exports the v0.1.13 model. In addition, `hw/scp4d/tb/scp4d_tdec_r_tb.v` runs the unchanged `scp4d_tdec_w` **in lockstep** on the same beats. It compares in_ready, the valid output lanes (element, code, event), eof, done, err, error code, unsupported, consumed and the header registers on every cycle.
+
+### 24.2 Measured (Icarus Verilog)
+
+- All 7 in-scope temporal-only vectors are bit-exact at W = 1, 2, 4, at full rate and with random input gaps.
+- The 14 out-of-scope or corrupted streams stop with the expected code at every W. These are v0.1.13's 4 out-of-scope streams and 9 negatives, plus a new "first index = D + 1".
+- **The lockstep trace is identical to `scp4d_tdec_w` on every run** (21 streams × 3 W, including the gap runs and the negatives).
+- Every cycle count equals the exact model and v0.1.13's committed count. On env T64: W = 2 takes 28,444 cycles and W = 4 takes 15,494.
+- `hw/scp4d/tb/scp4d_loop_r_tb.v` (the unchanged v0.1.16 `scp4d_tenc_q` → `scp4d_tdec_r`, same W) is bit-exact and inside the deadband for 18 jobs × 5 configurations, also with gaps. Its cycles and per-frame latencies equal v0.1.16's loop (env T64 W4L8: 19,223 cycles).
+- `scripts/check-scp-v0117-rtl.ts` has 22 counted checks.
+
+### 24.3 Synthesis and place-and-route (tool ESTIMATES, one seed, --freq 12, ECP5 router2; no board)
+
+Every row comes from the same run and flow. The unchanged `tdec_w`, `tenc_q` W4L8 and v0.1.16 loop are re-placed as "ref" rows.
+
+| config | ECP5-45F LUT4 / FF / DP16KD / MULT18 | ECP5 fmax | iCE40-HX8K (ADDR_W 9) |
+|---|---|---:|---|
+| **tdec_r W2** | 6,240 / 1,783 / 8 / 1 | **44.32 MHz** | fits, 6,660 LC, 38.92 MHz |
+| ref tdec_w W2 (v0.1.13) | 5,613 / 1,702 / 8 / 1 | 34.66 MHz | fits, 6,092 LC, 28.49 MHz |
+| **tdec_r W4** | 17,763 / 3,097 / 8 / 1 | **23.07 MHz** | does not fit (LCs) |
+| ref tdec_w W4 (v0.1.13) | 13,103 / 2,948 / 8 / 1 | 20.33 MHz | does not fit (LCs) |
+| ref tenc_q W4L8 (v0.1.16) | 19,223 / 8,322 / 25 / 1 | 39.58 MHz | — |
+| **loop W4L8 → tdec_r W4** | 38,103 / 11,368 / 33 / 2 | **22.29 MHz** | does not fit (RAM) |
+| ref loop W4L8 → tdec_w W4 (v0.1.16) | 31,988 / 11,219 / 33 / 2 | 19.45 MHz | — |
+| loop W2L8 → tdec_r W2 | 20,838 / 9,974 / 33 / 2 | 39.60 MHz | does not fit (RAM) |
+
+- In the same run, the clock gain is 1.28× at W = 2 and 1.13× at W = 4, and 1.15× for the W4L8 loop (1.22× against the committed v0.1.16 18.31 MHz).
+- The same unchanged designs placed in the v0.1.16 run and in this one differ by up to ~13% (ref `tdec_w` W2 30.67 vs 34.66 MHz; loop W4L8 18.31 vs 19.45 MHz). **So the W = 4 gain is near the one-seed spread and should be read as "modestly faster", not as a firm 1.13×.**
+- LUTs rise 36% at W = 4. The new loop W4L8 uses 87% of the 45F's LUTs.
+
+**Where the clock goes now.** At W = 4 the critical path (~43 ns) is the four-step issue chain itself: token view → state decode → bank check → next-element compare, four times in series, ending in the chain's register updates. The wide arithmetic and the queue fan-out are gone from it. Each step costs about 8–10 ns of logic and routing. A cycle-identical rewrite cannot remove that serial dependence.
+
+### 24.4 Throughput (measured cycles × estimated ECP5 fmax, env T64, 131,072 values)
+
+| design | cycles | fmax (est.) | values/s (est.) | vs same-run ref |
+|---|---:|---:|---:|---:|
+| tdec_r W2 | 28,444 | 44.32 | 204.2 M | 1.28× |
+| tdec_r W4 | 15,494 | 23.07 | 195.2 M | 1.13× |
+| tenc_q W4L8 (encoder alone) | 18,527 | 39.58 | 280.0 M | — |
+| **loop W4L8 → tdec_r W4** | 19,223 | 22.29 | **152.0 M (862 µs)** | 1.15× (v0.1.16 committed: 124.8 M) |
+
+On env T256: tdec_r W4 reaches 196.0 M values/s, and the loop W4L8 153.3 M values/s.
+
+### 24.5 Verdict
+
+- **The decoder clock rises, but the W = 4 decoder still limits the loop.**
+  - The loop W4L8 goes from 18.31 MHz (v0.1.16, committed) to 22.29 MHz est., about 152 M values/s end to end.
+  - The standalone W = 4 decoder (23.07 MHz) is still well below the encoder (39.58 MHz). At W = 4 it delivers 0.70× the encoder's values/s.
+- **W = 2 gains more (1.28×)** and still fits the iCE40-HX8K (38.92 MHz est.).
+- **Next step (proposed v0.1.18):** split the decoder's issue chain into a token classifier (head / first index / q / gap → element indices; it depends only on the token stream) and a bank issuer (bank conflicts, sweeps), with a queue between them. That removes the four-step serial walk from one clock but changes the cycle model, so it needs a new exact model and loop re-measurement.
+
+### 24.6 What this does and does not prove
+
+- **Proves:**
+  - The short issue path keeps the decoder bit-exact with the v0.1.10 model at W = 1, 2, 4, and cycle- and output-identical to v0.1.13 on every cycle of every run (lockstep).
+  - The loop with the v0.1.16 encoder is bit-exact with unchanged cycles.
+  - In one place-and-route flow, the clock estimate rises 1.28× (W = 2) and 1.13× (W = 4).
+- **Does not prove:**
+  - Board timing: every fmax is a one-seed estimate, and the W = 4 gain is within the run-to-run spread.
+  - Energy or power.
+  - Relations decoding (`scp4d_rdec_w` is unchanged).
+  - Anything about real production data.
+
+### 24.7 Running it (including WSL)
+
+```bash
+sudo apt install iverilog
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0117-rtl.ts --require-sim
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0117-rtl.ts --write --synth   # ~55 min; yosys, nextpnr-ecp5 (router2), nextpnr-ice40
+```
+
+Without a simulator, it prints `SKIP sim` and runs the same 22 counted checks against the committed report.
