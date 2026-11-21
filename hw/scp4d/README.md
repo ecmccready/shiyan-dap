@@ -1,6 +1,6 @@
 # hw/scp4d — 4D-SCP RTL (TEST ONLY, unwired)
 
-This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Nothing in the Next.js app, `src/`, Level 4 or any route imports it. It contains no TS/JS, so `tsc` and `next build` never see it. Spec: `docs/design/4d-scp-architecture.md` §18 (temporal-only), §19 (relations), §20 (W-byte front end), §21 (encoder), §22 (pipelined encoder), §23 (short emitter path), §24 (short decoder issue path) and §25 (two-stage decoder).
+This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Nothing in the Next.js app, `src/`, Level 4 or any route imports it. It contains no TS/JS, so `tsc` and `next build` never see it. Spec: `docs/design/4d-scp-architecture.md` §18 (temporal-only), §19 (relations), §20 (W-byte front end), §21 (encoder), §22 (pipelined encoder), §23 (short emitter path), §24 (short decoder issue path), §25 (v0.1.18 two-stage decoder), §26 (v0.1.19 benchmark), §27 (v0.1.20 proof path) and §28 (v0.1.21 loop fit and sweep).
 
 | Milestone | What | Evidence |
 |---|---|---|
@@ -12,6 +12,8 @@ This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Not
 | **v0.1.15** | `rtl/scp4d_tenc_p.v`: pipelined encoder variant (registered state read, split S1 / S2 arithmetic, W = 1/2/4 bytes out, two sparse events per cycle at W = 4, 32-byte queue). `tb/scp4d_loop_p_tb.v`: encoder → `scp4d_tdec_w` at the same W (2 or 4). v0.1.14 files unchanged | Byte-exact with the v0.1.10 model on 18 jobs × 6 configs (the 4 v0.1.14 configs + W4L4, W4L8), also with random gaps and backpressure. The loop is bit-exact at 5 configs. 9 negatives return the right error code. Cycles are measured and equal to an exact cycle model; synthesis numbers are estimates. `scripts/check-scp-v0115-rtl.ts`, `fixtures/scp/v0115-rtl-report.json` |
 | **v0.1.16** | `rtl/scp4d_tenc_q.v`: `tenc_p` with a short emitter path (each record carries its first-event gap and event count; count-driven FIFO pop; explicit byte / lane selectors, no variable shifts). Cycle-for-cycle identical to v0.1.15. `tb/scp4d_tenc_q_tb.v`, `tb/scp4d_loop_q_tb.v`. v0.1.14 / v0.1.15 files unchanged | Byte-exact with the v0.1.10 model on 18 jobs × 6 configs, also with random gaps and backpressure. The loop is bit-exact. 9 negatives return the right error code. Cycles are measured and equal to v0.1.15's counts (exact model); synthesis numbers are estimates (ECP5 router2, with same-flow reference rows). `scripts/check-scp-v0116-rtl.ts`, `fixtures/scp/v0116-rtl-report.json` |
 | **v0.1.17** | `rtl/scp4d_tdec_r.v` + `rtl/scp4d_fe_r.v`: `tdec_w` with a short issue path (tokens range-checked against D on entry, narrow signed gap compares, pop-late token queue, consumed / last-frame off the chain tail). Cycle-for-cycle identical to v0.1.13. `tb/scp4d_tdec_r_tb.v` (lockstep against the unchanged `tdec_w`), `tb/scp4d_loop_r_tb.v` (`tenc_q` → `tdec_r`). v0.1.10–v0.1.16 files unchanged | Bit-exact with the v0.1.10 model on 7 vectors at W = 1, 2, 4, also with random gaps; 14 out-of-scope / negative streams return the right code; the lockstep trace equals `tdec_w` on every cycle of every run. The loop is bit-exact on 18 jobs × 5 configs. Cycles are measured and equal to v0.1.13 / v0.1.16 counts; synthesis numbers are estimates (ECP5 router2, same-flow reference rows). `scripts/check-scp-v0117-rtl.ts`, `fixtures/scp/v0117-rtl-report.json` |
+| **v0.1.18** | `rtl/scp4d_tdec_s.v`: two-stage decoder (token classifier and bank issuer). §25 | Bit-exact at W = 1, 2, 4. Env T64 cycles 56,864 / 28,443 / 15,197. One-seed ECP5 estimates are in `fixtures/scp/v0118-rtl-report.json`. The W4L8 loop in that report did not finish inside 2,400 s. `scripts/check-scp-v0118-rtl.ts` |
+| **v0.1.19** | Industry benchmark harness for every encoder, decoder, loop and K1 design id. §26 | `scripts/bench-ecp5-v0119.ts`, `fixtures/scp/v0119-industry-benchmark.json`, `docs/design/v0119-reproduce.md`. OSS CAD Suite 20261118 only. Five-seed 45F medians. Power needs a real board. `scripts/check-scp-v0119-bench.ts` |
 | **v0.1.20** | `rtl/scp4d_ede.v` (K1, temporal-only by default, relations mode bit) and `rtl/scp4d_fsd.v` (full-scan baseline). `tb/scp4d_ede_tb.v`, `tb/scp4d_loop_ede_tb.v` (`tenc_q` → `tdec_s` → `scp4d_ede`) | 66 standalone Icarus runs bit-exact with `scripts/scp-v0120-ede-model.ts` in both modes. Dirty and decision memories map to ECP5 block RAM under OSS CAD Suite 20261118. Registered in the v0.1.19 harness. `ede-temporal`, `ede-relations` and `fsd` fit 12F. `loop-ede-w4l8` places only on 85F (46454 TRELLIS_COMB; 45F has 43848). Power needs a real board. `scripts/check-scp-v0120-rtl.ts` |
 
 ## Layout
@@ -92,7 +94,8 @@ See §25.
 
 ```bash
 sudo apt install iverilog            # required for simulation
-# optional: sudo apt install yosys verilator nextpnr-ice40   (or the YosysHQ oss-cad-suite release)
+# Recorded place-and-route numbers use only OSS CAD Suite 20261118
+# at /opt/eda/oss-cad-suite (Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48).
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0111-rtl.ts --require-sim
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0111-rtl.ts --synth    # re-run synthesis (estimates)
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0112-rtl.ts --require-sim
@@ -107,6 +110,8 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0116-rtl.ts --requ
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0116-rtl.ts --write --synth   # short-emitter encoder + loop + same-flow refs (estimates, ~60 min)
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0117-rtl.ts --require-sim
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0117-rtl.ts --write --synth   # short-issue-path decoder + loop + same-flow refs (estimates, ~55 min)
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0118-rtl.ts                 # two-stage decoder; re-simulates when iverilog is on PATH
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0119-bench.ts               # manifest shape and source hashes; no place-and-route
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts                 # K1; re-simulates when iverilog is on PATH
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts --synth         # Yosys only. No nextpnr. Power needs a real board.
 ```

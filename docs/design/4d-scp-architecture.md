@@ -1729,9 +1729,37 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0117-rtl.ts --writ
 
 Without a simulator, it prints `SKIP sim` and runs the same 22 counted checks against the committed report.
 
+## 25. v0.1.18: two-stage decoder (`v0118`)
+
+**Naming.** This is §25. The file tag is `v0118`. v0.2 stays reserved for the first product-facing page.
+
+`scp4d_tdec_s` splits the v0.1.17 issue chain into a token classifier and a bank issuer, joined by a record register and a pop-late record queue (`RQ = 3W`). The front end stays `scp4d_fe_r`. The exact cycle model is `scripts/scp-v0118-rtl-model.ts`. The committed record is `fixtures/scp/v0118-rtl-report.json`. That report's tools line is Yosys 0.71+50 (`583f380c6`) and nextpnr 0.11.1-103-ge811ba48, one seed, router2. Those clocks are that report's one-seed estimates. The five-seed medians for the same modules are the v0.1.19 table in §26. Power is **needs real board**.
+
+On `env-16x16x2-T64-temporal-last` (131,072 element frames) the measured decoder cycles are 56,864 at W = 1, 28,443 at W = 2 and 15,197 at W = 4. The same-stream v0.1.17 counts are 56,865 / 28,444 / 15,494. The loop `tenc_q` → `tdec_s` measures 30,015 cycles at W2L8 and 19,048 at W4L8.
+
+The same report's ECP5-45F place-and-route, seed 1: `tdec_s` W = 2 uses 7,955 `TRELLIS_COMB` and 2,279 flip-flops at 44.48 MHz; W = 4 uses 23,785 `TRELLIS_COMB` and 4,017 flip-flops at 37.56 MHz. The W2L8 loop places at 40.28 MHz (22,702 `TRELLIS_COMB`). The W4L8 loop in that report did not finish: the script's bound was 2,400 s, and the record is `not run to completion`. iCE40-HX8K does not fit `tdec_s` at W = 2 or W = 4.
+
+```bash
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0118-rtl.ts
+```
+
+## 26. v0.1.19: industry performance benchmark (`v0119`)
+
+**Naming.** This is §26. The file tag is `v0119`. v0.2 stays reserved for the first product-facing page.
+
+The benchmark is one harness, `scripts/bench-ecp5-v0119.ts`. It places every design in `scripts/ecp5-v0119-catalog.ts` on LFE5U-45F for seeds 1–5, bound 7,200 s, router2, and it fit-checks 12F, 25F and 85F at seed 1 (pack first, route only if pack exits 0). The record is `fixtures/scp/v0119-industry-benchmark.json`. The generated table is `docs/design/v0119-industry-benchmark.md`. The command list is `docs/design/v0119-reproduce.md`. Toolchain for every number in that manifest: OSS CAD Suite 20261118, Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48. A five-seed median exists only when all five 45F routes finished. Power is **needs real board**.
+
+Design ids in the harness: `tdec`, `tdec-w-w2`, `tdec-w-w4`, `tdec-r-w2`, `tdec-r-w4`, `tdec-s-w2`, `tdec-s-w4`, `rdec`, `rdec-w-w2`, `rdec-w-w4`, `tenc-w-w2l8`, `tenc-p-w2l8`, `tenc-p-w4l8`, `tenc-q-w2l8`, `tenc-q-w4l8`, `loop-w-w2l8`, `loop-p-w4l8`, `loop-q-w4l8`, `loop-r-w4l8`, `loop-s-w2l8`, `loop-s-w4l8`, `ede-temporal`, `ede-relations`, `fsd`, `loop-ede-w4l8`.
+
+```bash
+export PATH="/opt/eda/oss-cad-suite/bin:$PATH"
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0119-bench.ts
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/bench-ecp5-v0119.ts --only=<design-id> --seed=<1-5>
+```
+
 ## 27. v0.1.20: live proof path (draft)
 
-**Status of this section.** Draft header, pre-registered before any v0.1.20 result existed. §25 (v0.1.18 synthesis) and §26 (v0.1.19 Industry Performance Benchmark) are not on this branch. This section keeps the locked number §27. v0.2 stays reserved for the first product-facing page. Files use the tag `v0120`. The branch is `feat/scp-v0120-proof-path`.
+**Status of this section.** Draft header, pre-registered before any v0.1.20 result existed. §25 is the v0.1.18 two-stage decoder. §26 is the v0.1.19 industry benchmark. This section keeps the locked number §27. v0.2 stays reserved for the first product-facing page. Files use the tag `v0120`. The measurements below landed from `feat/scp-v0120-proof-path` and `feat/scp-v0120-k1-bench`.
 
 **Locked decisions (owner, 2026-11-20).** Name v0.1.20. Pass thresholds are the section 2 table below, committed in `fixtures/scp/v0120-prereg.json` and not edited after a run. Hardware default is temporal-only; relations stay behind a mode bit. Power board is a Lattice ECP5 Versa or an equivalent open-source-friendly ECP5 45F/85F board. Power and energy stay **needs real board**. This file does not contain a numeric energy or power estimate.
 
@@ -1791,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0119` means v0.1.19. `v0120` means v0.1.20.
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28).
 
 **Reproduce.**
 
@@ -1809,7 +1837,7 @@ Without Icarus the RTL check prints `SKIP sim` and still runs the 12 counted che
 
 ## 28. v0.1.21: K1 closed loop on the 45F, and K1 versus full scan (draft)
 
-**Status of this section.** Draft header, pre-registered before any v0.1.21 measurement. `fixtures/scp/v0121-prereg.json` is the locked text. This section does not yet contain an Fmax, a trimmed cell count, or a sweep verdict. v0.2 stays reserved for the first product-facing page. Files use the tag `v0121`. The branch is `feat/scp-v0121-k1-loop-fit`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A number from any other toolchain is not recorded. Power is **needs real board**.
+**Status of this section.** Draft header, pre-registered before any v0.1.21 measurement. `fixtures/scp/v0121-prereg.json` is the locked text. This section does not yet contain an Fmax, a trimmed cell count, or a sweep verdict. Icarus cycle counts for the sweep grid, with no Fmax, are in `fixtures/scp/v0121-sweep-cycles.json`. v0.2 stays reserved for the first product-facing page. Files use the tag `v0121`. The branch is `feat/scp-v0121-k1-loop-fit`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A place-and-route number from any other toolchain is not recorded. Power is **needs real board**.
 
 **Fit goal.** `loop-ede-w4l8` (`tenc_q` → `tdec_s` → `scp4d_ede`) places and routes on LFE5U-45F for seeds 1, 2, 3, 4 and 5, bound 7200 s, the same flow as v0.1.19. `TRELLIS_COMB` ≤ 43848. Decoder codes and K1 decision records stay bit-exact with the golden model. The aim is a margin of at least 5% of the part (`TRELLIS_COMB` ≤ 95% of 43848). The v0.1.20 pack log asked for 46454 `TRELLIS_COMB`, which is 2606 over 43848. The allowed trim is the W=4 encoder and/or the W=4 decoder (placed at 18882 and 24084 LUT in v0.1.19). K1 RTL stays as it is except where the loop integration requires a change. Temporal-only stays the default; relations stay behind the mode bit. A trim that still passes the v0.1.19 bit-exact regression may edit the existing module. A trim that does not ships as a new named variant (`tenc_q_w4l8_lite` or `tdec_s_w4_lite`) with its own golden vectors, and the v0.1.19 designs stay untouched. If the loop cannot place on the 45F without breaking bit-exactness, the run stops and reports the best demand. It does not invent a fit.
 
