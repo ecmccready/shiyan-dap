@@ -28377,6 +28377,170 @@
           "report_sha256": "64e9f905a728ad3cd244c8cf8974b6942b553d6700f34da328bf3b56f26fafa6",
           "netlist_sha256": "f778731cc29c470bdf730c2979cc14c7a22115d3f7cf5eccb02b5dfefd46fe9c",
           "log_sha256": "1bbf5831ad972e6b3e15786b5b348b6e49cec0ec2e131e85a0a85ea18e9d3f00"
+        },
+        {
+          "seed": 2,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/workspace/fixtures/scp/v0119-work/loop-w-w2l8/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "2",
+            "--timing-allow-fail",
+            "--report",
+            "/workspace/fixtures/scp/v0119-pnr/loop-w-w2l8/45F-route-seed2.report.json"
+          ],
+          "command_sha256": "aad028318d10809db97f85983bda37ad5b4788ef734aa15022de3d69cc8b1e5e",
+          "wall_clock_s": 71.2302,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 32.60515213012695,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 32.60515213012695
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 32,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GND": {
+              "used": 1,
+              "available": 1
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 2,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 17253,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 6453,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 81,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            },
+            "VCC": {
+              "used": 1,
+              "available": 1
+            }
+          },
+          "lut": 17253,
+          "ff": 6453,
+          "bram": 32,
+          "dsp": 2,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/loop-w-w2l8/45F-route-seed2.report.json",
+          "report_sha256": "c1dcd8330d413531fb31f6af492e32d07c143be189f7bfd8808939a2c76447e9",
+          "netlist_sha256": "f778731cc29c470bdf730c2979cc14c7a22115d3f7cf5eccb02b5dfefd46fe9c",
+          "log_sha256": "eb608f3a078aa07aab0626da1bb79b8923e2837f513ca15e27951d37c9de80ac"
         }
       ],
       "fit": {},
