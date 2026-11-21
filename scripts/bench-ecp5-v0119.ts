@@ -17,7 +17,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { DESIGNS, READ_FILES, workloadFor, type Design } from "./ecp5-v0119-catalog.ts";
-import { paretoIds, round6, throughputValuesPerSec, valuesPerCycle, median, THROUGHPUT_FORMULA } from "./ecp5-v0119-score.ts";
+import { paretoIds, round6, throughputValuesPerSec, valuesPerCycle, median, THROUGHPUT_FORMULA, DECISIONS_FORMULA } from "./ecp5-v0119-score.ts";
 import { adviseFromBenchmark } from "../src/scp/evidence/benchmark-advisor.ts";
 
 const root = resolve(join(import.meta.dirname, ".."));
@@ -91,6 +91,7 @@ function emptyManifest() {
     label: "v0.1.19 Industry Performance Benchmark. Post-route static timing from nextpnr. Not a programmed board. Power is not measured.",
     power: POWER,
     formula: THROUGHPUT_FORMULA,
+    decisions_formula: DECISIONS_FORMULA,
     bound_s: BOUND_S,
     seeds_45f: [...SEEDS],
     fit: {
@@ -118,8 +119,10 @@ function emptyManifest() {
 
 function loadManifest(): ReturnType<typeof emptyManifest> {
   const p = abs(MANIFEST);
-  if (!existsSync(p)) return emptyManifest();
-  return JSON.parse(readFileSync(p, "utf8"));
+  const m = !existsSync(p) ? emptyManifest() : JSON.parse(readFileSync(p, "utf8")) as ReturnType<typeof emptyManifest>;
+  m.formula = THROUGHPUT_FORMULA;
+  m.decisions_formula = DECISIONS_FORMULA;
+  return m;
 }
 
 function saveManifest(m: ReturnType<typeof emptyManifest>) {
@@ -283,6 +286,14 @@ function summarize(d: Design, seeds: SeedRec[], fit: Record<string, { fits: bool
       per_bram_note: mid.bram === 0 ? "BRAM used is 0; values/s per BRAM is undefined" : null,
     };
   }
+  const evals = w.evals;
+  let decisions: { median: number } | null = null;
+  let decisionsPerLut: number | null = null;
+  if (evals && fmax && resources?.lut) {
+    const rate = (mhz: number) => (evals / w.cycles) * mhz * 1e6;
+    decisions = { median: rate(fmax.median) };
+    decisionsPerLut = decisions.median / resources.lut;
+  }
   const order = ["12F", "25F", "45F", "85F"] as const;
   const fit45 = seeds.some((s) => s.status === "routed");
   const fits: Record<string, boolean | null> = {
@@ -301,6 +312,7 @@ function summarize(d: Design, seeds: SeedRec[], fit: Record<string, { fits: bool
     id: d.id, kind: d.kind, milestone: d.milestone, top: d.top,
     sets: d.sets, composed_of: d.composedOf ?? [],
     workload: w, values_per_cycle: vpc,
+    decisions_per_s: decisions, decisions_per_s_per_lut: decisionsPerLut,
     seeds_45f: seeds, fit, fmax_mhz: fmax, throughput_values_per_s: throughput,
     resources_at_median_fmax_seed: resources, efficiency, fits, smallest_part: smallest,
     power: POWER,
@@ -383,6 +395,7 @@ const SIMS = [
   "scripts/check-scp-v0116-rtl.ts",
   "scripts/check-scp-v0117-rtl.ts",
   "scripts/check-scp-v0118-rtl.ts",
+  "scripts/check-scp-v0120-rtl.ts",
 ];
 
 function bitExact() {
@@ -443,6 +456,14 @@ function writeDocs() {
     lines.push(`| ${row.id} | ${row.kind} | ${row.fmax_mhz.min} | ${row.fmax_mhz.median} | ${row.fmax_mhz.max} | ${cell(row.throughput_values_per_s?.median)} | ${cell(res?.lut)} | ${cell(res?.ff)} | ${cell(res?.bram)} | ${cell(eff?.per_lut)} | ${cell(eff?.per_ff)} | ${cell(eff?.per_bram)} | ${row.smallest_part ?? "—"} |`);
   }
   lines.push("", `Pareto set (clock, throughput, values/s per LUT): ${(m.pareto as string[]).join(", ") || "(none yet)"}.`, "");
+  lines.push(DECISIONS_FORMULA, "");
+  lines.push("| design | evals | decisions/s (median Fmax) | decisions/s per LUT |", "|---|---:|---:|---:|");
+  for (const d of DESIGNS) {
+    const row = designs.find((x) => x.id === d.id) as { id: string; workload?: { evals?: number }; decisions_per_s?: { median: number } | null; decisions_per_s_per_lut?: number | null } | undefined;
+    if (!row?.workload?.evals) continue;
+    lines.push(`| ${row.id} | ${row.workload.evals} | ${cell(row.decisions_per_s?.median)} | ${cell(row.decisions_per_s_per_lut)} |`);
+  }
+  lines.push("");
   writeFileSync(abs("docs/design/v0119-industry-benchmark.md"), lines.join("\n"));
   const tools = m.tools as { yosys?: string; nextpnr_ecp5?: string; ecppack?: string; oss_cad_suite?: string } | null;
   const repro = [

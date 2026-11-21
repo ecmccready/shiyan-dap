@@ -31,9 +31,13 @@ export const READ_FILES = [
   "hw/scp4d/synth/scp4d_tenc_q_wrap.v",
   "hw/scp4d/synth/scp4d_tdec_r_wrap.v",
   "hw/scp4d/synth/scp4d_tdec_s_wrap.v",
+  "hw/scp4d/rtl/scp4d_ede.v",
+  "hw/scp4d/rtl/scp4d_fsd.v",
+  "hw/scp4d/rtl/scp4d_k1_tap.v",
+  "hw/scp4d/synth/scp4d_ede_wrap.v",
 ] as const;
 
-export type Kind = "encoder" | "decoder" | "loop";
+export type Kind = "encoder" | "decoder" | "loop" | "decision";
 export type SetParam = { name: string; value: string };
 
 export type Design = {
@@ -44,7 +48,7 @@ export type Design = {
   sets: readonly SetParam[];
   /** Closed loops name the encoder and decoder placed at the same configuration. */
   composedOf?: readonly string[];
-  workload: "tdec" | "tdec_w" | "rdec" | "rdec_w" | "tenc_w" | "tenc_p" | "tenc_q" | "loop_w" | "loop_p" | "loop_q" | "loop_r" | "loop_s";
+  workload: "tdec" | "tdec_w" | "rdec" | "rdec_w" | "tenc_w" | "tenc_p" | "tenc_q" | "loop_w" | "loop_p" | "loop_q" | "loop_r" | "loop_s" | "ede" | "ede_rel" | "fsd" | "loop_ede";
   /** W or the cfg key such as W4L8. */
   field: string;
 };
@@ -71,12 +75,18 @@ export const DESIGNS: readonly Design[] = [
   { id: "loop-r-w4l8", kind: "loop", milestone: "v0.1.17", top: "wrap_loop_r", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }], composedOf: ["tenc-q-w4l8", "tdec-r-w4"], workload: "loop_r", field: "W4L8" },
   { id: "loop-s-w2l8", kind: "loop", milestone: "v0.1.18", top: "wrap_loop_s", sets: [{ name: "W", value: "2" }, { name: "L", value: "8" }], composedOf: ["tenc-q-w2l8", "tdec-s-w2"], workload: "loop_s", field: "W2L8" },
   { id: "loop-s-w4l8", kind: "loop", milestone: "v0.1.18", top: "wrap_loop_s", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }], composedOf: ["tenc-q-w4l8", "tdec-s-w4"], workload: "loop_s", field: "W4L8" },
+  { id: "ede-temporal", kind: "decision", milestone: "v0.1.20", top: "wrap_ede", sets: [{ name: "REL", value: "0" }], workload: "ede", field: "cycles" },
+  { id: "ede-relations", kind: "decision", milestone: "v0.1.20", top: "wrap_ede", sets: [{ name: "REL", value: "1" }], workload: "ede_rel", field: "cycles" },
+  { id: "fsd", kind: "decision", milestone: "v0.1.20", top: "wrap_fsd", sets: [], workload: "fsd", field: "cycles" },
+  { id: "loop-ede-w4l8", kind: "loop", milestone: "v0.1.20", top: "wrap_loop_ede", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }], composedOf: ["tenc-q-w4l8", "tdec-s-w4", "ede-temporal"], workload: "loop_ede", field: "cycles" },
 ];
 
 export type Workload = {
   stream: string;
   element_frames: number;
   cycles: number;
+  /** Threshold compares in the K1 simulation. Absent for the codec designs. */
+  evals?: number;
   source_report: string;
   source_field: string;
 };
@@ -121,6 +131,25 @@ export function workloadFor(root: string, d: Design): Workload {
       stream: STREAM_R, element_frames: frames(root, "relations", STREAM_R),
       cycles: measuredCycles(root, "fixtures/scp/v0112-rtl-report.json", "array", STREAM_R, "cycles"),
       source_report: "fixtures/scp/v0112-rtl-report.json", source_field: `measured[id=${STREAM_R}].cycles`,
+    };
+  }
+  if (d.workload === "ede" || d.workload === "ede_rel" || d.workload === "fsd" || d.workload === "loop_ede") {
+    const file = "fixtures/scp/v0120-k1-env.json";
+    const row = load(root, file) as {
+      ede_temporal: { cycles: number; evals: number };
+      ede_relations: { cycles: number; evals: number };
+      fsd: { cycles: number; evals: number };
+      loop_ede_w4l8: { cycles: number; evals: number };
+    };
+    const key = d.workload === "ede" ? "ede_temporal" : d.workload === "ede_rel" ? "ede_relations" : d.workload === "fsd" ? "fsd" : "loop_ede_w4l8";
+    const cell = row[key];
+    return {
+      stream: STREAM_T,
+      element_frames: frames(root, "temporal_only", STREAM_T),
+      cycles: int(cell.cycles, `${key} cycles`),
+      evals: int(cell.evals, `${key} evals`),
+      source_report: file,
+      source_field: `${key}.cycles`,
     };
   }
   const temporalKey = `tdec_w:${STREAM_T}`;

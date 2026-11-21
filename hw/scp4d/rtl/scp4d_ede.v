@@ -2,7 +2,10 @@
 // Temporal-only by default. mode_relations marks the declared fan-out (FAN targets)
 // and those cells are evaluated too. Decision is the software agent's compare:
 // code > threshold, integer only. No multiply, no division, no initial block.
-// Exact cycle model: scripts/scp-v0120-ede-model.ts (runEde).
+//
+// Dirty, decision and code memories are synchronous ECP5 block RAMs: the address
+// is registered, the read data is used two clocks later, and there is no
+// same-cycle write-through. Exact cycle model: scripts/scp-v0120-ede-model.ts (runEde).
 `timescale 1ns/1ps
 `default_nettype none
 module scp4d_ede #(
@@ -35,28 +38,78 @@ module scp4d_ede #(
   output reg  [31:0]               evals,
   output reg  [31:0]               cycles
 );
-  localparam integer S_CLEAR = 0, S_IDLE = 1, S_FAN = 2, S_EVAL = 3, S_EOF = 4, S_ERR = 5;
+  localparam integer S_CLEAR = 0, S_IDLE = 1, S_IN_WAIT = 2, S_IN_USE = 3;
+  localparam integer S_FAN_SET = 4, S_FAN_WAIT = 5, S_FAN_USE = 6;
+  localparam integer S_EV_SET = 7, S_EV_WAIT = 8, S_EV_USE = 9, S_EOF = 10, S_ERR = 11;
   localparam integer DEPTH = 1 << ADDR_W;
 
-  reg [2:0] state;
+  reg [3:0] state;
   reg [ADDR_W:0] clr;
   reg [ADDR_W:0] head, tail;
   reg [ADDR_W-1:0] queue [0:DEPTH-1];
-  reg signed [31:0] codes [0:DEPTH-1];
-  reg decs [0:DEPTH-1];
-  reg dirty [0:DEPTH-1];
-  reg [FAN*ADDR_W-1:0] fan_tgt [0:DEPTH-1];
-  reg [FAN-1:0] fan_vld [0:DEPTH-1];
-  reg [ADDR_W-1:0] src_r;
+  (* ram_style = "block" *) reg signed [31:0] code_m [0:DEPTH-1];
+  (* ram_style = "block" *) reg dec_m [0:DEPTH-1];
+  (* ram_style = "block" *) reg dirty_m [0:DEPTH-1];
+  (* ram_style = "block" *) reg [FAN*ADDR_W-1:0] fan_tgt_m [0:DEPTH-1];
+  (* ram_style = "block" *) reg [FAN-1:0] fan_vld_m [0:DEPTH-1];
+
+  reg [ADDR_W-1:0] raddr, fan_raddr;
+  reg signed [31:0] code_q;
+  reg dec_q, dirty_q;
+  reg [FAN*ADDR_W-1:0] fan_tgt_q, fan_word;
+  reg [FAN-1:0] fan_vld_q, fan_bits;
+  reg [ADDR_W-1:0] hold_elem, hold_tgt;
+  reg signed [31:0] hold_code;
   reg [2:0] fan_i;
   reg eof_pend, last_pend;
+  reg [ADDR_W-1:0] tgt, qe;
+  reg slot_vld;
+  wire nd = code_q > threshold;
 
   assign in_ready = (state == S_IDLE) && !cfg_we;
 
-  reg signed [31:0] code_r;
-  reg nd;
-  reg [ADDR_W-1:0] tgt;
-  reg [ADDR_W-1:0] qe;
+  always @(posedge clk) begin
+    if (rst) code_q <= 0;
+    else begin
+      if (state == S_CLEAR) code_m[clr[ADDR_W-1:0]] <= 0;
+      else if (state == S_IN_USE) code_m[hold_elem] <= hold_code;
+      code_q <= code_m[raddr];
+    end
+  end
+
+  always @(posedge clk) begin
+    if (rst) dec_q <= 0;
+    else begin
+      if (state == S_CLEAR) dec_m[clr[ADDR_W-1:0]] <= 0;
+      else if (state == S_EV_USE) dec_m[hold_elem] <= nd;
+      dec_q <= dec_m[raddr];
+    end
+  end
+
+  always @(posedge clk) begin
+    if (rst) dirty_q <= 0;
+    else begin
+      if (state == S_CLEAR) dirty_m[clr[ADDR_W-1:0]] <= 0;
+      else if (state == S_IN_USE && !dirty_q) dirty_m[hold_elem] <= 1'b1;
+      else if (state == S_FAN_USE && !dirty_q) dirty_m[hold_tgt] <= 1'b1;
+      else if (state == S_EV_USE) dirty_m[hold_elem] <= 1'b0;
+      dirty_q <= dirty_m[raddr];
+    end
+  end
+
+  always @(posedge clk) begin
+    if (rst) begin
+      fan_tgt_q <= 0;
+      fan_vld_q <= 0;
+    end else begin
+      if (state == S_IDLE && cfg_we && {1'b0, cfg_src} < cfg_D) begin
+        fan_tgt_m[cfg_src] <= cfg_tgt;
+        fan_vld_m[cfg_src] <= cfg_vld;
+      end
+      fan_tgt_q <= fan_tgt_m[fan_raddr];
+      fan_vld_q <= fan_vld_m[fan_raddr];
+    end
+  end
 
   always @(posedge clk) begin
     if (rst) begin
@@ -75,15 +128,14 @@ module scp4d_ede #(
       err_code <= 0;
       evals <= 0;
       cycles <= 0;
+      raddr <= 0;
+      fan_raddr <= 0;
     end else begin
       if (!done && !err && (state != S_IDLE || (in_valid && !cfg_we))) cycles <= cycles + 1;
       out_valid <= 0;
       out_eof <= 0;
       case (state)
         S_CLEAR: begin
-          codes[clr[ADDR_W-1:0]] <= 0;
-          decs[clr[ADDR_W-1:0]] <= 0;
-          dirty[clr[ADDR_W-1:0]] <= 0;
           if (clr == cfg_D - 1) state <= S_IDLE;
           else clr <= clr + 1;
         end
@@ -91,52 +143,69 @@ module scp4d_ede #(
           if (cfg_we) begin
             if ({1'b0, cfg_src} >= cfg_D) begin
               err <= 1; err_code <= 4'd3; state <= S_ERR;
-            end else begin
-              fan_tgt[cfg_src] <= cfg_tgt;
-              fan_vld[cfg_src] <= cfg_vld;
             end
           end else if (in_valid && in_event && {1'b0, in_elem} >= cfg_D) begin
             err <= 1; err_code <= 4'd1; state <= S_ERR;
           end else if (in_valid) begin
             eof_pend <= in_eof;
             last_pend <= in_last;
-            src_r <= in_elem;
-            fan_i <= 0;
             if (in_event) begin
-              codes[in_elem] <= in_code;
-              if (!dirty[in_elem]) begin
-                dirty[in_elem] <= 1;
-                queue[tail[ADDR_W-1:0]] <= in_elem;
-                tail <= tail + 1;
-              end
-            end
-            if (in_event && mode_relations) state <= S_FAN;
-            else if (in_eof) state <= S_EVAL;
+              hold_elem <= in_elem;
+              hold_code <= in_code;
+              raddr <= in_elem;
+              fan_raddr <= in_elem;
+              state <= S_IN_WAIT;
+            end else if (in_eof) state <= S_EV_SET;
           end
         end
-        S_FAN: begin
-          // Constant selects: a variable bit-select on a memory word is not reliable here.
+        S_IN_WAIT: state <= S_IN_USE;
+        S_IN_USE: begin
+          fan_word <= fan_tgt_q;
+          fan_bits <= fan_vld_q;
+          fan_i <= 0;
+          if (!dirty_q) begin
+            queue[tail[ADDR_W-1:0]] <= hold_elem;
+            tail <= tail + 1;
+          end
+          if (mode_relations) state <= S_FAN_SET;
+          else if (eof_pend) state <= S_EV_SET;
+          else state <= S_IDLE;
+        end
+        S_FAN_SET: begin
           case (fan_i)
-            3'd0: begin tgt = fan_tgt[src_r][0 +: ADDR_W]; nd = fan_vld[src_r][0]; end
-            3'd1: begin tgt = fan_tgt[src_r][ADDR_W +: ADDR_W]; nd = fan_vld[src_r][1]; end
-            3'd2: begin tgt = fan_tgt[src_r][2*ADDR_W +: ADDR_W]; nd = fan_vld[src_r][2]; end
-            default: begin tgt = fan_tgt[src_r][3*ADDR_W +: ADDR_W]; nd = fan_vld[src_r][3]; end
+            3'd0: begin tgt = fan_word[0 +: ADDR_W]; slot_vld = fan_bits[0]; end
+            3'd1: begin tgt = fan_word[ADDR_W +: ADDR_W]; slot_vld = fan_bits[1]; end
+            3'd2: begin tgt = fan_word[2*ADDR_W +: ADDR_W]; slot_vld = fan_bits[2]; end
+            default: begin tgt = fan_word[3*ADDR_W +: ADDR_W]; slot_vld = fan_bits[3]; end
           endcase
-          if (nd) begin
+          if (slot_vld) begin
             if ({1'b0, tgt} >= cfg_D) begin
               err <= 1; err_code <= 4'd2; state <= S_ERR;
-            end else if (!dirty[tgt]) begin
-              dirty[tgt] <= 1;
-              queue[tail[ADDR_W-1:0]] <= tgt;
-              tail <= tail + 1;
+            end else begin
+              hold_tgt <= tgt;
+              raddr <= tgt;
+              state <= S_FAN_WAIT;
             end
-          end
-          if (fan_i == FAN - 1) begin
-            if (eof_pend) state <= S_EVAL;
+          end else if (fan_i == FAN - 1) begin
+            if (eof_pend) state <= S_EV_SET;
             else state <= S_IDLE;
           end else fan_i <= fan_i + 1;
         end
-        S_EVAL: begin
+        S_FAN_WAIT: state <= S_FAN_USE;
+        S_FAN_USE: begin
+          if (!dirty_q) begin
+            queue[tail[ADDR_W-1:0]] <= hold_tgt;
+            tail <= tail + 1;
+          end
+          if (fan_i == FAN - 1) begin
+            if (eof_pend) state <= S_EV_SET;
+            else state <= S_IDLE;
+          end else begin
+            fan_i <= fan_i + 1;
+            state <= S_FAN_SET;
+          end
+        end
+        S_EV_SET: begin
           if (head == tail) begin
             out_eof <= 1;
             head <= 0;
@@ -145,19 +214,22 @@ module scp4d_ede #(
             else state <= S_IDLE;
           end else begin
             qe = queue[head[ADDR_W-1:0]];
+            hold_elem <= qe;
+            raddr <= qe;
             head <= head + 1;
-            code_r = codes[qe];
-            nd = code_r > threshold;
-            if (nd != decs[qe]) begin
-              out_valid <= 1;
-              out_elem <= qe;
-              out_decision <= nd;
-            end
-            decs[qe] <= nd;
-            dirty[qe] <= 0;
-            evals <= evals + 1;
-            if (head + 1 == tail) state <= S_EOF;
+            state <= S_EV_WAIT;
           end
+        end
+        S_EV_WAIT: state <= S_EV_USE;
+        S_EV_USE: begin
+          if (nd != dec_q) begin
+            out_valid <= 1;
+            out_elem <= hold_elem;
+            out_decision <= nd;
+          end
+          evals <= evals + 1;
+          if (head == tail) state <= S_EOF;
+          else state <= S_EV_SET;
         end
         S_EOF: begin
           if (!done) begin

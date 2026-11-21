@@ -210,25 +210,28 @@ module scp4d_loop_ede_tb;
     if (d_done || d_err || e_err || cyc > timeout) phase2 = 1;
   end
 
-  // Drive EDE from the captured decoder tokens with explicit edges. A clocked
-  // always that both produced and consumed EDE's ready hung this simulator.
+  // Drive EDE from the captured decoder tokens. Nonblocking so the DUT samples
+  // the token on the clock after it is presented, the same handshake as
+  // scp4d_ede_tb. A blocking valid cleared in this process at the sample edge
+  // drops the token before the DUT sees it.
   initial begin
     wait (phase2 === 1'b1);
     feed_i = 0;
     while (feed_i < cap_n && !ede_err) begin
       @(posedge clk);
-      while (!ede_ready) @(posedge clk);
-      ede_elem = cap_elem[feed_i];
-      ede_code = cap_code[feed_i];
-      ede_event = cap_ev[feed_i];
-      ede_eof = cap_eof[feed_i];
-      ede_last = cap_last[feed_i];
-      ede_valid = 1;
+      while (ede_ready !== 1'b1) @(posedge clk);
+      ede_elem <= cap_elem[feed_i];
+      ede_code <= cap_code[feed_i];
+      ede_event <= cap_ev[feed_i];
+      ede_eof <= cap_eof[feed_i];
+      ede_last <= cap_last[feed_i];
+      ede_valid <= 1;
       @(posedge clk);
-      ede_valid = 0;
+      @(posedge clk);
+      ede_valid <= 0;
       feed_i = feed_i + 1;
     end
-    while (!ede_done && !ede_err) @(posedge clk);
+    while (!ede_done && !ede_err && guard < 200000) @(posedge clk);
   end
 
   always @(posedge clk) if (!rst && phase2) begin
@@ -239,7 +242,8 @@ module scp4d_loop_ede_tb;
       got = got + 1;
     end
     if (ede_out_eof) frame_e = frame_e + 1;
-    if (ede_done || ede_err) begin
+    guard = guard + 1;
+    if (ede_done || ede_err || guard > 200000) begin
       $display("RESULT id=%0s ok=%0d dec_ok=%0d ede_done=%0d ede_err=%0d err_code=%0d cycles=%0d evals=%0d got=%0d nexp=%0d mism_codes=%0d mism_ede=%0d frames=%0d cap=%0d",
         id, (d_done && !d_err && !e_err && mism == 0 && frame == T && ede_done && !ede_err && mism_e == 0 && got == nexp),
         (mism == 0 && frame == T && d_done && !d_err), ede_done, ede_err, ede_err_code, ede_cycles, ede_evals, got, nexp, mism, mism_e, frame, cap_n);

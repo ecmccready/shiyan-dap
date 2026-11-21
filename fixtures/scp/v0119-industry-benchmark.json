@@ -26,12 +26,12 @@
   },
   "design_set": "Every RTL encoder, decoder and loop module, at the configuration earlier specs compare (W=2 and W=4 where the width changes the netlist; encoders and loops at L=8). Other (W, L) values of the same module are not re-placed.",
   "tools": {
-    "oss_cad_suite": "20261118",
-    "yosys": "Yosys 0.71+50 (git sha1 583f380c6, Release, Clang /usr/bin/clang++ 21.1.8)",
-    "nextpnr_ecp5": "\"nextpnr-ecp5\" -- Next Generation Place and Route (Version nextpnr-0.11.1-103-ge811ba48)",
-    "nextpnr_ice40": "\"nextpnr-ice40\" -- Next Generation Place and Route (Version nextpnr-0.11.1-103-ge811ba48)",
-    "ecppack": "Project Trellis ecppack Version 1.4-88-g2d12005",
-    "iverilog": "Icarus Verilog version 14.0 (devel) (s20260301-1164-g0b15315c1-dirty)"
+    "oss_cad_suite": null,
+    "yosys": "Yosys 0.33 (git sha1 2584903a060)",
+    "nextpnr_ecp5": "\"nextpnr-ecp5\" -- Next Generation Place and Route (Version 0.6-3build5)",
+    "nextpnr_ice40": "",
+    "ecppack": "",
+    "iverilog": "Icarus Verilog version 12.0 (stable) ()"
   },
   "source_files": [
     {
@@ -101,6 +101,22 @@
     {
       "path": "hw/scp4d/synth/scp4d_tdec_s_wrap.v",
       "sha256": "bda5b4f4ddd83469b4375734099da2820981eff4b7f87253f096dfd2443da27b"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_ede.v",
+      "sha256": "2a5a619e7626b706c046650a33b540e89630f0d73512c995789c96dadf1b2e93"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_fsd.v",
+      "sha256": "7a4dba118628cd14f04ad0aaf3dbe3f74f18a6c283f2bf46df2308df99a0d3d7"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_k1_tap.v",
+      "sha256": "fbfa2904e43bf69e02fd3b1120544034f3b1a6c65a2e8f7f013fddf2e4c1c068"
+    },
+    {
+      "path": "hw/scp4d/synth/scp4d_ede_wrap.v",
+      "sha256": "8a3baca2948f1b9f9b70f275394468cc73d484306ca92596d31a75f092027a9a"
     }
   ],
   "bit_exact": {
@@ -37316,5 +37332,6 @@
       }
     ],
     "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
-  }
+  },
+  "decisions_formula": "decisions/s = (evals / cycles) * fmax_MHz * 1e6; evals is the threshold-compare count in fixtures/scp/v0120-k1-env.json; decisions/s per LUT divides that by the LUT count of the median-Fmax seed"
 }

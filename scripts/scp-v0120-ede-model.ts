@@ -1,16 +1,26 @@
 /**
  * TEST ONLY. Exact cycle model of scp4d_ede (event-driven) and scp4d_fsd (full scan).
  * Pure. The decision bit is decideThreshold from the software agent: code > threshold.
- * Temporal-only is the default. Relations mode spends FAN cycles per event marking
- * the declared fan-out and then evaluates those targets too.
+ * Temporal-only is the default. Relations mode also marks the declared fan-out.
  *
- * Cycle schedule (the RTL's states, one cycle each):
+ * Dirty, decision and code are synchronous block RAMs. A read address registered
+ * on one clock is sampled on the next and used on the clock after that. There is
+ * no same-cycle write-through. Decision values match the previous compare; the
+ * cycle counts are the block-RAM schedule below.
+ *
+ * scp4d_ede, one clock per state:
  *   CLEAR: D cycles, zeroing code, decision and dirty.
- *   each accepted token: 1 INGEST cycle.
- *   each event with relations mode: FAN mark cycles.
- *   each queued element: 1 EVAL cycle.
- *   each frame end: 1 EOF cycle. The last frame's EOF cycle also raises `done`.
- * Full scan has no queue and no fan cycles. Its EVAL is D cycles per frame, in element order.
+ *   each accepted token: 1 cycle.
+ *   each in-range event: +1 sample clock and +1 use clock (read dirty, write the
+ *   code, enqueue if the cell was clean).
+ *   relations mode, per fan slot: 1 address clock. A valid in-range slot adds a
+ *   sample clock and a use clock. An out-of-range target errors on the address clock.
+ *   each queued element: 1 address + 1 sample + 1 use clock.
+ *   each frame end: 1 EOF clock (the empty-queue case is that clock alone).
+ *   The last frame's EOF clock also raises `done`.
+ * scp4d_fsd has no queue and no fan. Each frame scans 0..D-1 with a sample clock
+ * and a use clock per element, then 1 EOF clock. The eof token's accept clock is
+ * the address clock for element 0.
  * `cycles` is the number of clocks from reset release through the cycle that raises `done`.
  */
 import { decideThreshold } from "../src/scp/subsystem";
@@ -64,6 +74,7 @@ export function runEde(
     cycles += 1;
     if (tok.event) {
       if (tok.elem >= D || tok.elem < 0) return fail(1);
+      cycles += 2;
       codes[tok.elem] = tok.code;
       push(queue, dirty, tok.elem);
       if (relations) {
@@ -73,22 +84,26 @@ export function runEde(
           const slot = slots[s];
           if (slot && slot.valid) {
             if (slot.tgt < 0 || slot.tgt >= D) return fail(2);
+            cycles += 2;
             push(queue, dirty, slot.tgt);
           }
         }
       }
     }
     if (tok.eof) {
-      while (queue.length) {
-        const e = queue.shift()!;
+      if (queue.length === 0) cycles += 1;
+      else {
+        while (queue.length) {
+          const e = queue.shift()!;
+          cycles += 3;
+          evals += 1;
+          const nd = decideThreshold(codes[e], threshold) as 0 | 1;
+          if (nd !== decs[e]) changes.push({ frame, elem: e, decision: nd });
+          decs[e] = nd;
+          dirty[e] = false;
+        }
         cycles += 1;
-        evals += 1;
-        const nd = decideThreshold(codes[e], threshold) as 0 | 1;
-        if (nd !== decs[e]) changes.push({ frame, elem: e, decision: nd });
-        decs[e] = nd;
-        dirty[e] = false;
       }
-      cycles += 1;
       frame += 1;
     }
   }
@@ -112,7 +127,7 @@ export function runFsd(D: number, threshold: number, tokens: readonly Tok[]): Ed
     }
     if (tok.eof) {
       for (let e = 0; e < D; e++) {
-        cycles += 1;
+        cycles += 2;
         evals += 1;
         const nd = decideThreshold(codes[e], threshold) as 0 | 1;
         if (nd !== decs[e]) changes.push({ frame, elem: e, decision: nd });

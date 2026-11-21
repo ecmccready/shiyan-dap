@@ -14,8 +14,9 @@
 module scp4d_ede_tb;
   parameter integer ADDR_W = 8;
   parameter integer FAN = 4;
-  localparam integer MAX_T = 4096;
-  localparam integer MAX_E = 4096;
+  localparam integer MAX_T = 32768;
+  localparam integer MAX_E = 32768;
+  localparam integer MAX_FAN = 4096;
 
   reg clk = 0, rst = 1;
   reg mode_relations = 0;
@@ -62,8 +63,8 @@ module scp4d_ede_tb;
   integer tok_ev [0:MAX_T-1];
   integer tok_eof [0:MAX_T-1];
   integer tok_last [0:MAX_T-1];
-  integer fan_tgt_m [0:255][0:3];
-  integer fan_vld_m [0:255][0:3];
+  integer fan_tgt_m [0:MAX_FAN-1][0:3];
+  integer fan_vld_m [0:MAX_FAN-1][0:3];
   integer cfg_n, tptr, frame_now;
   reg drive;
   wire use_ede = (dut == 0);
@@ -87,7 +88,7 @@ module scp4d_ede_tb;
     if (fd == 0) $fatal(1, "open");
     rc = $fscanf(fd, "%d %d %d", D, thr, rel);
     rc = $fscanf(fd, "%d", nfan);
-    for (i = 0; i < 256; i = i + 1) for (slot = 0; slot < 4; slot = slot + 1) begin fan_tgt_m[i][slot] = 0; fan_vld_m[i][slot] = 0; end
+    for (i = 0; i < MAX_FAN; i = i + 1) for (slot = 0; slot < 4; slot = slot + 1) begin fan_tgt_m[i][slot] = 0; fan_vld_m[i][slot] = 0; end
     for (i = 0; i < nfan; i = i + 1) begin
       rc = $fscanf(fd, "%d %d %d %d", src, slot, tgt, vld);
       fan_tgt_m[src][slot] = tgt;
@@ -158,7 +159,7 @@ module scp4d_ede_tb;
       got = got + 1;
     end
     if (out_eof) begin eof_got = eof_got + 1; frame_now = frame_now + 1; end
-    if (done || err || guard > 200000) begin
+    if (done || err || guard > 2000000) begin
       if (expect_err != 0)
         $display("RESULT dut=%0d ok=%0d err=%0d err_code=%0d cycles=%0d evals=%0d got=%0d mismatches=%0d eofs=%0d",
           dut, (err && err_code == expect_err), err, err_code, cycles, evals, got, mismatches, eof_got);

@@ -31,5 +31,14 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 | loop-r-w4l8 | loop | 20.368257522583008 | 21.614145278930664 | 23.67144012451172 | 147376020.9124486 | 35598 | 11368 | 33 | 4140.008453071763 | 12964.111621432849 | 4465940.027649958 | 45F |
 | loop-s-w2l8 | loop | 38.458580017089844 | 39.1742057800293 | 40.78968811035156 | 171069182.07562885 | 22670 | 10470 | 33 | 7546.060082736164 | 16338.985871597788 | 5183914.608352389 | 12F |
 | loop-s-w4l8 | loop | 2/5 routed | | | | | | | | | | — |
+| ede-temporal | decision | not run | | | | | | | | | | |
+| ede-relations | decision | not run | | | | | | | | | | |
+| fsd | decision | not run | | | | | | | | | | |
+| loop-ede-w4l8 | loop | not run | | | | | | | | | | |
 
 Pareto set (clock, throughput, values/s per LUT): rdec, tdec, tdec-r-w2, tdec-s-w2, tdec-s-w4, tenc-q-w4l8.
+
+decisions/s = (evals / cycles) * fmax_MHz * 1e6; evals is the threshold-compare count in fixtures/scp/v0120-k1-env.json; decisions/s per LUT divides that by the LUT count of the median-Fmax seed
+
+| design | evals | decisions/s (median Fmax) | decisions/s per LUT |
+|---|---:|---:|---:|

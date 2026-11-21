@@ -20,6 +20,6 @@ nextpnr-ecp5 --45k --package CABGA381 --json n.json --lpf-allow-unconstrained --
 
 Fit command, seed 1, part in {--12k, --25k, --85k}, package CABGA381. `--pack-only` first. The route command above is run only when packing exits 0.
 
-Tools recorded in the manifest: Yosys Yosys 0.71+50 (git sha1 583f380c6, Release, Clang /usr/bin/clang++ 21.1.8); "nextpnr-ecp5" -- Next Generation Place and Route (Version nextpnr-0.11.1-103-ge811ba48); Project Trellis ecppack Version 1.4-88-g2d12005; OSS CAD Suite 20261118.
+Tools recorded in the manifest: Yosys Yosys 0.33 (git sha1 2584903a060); "nextpnr-ecp5" -- Next Generation Place and Route (Version 0.6-3build5); ; OSS CAD Suite .
 
 Power is not measured. It needs a programmed board.
