@@ -10,7 +10,7 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 
 | design | kind | Fmax min | median | max | values/s (median) | LUT | FF | BRAM | per LUT | per FF | per BRAM | smallest part |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| tdec | decoder | 2/5 routed | | | | | | | | | | — |
+| tdec | decoder | 3/5 routed | | | | | | | | | | — |
 | tdec-w-w2 | decoder | not run | | | | | | | | | | |
 | tdec-w-w4 | decoder | not run | | | | | | | | | | |
 | tdec-r-w2 | decoder | not run | | | | | | | | | | |
