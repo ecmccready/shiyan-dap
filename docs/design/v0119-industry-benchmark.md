@@ -16,7 +16,7 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 | tdec-r-w2 | decoder | 41.06270217895508 | 46.15313720703125 | 47.65989685058594 | 212676979.32780197 | 6359 | 1783 | 8 | 33445.03527721371 | 119280.41465384295 | 26584622.415975247 | 12F |
 | tdec-r-w4 | decoder | 21.488740921020508 | 21.924535751342773 | 22.31545066833496 | 185471327.61068797 | 18084 | 3097 | 8 | 10256.100841113026 | 59887.416083528566 | 23183915.951335996 | 12F |
 | tdec-s-w2 | decoder | 46.85376739501953 | 47.160911560058594 | 48.58378219604492 | 217328516.68248776 | 8061 | 2279 | 8 | 26960.49084263587 | 95361.35001425527 | 27166064.58531097 | 12F |
-| tdec-s-w4 | decoder | 4/5 routed | | | | | | | | | | — |
+| tdec-s-w4 | decoder | 36.08024215698242 | 38.23653030395508 | 39.08845520019531 | 329784727.2487991 | 24084 | 4017 | 8 | 13693.104436505526 | 82097.26842140878 | 41223090.906099886 | — |
 | rdec | decoder | not run | | | | | | | | | | |
 | rdec-w-w2 | decoder | not run | | | | | | | | | | |
 | rdec-w-w4 | decoder | not run | | | | | | | | | | |
@@ -32,4 +32,4 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 | loop-s-w2l8 | loop | not run | | | | | | | | | | |
 | loop-s-w4l8 | loop | not run | | | | | | | | | | |
 
-Pareto set (clock, throughput, values/s per LUT): tdec, tdec-r-w2, tdec-s-w2.
+Pareto set (clock, throughput, values/s per LUT): tdec, tdec-r-w2, tdec-s-w2, tdec-s-w4.
