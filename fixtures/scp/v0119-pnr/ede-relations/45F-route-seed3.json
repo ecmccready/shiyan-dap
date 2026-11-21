@@ -22,13 +22,13 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-relations/45F-route-seed3.report.json"
   ],
   "command_sha256": "cee6751e36d8ac9fd89b0e14c498e6ab0c45cb4bedda1279b11b6161c9e6044c",
-  "wall_clock_s": 2.33216,
+  "wall_clock_s": 3.05143,
   "exit_code": 0,
   "status": "routed",
   "not_completed_within_s": null,
-  "fmax_mhz": 60.364601135253906,
+  "fmax_mhz": 65.99788665771484,
   "fmax_clocks": {
-    "$glbnet$clk$TRELLIS_IO_IN": 60.364601135253906
+    "$glbnet$clk$TRELLIS_IO_IN": 65.99788665771484
   },
   "utilization": {
     "ALU54B": {
@@ -87,6 +87,10 @@
       "used": 0,
       "available": 2
     },
+    "GND": {
+      "used": 1,
+      "available": 1
+    },
     "GSR": {
       "used": 0,
       "available": 1
@@ -120,7 +124,7 @@
       "available": 85
     },
     "TRELLIS_COMB": {
-      "used": 896,
+      "used": 813,
       "available": 43848
     },
     "TRELLIS_ECLKBUF": {
@@ -142,15 +146,33 @@
     "USRMCLK": {
       "used": 0,
       "available": 1
+    },
+    "VCC": {
+      "used": 1,
+      "available": 1
     }
   },
-  "lut": 896,
+  "lut": 813,
   "ff": 537,
   "bram": 14,
   "dsp": 0,
+  "demand": {
+    "lut4": {
+      "used": 771,
+      "available": 43848
+    },
+    "trellis_comb": {
+      "used": 813,
+      "available": 43848
+    },
+    "trellis_ff": {
+      "used": 537,
+      "available": 43848
+    }
+  },
   "error": null,
   "report_path": "fixtures/scp/v0119-pnr/ede-relations/45F-route-seed3.report.json",
-  "report_sha256": "1dec950684de1f9f8fe9f2db96fa1af9cdfeb655022abba5bb3259c2846a1588",
-  "netlist_sha256": "d5c5e2bb2d9d33a1c4306543a4b97d0a8996bb0bacf4f953130ff8be78242f33",
-  "log_sha256": "5ba69d3cac390843a28f2f703133bf058fc6aef2fb47aab14a80671c02cc7549"
+  "report_sha256": "c36e764f727a6254f2f8514e3e4b7f5aeed891106c2fd19fd9f66d9b42f5f2bc",
+  "netlist_sha256": "2473d2ac5740fca6f6a64679874dc9520d28232d4c711a37e256b120ada62b04",
+  "log_sha256": "27b94b790704c15fc544baeb9876e231ddae7ca5c9ae3620446776eae133f241"
 }

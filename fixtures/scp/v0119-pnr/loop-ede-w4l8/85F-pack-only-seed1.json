@@ -23,7 +23,7 @@
     "--pack-only"
   ],
   "command_sha256": "623295435fbbf326835e37e51102e8077802a1bc4e10c4429abd7562dc4606bd",
-  "wall_clock_s": 5.54819,
+  "wall_clock_s": 2.30935,
   "exit_code": 0,
   "status": "packed",
   "not_completed_within_s": null,
@@ -86,6 +86,10 @@
       "used": 0,
       "available": 2
     },
+    "GND": {
+      "used": 1,
+      "available": 1
+    },
     "GSR": {
       "used": 0,
       "available": 1
@@ -119,7 +123,7 @@
       "available": 141
     },
     "TRELLIS_COMB": {
-      "used": 86708,
+      "used": 46454,
       "available": 83640
     },
     "TRELLIS_ECLKBUF": {
@@ -127,7 +131,7 @@
       "available": 8
     },
     "TRELLIS_FF": {
-      "used": 18306,
+      "used": 18299,
       "available": 83640
     },
     "TRELLIS_IO": {
@@ -141,15 +145,33 @@
     "USRMCLK": {
       "used": 0,
       "available": 1
+    },
+    "VCC": {
+      "used": 1,
+      "available": 1
     }
   },
-  "lut": 86708,
-  "ff": 18306,
+  "lut": 46454,
+  "ff": 18299,
   "bram": 41,
   "dsp": 2,
+  "demand": {
+    "lut4": {
+      "used": 44624,
+      "available": 83640
+    },
+    "trellis_comb": {
+      "used": 46454,
+      "available": 83640
+    },
+    "trellis_ff": {
+      "used": 18299,
+      "available": 83640
+    }
+  },
   "error": null,
   "report_path": "fixtures/scp/v0119-pnr/loop-ede-w4l8/85F-pack-only-seed1.report.json",
-  "report_sha256": "8aa3d294fc4ec1d60f3577e67fe91bf3696d7c76e78bd2d9e590a06263ee3533",
-  "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
-  "log_sha256": "500331894e387b033558b0966f75cee5218a4d91b4cb83b513cdd405dd10bebb"
+  "report_sha256": "72c752a309410cbbfd02d7816d3b0ae7ed35cb37f4ac3f33e212c5d90c128632",
+  "netlist_sha256": "fb0ea242d94338ae3178cafe69dfb7d758b041022c128d42b01c7d5373913ef4",
+  "log_sha256": "57806ba67a5084fdaf79fb9fe15a7f9b3cd08cae5e3628be9f54a33d7bcb04e1"
 }

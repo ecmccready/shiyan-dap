@@ -104,6 +104,7 @@ export interface Selection {
     executed_in_this_run: false;
     I: number;
     measured: null | {
+      comparison: "retrospective";
       candidate: "pipeline_split";
       design: "tdec-s-w4";
       baseline: "tdec-r-w4";
@@ -147,6 +148,7 @@ export function runSelection(): Selection {
     if (split !== null && prior !== null && enc !== null && bitExact) {
       const gain = split / prior - 1;
       measured = {
+        comparison: "retrospective",
         candidate: "pipeline_split",
         design: "tdec-s-w4",
         baseline: "tdec-r-w4",
@@ -229,11 +231,12 @@ const historicalEntry = {
 const liveEntry = {
   candidate: sel.live.measured?.candidate ?? sel.live.chosen,
   executed_in_this_run: false,
+  comparison: "retrospective",
   reason: sel.pending_v0119
     ? "v0.1.19 manifest has no five-seed routed median for tdec-s-w4, tdec-r-w4 and tenc-q-w4l8."
-    : "Five-seed v0.1.19 medians. The frozen catalog states no numeric prediction. This script did not place-and-route.",
+    : "Retrospective comparison of two designs already in the v0.1.19 manifest (tdec-s-w4 versus tdec-r-w4). Not a live prediction: the catalog never recorded a number for pipeline_split before those seeds ran. This script did not place-and-route.",
   power: "needs real board",
-  predicted: "hypothesis only. The frozen catalog states no numeric prediction.",
+  predicted: "No pre-registered numeric prediction. The frozen catalog says the effect is a hypothesis, not a measurement.",
   measured: sel.live.measured,
   chosen_next: sel.live.chosen,
   accepted: (sel.live.measured?.relative_gain ?? 0) > 0,

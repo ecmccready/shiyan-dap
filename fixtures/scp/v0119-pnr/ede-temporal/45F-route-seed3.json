@@ -22,13 +22,13 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed3.report.json"
   ],
   "command_sha256": "2b128f0492fa9a00cb560c6f265f0e7b63c5db86b3d6c11e79f5b980434b310d",
-  "wall_clock_s": 1.83606,
+  "wall_clock_s": 2.80159,
   "exit_code": 0,
   "status": "routed",
   "not_completed_within_s": null,
-  "fmax_mhz": 63.29514694213867,
+  "fmax_mhz": 65.44074249267578,
   "fmax_clocks": {
-    "$glbnet$clk$TRELLIS_IO_IN": 63.29514694213867
+    "$glbnet$clk$TRELLIS_IO_IN": 65.44074249267578
   },
   "utilization": {
     "ALU54B": {
@@ -87,6 +87,10 @@
       "used": 0,
       "available": 2
     },
+    "GND": {
+      "used": 1,
+      "available": 1
+    },
     "GSR": {
       "used": 0,
       "available": 1
@@ -120,7 +124,7 @@
       "available": 85
     },
     "TRELLIS_COMB": {
-      "used": 639,
+      "used": 631,
       "available": 43848
     },
     "TRELLIS_ECLKBUF": {
@@ -128,7 +132,7 @@
       "available": 8
     },
     "TRELLIS_FF": {
-      "used": 402,
+      "used": 395,
       "available": 43848
     },
     "TRELLIS_IO": {
@@ -142,15 +146,33 @@
     "USRMCLK": {
       "used": 0,
       "available": 1
+    },
+    "VCC": {
+      "used": 1,
+      "available": 1
     }
   },
-  "lut": 639,
-  "ff": 402,
+  "lut": 631,
+  "ff": 395,
   "bram": 8,
   "dsp": 0,
+  "demand": {
+    "lut4": {
+      "used": 597,
+      "available": 43848
+    },
+    "trellis_comb": {
+      "used": 631,
+      "available": 43848
+    },
+    "trellis_ff": {
+      "used": 395,
+      "available": 43848
+    }
+  },
   "error": null,
   "report_path": "fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed3.report.json",
-  "report_sha256": "4bec1b00a7109c9f75b2fec028c7714d619f7798da0c2b9dfefd043d3ba198a4",
-  "netlist_sha256": "b98d6bad7b219d236d293310f9af371f9b4fffa61bf44339420235ea25ef7a97",
-  "log_sha256": "0b0469b51e0bf4861c12806e98e3c4dbfcfd380bc0a7c88ae413dfc73d4c406b"
+  "report_sha256": "6db39d89cd15fbbbf998488cb27fceb34d809eb30ca8cae721e8ed3440ebe987",
+  "netlist_sha256": "81a9429fab8e4dea5def72417c28f732ef5f161d40d59aefde563fe2a71a0945",
+  "log_sha256": "92599805eda4995cb56fd70727fdd1ea3982ccdcc919f69e1104f0f8437cc052"
 }

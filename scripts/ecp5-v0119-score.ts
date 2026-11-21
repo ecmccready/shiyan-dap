@@ -11,9 +11,15 @@
 export const THROUGHPUT_FORMULA =
   "values/s = (element_frames / cycles) * fmax_MHz * 1e6; element_frames and cycles are from the design's committed simulation report on the named stream; fmax_MHz is the minimum achieved clock in that seed's nextpnr report";
 
-/** Extra K1 column. Not an input to paretoIds. */
+/**
+ * Extra K1 column. Not an input to paretoIds.
+ * Numerator is evals: threshold compares (code > threshold), not emitted decision-change records.
+ * cycles is that design's measured cycle count on env-16x16x2-T64-temporal-last.
+ * fmax_MHz is the median of the five routed 45F seeds.
+ * The LUT divisor is TRELLIS_COMB used on the seed whose Fmax is that median.
+ */
 export const DECISIONS_FORMULA =
-  "decisions/s = (evals / cycles) * fmax_MHz * 1e6; evals is the threshold-compare count in fixtures/scp/v0120-k1-env.json; decisions/s per LUT divides that by the LUT count of the median-Fmax seed";
+  "decisions/s = (evals / cycles) * fmax_MHz * 1e6; evals is the threshold-compare count (not the emitted decision-change count) in fixtures/scp/v0120-k1-env.json; cycles is that design's measured cycle count on env-16x16x2-T64-temporal-last; fmax_MHz is the median of five routed 45F seeds; decisions/s per LUT divides that rate by TRELLIS_COMB used on the median-Fmax seed";
 
 export function valuesPerCycle(elementFrames: number, cycles: number): number {
   if (!Number.isInteger(elementFrames) || elementFrames <= 0) throw new Error("element_frames is not a positive measured integer");

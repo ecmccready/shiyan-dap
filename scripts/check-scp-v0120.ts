@@ -105,8 +105,9 @@ const bench = JSON.parse(readFileSync(join(root, "fixtures/scp/v0119-industry-be
   designs: Record<string, { fmax_mhz: { median: number } }>;
 };
 const splitGain = bench.designs["tdec-s-w4"].fmax_mhz.median / bench.designs["tdec-r-w4"].fmax_mhz.median - 1;
-check("selector opens the five-seed gate from the v0.1.19 manifest and does not place-and-route",
+check("selector records a retrospective five-seed Fmax comparison and does not place-and-route",
   sel.pending_v0119 === false && sel.live.executed_in_this_run === false && sel.power === "needs real board"
+  && sel.live.measured?.comparison === "retrospective"
   && sel.live.measured?.relative_gain === splitGain && sel.live.I === splitGain && splitGain > 0);
 check("back-test as of v0.1.16 proposes the historical decoder issue-path split", sel.backtest.matches_historical_split && sel.backtest.top === "decoder_variant", sel.backtest.bottleneck);
 check("five-seed ledger picks w_change next; the v0.1.17 recording still moves decoder_variant to pipeline_split",

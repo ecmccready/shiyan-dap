@@ -55,6 +55,8 @@ export type SeedRec = {
   ff: number | null;
   bram: number | null;
   dsp: number | null;
+  /** Cells the packer asked for, over the part's capacity. Present even when placement fails. */
+  demand: { lut4: { used: number; available: number } | null; trellis_comb: { used: number; available: number } | null; trellis_ff: { used: number; available: number } | null } | null;
   error: string | null;
   report_path: string | null;
   report_sha256: string | null;
@@ -175,6 +177,23 @@ function parseReport(rel: string): { fmax: number | null; clocks: Record<string,
   return { fmax: vals.length ? Math.min(...vals) : null, clocks, util };
 }
 
+function pair(text: string, label: string): { used: number; available: number } | null {
+  const m = text.match(new RegExp(`${label}:\\s+(\\d+)/\\s*(\\d+)`));
+  if (!m) return null;
+  return { used: Number(m[1]), available: Number(m[2]) };
+}
+
+/** Demand printed by nextpnr before and after packing. Not a placed result. */
+function parseDemand(text: string): SeedRec["demand"] {
+  if (!text) return null;
+  const demand = {
+    lut4: pair(text, "Total LUT4s"),
+    trellis_comb: pair(text, "TRELLIS_COMB"),
+    trellis_ff: pair(text, "TRELLIS_FF"),
+  };
+  return demand.lut4 || demand.trellis_comb || demand.trellis_ff ? demand : null;
+}
+
 function used(util: Util | null, key: string): number | null {
   if (!util || Object.keys(util).length === 0) return null;
   return util[key]?.used ?? 0;
@@ -212,6 +231,7 @@ function place(d: Design, part: keyof typeof PARTS, seed: number, packOnly: bool
   const ran = runTool("nextpnr-ecp5", args, wd, logRel);
   const text = existsSync(abs(logRel)) ? readFileSync(abs(logRel), "utf8") : "";
   const parsed = parseReport(reportRel);
+  const demand = parseDemand(text);
   const status = classify(text, ran.status, ran.timedOut, packOnly, parsed.fmax);
   const fmax = status === "routed" ? parsed.fmax : null;
   const err = (text.match(/ERROR: [^\n]+/) ?? [null])[0];
@@ -224,6 +244,7 @@ function place(d: Design, part: keyof typeof PARTS, seed: number, packOnly: bool
     utilization: Object.keys(parsed.util).length ? parsed.util : null,
     lut: used(parsed.util, "TRELLIS_COMB"), ff: used(parsed.util, "TRELLIS_FF"),
     bram: used(parsed.util, "DP16KD"), dsp: used(parsed.util, "MULT18X18D"),
+    demand,
     error: err ? err.slice(0, 400) : null,
     report_path: existsSync(abs(reportRel)) ? reportRel : null,
     report_sha256: existsSync(abs(reportRel)) ? sha256(read(reportRel)) : null,
@@ -357,7 +378,7 @@ function refreshDerived(m: ReturnType<typeof emptyManifest>) {
 
 function upsertDesign(d: Design) {
   const m = loadManifest();
-  m.tools ??= toolBlock();
+  m.tools = toolBlock();
   m.source_files = sourceHashes();
   const seeds = SEEDS.map((seed) => {
     const p = metaPath(d.id, "45F", "route", seed);
@@ -413,7 +434,7 @@ function bitExact() {
     log(`${script} exit ${r.status} ${seconds.toFixed(1)}s`);
   }
   const m = loadManifest();
-  m.tools ??= toolBlock();
+  m.tools = toolBlock();
   m.source_files = sourceHashes();
   m.bit_exact = { method: "Re-simulate each RTL check against the committed golden vectors (Icarus Verilog).", runs, ok: runs.every((r) => r.ok) };
   saveManifest(m);

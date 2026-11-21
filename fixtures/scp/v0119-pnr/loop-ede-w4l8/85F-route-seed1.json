@@ -22,20 +22,157 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/85F-route-seed1.report.json"
   ],
   "command_sha256": "58763377a96e551f953622d416932dd6fd9d57e518322f657bd7b5b25c6030b5",
-  "wall_clock_s": 34.6662,
-  "exit_code": 255,
-  "status": "does_not_fit",
+  "wall_clock_s": 225.281,
+  "exit_code": 0,
+  "status": "routed",
   "not_completed_within_s": null,
-  "fmax_mhz": null,
-  "fmax_clocks": null,
-  "utilization": null,
-  "lut": null,
-  "ff": null,
-  "bram": null,
-  "dsp": null,
-  "error": "ERROR: Unable to find legal placement for cell 'dec.fe.tq[4]_TRELLIS_FF_Q_57_DI_PFUMX_Z_BLUT_LUT4_Z_D_L6MUX21_Z_D0_L6MUX21_Z_SD_L6MUX21_Z_1_SD_LUT4_Z_4' after 10001 attempts, check constraints and utilisation. Use `--placer-heap-cell-placement-timeout` to change the number of attempts.",
-  "report_path": null,
-  "report_sha256": null,
-  "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
-  "log_sha256": "347b87cb1369e4f07d15b894c8670971ee5fd154a01afa688412517cb16a7254"
+  "fmax_mhz": 35.2957763671875,
+  "fmax_clocks": {
+    "$glbnet$clk$TRELLIS_IO_IN": 35.2957763671875
+  },
+  "utilization": {
+    "ALU54B": {
+      "used": 0,
+      "available": 78
+    },
+    "CLKDIVF": {
+      "used": 0,
+      "available": 4
+    },
+    "DCCA": {
+      "used": 1,
+      "available": 56
+    },
+    "DCSC": {
+      "used": 0,
+      "available": 2
+    },
+    "DCUA": {
+      "used": 0,
+      "available": 2
+    },
+    "DDRDLL": {
+      "used": 0,
+      "available": 4
+    },
+    "DLLDELD": {
+      "used": 0,
+      "available": 8
+    },
+    "DP16KD": {
+      "used": 41,
+      "available": 208
+    },
+    "DQSBUFM": {
+      "used": 0,
+      "available": 14
+    },
+    "DTR": {
+      "used": 0,
+      "available": 1
+    },
+    "ECLKBRIDGECS": {
+      "used": 0,
+      "available": 2
+    },
+    "ECLKSYNCB": {
+      "used": 0,
+      "available": 10
+    },
+    "EHXPLLL": {
+      "used": 0,
+      "available": 4
+    },
+    "EXTREFB": {
+      "used": 0,
+      "available": 2
+    },
+    "GND": {
+      "used": 1,
+      "available": 1
+    },
+    "GSR": {
+      "used": 0,
+      "available": 1
+    },
+    "IOLOGIC": {
+      "used": 0,
+      "available": 224
+    },
+    "JTAGG": {
+      "used": 0,
+      "available": 1
+    },
+    "MULT18X18D": {
+      "used": 2,
+      "available": 156
+    },
+    "OSCG": {
+      "used": 0,
+      "available": 1
+    },
+    "PCSCLKDIV": {
+      "used": 0,
+      "available": 2
+    },
+    "SEDGA": {
+      "used": 0,
+      "available": 1
+    },
+    "SIOLOGIC": {
+      "used": 0,
+      "available": 141
+    },
+    "TRELLIS_COMB": {
+      "used": 46454,
+      "available": 83640
+    },
+    "TRELLIS_ECLKBUF": {
+      "used": 0,
+      "available": 8
+    },
+    "TRELLIS_FF": {
+      "used": 18299,
+      "available": 83640
+    },
+    "TRELLIS_IO": {
+      "used": 141,
+      "available": 365
+    },
+    "TRELLIS_RAMW": {
+      "used": 6,
+      "available": 10455
+    },
+    "USRMCLK": {
+      "used": 0,
+      "available": 1
+    },
+    "VCC": {
+      "used": 1,
+      "available": 1
+    }
+  },
+  "lut": 46454,
+  "ff": 18299,
+  "bram": 41,
+  "dsp": 2,
+  "demand": {
+    "lut4": {
+      "used": 44624,
+      "available": 83640
+    },
+    "trellis_comb": {
+      "used": 46454,
+      "available": 83640
+    },
+    "trellis_ff": {
+      "used": 18299,
+      "available": 83640
+    }
+  },
+  "error": null,
+  "report_path": "fixtures/scp/v0119-pnr/loop-ede-w4l8/85F-route-seed1.report.json",
+  "report_sha256": "b75c77da23059cc1e755694420b966cf68b0d860439a43de52aa2946137f6a1c",
+  "netlist_sha256": "fb0ea242d94338ae3178cafe69dfb7d758b041022c128d42b01c7d5373913ef4",
+  "log_sha256": "e73b852f081be651545aec5a4af8fc83c4787e490cdae7fbaa214b8e0e23db30"
 }

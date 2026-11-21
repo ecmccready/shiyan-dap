@@ -22,8 +22,8 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed1.report.json"
   ],
   "command_sha256": "b3f95276d2d339ce8840131b2a9f95a73c6fd68703b4bc4d99209f371abe66b5",
-  "wall_clock_s": 9.30217,
-  "exit_code": 255,
+  "wall_clock_s": 34.1611,
+  "exit_code": 125,
   "status": "does_not_fit",
   "not_completed_within_s": null,
   "fmax_mhz": null,
@@ -33,9 +33,23 @@
   "ff": null,
   "bram": null,
   "dsp": null,
-  "error": "ERROR: Unable to place cell 'dec.iss_q_PFUMX_Z_2_BLUT_LUT4_Z', no BELs remaining to implement cell type 'TRELLIS_COMB'",
+  "demand": {
+    "lut4": {
+      "used": 44624,
+      "available": 43848
+    },
+    "trellis_comb": {
+      "used": 46454,
+      "available": 43848
+    },
+    "trellis_ff": {
+      "used": 18299,
+      "available": 43848
+    }
+  },
+  "error": "ERROR: Unable to find legal placement for all cells, design is probably at utilisation limit.",
   "report_path": null,
   "report_sha256": null,
-  "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
-  "log_sha256": "678e8ab9d80a4acb65cc2f51605c94405d78d8bfcf35e9c5fa9a2ed6bbabcade"
+  "netlist_sha256": "fb0ea242d94338ae3178cafe69dfb7d758b041022c128d42b01c7d5373913ef4",
+  "log_sha256": "aaeb8e8d832546c66d86f2703b4d5894527f522819c1f7da612943558cf41cc3"
 }

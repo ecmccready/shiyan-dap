@@ -23,7 +23,7 @@
     "--pack-only"
   ],
   "command_sha256": "c36c9e78abc4ebc99eca6f9717f27feb389d782625067bcb25a179b791542844",
-  "wall_clock_s": 0.222308,
+  "wall_clock_s": 0.223408,
   "exit_code": 0,
   "status": "packed",
   "not_completed_within_s": null,
@@ -86,6 +86,10 @@
       "used": 0,
       "available": 2
     },
+    "GND": {
+      "used": 1,
+      "available": 1
+    },
     "GSR": {
       "used": 0,
       "available": 1
@@ -119,7 +123,7 @@
       "available": 141
     },
     "TRELLIS_COMB": {
-      "used": 896,
+      "used": 813,
       "available": 83640
     },
     "TRELLIS_ECLKBUF": {
@@ -141,15 +145,33 @@
     "USRMCLK": {
       "used": 0,
       "available": 1
+    },
+    "VCC": {
+      "used": 1,
+      "available": 1
     }
   },
-  "lut": 896,
+  "lut": 813,
   "ff": 537,
   "bram": 14,
   "dsp": 0,
+  "demand": {
+    "lut4": {
+      "used": 771,
+      "available": 83640
+    },
+    "trellis_comb": {
+      "used": 813,
+      "available": 83640
+    },
+    "trellis_ff": {
+      "used": 537,
+      "available": 83640
+    }
+  },
   "error": null,
   "report_path": "fixtures/scp/v0119-pnr/ede-relations/85F-pack-only-seed1.report.json",
-  "report_sha256": "e0ccd016a2e8d07029b94090dcd8fde3ff512e4da417178cfa10e8961ac91431",
-  "netlist_sha256": "d5c5e2bb2d9d33a1c4306543a4b97d0a8996bb0bacf4f953130ff8be78242f33",
-  "log_sha256": "4228d0a4cb95685af5af0fbcf525bcdedb50f23eb58d6ec55feaf9f4af3e3fac"
+  "report_sha256": "125737de8359bbe0b6dced2d791948066b0adcdb745889220df2ef664036fedb",
+  "netlist_sha256": "2473d2ac5740fca6f6a64679874dc9520d28232d4c711a37e256b120ada62b04",
+  "log_sha256": "02a40e7587104eb06d8017d1911f8b028dd6f4d334d36186cb7978d1b819d69e"
 }

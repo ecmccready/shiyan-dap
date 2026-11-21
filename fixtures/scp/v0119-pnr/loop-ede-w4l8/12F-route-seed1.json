@@ -22,8 +22,8 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/12F-route-seed1.report.json"
   ],
   "command_sha256": "c76024a83b0a09b7ec8edca3478db6e88c80d0cead61922c968750b6895ff102",
-  "wall_clock_s": 8.85201,
-  "exit_code": 255,
+  "wall_clock_s": 3.77829,
+  "exit_code": 125,
   "status": "does_not_fit",
   "not_completed_within_s": null,
   "fmax_mhz": null,
@@ -33,9 +33,23 @@
   "ff": null,
   "bram": null,
   "dsp": null,
-  "error": "ERROR: Unable to place cell 'dec.rq[3]_TRELLIS_FF_Q_56_DI_PFUMX_Z_BLUT_LUT4_Z_B_PFUMX_Z_BLUT_LUT4_Z', no BELs remaining to implement cell type 'TRELLIS_COMB'",
+  "demand": {
+    "lut4": {
+      "used": 44624,
+      "available": 24288
+    },
+    "trellis_comb": {
+      "used": 46454,
+      "available": 24288
+    },
+    "trellis_ff": {
+      "used": 18299,
+      "available": 24288
+    }
+  },
+  "error": "ERROR: Unable to place cell 'dec.fe.tq[5]_TRELLIS_FF_Q_19_DI_LUT4_Z_D_LUT4_Z_2', no BELs remaining to implement cell type 'TRELLIS_COMB'",
   "report_path": null,
   "report_sha256": null,
-  "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
-  "log_sha256": "c1562f20d9152bc9879f7f56a4093759e67c8d97ef1df65bc91d9b6f28a09dc1"
+  "netlist_sha256": "fb0ea242d94338ae3178cafe69dfb7d758b041022c128d42b01c7d5373913ef4",
+  "log_sha256": "4eff334dd7e1d1f8925c642dab7d96fd532426061f771d49c9f0f58932b1787d"
 }

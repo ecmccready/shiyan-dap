@@ -22,13 +22,13 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-temporal/12F-route-seed1.report.json"
   ],
   "command_sha256": "7194202b782d313db9f33a11c5f5dd842f10c9be1a9b237be49eceb4961c5e56",
-  "wall_clock_s": 2.19032,
+  "wall_clock_s": 1.70025,
   "exit_code": 0,
   "status": "routed",
   "not_completed_within_s": null,
-  "fmax_mhz": 62.8022346496582,
+  "fmax_mhz": 62.81012725830078,
   "fmax_clocks": {
-    "$glbnet$clk$TRELLIS_IO_IN": 62.8022346496582
+    "$glbnet$clk$TRELLIS_IO_IN": 62.81012725830078
   },
   "utilization": {
     "ALU54B": {
@@ -87,6 +87,10 @@
       "used": 0,
       "available": 1
     },
+    "GND": {
+      "used": 1,
+      "available": 1
+    },
     "GSR": {
       "used": 0,
       "available": 1
@@ -120,7 +124,7 @@
       "available": 69
     },
     "TRELLIS_COMB": {
-      "used": 639,
+      "used": 631,
       "available": 24288
     },
     "TRELLIS_ECLKBUF": {
@@ -128,7 +132,7 @@
       "available": 8
     },
     "TRELLIS_FF": {
-      "used": 402,
+      "used": 395,
       "available": 24288
     },
     "TRELLIS_IO": {
@@ -142,15 +146,33 @@
     "USRMCLK": {
       "used": 0,
       "available": 1
+    },
+    "VCC": {
+      "used": 1,
+      "available": 1
     }
   },
-  "lut": 639,
-  "ff": 402,
+  "lut": 631,
+  "ff": 395,
   "bram": 8,
   "dsp": 0,
+  "demand": {
+    "lut4": {
+      "used": 597,
+      "available": 24288
+    },
+    "trellis_comb": {
+      "used": 631,
+      "available": 24288
+    },
+    "trellis_ff": {
+      "used": 395,
+      "available": 24288
+    }
+  },
   "error": null,
   "report_path": "fixtures/scp/v0119-pnr/ede-temporal/12F-route-seed1.report.json",
-  "report_sha256": "81f2129c32aadf38f5e789dda23449c9861eb70d21626a59d1dcbc67fbce8613",
-  "netlist_sha256": "b98d6bad7b219d236d293310f9af371f9b4fffa61bf44339420235ea25ef7a97",
-  "log_sha256": "0da12b5780233d9c1d3bfbc72dc6ed3d934ab7ab9cd40e77388da1e2cebafc79"
+  "report_sha256": "cc2405fcdf9d5b4a61b45c20e611f88d9d04c68f1e9feaef5ffe5e99e63dc721",
+  "netlist_sha256": "81a9429fab8e4dea5def72417c28f732ef5f161d40d59aefde563fe2a71a0945",
+  "log_sha256": "13dd68139ffe1cd87a524699c39ff428b485138baec8cbcf640c01a886acf98f"
 }
