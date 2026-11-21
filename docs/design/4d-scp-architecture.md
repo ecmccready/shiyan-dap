@@ -1728,3 +1728,106 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0117-rtl.ts --writ
 ```
 
 Without a simulator, it prints `SKIP sim` and runs the same 22 counted checks against the committed report.
+
+## 25. v0.1.18: two-stage decoder (`scp4d_tdec_s`)
+
+`hw/scp4d/rtl/scp4d_tdec_s.v` splits v0.1.17's single issue chain into a token classifier and a bank issuer, joined by a record register and a pop-late record queue (`RQ = 3W`). The front end is the unchanged `scp4d_fe_r.v`. The bank pipeline is text-identical to `scp4d_tdec_r`. Every v0.1.10–v0.1.17 file is unchanged and sha-pinned. The cycle model changed; it is `scripts/scp-v0118-rtl-model.ts`. TEST ONLY and unwired, like §18–§24. All inputs are labelled synthetic or hand-written fixtures.
+
+Cycles below are from Icarus Verilog. Post-route figures are from one run of `scripts/check-scp-v0118-rtl.ts --write --synth` (Yosys 0.71+50 git sha1 583f380c6, nextpnr 0.11.1-103-ge811ba48, OSS CAD Suite 20261118). ECP5 place-and-route is nextpnr `--45k --package CABGA381 --freq 12 --router router2 --seed 1`. The report labels them estimates because no board was programmed. Power and energy were not measured.
+
+### 25.1 What the RTL changes
+
+- **Stage 1, token classifier.** Per-position roles are fixed (a head token is classified alone; gap and q then alternate from a registered phase). The gap range check uses the sum already formed for the other gap. The pop count is a priority encode. Records carry the element, q, limit, frame end and error.
+- **Record path.** Classifier records are registered, then enter a pop-late queue. The classifier runs only while `rq_cnt + rec_n + K <= RQ`.
+- **Stage 2, bank issuer.** Last-value hold issues event records in order until a bank repeats. Zero and linear hold issue an aligned block of P elements. A record is consumed only when its limit is within the registered block. Classifier errors travel as records and are raised when the issuer reaches them.
+
+### 25.2 Measured cycles (Icarus Verilog, full rate, env streams)
+
+Element-frames are 131,072 on env T64 and 524,288 on env T256 (the same counts as §20–§24). `ref` is the unchanged `scp4d_tdec_w` and `scp4d_tdec_r` on the same stream; both matched v0.1.13's committed cycles.
+
+| stream | W | `tdec_s` cycles | ref cycles (v0.1.13 = v0.1.17) |
+|---|---:|---:|---:|
+| env T64 temporal-last | 1 | 56,864 | 56,865 |
+| env T64 temporal-last | 2 | 28,443 | 28,444 |
+| env T64 temporal-last | 4 | 15,197 | 15,494 |
+| env T256 temporal-last | 1 | 226,338 | 226,339 |
+| env T256 temporal-last | 2 | 113,180 | 113,181 |
+| env T256 temporal-last | 4 | 60,461 | 61,705 |
+
+Closed loop, unchanged `scp4d_tenc_q` into `scp4d_tdec_s` (env T64 temporal-last): W2L8 30,015 cycles, W4L8 19,048 cycles. The v0.1.17 loop on the same jobs was 30,016 and 19,223. Env T256 W4L8 is 75,459 cycles.
+
+- All 7 in-scope temporal-only vectors are bit-exact at W = 1, 2, 4, at full rate and with random input gaps. Every issued value matches `tdec_w` and `tdec_r` on the same stream.
+- The out-of-scope and corrupted streams return the expected code at every W.
+- Measured cycles equal the exact cycle model, including the classifier and issuer counters.
+- The loop is bit-exact and inside the deadband on every job and configuration, at full rate and with gaps.
+- `scripts/check-scp-v0118-rtl.ts` has 24 counted checks. The report pins the RTL, testbenches, wrapper and cycle model by SHA-256.
+
+### 25.3 Post-route (this run, one seed; not a programmed board)
+
+Same flow for the new decoder, the new loops, and the unchanged `tdec_r`, `tdec_w`, `tenc_q` and v0.1.17 loop re-placed as `ref` rows. ECP5 part is LFE5U-45F. iCE40 is HX8K at ADDR_W 9. Throughput in the report is measured cycles × that run's post-route Fmax.
+
+| config | ECP5-45F LUT4 / FF / DP16KD / MULT18 | ECP5 Fmax | iCE40-HX8K |
+|---|---|---:|---|
+| **tdec_s W2** | 7,955 / 2,279 / 8 / 1 | **44.48 MHz** | does not fit (8,512 LC, device has 7,680) |
+| ref tdec_r W2 | 6,345 / 1,783 / 8 / 1 | 43.98 MHz | fits, 6,661 LC, 39.46 MHz |
+| ref tdec_w W2 | 5,642 / 1,702 / 8 / 1 | 37.24 MHz | — |
+| **tdec_s W4** | 23,785 / 4,017 / 8 / 1 | **37.56 MHz** | does not fit (LC) |
+| ref tdec_r W4 | 17,455 / 3,097 / 8 / 1 | 20.80 MHz | does not fit (LC) |
+| ref tdec_w W4 | 13,196 / 2,948 / 8 / 1 | 19.17 MHz | — |
+| ref tenc_q W4L8 | 18,880 / 8,322 / 25 / 1 | 40.55 MHz | — |
+| **loop W2L8 → tdec_s W2** | 22,702 / 10,470 / 33 / 2 | **40.28 MHz** | does not fit (RAM) |
+| **loop W4L8 → tdec_s W4** | — | **not completed** | does not fit (RAM) |
+| ref loop W4L8 → tdec_r W4 | 36,663 / 11,368 / 33 / 2 | 21.76 MHz | — |
+
+The W4 loop (`tenc_q` W4L8 → `tdec_s` W4) is the one row the script did not finish. Its place-and-route entry is `not run to completion: place-and-route exceeded the 2400 s bound`. No Fmax, LUT, FF or values/s is stated for that configuration. The wrapper log has no END line for it: `timeout` killed the process. The next place-and-route started 3,063 s after that one started.
+
+### 25.4 Throughput (measured cycles × this run's Fmax, env T64, 131,072 values)
+
+| design | cycles | Fmax | values/s | vs same-run ref |
+|---|---:|---:|---:|---:|
+| tdec_s W2 | 28,443 | 44.48 MHz | 204,974,249 | 1.0114× tdec_r |
+| tdec_s W4 | 15,197 | 37.56 MHz | 323,949,748 | 1.8411× tdec_r (1.9976× tdec_w) |
+| tenc_q W4L8 | 18,527 | 40.55 MHz | 286,876,969 | — |
+| loop W2L8 → tdec_s W2 | 30,015 | 40.28 MHz | 175,898,056 | — |
+| loop W4L8 → tdec_s W4 | 19,048 | not completed | not completed | ref loop in this run: 21.76 MHz, 148,370,531 values/s |
+
+On env T256 the same clocks give tdec_s W4 325,701,812 values/s (60,461 cycles) and the W2 loop 176,146,005 values/s. The W4 loop's clock was not produced, so its values/s is not stated (75,459 cycles were measured in simulation).
+
+Standalone W4 decoder throughput is 1.1292× the same-run encoder. The report's verdict leaves the loop limiter as `unknown (no estimate)` because the W4 loop did not place.
+
+### 25.5 Wall clock of this run
+
+The `--write --synth` invocation was 4,275 s wall clock (2026-11-21 02:03:10Z to 03:14:25Z), including simulation and synthesis. Place-and-route processes were serialized (one nextpnr at a time) so a 4-wide launch would not exhaust this machine. Seed and command flags are the script's. Per-invocation seconds are in `fixtures/scp/v0118-pnr-times.log`:
+
+| invocation | seconds | exit |
+|---|---:|---:|
+| tdec_s W2 ECP5 | 23 | 0 |
+| tdec_s W2 iCE40 | 2 | 125 (does not fit) |
+| tdec_s W4 ECP5 | 88 | 0 |
+| tdec_s W4 iCE40 | 2 | 125 |
+| loop W2 ECP5 | 98 | 0 |
+| loop W2 iCE40 | 2 | 125 |
+| loop W4 ECP5 | exceeded 2400 s bound | killed |
+| loop W4 iCE40 | 4 | 125 |
+| ref tdec_r W2 ECP5 | 20 | 0 |
+| ref tdec_r W2 iCE40 | 23 | 0 |
+| ref tdec_w W2 ECP5 | 20 | 0 |
+| ref tdec_r W4 ECP5 | 60 | 0 |
+| ref tdec_r W4 iCE40 | 2 | 125 |
+| ref tdec_w W4 ECP5 | 56 | 0 |
+| ref tenc_q W4L8 ECP5 | 94 | 0 |
+| ref loop W4 ECP5 | 213 | 0 |
+
+### 25.6 What this does and does not prove
+
+- **Proves:** the two-stage decoder is bit-exact with the v0.1.10 model, agrees element-for-element with v0.1.13 and v0.1.17, and its cycle counts are the ones in §25.2. In this one place-and-route flow the W4 decoder's post-route clock is 37.56 MHz against 20.80 MHz for `tdec_r` re-placed in the same run. W2 is 44.48 vs 43.98 MHz.
+- **Does not prove:** a post-route clock for the W4 closed loop. That run did not finish inside 2400 s. Board timing, power and energy. `comparison.energy` is "not measured; no pJ figure is reported for v0.1.18". The W4 clock gain is one seed.
+
+### 25.7 Running it
+
+```bash
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0118-rtl.ts --require-sim
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0118-rtl.ts --write --synth
+```
+
+Without a simulator, it prints `SKIP sim` and runs the same 24 counted checks against the committed report. This machine's `--write --synth` took 4,275 s.
