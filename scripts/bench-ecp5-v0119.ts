@@ -447,8 +447,10 @@ function writeDocs() {
     if (!row) { lines.push(`| ${d.id} | ${d.kind} | not run | | | | | | | | | | |`); continue; }
     const done = row.seeds_45f?.filter((s) => s.status === "routed").length ?? 0;
     const missed = row.seeds_45f?.filter((s) => s.status === "not_completed").length ?? 0;
+    const unfit = (row.seeds_45f?.length ?? 0) === 5 && row.seeds_45f.every((s) => s.status === "does_not_fit");
     if (!row.fmax_mhz) {
-      lines.push(`| ${row.id} | ${row.kind} | ${missed ? `not completed within ${BOUND_S} s (${missed} seed${missed === 1 ? "" : "s"})` : `${done}/5 routed`} | | | | | | | | | | ${row.smallest_part ?? "—"} |`);
+      const label = missed ? `not completed within ${BOUND_S} s (${missed} seed${missed === 1 ? "" : "s"})` : unfit ? "does not fit on 45F" : `${done}/5 routed`;
+      lines.push(`| ${row.id} | ${row.kind} | ${label} | | | | | | | | | | ${row.smallest_part ?? "—"} |`);
       continue;
     }
     const res = row.resources_at_median_fmax_seed;
