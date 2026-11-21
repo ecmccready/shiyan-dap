@@ -861,25 +861,220 @@
           "report_sha256": "3fd47392208fdf94a98fc85da239167f99b0202f6b8fb6eab385f2149f92923a",
           "netlist_sha256": "f48ea4dce980c4d1b9ef18d4070fc27a2cb86fc102e8fc068b6c7362395e9485",
           "log_sha256": "c9271496934069e8a659e78922f5973ae77567454cc6b0c35de5f546b89ee507"
+        },
+        {
+          "seed": 5,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/workspace/fixtures/scp/v0119-work/tdec/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "5",
+            "--timing-allow-fail",
+            "--report",
+            "/workspace/fixtures/scp/v0119-pnr/tdec/45F-route-seed5.report.json"
+          ],
+          "command_sha256": "cd13e573297ca442dda7f8afc21cf12e162c9f6a258d67bbb8354cfbd773e9fa",
+          "wall_clock_s": 6.52768,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 44.65880584716797,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 44.65880584716797
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 8,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GND": {
+              "used": 1,
+              "available": 1
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 1,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 1885,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 783,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 33,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            },
+            "VCC": {
+              "used": 1,
+              "available": 1
+            }
+          },
+          "lut": 1885,
+          "ff": 783,
+          "bram": 8,
+          "dsp": 1,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/tdec/45F-route-seed5.report.json",
+          "report_sha256": "5de5dba2884eb77b72edab30fc2e6aab75565c964c378794277f36849c80d028",
+          "netlist_sha256": "f48ea4dce980c4d1b9ef18d4070fc27a2cb86fc102e8fc068b6c7362395e9485",
+          "log_sha256": "3890ec5f7f13550f1ebad03210997211d1fc0347c98b7bcf9452c7bac2466be2"
         }
       ],
       "fit": {},
-      "fmax_mhz": null,
-      "throughput_values_per_s": null,
-      "resources_at_median_fmax_seed": null,
-      "efficiency": null,
+      "fmax_mhz": {
+        "min": 43.540733337402344,
+        "median": 44.21062088012695,
+        "max": 45.277549743652344,
+        "n": 5
+      },
+      "throughput_values_per_s": {
+        "min": 100358228.11521824,
+        "median": 101902270.24935813,
+        "max": 104361463.7920726
+      },
+      "resources_at_median_fmax_seed": {
+        "seed": 4,
+        "lut": 1885,
+        "ff": 783,
+        "bram": 8
+      },
+      "efficiency": {
+        "per_lut": 54059.55981398309,
+        "per_ff": 130143.38473736671,
+        "per_bram": 12737783.781169767,
+        "per_bram_note": null
+      },
       "fits": {
         "12F": null,
         "25F": null,
-        "45F": null,
+        "45F": true,
         "85F": null
       },
-      "smallest_part": null,
+      "smallest_part": "45F",
       "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
     }
   },
-  "pareto": [],
-  "ranked": null,
+  "pareto": [
+    "tdec"
+  ],
+  "ranked": {
+    "by_fmax": [
+      "tdec"
+    ],
+    "by_throughput": [
+      "tdec"
+    ],
+    "by_values_per_s_per_lut": [
+      "tdec"
+    ]
+  },
   "advice": {
     "focus_loop_id": null,
     "bottleneck": null,

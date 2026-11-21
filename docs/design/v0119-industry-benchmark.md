@@ -10,7 +10,7 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 
 | design | kind | Fmax min | median | max | values/s (median) | LUT | FF | BRAM | per LUT | per FF | per BRAM | smallest part |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| tdec | decoder | 4/5 routed | | | | | | | | | | — |
+| tdec | decoder | 43.540733337402344 | 44.21062088012695 | 45.277549743652344 | 101902270.24935813 | 1885 | 783 | 8 | 54059.55981398309 | 130143.38473736671 | 12737783.781169767 | 45F |
 | tdec-w-w2 | decoder | not run | | | | | | | | | | |
 | tdec-w-w4 | decoder | not run | | | | | | | | | | |
 | tdec-r-w2 | decoder | not run | | | | | | | | | | |
@@ -32,4 +32,4 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 | loop-s-w2l8 | loop | not run | | | | | | | | | | |
 | loop-s-w4l8 | loop | not run | | | | | | | | | | |
 
-Pareto set (clock, throughput, values/s per LUT): (none yet).
+Pareto set (clock, throughput, values/s per LUT): tdec.
