@@ -1,0 +1,39 @@
+START 2026-11-21T02:11:07+00:00 nextpnr-ice40 -V
+END 2026-11-21T02:11:07+00:00 tool=nextpnr-ice40 exit=0 seconds=0
+START 2026-11-21T02:11:07+00:00 nextpnr-ecp5 -V
+END 2026-11-21T02:11:07+00:00 tool=nextpnr-ecp5 exit=0 seconds=0
+START 2026-11-21T02:11:20+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/0-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/0-ecp5/pnr.json
+END 2026-11-21T02:11:43+00:00 tool=nextpnr-ecp5 exit=0 seconds=23
+START 2026-11-21T02:11:43+00:00 nextpnr-ice40 --hx8k --package ct256 --json /tmp/scp4d-decs-synth-tEbbHz/0-ice40/n.json --pcf-allow-unconstrained --freq 12 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/0-ice40/pnr.json
+END 2026-11-21T02:11:45+00:00 tool=nextpnr-ice40 exit=125 seconds=2
+START 2026-11-21T02:12:00+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/1-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/1-ecp5/pnr.json
+END 2026-11-21T02:13:28+00:00 tool=nextpnr-ecp5 exit=0 seconds=88
+START 2026-11-21T02:13:28+00:00 nextpnr-ice40 --hx8k --package ct256 --json /tmp/scp4d-decs-synth-tEbbHz/1-ice40/n.json --pcf-allow-unconstrained --freq 12 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/1-ice40/pnr.json
+END 2026-11-21T02:13:30+00:00 tool=nextpnr-ice40 exit=125 seconds=2
+START 2026-11-21T02:13:30+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/2-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/2-ecp5/pnr.json
+END 2026-11-21T02:15:08+00:00 tool=nextpnr-ecp5 exit=0 seconds=98
+START 2026-11-21T02:15:08+00:00 nextpnr-ice40 --hx8k --package ct256 --json /tmp/scp4d-decs-synth-tEbbHz/2-ice40/n.json --pcf-allow-unconstrained --freq 12 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/2-ice40/pnr.json
+END 2026-11-21T02:15:10+00:00 tool=nextpnr-ice40 exit=125 seconds=2
+START 2026-11-21T02:15:10+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/3-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/3-ecp5/pnr.json
+START 2026-11-21T03:06:13+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/4-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/4-ecp5/pnr.json
+END 2026-11-21T03:06:33+00:00 tool=nextpnr-ecp5 exit=0 seconds=20
+START 2026-11-21T03:06:33+00:00 nextpnr-ice40 --hx8k --package ct256 --json /tmp/scp4d-decs-synth-tEbbHz/3-ice40/n.json --pcf-allow-unconstrained --freq 12 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/3-ice40/pnr.json
+END 2026-11-21T03:06:37+00:00 tool=nextpnr-ice40 exit=125 seconds=4
+START 2026-11-21T03:06:37+00:00 nextpnr-ice40 --hx8k --package ct256 --json /tmp/scp4d-decs-synth-tEbbHz/4-ice40/n.json --pcf-allow-unconstrained --freq 12 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/4-ice40/pnr.json
+END 2026-11-21T03:07:00+00:00 tool=nextpnr-ice40 exit=0 seconds=23
+START 2026-11-21T03:07:00+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/6-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/6-ecp5/pnr.json
+END 2026-11-21T03:07:20+00:00 tool=nextpnr-ecp5 exit=0 seconds=20
+START 2026-11-21T03:07:20+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/5-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/5-ecp5/pnr.json
+END 2026-11-21T03:08:20+00:00 tool=nextpnr-ecp5 exit=0 seconds=60
+START 2026-11-21T03:08:20+00:00 nextpnr-ice40 --hx8k --package ct256 --json /tmp/scp4d-decs-synth-tEbbHz/5-ice40/n.json --pcf-allow-unconstrained --freq 12 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/5-ice40/pnr.json
+END 2026-11-21T03:08:22+00:00 tool=nextpnr-ice40 exit=125 seconds=2
+START 2026-11-21T03:08:22+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/7-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/7-ecp5/pnr.json
+END 2026-11-21T03:09:18+00:00 tool=nextpnr-ecp5 exit=0 seconds=56
+START 2026-11-21T03:09:18+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/8-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/8-ecp5/pnr.json
+END 2026-11-21T03:10:52+00:00 tool=nextpnr-ecp5 exit=0 seconds=94
+START 2026-11-21T03:10:52+00:00 nextpnr-ecp5 --45k --package CABGA381 --json /tmp/scp4d-decs-synth-tEbbHz/9-ecp5/n.json --lpf-allow-unconstrained --freq 12 --router router2 --seed 1 --report /tmp/scp4d-decs-synth-tEbbHz/9-ecp5/pnr.json
+END 2026-11-21T03:14:25+00:00 tool=nextpnr-ecp5 exit=0 seconds=213
+START 2026-11-21T03:14:25+00:00 nextpnr-ecp5 --version
+END 2026-11-21T03:14:25+00:00 tool=nextpnr-ecp5 exit=0 seconds=0
+START 2026-11-21T03:14:25+00:00 nextpnr-ice40 --version
+END 2026-11-21T03:14:25+00:00 tool=nextpnr-ice40 exit=0 seconds=0

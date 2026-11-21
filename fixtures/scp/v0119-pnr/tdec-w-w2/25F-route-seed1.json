@@ -1,0 +1,164 @@
+{
+  "seed": 1,
+  "part": "25F",
+  "device": "LFE5U-25F",
+  "mode": "route",
+  "command": [
+    "nextpnr-ecp5",
+    "--25k",
+    "--package",
+    "CABGA381",
+    "--json",
+    "/workspace/fixtures/scp/v0119-work/tdec-w-w2/n.json",
+    "--lpf-allow-unconstrained",
+    "--freq",
+    "12",
+    "--router",
+    "router2",
+    "--seed",
+    "1",
+    "--timing-allow-fail",
+    "--report",
+    "/workspace/fixtures/scp/v0119-pnr/tdec-w-w2/25F-route-seed1.report.json"
+  ],
+  "command_sha256": "2b11cd32393142166cb5c89cfe7b23a1fb445c5523018e91fde2e48a11669203",
+  "wall_clock_s": 17.9529,
+  "exit_code": 0,
+  "status": "routed",
+  "not_completed_within_s": null,
+  "fmax_mhz": 36.809364318847656,
+  "fmax_clocks": {
+    "$glbnet$clk$TRELLIS_IO_IN": 36.809364318847656
+  },
+  "utilization": {
+    "ALU54B": {
+      "used": 0,
+      "available": 14
+    },
+    "CLKDIVF": {
+      "used": 0,
+      "available": 4
+    },
+    "DCCA": {
+      "used": 1,
+      "available": 56
+    },
+    "DCSC": {
+      "used": 0,
+      "available": 2
+    },
+    "DCUA": {
+      "used": 0,
+      "available": 1
+    },
+    "DDRDLL": {
+      "used": 0,
+      "available": 4
+    },
+    "DLLDELD": {
+      "used": 0,
+      "available": 8
+    },
+    "DP16KD": {
+      "used": 8,
+      "available": 56
+    },
+    "DQSBUFM": {
+      "used": 0,
+      "available": 8
+    },
+    "DTR": {
+      "used": 0,
+      "available": 1
+    },
+    "ECLKBRIDGECS": {
+      "used": 0,
+      "available": 2
+    },
+    "ECLKSYNCB": {
+      "used": 0,
+      "available": 10
+    },
+    "EHXPLLL": {
+      "used": 0,
+      "available": 2
+    },
+    "EXTREFB": {
+      "used": 0,
+      "available": 1
+    },
+    "GND": {
+      "used": 1,
+      "available": 1
+    },
+    "GSR": {
+      "used": 0,
+      "available": 1
+    },
+    "IOLOGIC": {
+      "used": 0,
+      "available": 128
+    },
+    "JTAGG": {
+      "used": 0,
+      "available": 1
+    },
+    "MULT18X18D": {
+      "used": 1,
+      "available": 28
+    },
+    "OSCG": {
+      "used": 0,
+      "available": 1
+    },
+    "PCSCLKDIV": {
+      "used": 0,
+      "available": 2
+    },
+    "SEDGA": {
+      "used": 0,
+      "available": 1
+    },
+    "SIOLOGIC": {
+      "used": 0,
+      "available": 69
+    },
+    "TRELLIS_COMB": {
+      "used": 5580,
+      "available": 24288
+    },
+    "TRELLIS_ECLKBUF": {
+      "used": 0,
+      "available": 8
+    },
+    "TRELLIS_FF": {
+      "used": 1702,
+      "available": 24288
+    },
+    "TRELLIS_IO": {
+      "used": 41,
+      "available": 197
+    },
+    "TRELLIS_RAMW": {
+      "used": 0,
+      "available": 3036
+    },
+    "USRMCLK": {
+      "used": 0,
+      "available": 1
+    },
+    "VCC": {
+      "used": 1,
+      "available": 1
+    }
+  },
+  "lut": 5580,
+  "ff": 1702,
+  "bram": 8,
+  "dsp": 1,
+  "error": null,
+  "report_path": "fixtures/scp/v0119-pnr/tdec-w-w2/25F-route-seed1.report.json",
+  "report_sha256": "2fd98962cc3f0cc30e5aff282308279debf71cf00d322533556ffecd8a8d5336",
+  "netlist_sha256": "5b93ae47692d404a44231b398b37e6ba5c22c252cbb19159a886a97ad0dca0e1",
+  "log_sha256": "8d4681214d0028151320c33d638a143c6ef0a1c28574c5bcef21e5b2c81f154a"
+}
