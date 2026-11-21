@@ -1,0 +1,52 @@
+{
+  "format": "scp4d-k1-env-cycles-v0120",
+  "stream": "env-16x16x2-T64-temporal-last",
+  "element_frames": 131072,
+  "D": 2048,
+  "T": 64,
+  "threshold": 0,
+  "events": 27590,
+  "tokens": 27654,
+  "relations_fan": "slot 0 = (elem + 1) mod D, slots 1..3 invalid. Applied only to ede_relations.",
+  "label": "Icarus Verilog 12.0, Yosys not used for these counts. Tokens are the decoded events of envTemporalStreams T64 (G=8, predictor last). The same counts match scripts/scp-v0120-ede-model.ts. Power was not measured.",
+  "tools": {
+    "iverilog": "Icarus Verilog version 12.0 (stable)"
+  },
+  "hashes": {
+    "v0120_prereg_sha256": "33740ab2a7270df1b8be9cdfd2f669077f958500b9b58df3eec0821712088299",
+    "golden_temporal_sha256": "6a541b86de8b05879e144f5e3ced5fcd5a4c05503d09ba5b7cb4c87ac95feb88",
+    "golden_relations_sha256": "2bb542838d78739cc38cf3cd510c931d601e384ea60db8240b9c1618d2d77b97",
+    "ede_rtl_sha256": "2a5a619e7626b706c046650a33b540e89630f0d73512c995789c96dadf1b2e93",
+    "fsd_rtl_sha256": "7a4dba118628cd14f04ad0aaf3dbe3f74f18a6c283f2bf46df2308df99a0d3d7"
+  },
+  "ede_temporal": {
+    "cycles": 167716,
+    "evals": 27590,
+    "changes": 14720,
+    "err": 0,
+    "simulator": "vvp scp4d_ede_tb ADDR_W=11, dut=0, relations=0"
+  },
+  "ede_relations": {
+    "cycles": 384076,
+    "evals": 44530,
+    "changes": 14720,
+    "err": 0,
+    "simulator": "vvp scp4d_ede_tb ADDR_W=11, dut=0, relations=1"
+  },
+  "fsd": {
+    "cycles": 291910,
+    "evals": 131072,
+    "changes": 14720,
+    "err": 0,
+    "simulator": "vvp scp4d_ede_tb ADDR_W=11, dut=1"
+  },
+  "loop_ede_w4l8": {
+    "cycles": 167716,
+    "ede_cycles": 167716,
+    "evals": 27590,
+    "frames": 64,
+    "overflow": 0,
+    "err": 0,
+    "simulator": "vvp scp4d_loop_ede_pipe_tb W=4 L=8, tenc_q -> tdec_s -> scp4d_k1_tap -> scp4d_ede, clocks from reset release through EDE done"
+  }
+}

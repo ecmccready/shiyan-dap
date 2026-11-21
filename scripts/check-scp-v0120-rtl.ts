@@ -12,7 +12,8 @@ import { join, resolve } from "node:path";
 import { canonicalJson } from "../src/scp/measurement";
 import { encodeIntScp4d } from "./scp-v0110-int-scp4d";
 import { hostHeader, type EncJob } from "./scp-v0114-rtl-model";
-import { EDE_ANALYTIC_CODE_BITS, EDE_DECLARED_CODE_BITS, runEde, type Tok } from "./scp-v0120-ede-model";
+import { EDE_ANALYTIC_CODE_BITS, EDE_DECLARED_CODE_BITS, runEde, runFsd, type FanSlot, type Tok } from "./scp-v0120-ede-model";
+import { envTemporalStreams } from "./scp-v0111-rtl-vectors";
 import { relationsVectors, temporalVectors, vectorFile, type EdeVector } from "./scp-v0120-ede-vectors";
 import { decoderCycles, k1Cycles, k1MemoryBytes, DECODER_CYCLE_TOLERANCE, K1_CYCLE_TOLERANCE } from "./scp-v0120-system-model";
 
@@ -163,7 +164,34 @@ if (iverilog && vvp) {
   console.log("SKIP sim (iverilog not on PATH)");
 }
 
-check("place-and-route is deferred to the v0.1.19 harness (task 8); power needs real board", true);
+{
+  const stream = envTemporalStreams().find((s) => s.id === "env-16x16x2-T64-temporal-last");
+  const tokens: Tok[] = [];
+  stream?.perFrame.forEach((fr, t) => {
+    fr.positions.forEach((elem, i) => tokens.push({ elem, code: fr.q[i], event: true, eof: false, last: false }));
+    tokens.push({ elem: 0, code: 0, event: false, eof: true, last: t === (stream?.perFrame.length ?? 1) - 1 });
+  });
+  const D = stream?.D ?? 0;
+  const fan: FanSlot[][] = Array.from({ length: D }, (_, i) => [
+    { tgt: (i + 1) % D, valid: true }, { tgt: 0, valid: false }, { tgt: 0, valid: false }, { tgt: 0, valid: false },
+  ]);
+  const temporal = runEde(D, 0, false, fan, tokens);
+  const relations = runEde(D, 0, true, fan, tokens);
+  const fsd = runFsd(D, 0, tokens);
+  const env = JSON.parse(read("fixtures/scp/v0120-k1-env.json")) as {
+    ede_temporal: { cycles: number; evals: number };
+    ede_relations: { cycles: number; evals: number };
+    fsd: { cycles: number; evals: number };
+    loop_ede_w4l8: { cycles: number; evals: number; overflow: number };
+  };
+  check("env T64 K1 file matches the exact model, the concurrent loop wall clock equals that EDE count, and power needs a real board",
+    temporal.cycles === env.ede_temporal.cycles && temporal.evals === env.ede_temporal.evals
+    && relations.cycles === env.ede_relations.cycles && relations.evals === env.ede_relations.evals
+    && fsd.cycles === env.fsd.cycles && fsd.evals === env.fsd.evals
+    && env.loop_ede_w4l8.cycles === env.ede_temporal.cycles && env.loop_ede_w4l8.evals === temporal.evals
+    && env.loop_ede_w4l8.overflow === 0,
+    String(temporal.cycles));
+}
 if (SYNTH) {
   const yosys = findBin("yosys");
   if (!yosys) { console.error("SYNTH FAIL yosys not on PATH"); process.exit(1); }

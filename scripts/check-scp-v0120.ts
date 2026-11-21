@@ -101,9 +101,17 @@ check("event-driven agent evaluates fewer cells than full-scan at 1% churn", eve
   `${event.cells_evaluated} < ${full.cells_evaluated}`);
 
 const sel = runSelection();
-check("selector finds no v0.1.19 manifest and does not run place-and-route", sel.pending_v0119 && sel.live.executed_in_this_run === false && sel.live.I === 0 && sel.power === "needs real board");
+const bench = JSON.parse(readFileSync(join(root, "fixtures/scp/v0119-industry-benchmark.json"), "utf8")) as {
+  designs: Record<string, { fmax_mhz: { median: number } }>;
+};
+const splitGain = bench.designs["tdec-s-w4"].fmax_mhz.median / bench.designs["tdec-r-w4"].fmax_mhz.median - 1;
+check("selector records a retrospective five-seed Fmax comparison and does not place-and-route",
+  sel.pending_v0119 === false && sel.live.executed_in_this_run === false && sel.power === "needs real board"
+  && sel.live.measured?.comparison === "retrospective"
+  && sel.live.measured?.relative_gain === splitGain && sel.live.I === splitGain && splitGain > 0);
 check("back-test as of v0.1.16 proposes the historical decoder issue-path split", sel.backtest.matches_historical_split && sel.backtest.top === "decoder_variant", sel.backtest.bottleneck);
-check("recording the v0.1.17 outcome changes the next ranking", sel.live.ranking_changed && sel.live.chosen === "pipeline_split" && sel.live.ranking_before[0] === "decoder_variant");
+check("five-seed ledger picks w_change next; the v0.1.17 recording still moves decoder_variant to pipeline_split",
+  sel.live.chosen === "w_change" && sel.historical.ranking_changed && sel.historical.chosen === "pipeline_split" && sel.historical.ranking_before[0] === "decoder_variant");
 
 const text = readFileSync(join(root, REPORT), "utf8");
 check("report energy is needs real board and contains no numeric energy",

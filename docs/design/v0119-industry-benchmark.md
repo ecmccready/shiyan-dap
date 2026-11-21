@@ -31,5 +31,18 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 | loop-r-w4l8 | loop | 20.368257522583008 | 21.614145278930664 | 23.67144012451172 | 147376020.9124486 | 35598 | 11368 | 33 | 4140.008453071763 | 12964.111621432849 | 4465940.027649958 | 45F |
 | loop-s-w2l8 | loop | 38.458580017089844 | 39.1742057800293 | 40.78968811035156 | 171069182.07562885 | 22670 | 10470 | 33 | 7546.060082736164 | 16338.985871597788 | 5183914.608352389 | 12F |
 | loop-s-w4l8 | loop | 2/5 routed | | | | | | | | | | — |
+| ede-temporal | decision | 64.39979553222656 | 65.44074249267578 | 66.56460571289062 | 51142699.5635479 | 631 | 395 | 8 | 81050.23702622489 | 129475.1887684757 | 6392837.445443488 | 12F |
+| ede-relations | decision | 63.520294189453125 | 66.26466369628906 | 67.81500244140625 | 22613862.88130474 | 813 | 537 | 14 | 27815.329497299805 | 42111.47650149859 | 1615275.9200931957 | 12F |
+| fsd | decision | 62.71165084838867 | 65.98917388916016 | 66.70223999023438 | 29630136.000822168 | 415 | 309 | 5 | 71397.91807427029 | 95890.40776965104 | 5926027.200164434 | 12F |
+| loop-ede-w4l8 | loop | does not fit on 45F | | | | | | | | | | 85F |
 
-Pareto set (clock, throughput, values/s per LUT): rdec, tdec, tdec-r-w2, tdec-s-w2, tdec-s-w4, tenc-q-w4l8.
+Pareto set (clock, throughput, values/s per LUT): ede-relations, ede-temporal, fsd, rdec, tdec, tdec-r-w2, tdec-s-w2, tdec-s-w4, tenc-q-w4l8.
+
+decisions/s = (evals / cycles) * fmax_MHz * 1e6; evals is the threshold-compare count (not the emitted decision-change count) in fixtures/scp/v0120-k1-env.json; cycles is that design's measured cycle count on env-16x16x2-T64-temporal-last; fmax_MHz is the median of five routed 45F seeds; decisions/s per LUT divides that rate by TRELLIS_COMB used on the median-Fmax seed
+
+| design | evals | decisions/s (median Fmax) | decisions/s per LUT |
+|---|---:|---:|---:|
+| ede-temporal | 27590 | 10765282.294908803 | 17060.669247082096 |
+| ede-relations | 44530 | 7682764.542423249 | 9449.894886129458 |
+| fsd | 131072 | 29630136.000822168 | 71397.91807427029 |
+| loop-ede-w4l8 | 27590 | — | — |

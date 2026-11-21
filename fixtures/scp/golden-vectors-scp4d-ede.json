@@ -16,7 +16,7 @@
             "frame": 1
           }
         ],
-        "cycles": 41,
+        "cycles": 53,
         "err": 0,
         "evals": 3
       },
@@ -29,7 +29,7 @@
             "frame": 1
           }
         ],
-        "cycles": 134,
+        "cycles": 230,
         "err": 0,
         "evals": 96
       },
@@ -97,7 +97,7 @@
             "frame": 2
           }
         ],
-        "cycles": 47,
+        "cycles": 71,
         "err": 0,
         "evals": 6
       },
@@ -135,7 +135,7 @@
             "frame": 2
           }
         ],
-        "cycles": 137,
+        "cycles": 233,
         "err": 0,
         "evals": 96
       },
@@ -219,7 +219,7 @@
             "frame": 2
           }
         ],
-        "cycles": 71,
+        "cycles": 143,
         "err": 0,
         "evals": 18
       },
@@ -252,7 +252,7 @@
             "frame": 2
           }
         ],
-        "cycles": 149,
+        "cycles": 245,
         "err": 0,
         "evals": 96
       },
@@ -520,7 +520,7 @@
             "frame": 2
           }
         ],
-        "cycles": 131,
+        "cycles": 323,
         "err": 0,
         "evals": 48
       },
@@ -653,7 +653,7 @@
             "frame": 2
           }
         ],
-        "cycles": 179,
+        "cycles": 275,
         "err": 0,
         "evals": 96
       },
@@ -1005,14 +1005,14 @@
       "census_bits": 4,
       "ede": {
         "changes": [],
-        "cycles": 41,
+        "cycles": 53,
         "err": 0,
         "evals": 3
       },
       "fan": [],
       "fsd": {
         "changes": [],
-        "cycles": 134,
+        "cycles": 230,
         "err": 0,
         "evals": 96
       },
@@ -1060,7 +1060,7 @@
             "frame": 2
           }
         ],
-        "cycles": 47,
+        "cycles": 71,
         "err": 0,
         "evals": 6
       },
@@ -1078,7 +1078,7 @@
             "frame": 2
           }
         ],
-        "cycles": 137,
+        "cycles": 233,
         "err": 0,
         "evals": 96
       },
@@ -1157,7 +1157,7 @@
             "frame": 1
           }
         ],
-        "cycles": 71,
+        "cycles": 143,
         "err": 0,
         "evals": 18
       },
@@ -1185,7 +1185,7 @@
             "frame": 1
           }
         ],
-        "cycles": 149,
+        "cycles": 245,
         "err": 0,
         "evals": 96
       },
@@ -1478,7 +1478,7 @@
             "frame": 2
           }
         ],
-        "cycles": 131,
+        "cycles": 323,
         "err": 0,
         "evals": 48
       },
@@ -1636,7 +1636,7 @@
             "frame": 2
           }
         ],
-        "cycles": 179,
+        "cycles": 275,
         "err": 0,
         "evals": 96
       },
@@ -1988,14 +1988,14 @@
       "census_bits": 4,
       "ede": {
         "changes": [],
-        "cycles": 41,
+        "cycles": 53,
         "err": 0,
         "evals": 3
       },
       "fan": [],
       "fsd": {
         "changes": [],
-        "cycles": 134,
+        "cycles": 230,
         "err": 0,
         "evals": 96
       },
@@ -2043,7 +2043,7 @@
             "frame": 2
           }
         ],
-        "cycles": 47,
+        "cycles": 71,
         "err": 0,
         "evals": 6
       },
@@ -2061,7 +2061,7 @@
             "frame": 2
           }
         ],
-        "cycles": 137,
+        "cycles": 233,
         "err": 0,
         "evals": 96
       },
@@ -2170,7 +2170,7 @@
             "frame": 2
           }
         ],
-        "cycles": 71,
+        "cycles": 143,
         "err": 0,
         "evals": 18
       },
@@ -2228,7 +2228,7 @@
             "frame": 2
           }
         ],
-        "cycles": 149,
+        "cycles": 245,
         "err": 0,
         "evals": 96
       },
@@ -2461,7 +2461,7 @@
             "frame": 2
           }
         ],
-        "cycles": 131,
+        "cycles": 323,
         "err": 0,
         "evals": 48
       },
@@ -2559,7 +2559,7 @@
             "frame": 2
           }
         ],
-        "cycles": 179,
+        "cycles": 275,
         "err": 0,
         "evals": 96
       },
@@ -2922,7 +2922,7 @@
             "frame": 2
           }
         ],
-        "cycles": 41,
+        "cycles": 53,
         "err": 0,
         "evals": 3
       },
@@ -2940,7 +2940,7 @@
             "frame": 2
           }
         ],
-        "cycles": 134,
+        "cycles": 230,
         "err": 0,
         "evals": 96
       },
@@ -2993,7 +2993,7 @@
             "frame": 2
           }
         ],
-        "cycles": 47,
+        "cycles": 71,
         "err": 0,
         "evals": 6
       },
@@ -3016,7 +3016,7 @@
             "frame": 2
           }
         ],
-        "cycles": 137,
+        "cycles": 233,
         "err": 0,
         "evals": 96
       },
@@ -3110,7 +3110,7 @@
             "frame": 2
           }
         ],
-        "cycles": 71,
+        "cycles": 143,
         "err": 0,
         "evals": 18
       },
@@ -3153,7 +3153,7 @@
             "frame": 2
           }
         ],
-        "cycles": 149,
+        "cycles": 245,
         "err": 0,
         "evals": 96
       },
@@ -3431,7 +3431,7 @@
             "frame": 2
           }
         ],
-        "cycles": 131,
+        "cycles": 323,
         "err": 0,
         "evals": 48
       },
@@ -3574,7 +3574,7 @@
             "frame": 2
           }
         ],
-        "cycles": 179,
+        "cycles": 275,
         "err": 0,
         "evals": 96
       },
@@ -3937,7 +3937,7 @@
             "frame": 1
           }
         ],
-        "cycles": 41,
+        "cycles": 53,
         "err": 0,
         "evals": 3
       },
@@ -3955,7 +3955,7 @@
             "frame": 1
           }
         ],
-        "cycles": 134,
+        "cycles": 230,
         "err": 0,
         "evals": 96
       },
@@ -4003,7 +4003,7 @@
             "frame": 2
           }
         ],
-        "cycles": 47,
+        "cycles": 71,
         "err": 0,
         "evals": 6
       },
@@ -4021,7 +4021,7 @@
             "frame": 2
           }
         ],
-        "cycles": 137,
+        "cycles": 233,
         "err": 0,
         "evals": 96
       },
@@ -4110,7 +4110,7 @@
             "frame": 2
           }
         ],
-        "cycles": 71,
+        "cycles": 143,
         "err": 0,
         "evals": 18
       },
@@ -4148,7 +4148,7 @@
             "frame": 2
           }
         ],
-        "cycles": 149,
+        "cycles": 245,
         "err": 0,
         "evals": 96
       },
@@ -4426,7 +4426,7 @@
             "frame": 2
           }
         ],
-        "cycles": 131,
+        "cycles": 323,
         "err": 0,
         "evals": 48
       },
@@ -4569,7 +4569,7 @@
             "frame": 2
           }
         ],
-        "cycles": 179,
+        "cycles": 275,
         "err": 0,
         "evals": 96
       },
@@ -4928,7 +4928,7 @@
       "fan": [],
       "fsd": {
         "changes": [],
-        "cycles": 66,
+        "cycles": 98,
         "err": 0,
         "evals": 32
       },
@@ -4951,14 +4951,14 @@
       "census_bits": 4,
       "ede": {
         "changes": [],
-        "cycles": 35,
+        "cycles": 39,
         "err": 0,
         "evals": 1
       },
       "fan": [],
       "fsd": {
         "changes": [],
-        "cycles": 66,
+        "cycles": 98,
         "err": 0,
         "evals": 32
       },

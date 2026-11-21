@@ -1,0 +1,55 @@
+{
+  "seed": 3,
+  "part": "45F",
+  "device": "LFE5U-45F",
+  "mode": "route",
+  "command": [
+    "nextpnr-ecp5",
+    "--45k",
+    "--package",
+    "CABGA381",
+    "--json",
+    "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/loop-ede-w4l8/n.json",
+    "--lpf-allow-unconstrained",
+    "--freq",
+    "12",
+    "--router",
+    "router2",
+    "--seed",
+    "3",
+    "--timing-allow-fail",
+    "--report",
+    "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed3.report.json"
+  ],
+  "command_sha256": "7b21bd949c7a22a03731df814835452480640b4697f90d583bceffe4808e234f",
+  "wall_clock_s": 32.7115,
+  "exit_code": 125,
+  "status": "does_not_fit",
+  "not_completed_within_s": null,
+  "fmax_mhz": null,
+  "fmax_clocks": null,
+  "utilization": null,
+  "lut": null,
+  "ff": null,
+  "bram": null,
+  "dsp": null,
+  "demand": {
+    "lut4": {
+      "used": 44624,
+      "available": 43848
+    },
+    "trellis_comb": {
+      "used": 46454,
+      "available": 43848
+    },
+    "trellis_ff": {
+      "used": 18299,
+      "available": 43848
+    }
+  },
+  "error": "ERROR: Unable to find legal placement for all cells, design is probably at utilisation limit.",
+  "report_path": null,
+  "report_sha256": null,
+  "netlist_sha256": "fb0ea242d94338ae3178cafe69dfb7d758b041022c128d42b01c7d5373913ef4",
+  "log_sha256": "43cede67c96e02fa5bb2716e40c6d89efe9733dd877d053988b338180bb4ad8c"
+}
