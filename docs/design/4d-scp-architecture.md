@@ -1728,3 +1728,41 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0117-rtl.ts --writ
 ```
 
 Without a simulator, it prints `SKIP sim` and runs the same 22 counted checks against the committed report.
+
+## 27. v0.1.20: live proof path (draft)
+
+**Status of this section.** Draft header, pre-registered before any v0.1.20 result existed. §25 (v0.1.18 synthesis) and §26 (v0.1.19 Industry Performance Benchmark) are not on this branch. This section keeps the locked number §27. v0.2 stays reserved for the first product-facing page. Files use the tag `v0120`. The branch is `feat/scp-v0120-proof-path`.
+
+**Locked decisions (owner, 2026-11-20).** Name v0.1.20. Pass thresholds are the section 2 table below, committed in `fixtures/scp/v0120-prereg.json` and not edited after a run. Hardware default is temporal-only; relations stay behind a mode bit. Power board is a Lattice ECP5 Versa or an equivalent open-source-friendly ECP5 45F/85F board. Power and energy stay **needs real board**. This file does not contain a numeric energy or power estimate.
+
+**Seeds, grid, arms.** Environment seeds 1, 2, 3, 4 and 5. Grid 8×8×1, 4 channels, T = 16, 4 episodes, eps 0.01 per channel, built on `scripts/scp-v019-env-fixture.ts`. Churn levels, declared before the run: low 1%, medium 5%, high 20%, very high 50% of cells per step (`max(1, round(fraction × cells))`). H3 and H4 are judged at low and medium. Arms: full-scan agent on `full_q`, `delta` and `tensor_bound`; event-driven agent on `scp4d` rank 0, predictor last, relations off (the H3/H4 arm, `scp4d_temporal`) and the same with relations on. E4 crosses relations on/off, rank 0/1/2 and predictor zero/last/linear at medium churn. E1 runs the fixture tenant through `buildTenantChain` → `verifyTenantChain` and the adapter. E5 runs every strategy on the existing single-cell fixtures (v0.1, synthetic Medicare 6-row, B256, B4096), read-only.
+
+**Metrics.** Ops per state transition = (encode compute ops + decode compute ops + instrumented agent ops) / max(1, T−1). Encode is always included. Bytes moved = codec `bytes_in` + `bytes_out` + `state_bytes_touched` plus the agent's bytes, over the same denominator. The analytic agent formula is reported next to the instrumented counter, and the gap is reported. Latency (p50/p95, JS, one machine) is printed and is not a gate. Energy is **needs real board**.
+
+**PASS (locked).** Copied from the locked plan. These sentences are the thresholds. They are not tightened or loosened in this milestone.
+
+| Hypothesis | PASS (locked) | MIXED | FAIL |
+|---|---|---|---|
+| H1 Fidelity | `bound_ok` on every bounded arm, every seed | none: this is a hard gate | any eps violation |
+| H2 Intelligence | `safe_disagree` = 0 on all seeds, and task success retained ≥ 99% on every seed | safe_disagree = 0 but retention under 99% on any seed | any margin-safe flip |
+| H3 Redundant processing | event-driven `scp4d` ops per transition ≥ 1.5× lower than full-scan `full_q` and lower than `delta` (median of 5 seeds, holding in ≥ 4 of 5) at low and medium churn | between 1.0× and 1.5×, or only at the lowest churn | not lower than `delta` |
+| H4 Data movement | `scp4d` bytes moved ≤ `delta` and ≤ `full_q` at low and medium churn | wins on stream bytes but loses on state bytes touched | loses on both |
+| H5 Crossover | The churn level where H3 flips is measured and reported | — | no flip found in the sweep (reported as a finding, not a failure of the build) |
+
+H2's gate arms are the five E2 arms. `tensor_energy` is reported as an unbounded probe and is not an H2 gate arm. H3/H4 use `scp4d_temporal` (locked hardware default). H5's flip is the first churn, in low → very high order, where the H3 level test goes from holding to not holding. A negative verdict is written as measured.
+
+**Results.** Not measured yet. The runner has not been executed. No verdict is stated in this draft.
+
+**K1.** Not in this header's result tables. The design default is temporal-only, with a relations mode bit. Declared code width 32 bits; the analytic bound used for the vectors is 16 bits; the check will assert census ≤ analytic bound ≤ declared width. Margin of at least one code. 0 multipliers. Power is **needs real board**.
+
+**Benchmark (pending v0.1.19).** Task 8 is not done on this branch. The v0.1.19 harness is not merged, and this run does not place-and-route K1 and does not register it in that harness. Yosys synthesis-only sanity checks are in scope. Registration steps, to be done after v0.1.19 merges, and not before:
+
+1. Register K1 (`scp4d_ede`, temporal-only and with the relations mode bit set), K1-ref (`scp4d_fsd`) and the `tenc_q` → `tdec_s` → `scp4d_ede` loop in the v0.1.19 design registry. Do not add a second harness.
+2. Run the same five place-and-route seeds that the v0.1.19 manifest records, on LFE5U-45F, and the fit pass on 12F, 25F and 85F.
+3. Add the K1 golden vectors to that harness's bit-exact regression.
+4. Record RTL hashes, vector hashes, the `v0120-prereg.json` hash and tool versions in the manifest. Add Pareto rows and decisions per second per LUT.
+5. Leave power as **needs real board**. Do not estimate it.
+
+**System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
+
+**Naming.** `v019` in older filenames means v0.1.9. `v0119` means v0.1.19. `v0120` means v0.1.20.
