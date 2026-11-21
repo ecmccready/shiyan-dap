@@ -8,3 +8,6 @@ src/data/playlist.json
 
 # Local append-only Founder Reference Flywheel records (never uploaded)
 .aethel/hf-memory/
+
+# v0.1.19 place-and-route scratch (netlists and logs). Reports and the manifest are committed.
+fixtures/scp/v0119-work/

@@ -1,6 +1,6 @@
 # hw/scp4d — 4D-SCP RTL (TEST ONLY, unwired)
 
-This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Nothing in the Next.js app, `src/`, Level 4 or any route imports it. It contains no TS/JS, so `tsc` and `next build` never see it. Spec: `docs/design/4d-scp-architecture.md` §18 (temporal-only), §19 (relations), §20 (W-byte front end), §21 (encoder), §22 (pipelined encoder), §23 (short emitter path) and §24 (short decoder issue path).
+This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Nothing in the Next.js app, `src/`, Level 4 or any route imports it. It contains no TS/JS, so `tsc` and `next build` never see it. Spec: `docs/design/4d-scp-architecture.md` §18 (temporal-only), §19 (relations), §20 (W-byte front end), §21 (encoder), §22 (pipelined encoder), §23 (short emitter path), §24 (short decoder issue path) and §25 (two-stage decoder).
 
 | Milestone | What | Evidence |
 |---|---|---|
@@ -25,6 +25,7 @@ This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Not
 - `rtl/scp4d_tenc_p.v`, `tb/scp4d_tenc_p_tb.v`, `tb/scp4d_loop_p_tb.v`, `synth/scp4d_tenc_p_wrap.v` (wrappers `wrap_tenc_p`, `wrap_loop_p`): the v0.1.15 pipelined encoder, its testbench, the closed loop with `scp4d_tdec_w` at the same W, and the place-and-route wrappers.
 - `rtl/scp4d_tenc_q.v`, `tb/scp4d_tenc_q_tb.v`, `tb/scp4d_loop_q_tb.v`, `synth/scp4d_tenc_q_wrap.v` (wrappers `wrap_tenc_q`, `wrap_loop_q`): the v0.1.16 short-emitter-path encoder and its testbench, loop and wrappers.
 - `rtl/scp4d_tdec_r.v`, `rtl/scp4d_fe_r.v`, `tb/scp4d_tdec_r_tb.v`, `tb/scp4d_loop_r_tb.v`, `synth/scp4d_tdec_r_wrap.v` (wrappers `wrap_tdec_r`, `wrap_loop_r`): the v0.1.17 short-issue-path decoder, its front end, lockstep testbench, loop and wrappers.
+- `rtl/scp4d_tdec_s.v`, `tb/scp4d_tdec_s_tb.v`, `tb/scp4d_loop_s_tb.v`, `synth/scp4d_tdec_s_wrap.v` (wrappers `wrap_tdec_s`, `wrap_loop_s`): the v0.1.18 two-stage decoder, its testbench, loop and wrappers. The front end is `scp4d_fe_r`.
 
 ## Scope
 
@@ -77,6 +78,16 @@ See §23.
 
 See §24.
 
+**v0.1.18, two-stage decoder (env T64, temporal-last):**
+
+- Decoder cycles: 56,864 at W = 1, 28,443 at W = 2, 15,197 at W = 4. The v0.1.17 decoder on the same stream is 56,865 / 28,444 / 15,494.
+- Loop `tenc_q` → `tdec_s`: 30,015 cycles at W2L8 and 19,048 at W4L8 (v0.1.17 loop: 30,016 and 19,223).
+- ECP5-45F, this run, router2, seed 1: `tdec_s` W2 7,955 LUT / 2,279 FF at 44.48 MHz (204,974,249 values/s); W4 23,785 LUT / 4,017 FF at 37.56 MHz (323,949,748 values/s, 1.8411× same-run `tdec_r`). The W2 loop placed at 40.28 MHz. The W4 loop exceeded the script's 2400 s place-and-route bound and has no Fmax.
+- iCE40-HX8K: `tdec_s` W2 and W4 do not fit. `tdec_r` W2 does (39.46 MHz).
+- Energy: not measured.
+
+See §25.
+
 ## Run (Linux / WSL)
 
 ```bash
@@ -100,7 +111,7 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts       
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts --synth         # Yosys only. No nextpnr. Power needs a real board.
 ```
 
-Without a simulator, each check prints `SKIP sim` and runs the same counted checks against the committed report (33 for v0.1.11, 27 for v0.1.12, 27 for v0.1.13, 19 for v0.1.14, 20 for v0.1.15, 22 for v0.1.16, 22 for v0.1.17). The closed-form cycle model matches the measured counts exactly. The script also looks for tools in `/opt/eda/oss-cad-suite/bin`.
+Without a simulator, each check prints `SKIP sim` and runs the same counted checks against the committed report (33 for v0.1.11, 27 for v0.1.12, 27 for v0.1.13, 19 for v0.1.14, 20 for v0.1.15, 22 for v0.1.16, 22 for v0.1.17, 24 for v0.1.18). The closed-form cycle model matches the measured counts exactly. The script also looks for tools in `/opt/eda/oss-cad-suite/bin`.
 
 ## Honest labels
 
