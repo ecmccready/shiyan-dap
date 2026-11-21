@@ -1831,3 +1831,18 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0118-rtl.ts --writ
 ```
 
 Without a simulator, it prints `SKIP sim` and runs the same 24 counted checks against the committed report. This machine's `--write --synth` took 4,275 s.
+
+## 26. Industry Performance Benchmark (v0.1.19, Lattice ECP5)
+
+This section is the five-seed post-route benchmark. It is not v0.1.9 (those files are named `v019`) and it is not a product-facing release. The tables are generated from `fixtures/scp/v0119-industry-benchmark.json` into `docs/design/v0119-industry-benchmark.md`. Until a design's five 45F seeds have finished, that row has no Fmax. A seed that exceeds the bound is `not completed within 7200 s`. No Fmax is filled in for it.
+
+Commands, tool versions and the fit rule are in `docs/design/v0119-reproduce.md`. The evidence package is `docs/design/aethel-node-hardware-evidence-v1.md`.
+
+- **Device.** LFE5U-45F, package CABGA381, nextpnr `--router router2 --freq 12 --timing-allow-fail`, seeds 1 through 5. Fmax is the minimum achieved clock in that seed's report. The median is the middle of the five, and it is reported only when all five routed.
+- **Throughput.** `values/s = (element_frames / cycles) × fmax_MHz × 1e6`. `element_frames` and `cycles` are read from the committed simulation report for that design on env T64. The bit-exact phase re-simulates those checks.
+- **Efficiency.** Values/s per LUT, per FF and per BRAM, using the seed whose Fmax is the median. Per BRAM is omitted when that seed uses 0 BRAM.
+- **Fit.** 12F, 25F and 85F, seed 1 only. Pack-only first. Routing runs only if packing exits 0. A packing failure is the record. 45F stays five seeds.
+- **Pareto.** A design is outside the set when another design is at least as high on median Fmax, median throughput and values/s per LUT, and strictly higher on one of them.
+- **Power.** Not measured. It needs a programmed board.
+
+The generated table starts empty and gains a row when that design's run is committed.

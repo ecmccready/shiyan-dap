@@ -1,0 +1,111 @@
+{
+  "format": "scp4d-v0119-industry-benchmark",
+  "version": 1,
+  "label": "v0.1.19 Industry Performance Benchmark. Post-route static timing from nextpnr. Not a programmed board. Power is not measured.",
+  "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken.",
+  "formula": "values/s = (element_frames / cycles) * fmax_MHz * 1e6; element_frames and cycles are from the design's committed simulation report on the named stream; fmax_MHz is the minimum achieved clock in that seed's nextpnr report",
+  "bound_s": 7200,
+  "seeds_45f": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "fit": {
+    "seed": 1,
+    "note": "12F, 25F and 85F use one seed. nextpnr --pack-only runs first. If packing fails, routing is not run and the failure text is the record. If packing succeeds, one full place-and-route (router2, --timing-allow-fail, no --tmg-ripup) decides whether it fits. 45F timing is five seeds and is not pack-only."
+  },
+  "flow": {
+    "device_45f": "LFE5U-45F",
+    "package": "CABGA381",
+    "router": "router2",
+    "freq_mhz_target": 12,
+    "timing_allow_fail": true,
+    "note": "Achieved Fmax is the minimum clock in the nextpnr report. The 12 MHz flag is the target, not the result. --timing-allow-fail keeps a routed design that misses that target."
+  },
+  "design_set": "Every RTL encoder, decoder and loop module, at the configuration earlier specs compare (W=2 and W=4 where the width changes the netlist; encoders and loops at L=8). Other (W, L) values of the same module are not re-placed.",
+  "tools": {
+    "oss_cad_suite": "20261118",
+    "yosys": "Yosys 0.71+50 (git sha1 583f380c6, Release, Clang /usr/bin/clang++ 21.1.8)",
+    "nextpnr_ecp5": "\"nextpnr-ecp5\" -- Next Generation Place and Route (Version nextpnr-0.11.1-103-ge811ba48)",
+    "nextpnr_ice40": "\"nextpnr-ice40\" -- Next Generation Place and Route (Version nextpnr-0.11.1-103-ge811ba48)",
+    "ecppack": "Project Trellis ecppack Version 1.4-88-g2d12005",
+    "iverilog": "Icarus Verilog version 14.0 (devel) (s20260301-1164-g0b15315c1-dirty)"
+  },
+  "source_files": [
+    {
+      "path": "hw/scp4d/rtl/scp4d_tdec.v",
+      "sha256": "50065f66c044c3a69492952719655685c0a2d17deb5a8e406dd65c759a2a346b"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_rdec.v",
+      "sha256": "224f71f8b8b51800d5e6a322cb7ccab6967284a29b07b080bbb89329160551f0"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_fe_w.v",
+      "sha256": "69164af8e4240dc34a35258addc4750e5a87a7c799c437def28401b830a67dde"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_tdec_w.v",
+      "sha256": "3ac1b80ca63cdbd3653c0ee40ba4fcc5b34a902580cb475b9cd319eb518432ab"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_rdec_w.v",
+      "sha256": "455b0a335eabe6a0807407fec5306e3eeb17a5e99d55102709f051a0185bd161"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_fe_r.v",
+      "sha256": "d6f806c44e0da9dac9ef948cf5a5693ba947c122f6d89c183d42190d93975aa4"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_tdec_r.v",
+      "sha256": "d3f26ee8dbebaf3d3559b324d41bacea44604386b66cacb434af9024e81eb8e9"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_tdec_s.v",
+      "sha256": "1debc13cc54251dff050f71f9ef883006de19a76f25027acb4e5e7a319634dac"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_tenc_w.v",
+      "sha256": "e4901fcb0b646009c555fb65bfaa4cd3648ecc571238befc7dba7e6560661763"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_tenc_p.v",
+      "sha256": "74aa4f10348fa9582c2fbc564e946321ff765ab0038d9493e9ca8902c1dc9b41"
+    },
+    {
+      "path": "hw/scp4d/rtl/scp4d_tenc_q.v",
+      "sha256": "2fb75974c5d21aa70d4fe8133c8b2a471d7744b4bc247bb82dfff4db88e04f46"
+    },
+    {
+      "path": "hw/scp4d/synth/scp4d_pnr_wrap.v",
+      "sha256": "e64d823668048943ba03757b91d0db3ac27abdc36d0fb611d826b78333915354"
+    },
+    {
+      "path": "hw/scp4d/synth/scp4d_tenc_wrap.v",
+      "sha256": "67f52a88e589ad9766fd5ddbcb31e8b43e53ac8d687d7871da667a82501cc4f7"
+    },
+    {
+      "path": "hw/scp4d/synth/scp4d_tenc_p_wrap.v",
+      "sha256": "337bd014808a49b289b8a5f1d5e8a8f78f7c22559988e1512cba7c236bb21087"
+    },
+    {
+      "path": "hw/scp4d/synth/scp4d_tenc_q_wrap.v",
+      "sha256": "e43f21d5cbb6626d19e77ada1c9a03cedb6e7b8337de96c682a5f18ec282e955"
+    },
+    {
+      "path": "hw/scp4d/synth/scp4d_tdec_r_wrap.v",
+      "sha256": "64ae9c7cf31ed85025993b94e87d22afff2df975550a8aa39785845cdea9ecf8"
+    },
+    {
+      "path": "hw/scp4d/synth/scp4d_tdec_s_wrap.v",
+      "sha256": "bda5b4f4ddd83469b4375734099da2820981eff4b7f87253f096dfd2443da27b"
+    }
+  ],
+  "bit_exact": null,
+  "designs": {},
+  "pareto": [],
+  "ranked": null,
+  "advice": null
+}
