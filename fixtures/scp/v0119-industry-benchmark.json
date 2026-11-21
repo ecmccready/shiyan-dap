@@ -2025,6 +2025,7 @@
         "max": 45.277549743652344,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 100358228.11521824,
         "median": 101902270.24935813,
@@ -3891,6 +3892,7 @@
         "max": 36.76335525512695,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 156827837.15370554,
         "median": 158510968.92138937,
@@ -5757,6 +5759,7 @@
         "max": 19.721920013427734,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 160431118.4974829,
         "median": 163488188.97637793,
@@ -7623,6 +7626,7 @@
         "max": 47.65989685058594,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 189219888.20137814,
         "median": 212676979.32780197,
@@ -9489,6 +9493,7 @@
         "max": 22.31545066833496,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 181784706.98334837,
         "median": 185471327.61068797,
@@ -11355,6 +11360,7 @@
         "max": 48.58378219604492,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 215913124.49460322,
         "median": 217328516.68248776,
@@ -13221,6 +13227,7 @@
         "max": 39.08845520019531,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 311187043.4954267,
         "median": 329784727.2487991,
@@ -15082,6 +15089,7 @@
         "max": 51.68492889404297,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 62373812.73494218,
         "median": 63912809.54977188,
@@ -16948,6 +16956,7 @@
         "max": 42.84306716918945,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 57881067.25636043,
         "median": 61027647.479282536,
@@ -18814,6 +18823,7 @@
         "max": 45.222267150878906,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 59598974.73698317,
         "median": 62959447.38546762,
@@ -20684,6 +20694,7 @@
         "max": 32.64773178100586,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 138617346.9387755,
         "median": 143003098.89056295,
@@ -22554,6 +22565,7 @@
         "max": 37.99392318725586,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 142410626.94530904,
         "median": 161354961.17932758,
@@ -24424,6 +24436,7 @@
         "max": 26.04302406311035,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 162852714.9565499,
         "median": 169615156.25843364,
@@ -26294,6 +26307,7 @@
         "max": 43.17230224609375,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 142614495.33125836,
         "median": 189776345.042241,
@@ -28164,6 +28178,7 @@
         "max": 40.16064453125,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 249361958.2231338,
         "median": 282398526.4748745,
@@ -30033,6 +30048,7 @@
         "max": 32.60515213012695,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 131862402.45447874,
         "median": 132013723.07076636,
@@ -31660,6 +31676,7 @@
         "max": 20.349607467651367,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 133007543.04739115,
         "median": 135502757.113874,
@@ -33287,6 +33304,7 @@
         "max": 20.54780387878418,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 132008414.39941734,
         "median": 134143187.84789054,
@@ -34914,6 +34932,7 @@
         "max": 23.67144012451172,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 138880936.898507,
         "median": 147376020.9124486,
@@ -36787,6 +36806,7 @@
         "max": 40.78968811035156,
         "n": 5
       },
+      "completed_45f": null,
       "throughput_values_per_s": {
         "min": 167944127.93603197,
         "median": 171069182.07562885,
@@ -38286,6 +38306,31 @@
         }
       },
       "fmax_mhz": null,
+      "completed_45f": {
+        "n": 4,
+        "min": 34.21025466918945,
+        "max": 36.4564323425293,
+        "by_seed": [
+          {
+            "seed": 3,
+            "fmax_mhz": 34.21025466918945
+          },
+          {
+            "seed": 4,
+            "fmax_mhz": 35.032405853271484
+          },
+          {
+            "seed": 2,
+            "fmax_mhz": 36.30159378051758
+          },
+          {
+            "seed": 1,
+            "fmax_mhz": 36.4564323425293
+          }
+        ],
+        "five_seed_median": null,
+        "note": "five-seed median is not defined; seed 5 did not complete within 7200 s. The clocks listed are only the seeds that routed."
+      },
       "throughput_values_per_s": null,
       "resources_at_median_fmax_seed": null,
       "efficiency": null,

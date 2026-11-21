@@ -30,6 +30,7 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 | loop-q-w4l8 | loop | 19.360334396362305 | 19.673419952392578 | 20.54780387878418 | 134143187.84789054 | 32060 | 11219 | 33 | 4184.12937766346 | 11956.786509304799 | 4064945.0862997132 | 45F |
 | loop-r-w4l8 | loop | 20.368257522583008 | 21.614145278930664 | 23.67144012451172 | 147376020.9124486 | 35598 | 11368 | 33 | 4140.008453071763 | 12964.111621432849 | 4465940.027649958 | 45F |
 | loop-s-w2l8 | loop | 38.458580017089844 | 39.1742057800293 | 40.78968811035156 | 171069182.07562885 | 22670 | 10470 | 33 | 7546.060082736164 | 16338.985871597788 | 5183914.608352389 | 12F |
-| loop-s-w4l8 | loop | not completed within 7200 s (1 seed) | | | | | | | | | | 45F |
+| loop-s-w4l8 | loop | five-seed median not defined (1 seed not completed within 7200 s; 4 routed) | — | — | — | — | — | — | — | — | — | 45F |
+| loop-s-w4l8 clocks | | seed 3: 34.21025466918945<br>seed 4: 35.032405853271484<br>seed 2: 36.30159378051758<br>seed 1: 36.4564323425293 | | | | | | | | | | |
 
 Pareto set (clock, throughput, values/s per LUT): rdec, tdec, tdec-r-w2, tdec-s-w2, tdec-s-w4, tenc-q-w4l8.

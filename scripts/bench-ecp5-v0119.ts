@@ -266,10 +266,12 @@ function summarize(d: Design, seeds: SeedRec[], fit: Record<string, { fits: bool
   const vpc = valuesPerCycle(w.element_frames, w.cycles);
   const routed = seeds.filter((s) => s.status === "routed" && s.fmax_mhz !== null);
   const fmaxes = routed.map((s) => s.fmax_mhz as number);
+  const missed = seeds.filter((s) => s.status === "not_completed").map((s) => s.seed);
   let fmax: { min: number; median: number; max: number; n: number } | null = null;
   let throughput: { min: number; median: number; max: number } | null = null;
   let resources: { seed: number; lut: number | null; ff: number | null; bram: number | null } | null = null;
   let efficiency: { per_lut: number | null; per_ff: number | null; per_bram: number | null; per_bram_note: string | null } | null = null;
+  let completed_45f: { n: number; min: number; max: number; by_seed: { seed: number; fmax_mhz: number }[]; five_seed_median: null; note: string } | null = null;
   if (fmaxes.length === 5) {
     const sorted = [...routed].sort((a, b) => (a.fmax_mhz as number) - (b.fmax_mhz as number) || a.seed - b.seed);
     const mid = sorted[2];
@@ -281,6 +283,16 @@ function summarize(d: Design, seeds: SeedRec[], fit: Record<string, { fits: bool
     efficiency = {
       per_lut: per(mid.lut), per_ff: per(mid.ff), per_bram: per(mid.bram),
       per_bram_note: mid.bram === 0 ? "BRAM used is 0; values/s per BRAM is undefined" : null,
+    };
+  } else if (fmaxes.length > 0) {
+    const sorted = [...routed].sort((a, b) => (a.fmax_mhz as number) - (b.fmax_mhz as number) || a.seed - b.seed);
+    completed_45f = {
+      n: sorted.length,
+      min: sorted[0].fmax_mhz as number,
+      max: sorted[sorted.length - 1].fmax_mhz as number,
+      by_seed: sorted.map((s) => ({ seed: s.seed, fmax_mhz: s.fmax_mhz as number })),
+      five_seed_median: null,
+      note: `five-seed median is not defined; seed ${missed.join(", ") || "unknown"} did not complete within ${BOUND_S} s. The clocks listed are only the seeds that routed.`,
     };
   }
   const order = ["12F", "25F", "45F", "85F"] as const;
@@ -301,7 +313,7 @@ function summarize(d: Design, seeds: SeedRec[], fit: Record<string, { fits: bool
     id: d.id, kind: d.kind, milestone: d.milestone, top: d.top,
     sets: d.sets, composed_of: d.composedOf ?? [],
     workload: w, values_per_cycle: vpc,
-    seeds_45f: seeds, fit, fmax_mhz: fmax, throughput_values_per_s: throughput,
+    seeds_45f: seeds, fit, fmax_mhz: fmax, completed_45f, throughput_values_per_s: throughput,
     resources_at_median_fmax_seed: resources, efficiency, fits, smallest_part: smallest,
     power: POWER,
   };
@@ -434,8 +446,13 @@ function writeDocs() {
     if (!row) { lines.push(`| ${d.id} | ${d.kind} | not run | | | | | | | | | | |`); continue; }
     const done = row.seeds_45f?.filter((s) => s.status === "routed").length ?? 0;
     const missed = row.seeds_45f?.filter((s) => s.status === "not_completed").length ?? 0;
+    const partial = (row as { completed_45f?: { by_seed: { seed: number; fmax_mhz: number }[]; note: string } | null }).completed_45f;
     if (!row.fmax_mhz) {
-      lines.push(`| ${row.id} | ${row.kind} | ${missed ? `not completed within ${BOUND_S} s (${missed} seed${missed === 1 ? "" : "s"})` : `${done}/5 routed`} | | | | | | | | | | ${row.smallest_part ?? "—"} |`);
+      const note = missed
+        ? `five-seed median not defined (${missed} seed${missed === 1 ? "" : "s"} not completed within ${BOUND_S} s; ${done} routed)`
+        : `${done}/5 routed`;
+      lines.push(`| ${row.id} | ${row.kind} | ${note} | — | — | — | — | — | — | — | — | — | ${row.smallest_part ?? "—"} |`);
+      if (partial) lines.push(`| ${row.id} clocks | | ${partial.by_seed.map((s) => `seed ${s.seed}: ${s.fmax_mhz}`).join("<br>")} | | | | | | | | | | |`);
       continue;
     }
     const res = row.resources_at_median_fmax_seed;
@@ -498,6 +515,11 @@ function main() {
   if (argv.includes("--init")) { init(); return; }
   if (argv.includes("--bit-exact")) { bitExact(); writeDocs(); return; }
   if (argv.includes("--write-docs")) { writeDocs(); return; }
+  if (argv.includes("--recompute")) {
+    for (const design of DESIGNS) upsertDesign(design);
+    writeDocs();
+    return;
+  }
   if (!only) { console.error("pass --init, --bit-exact, --only=<id> [--seed=N | --fit], --write-docs, or --list"); process.exit(2); }
   const d = DESIGNS.find((x) => x.id === only);
   if (!d) throw new Error(`unknown design ${only}`);

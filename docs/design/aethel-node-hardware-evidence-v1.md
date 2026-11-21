@@ -18,6 +18,14 @@ The benchmark's bit-exact phase re-runs the RTL checks with `--require-sim` agai
 
 Throughput, LUT, FF, BRAM, clock, and the Pareto set are computed by `scripts/ecp5-v0119-score.ts` from finished seeds only. The generated table is `docs/design/v0119-industry-benchmark.md`.
 
+This run, committed on `cursor/v0119-ecp5-benchmark-cbc7`:
+
+- Bit-exact: all eight RTL checks passed under `--require-sim`.
+- 20 designs have a five-seed median on the 45F. `loop-s-w4l8` does not. Seeds 1–4 routed. Seed 5 is `not_completed` at 7200 s, exit 124, Fmax null. There is no five-seed median for that design.
+- `loop-s-w4l8` does not fit the 12F or the 25F. A seed-1 route on the 85F did finish. The smallest part that routed is the 45F.
+- Pareto set (median Fmax, median throughput, values/s per LUT): `rdec`, `tdec`, `tdec-r-w2`, `tdec-s-w2`, `tdec-s-w4`, `tenc-q-w4l8`.
+- The advisor reads those medians. The fastest closed loop that has a five-seed median is `loop-s-w2l8`. On that loop the encoder `tenc-q-w2l8` is the slower constituent. The highest-throughput measured encoder is `tenc-q-w4l8`. The clocks and values/s are the manifest fields, not restated here, so this paragraph cannot drift from the table.
+
 ## Reproduction
 
 `docs/design/v0119-reproduce.md`. Source, constraint and report SHA-256 hashes are in the manifest.
