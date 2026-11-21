@@ -21,3 +21,7 @@ export {
 
 /** v0.1.9 isolated subsystem (state_encoder … compression_bench). Same boundary: scripts/tests only. */
 export * as subsystem from "./subsystem";
+export { canonicalJson, commitScpMeasurement, sha256Hex } from "./measurement";
+export type { ScpMeasurementV0120 } from "./measurement";
+export { segmentMeta, surfaceFromEngineVectors } from "./adapter/engine-adapter";
+export type { EngineProofView, SegmentProofMeta } from "./adapter/engine-adapter";

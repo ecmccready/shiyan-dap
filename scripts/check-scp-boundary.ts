@@ -215,6 +215,13 @@ if (scpViolations.length) {
 }
 console.log(`PASS scp package (${scpFiles.length} files: ${scpFiles.map((f) => posix(f).replace("src/scp/", "")).join(", ")}): no Level 4 / app / engine runtime imports, no process.env`);
 
+const adapterPath = join(scpDir, "adapter", "engine-adapter.ts");
+assert.ok(existsSync(adapterPath), "src/scp/adapter/engine-adapter.ts is missing");
+const adapterRefs = importRefs(readFileSync(adapterPath, "utf8")).filter((r) => r.spec.includes("compression"));
+assert.ok(adapterRefs.length >= 1, "adapter must import the compression public surface");
+assert.ok(adapterRefs.every((r) => r.typeOnly), `adapter compression imports must be type-only: ${adapterRefs.map((r) => r.spec).join(", ")}`);
+console.log(`PASS adapter type-only compression imports (${adapterRefs.length})`);
+
 const importViolations = checkImporters();
 if (importViolations.length) {
   for (const x of importViolations) console.error(`FAIL ${x}`);

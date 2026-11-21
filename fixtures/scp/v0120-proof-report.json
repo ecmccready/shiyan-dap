@@ -1,0 +1,5797 @@
+{
+  "format": "scp4d-v0120-proof-report",
+  "version": 1,
+  "label": "TEST ONLY. Verdicts are exactly as measured by scripts/scp-v0120-proof.ts. Energy is needs real board. Latency is JS wall time on one machine and is not a gate.",
+  "prereg_sha256": "33740ab2a7270df1b8be9cdfd2f669077f958500b9b58df3eec0821712088299",
+  "prereg_commit": "afe8db458ced421a7ec246f42bd85acb0fa8f21d",
+  "body": {
+    "agent_gap_max": 0,
+    "bounded": [
+      {
+        "arm": "full_f64",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/lossless"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/lossless"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/lossless"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/lossless"
+      },
+      {
+        "arm": "tensor_energy",
+        "bound_ok": true,
+        "bounded_claim": false,
+        "safe_disagree": 0,
+        "where": "E1/lossless"
+      },
+      {
+        "arm": "scp4d",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/lossless"
+      },
+      {
+        "arm": "full_f64",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/bounded"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/bounded"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/bounded"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/bounded"
+      },
+      {
+        "arm": "tensor_energy",
+        "bound_ok": true,
+        "bounded_claim": false,
+        "safe_disagree": 0,
+        "where": "E1/bounded"
+      },
+      {
+        "arm": "scp4d",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E1/bounded"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/low"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E2/very_high"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "scp4d_relations",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E3/medium"
+      },
+      {
+        "arm": "rel0-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel0-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r0-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r1-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-zero",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-last",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "rel1-r2-linear",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E4/medium"
+      },
+      {
+        "arm": "full_f64",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/v0.1"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/v0.1"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/v0.1"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/v0.1"
+      },
+      {
+        "arm": "tensor_energy",
+        "bound_ok": true,
+        "bounded_claim": false,
+        "safe_disagree": 0,
+        "where": "E5/v0.1"
+      },
+      {
+        "arm": "scp4d",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/v0.1"
+      },
+      {
+        "arm": "full_f64",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/A-medicare"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/A-medicare"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/A-medicare"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/A-medicare"
+      },
+      {
+        "arm": "tensor_energy",
+        "bound_ok": false,
+        "bounded_claim": false,
+        "safe_disagree": 0,
+        "where": "E5/A-medicare"
+      },
+      {
+        "arm": "scp4d",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/A-medicare"
+      },
+      {
+        "arm": "full_f64",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B256"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B256"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B256"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B256"
+      },
+      {
+        "arm": "tensor_energy",
+        "bound_ok": false,
+        "bounded_claim": false,
+        "safe_disagree": 0,
+        "where": "E5/B256"
+      },
+      {
+        "arm": "scp4d",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B256"
+      },
+      {
+        "arm": "full_f64",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B4096"
+      },
+      {
+        "arm": "full_q",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B4096"
+      },
+      {
+        "arm": "delta",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B4096"
+      },
+      {
+        "arm": "tensor_bound",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B4096"
+      },
+      {
+        "arm": "tensor_energy",
+        "bound_ok": false,
+        "bounded_claim": false,
+        "safe_disagree": 0,
+        "where": "E5/B4096"
+      },
+      {
+        "arm": "scp4d",
+        "bound_ok": true,
+        "bounded_claim": true,
+        "safe_disagree": 0,
+        "where": "E5/B4096"
+      }
+    ],
+    "e1": [
+      {
+        "compressed_bytes": 17676,
+        "compression_ratio": 12.846515048653542,
+        "deterministic": true,
+        "head_repeat": "36b67ee814ccf664c5fac0c80488e793ae59808f2712b6035d5a3e6883a1f6f5",
+        "head_sha256": "36b67ee814ccf664c5fac0c80488e793ae59808f2712b6035d5a3e6883a1f6f5",
+        "loss": "lossless",
+        "raw_bytes": 227075,
+        "rows": [
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 7215,
+            "events": 0,
+            "max_abs_err": [
+              0,
+              0,
+              0
+            ],
+            "ratio_vs_full_q": 0.41330561330561333,
+            "safe_disagree": 0,
+            "strategy": "full_f64"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 2982,
+            "events": 0,
+            "max_abs_err": [
+              3.552713678800501e-15,
+              0.00044444444444557973,
+              1.1102230246251565e-16
+            ],
+            "ratio_vs_full_q": 1,
+            "safe_disagree": 0,
+            "strategy": "full_q"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 2556,
+            "events": 765,
+            "max_abs_err": [
+              3.552713678800501e-15,
+              0.00044444444444557973,
+              1.1102230246251565e-16
+            ],
+            "ratio_vs_full_q": 1.1666666666666667,
+            "safe_disagree": 0,
+            "strategy": "delta"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 3169,
+            "events": 0,
+            "max_abs_err": [
+              9.226993407107642e-7,
+              0.0000010662910980840934,
+              3.884555349609187e-8
+            ],
+            "ratio_vs_full_q": 0.9409908488482172,
+            "safe_disagree": 0,
+            "strategy": "tensor_bound"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": false,
+            "bytes": 3169,
+            "events": 0,
+            "max_abs_err": [
+              9.226993407107642e-7,
+              0.0000010662910980840934,
+              3.884555349609187e-8
+            ],
+            "ratio_vs_full_q": 0.9409908488482172,
+            "safe_disagree": 0,
+            "strategy": "tensor_energy"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 2069,
+            "events": 241,
+            "max_abs_err": [
+              2.877698079828406e-13,
+              0.0009999999999887876,
+              3.658184866139891e-14
+            ],
+            "ratio_vs_full_q": 1.4412759787336877,
+            "safe_disagree": 0,
+            "strategy": "scp4d"
+          }
+        ],
+        "segments": [
+          {
+            "count": 256,
+            "loss_mode": "lossless",
+            "segment_sha256": "36b67ee814ccf664c5fac0c80488e793ae59808f2712b6035d5a3e6883a1f6f5",
+            "seq": 0
+          }
+        ],
+        "verify_ok": true
+      },
+      {
+        "compressed_bytes": 17873,
+        "compression_ratio": 12.704918032786885,
+        "deterministic": true,
+        "head_repeat": "f286cf831a4bdcbc60a454335405ddd967671173fba75368b0d9d54f595d46bb",
+        "head_sha256": "f286cf831a4bdcbc60a454335405ddd967671173fba75368b0d9d54f595d46bb",
+        "loss": "bounded",
+        "raw_bytes": 227075,
+        "rows": [
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 7215,
+            "events": 0,
+            "max_abs_err": [
+              0,
+              0,
+              0
+            ],
+            "ratio_vs_full_q": 0.41330561330561333,
+            "safe_disagree": 0,
+            "strategy": "full_f64"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 2982,
+            "events": 0,
+            "max_abs_err": [
+              0,
+              0,
+              0
+            ],
+            "ratio_vs_full_q": 1,
+            "safe_disagree": 0,
+            "strategy": "full_q"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 2556,
+            "events": 765,
+            "max_abs_err": [
+              0,
+              0,
+              0
+            ],
+            "ratio_vs_full_q": 1.1666666666666667,
+            "safe_disagree": 0,
+            "strategy": "delta"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 3169,
+            "events": 0,
+            "max_abs_err": [
+              0.00022432086807100404,
+              0.00020222994420038276,
+              4.1882524504099905e-8
+            ],
+            "ratio_vs_full_q": 0.9409908488482172,
+            "safe_disagree": 0,
+            "strategy": "tensor_bound"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": false,
+            "bytes": 3169,
+            "events": 0,
+            "max_abs_err": [
+              0.00022432086807100404,
+              0.00020222994420038276,
+              4.1882524504099905e-8
+            ],
+            "ratio_vs_full_q": 0.9409908488482172,
+            "safe_disagree": 0,
+            "strategy": "tensor_energy"
+          },
+          {
+            "bound_ok": true,
+            "bounded_claim": true,
+            "bytes": 2002,
+            "events": 194,
+            "max_abs_err": [
+              2.877698079828406e-13,
+              0.0009999999999996678,
+              3.658184866139891e-14
+            ],
+            "ratio_vs_full_q": 1.4895104895104896,
+            "safe_disagree": 0,
+            "strategy": "scp4d"
+          }
+        ],
+        "segments": [
+          {
+            "count": 256,
+            "loss_mode": "bounded",
+            "segment_sha256": "f286cf831a4bdcbc60a454335405ddd967671173fba75368b0d9d54f595d46bb",
+            "seq": 0
+          }
+        ],
+        "verify_ok": true
+      }
+    ],
+    "e2": [
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1444,
+        "churn": "low",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 1,
+        "state_bytes": 8544,
+        "stream_bytes": 6046
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9952,
+        "churn": "low",
+        "ops_per_transition": 3348,
+        "seed": 1,
+        "state_bytes": 139616,
+        "stream_bytes": 4320
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "low",
+        "ops_per_transition": 42509.6,
+        "seed": 1,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 8929.8,
+        "churn": "low",
+        "ops_per_transition": 1372.0666666666666,
+        "seed": 1,
+        "state_bytes": 132472,
+        "stream_bytes": 672
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9223.4,
+        "churn": "low",
+        "ops_per_transition": 2253.9333333333334,
+        "seed": 1,
+        "state_bytes": 136600,
+        "stream_bytes": 552
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1463.8666666666666,
+        "churn": "medium",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 1,
+        "state_bytes": 8544,
+        "stream_bytes": 6195
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9960,
+        "churn": "medium",
+        "ops_per_transition": 3348,
+        "seed": 1,
+        "state_bytes": 139616,
+        "stream_bytes": 4380
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "medium",
+        "ops_per_transition": 42509.6,
+        "seed": 1,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9053.533333333333,
+        "churn": "medium",
+        "ops_per_transition": 1527.8,
+        "seed": 1,
+        "state_bytes": 133464,
+        "stream_bytes": 1042
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9401.533333333333,
+        "churn": "medium",
+        "ops_per_transition": 2327.133333333333,
+        "seed": 1,
+        "state_bytes": 138664,
+        "stream_bytes": 727
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1530.6666666666667,
+        "churn": "high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 1,
+        "state_bytes": 8544,
+        "stream_bytes": 6696
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10003.066666666668,
+        "churn": "high",
+        "ops_per_transition": 3348,
+        "seed": 1,
+        "state_bytes": 139616,
+        "stream_bytes": 4703
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "high",
+        "ops_per_transition": 42509.6,
+        "seed": 1,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9504.933333333332,
+        "churn": "high",
+        "ops_per_transition": 2153.3333333333335,
+        "seed": 1,
+        "state_bytes": 136624,
+        "stream_bytes": 2650
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9585.6,
+        "churn": "high",
+        "ops_per_transition": 2614.266666666667,
+        "seed": 1,
+        "state_bytes": 139520,
+        "stream_bytes": 1626
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1575.0666666666666,
+        "churn": "very_high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 1,
+        "state_bytes": 8544,
+        "stream_bytes": 7029
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10094,
+        "churn": "very_high",
+        "ops_per_transition": 3348,
+        "seed": 1,
+        "state_bytes": 139616,
+        "stream_bytes": 5385
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "very_high",
+        "ops_per_transition": 41871.73333333333,
+        "seed": 1,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9941.866666666667,
+        "churn": "very_high",
+        "ops_per_transition": 2873.866666666667,
+        "seed": 1,
+        "state_bytes": 138528,
+        "stream_bytes": 4856
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9822.8,
+        "churn": "very_high",
+        "ops_per_transition": 3147.0666666666666,
+        "seed": 1,
+        "state_bytes": 139616,
+        "stream_bytes": 3351
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1446.4,
+        "churn": "low",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 2,
+        "state_bytes": 8544,
+        "stream_bytes": 6064
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9952,
+        "churn": "low",
+        "ops_per_transition": 3348,
+        "seed": 2,
+        "state_bytes": 139616,
+        "stream_bytes": 4320
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "low",
+        "ops_per_transition": 43055.73333333333,
+        "seed": 2,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 8930.666666666666,
+        "churn": "low",
+        "ops_per_transition": 1373.0666666666666,
+        "seed": 2,
+        "state_bytes": 132480,
+        "stream_bytes": 674
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9162.666666666666,
+        "churn": "low",
+        "ops_per_transition": 2247.2,
+        "seed": 2,
+        "state_bytes": 135792,
+        "stream_bytes": 551
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1449.4666666666667,
+        "churn": "medium",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 2,
+        "state_bytes": 8544,
+        "stream_bytes": 6087
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9960,
+        "churn": "medium",
+        "ops_per_transition": 3348,
+        "seed": 2,
+        "state_bytes": 139616,
+        "stream_bytes": 4380
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "medium",
+        "ops_per_transition": 42509.6,
+        "seed": 2,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9050.933333333332,
+        "churn": "medium",
+        "ops_per_transition": 1528.4,
+        "seed": 2,
+        "state_bytes": 133424,
+        "stream_bytes": 1045
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9327.133333333333,
+        "churn": "medium",
+        "ops_per_transition": 2318.866666666667,
+        "seed": 2,
+        "state_bytes": 137672,
+        "stream_bytes": 727
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1551.7333333333333,
+        "churn": "high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 2,
+        "state_bytes": 8544,
+        "stream_bytes": 6854
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10003.066666666668,
+        "churn": "high",
+        "ops_per_transition": 3348,
+        "seed": 2,
+        "state_bytes": 139616,
+        "stream_bytes": 4703
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "high",
+        "ops_per_transition": 43055.73333333333,
+        "seed": 2,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9502,
+        "churn": "high",
+        "ops_per_transition": 2143.0666666666666,
+        "seed": 2,
+        "state_bytes": 136624,
+        "stream_bytes": 2628
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9589.2,
+        "churn": "high",
+        "ops_per_transition": 2614.6666666666665,
+        "seed": 2,
+        "state_bytes": 139568,
+        "stream_bytes": 1626
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1565.8666666666666,
+        "churn": "very_high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 2,
+        "state_bytes": 8544,
+        "stream_bytes": 6960
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10095.333333333334,
+        "churn": "very_high",
+        "ops_per_transition": 3348,
+        "seed": 2,
+        "state_bytes": 139616,
+        "stream_bytes": 5395
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "very_high",
+        "ops_per_transition": 41325.6,
+        "seed": 2,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9955.866666666667,
+        "churn": "very_high",
+        "ops_per_transition": 2897.866666666667,
+        "seed": 2,
+        "state_bytes": 138608,
+        "stream_bytes": 4916
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9822.8,
+        "churn": "very_high",
+        "ops_per_transition": 3147.0666666666666,
+        "seed": 2,
+        "state_bytes": 139616,
+        "stream_bytes": 3351
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1437.3333333333333,
+        "churn": "low",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 3,
+        "state_bytes": 8544,
+        "stream_bytes": 5996
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9952,
+        "churn": "low",
+        "ops_per_transition": 3348,
+        "seed": 3,
+        "state_bytes": 139616,
+        "stream_bytes": 4320
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 51013.46666666667,
+        "churn": "low",
+        "ops_per_transition": 41690.4,
+        "seed": 3,
+        "state_bytes": 729440,
+        "stream_bytes": 17369
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 8926.2,
+        "churn": "low",
+        "ops_per_transition": 1368.0666666666666,
+        "seed": 3,
+        "state_bytes": 132440,
+        "stream_bytes": 663
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9217.733333333334,
+        "churn": "low",
+        "ops_per_transition": 2253.3333333333335,
+        "seed": 3,
+        "state_bytes": 136528,
+        "stream_bytes": 550
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1471.2,
+        "churn": "medium",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 3,
+        "state_bytes": 8544,
+        "stream_bytes": 6250
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9960,
+        "churn": "medium",
+        "ops_per_transition": 3348,
+        "seed": 3,
+        "state_bytes": 139616,
+        "stream_bytes": 4380
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "medium",
+        "ops_per_transition": 42509.6,
+        "seed": 3,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9049.933333333332,
+        "churn": "medium",
+        "ops_per_transition": 1521.9333333333334,
+        "seed": 3,
+        "state_bytes": 133432,
+        "stream_bytes": 1033
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9361.733333333334,
+        "churn": "medium",
+        "ops_per_transition": 2322.6666666666665,
+        "seed": 3,
+        "state_bytes": 138128,
+        "stream_bytes": 730
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1532.6666666666667,
+        "churn": "high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 3,
+        "state_bytes": 8544,
+        "stream_bytes": 6711
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10003.466666666667,
+        "churn": "high",
+        "ops_per_transition": 3348,
+        "seed": 3,
+        "state_bytes": 139616,
+        "stream_bytes": 4706
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "high",
+        "ops_per_transition": 42509.6,
+        "seed": 3,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9506.533333333333,
+        "churn": "high",
+        "ops_per_transition": 2145.3333333333335,
+        "seed": 3,
+        "state_bytes": 136672,
+        "stream_bytes": 2635
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9588.6,
+        "churn": "high",
+        "ops_per_transition": 2614.6,
+        "seed": 3,
+        "state_bytes": 139560,
+        "stream_bytes": 1626
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1569.4666666666667,
+        "churn": "very_high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 3,
+        "state_bytes": 8544,
+        "stream_bytes": 6987
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10090.4,
+        "churn": "very_high",
+        "ops_per_transition": 3348,
+        "seed": 3,
+        "state_bytes": 139616,
+        "stream_bytes": 5358
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "very_high",
+        "ops_per_transition": 43055.73333333333,
+        "seed": 3,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9933.866666666667,
+        "churn": "very_high",
+        "ops_per_transition": 2862.5333333333333,
+        "seed": 3,
+        "state_bytes": 138512,
+        "stream_bytes": 4805
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9822.8,
+        "churn": "very_high",
+        "ops_per_transition": 3147.0666666666666,
+        "seed": 3,
+        "state_bytes": 139616,
+        "stream_bytes": 3351
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1452.1333333333334,
+        "churn": "low",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 4,
+        "state_bytes": 8544,
+        "stream_bytes": 6107
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9952,
+        "churn": "low",
+        "ops_per_transition": 3348,
+        "seed": 4,
+        "state_bytes": 139616,
+        "stream_bytes": 4320
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "low",
+        "ops_per_transition": 42509.6,
+        "seed": 4,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 8932.266666666666,
+        "churn": "low",
+        "ops_per_transition": 1375.0666666666666,
+        "seed": 4,
+        "state_bytes": 132496,
+        "stream_bytes": 677
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9215.466666666667,
+        "churn": "low",
+        "ops_per_transition": 2253.0666666666666,
+        "seed": 4,
+        "state_bytes": 136496,
+        "stream_bytes": 551
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1463.4666666666667,
+        "churn": "medium",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 4,
+        "state_bytes": 8544,
+        "stream_bytes": 6192
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9960,
+        "churn": "medium",
+        "ops_per_transition": 3348,
+        "seed": 4,
+        "state_bytes": 139616,
+        "stream_bytes": 4380
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "medium",
+        "ops_per_transition": 43055.73333333333,
+        "seed": 4,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9059.066666666668,
+        "churn": "medium",
+        "ops_per_transition": 1532.9333333333334,
+        "seed": 4,
+        "state_bytes": 133520,
+        "stream_bytes": 1052
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9345.133333333333,
+        "churn": "medium",
+        "ops_per_transition": 2320.866666666667,
+        "seed": 4,
+        "state_bytes": 137912,
+        "stream_bytes": 727
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1540.2666666666667,
+        "churn": "high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 4,
+        "state_bytes": 8544,
+        "stream_bytes": 6768
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10002.4,
+        "churn": "high",
+        "ops_per_transition": 3348,
+        "seed": 4,
+        "state_bytes": 139616,
+        "stream_bytes": 4698
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "high",
+        "ops_per_transition": 43055.73333333333,
+        "seed": 4,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9486.333333333334,
+        "churn": "high",
+        "ops_per_transition": 2121.5333333333333,
+        "seed": 4,
+        "state_bytes": 136504,
+        "stream_bytes": 2578
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9587.4,
+        "churn": "high",
+        "ops_per_transition": 2614.4666666666667,
+        "seed": 4,
+        "state_bytes": 139544,
+        "stream_bytes": 1626
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1560.2666666666667,
+        "churn": "very_high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 4,
+        "state_bytes": 8544,
+        "stream_bytes": 6918
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10093.733333333334,
+        "churn": "very_high",
+        "ops_per_transition": 3348,
+        "seed": 4,
+        "state_bytes": 139616,
+        "stream_bytes": 5383
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "very_high",
+        "ops_per_transition": 42509.6,
+        "seed": 4,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9949.6,
+        "churn": "very_high",
+        "ops_per_transition": 2885.6,
+        "seed": 4,
+        "state_bytes": 138592,
+        "stream_bytes": 4878
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9822.8,
+        "churn": "very_high",
+        "ops_per_transition": 3147.0666666666666,
+        "seed": 4,
+        "state_bytes": 139616,
+        "stream_bytes": 3351
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1438.6666666666667,
+        "churn": "low",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 5,
+        "state_bytes": 8544,
+        "stream_bytes": 6006
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9952,
+        "churn": "low",
+        "ops_per_transition": 3348,
+        "seed": 5,
+        "state_bytes": 139616,
+        "stream_bytes": 4320
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 47591.6,
+        "churn": "low",
+        "ops_per_transition": 40325.066666666666,
+        "seed": 5,
+        "state_bytes": 680288,
+        "stream_bytes": 16281
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 8925.2,
+        "churn": "low",
+        "ops_per_transition": 1367.0666666666666,
+        "seed": 5,
+        "state_bytes": 132432,
+        "stream_bytes": 660
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9139.133333333333,
+        "churn": "low",
+        "ops_per_transition": 2244.6,
+        "seed": 5,
+        "state_bytes": 135480,
+        "stream_bytes": 550
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1473.4666666666667,
+        "churn": "medium",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 5,
+        "state_bytes": 8544,
+        "stream_bytes": 6267
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 9960,
+        "churn": "medium",
+        "ops_per_transition": 3348,
+        "seed": 5,
+        "state_bytes": 139616,
+        "stream_bytes": 4380
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "medium",
+        "ops_per_transition": 42509.6,
+        "seed": 5,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9054.533333333333,
+        "churn": "medium",
+        "ops_per_transition": 1528.8,
+        "seed": 5,
+        "state_bytes": 133472,
+        "stream_bytes": 1045
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9381.266666666666,
+        "churn": "medium",
+        "ops_per_transition": 2324.866666666667,
+        "seed": 5,
+        "state_bytes": 138392,
+        "stream_bytes": 728
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1534,
+        "churn": "high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 5,
+        "state_bytes": 8544,
+        "stream_bytes": 6721
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10003.333333333334,
+        "churn": "high",
+        "ops_per_transition": 3348,
+        "seed": 5,
+        "state_bytes": 139616,
+        "stream_bytes": 4705
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "high",
+        "ops_per_transition": 42509.6,
+        "seed": 5,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9493.266666666666,
+        "churn": "high",
+        "ops_per_transition": 2130.3333333333335,
+        "seed": 5,
+        "state_bytes": 136552,
+        "stream_bytes": 2603
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9583.2,
+        "churn": "high",
+        "ops_per_transition": 2614,
+        "seed": 5,
+        "state_bytes": 139488,
+        "stream_bytes": 1626
+      },
+      {
+        "arm": "full_q",
+        "bytes_per_transition": 1554.8,
+        "churn": "very_high",
+        "ops_per_transition": 2801.866666666667,
+        "seed": 5,
+        "state_bytes": 8544,
+        "stream_bytes": 6877
+      },
+      {
+        "arm": "delta",
+        "bytes_per_transition": 10093.6,
+        "churn": "very_high",
+        "ops_per_transition": 3348,
+        "seed": 5,
+        "state_bytes": 139616,
+        "stream_bytes": 5382
+      },
+      {
+        "arm": "tensor_bound",
+        "bytes_per_transition": 54435.333333333336,
+        "churn": "very_high",
+        "ops_per_transition": 43055.73333333333,
+        "seed": 5,
+        "state_bytes": 778592,
+        "stream_bytes": 18457
+      },
+      {
+        "arm": "scp4d_temporal",
+        "bytes_per_transition": 9951.866666666667,
+        "churn": "very_high",
+        "ops_per_transition": 2894,
+        "seed": 5,
+        "state_bytes": 138592,
+        "stream_bytes": 4895
+      },
+      {
+        "arm": "scp4d_relations",
+        "bytes_per_transition": 9822.8,
+        "churn": "very_high",
+        "ops_per_transition": 3147.0666666666666,
+        "seed": 5,
+        "state_bytes": 139616,
+        "stream_bytes": 3351
+      }
+    ],
+    "e3": [
+      {
+        "arm": "full_q",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "delta",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "full_q",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "delta",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "full_q",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "delta",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "full_q",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "delta",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 1
+      },
+      {
+        "arm": "full_q",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "delta",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "full_q",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "delta",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "full_q",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "delta",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "full_q",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "delta",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 2
+      },
+      {
+        "arm": "full_q",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "delta",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "full_q",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "delta",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "full_q",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "delta",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "full_q",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "delta",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 3
+      },
+      {
+        "arm": "full_q",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "delta",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "full_q",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "delta",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "full_q",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "delta",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "full_q",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "delta",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 4
+      },
+      {
+        "arm": "full_q",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "delta",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 0,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "full_q",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "delta",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 1,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "full_q",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "delta",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 2,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "full_q",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "delta",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "tensor_bound",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "scp4d_temporal",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      },
+      {
+        "arm": "scp4d_relations",
+        "episode": 3,
+        "retention": 1,
+        "safe_disagree": 0,
+        "seed": 5
+      }
+    ],
+    "e4": [
+      {
+        "bound_ok": true,
+        "bytes": 6200,
+        "dirty_fraction": 0.19895833333333332,
+        "events": 3303,
+        "id": "rel0-r0-zero",
+        "ops_per_transition": 2875.9333333333334,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 133464,
+        "stream_bytes": 6200
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1042,
+        "dirty_fraction": 0.19895833333333332,
+        "events": 443,
+        "id": "rel0-r0-last",
+        "ops_per_transition": 1527.8,
+        "predictor": "last",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 133464,
+        "stream_bytes": 1042
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1509,
+        "dirty_fraction": 0.3729166666666667,
+        "events": 635,
+        "id": "rel0-r0-linear",
+        "ops_per_transition": 2810.4,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 200336,
+        "stream_bytes": 1509
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4816,
+        "dirty_fraction": 0.96875,
+        "events": 1887,
+        "id": "rel0-r1-zero",
+        "ops_per_transition": 21879.466666666667,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 172144,
+        "stream_bytes": 4816
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3936,
+        "dirty_fraction": 0.96875,
+        "events": 1422,
+        "id": "rel0-r1-last",
+        "ops_per_transition": 21445.466666666667,
+        "predictor": "last",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 172144,
+        "stream_bytes": 3936
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3972,
+        "dirty_fraction": 0.96875,
+        "events": 1398,
+        "id": "rel0-r1-linear",
+        "ops_per_transition": 22515.333333333332,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 237680,
+        "stream_bytes": 3972
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5229,
+        "dirty_fraction": 0.96875,
+        "events": 1852,
+        "id": "rel0-r2-zero",
+        "ops_per_transition": 22939.066666666666,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 204912,
+        "stream_bytes": 5229
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5024,
+        "dirty_fraction": 0.96875,
+        "events": 1709,
+        "id": "rel0-r2-last",
+        "ops_per_transition": 22805.6,
+        "predictor": "last",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 204912,
+        "stream_bytes": 5024
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4867,
+        "dirty_fraction": 0.96875,
+        "events": 1588,
+        "id": "rel0-r2-linear",
+        "ops_per_transition": 23784.933333333334,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 270448,
+        "stream_bytes": 4867
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5876,
+        "dirty_fraction": 0.8760416666666667,
+        "events": 2306,
+        "id": "rel1-r0-zero",
+        "ops_per_transition": 3343.266666666667,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 138664,
+        "stream_bytes": 5876
+      },
+      {
+        "bound_ok": true,
+        "bytes": 727,
+        "dirty_fraction": 0.8760416666666667,
+        "events": 229,
+        "id": "rel1-r0-last",
+        "ops_per_transition": 2327.133333333333,
+        "predictor": "last",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 138664,
+        "stream_bytes": 727
+      },
+      {
+        "bound_ok": true,
+        "bytes": 969,
+        "dirty_fraction": 0.9260416666666667,
+        "events": 310,
+        "id": "rel1-r0-linear",
+        "ops_per_transition": 3498.2,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 204584,
+        "stream_bytes": 969
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3081,
+        "dirty_fraction": 1,
+        "events": 1021,
+        "id": "rel1-r1-zero",
+        "ops_per_transition": 21755.866666666665,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 164192,
+        "stream_bytes": 3081
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2712,
+        "dirty_fraction": 1,
+        "events": 810,
+        "id": "rel1-r1-last",
+        "ops_per_transition": 21558.933333333334,
+        "predictor": "last",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 164192,
+        "stream_bytes": 2712
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2827,
+        "dirty_fraction": 1,
+        "events": 831,
+        "id": "rel1-r1-linear",
+        "ops_per_transition": 22670.8,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 229728,
+        "stream_bytes": 2827
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3557,
+        "dirty_fraction": 1,
+        "events": 1019,
+        "id": "rel1-r2-zero",
+        "ops_per_transition": 22573.2,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 188768,
+        "stream_bytes": 3557
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3500,
+        "dirty_fraction": 1,
+        "events": 952,
+        "id": "rel1-r2-last",
+        "ops_per_transition": 22510.666666666668,
+        "predictor": "last",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 188768,
+        "stream_bytes": 3500
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3482,
+        "dirty_fraction": 1,
+        "events": 902,
+        "id": "rel1-r2-linear",
+        "ops_per_transition": 23556.266666666666,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 1,
+        "state_bytes": 254304,
+        "stream_bytes": 3482
+      },
+      {
+        "bound_ok": true,
+        "bytes": 6092,
+        "dirty_fraction": 0.19375,
+        "events": 3327,
+        "id": "rel0-r0-zero",
+        "ops_per_transition": 2888.4,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 133424,
+        "stream_bytes": 6092
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1045,
+        "dirty_fraction": 0.19375,
+        "events": 444,
+        "id": "rel0-r0-last",
+        "ops_per_transition": 1528.4,
+        "predictor": "last",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 133424,
+        "stream_bytes": 1045
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1482,
+        "dirty_fraction": 0.3625,
+        "events": 624,
+        "id": "rel0-r0-linear",
+        "ops_per_transition": 2799.4666666666667,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 200256,
+        "stream_bytes": 1482
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4561,
+        "dirty_fraction": 0.875,
+        "events": 1766,
+        "id": "rel0-r1-zero",
+        "ops_per_transition": 21760.533333333333,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 171424,
+        "stream_bytes": 4561
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4301,
+        "dirty_fraction": 0.875,
+        "events": 1609,
+        "id": "rel0-r1-last",
+        "ops_per_transition": 21614,
+        "predictor": "last",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 171424,
+        "stream_bytes": 4301
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3927,
+        "dirty_fraction": 0.875,
+        "events": 1384,
+        "id": "rel0-r1-linear",
+        "ops_per_transition": 22496.266666666666,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 236960,
+        "stream_bytes": 3927
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4952,
+        "dirty_fraction": 0.875,
+        "events": 1728,
+        "id": "rel0-r2-zero",
+        "ops_per_transition": 22817.333333333332,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 204192,
+        "stream_bytes": 4952
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4886,
+        "dirty_fraction": 0.875,
+        "events": 1658,
+        "id": "rel0-r2-last",
+        "ops_per_transition": 22752,
+        "predictor": "last",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 204192,
+        "stream_bytes": 4886
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4767,
+        "dirty_fraction": 0.875,
+        "events": 1559,
+        "id": "rel0-r2-linear",
+        "ops_per_transition": 23751.866666666665,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 269728,
+        "stream_bytes": 4767
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5848,
+        "dirty_fraction": 0.746875,
+        "events": 2308,
+        "id": "rel1-r0-zero",
+        "ops_per_transition": 3336.0666666666666,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 137672,
+        "stream_bytes": 5848
+      },
+      {
+        "bound_ok": true,
+        "bytes": 727,
+        "dirty_fraction": 0.746875,
+        "events": 229,
+        "id": "rel1-r0-last",
+        "ops_per_transition": 2318.866666666667,
+        "predictor": "last",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 137672,
+        "stream_bytes": 727
+      },
+      {
+        "bound_ok": true,
+        "bytes": 954,
+        "dirty_fraction": 0.8989583333333333,
+        "events": 305,
+        "id": "rel1-r0-linear",
+        "ops_per_transition": 3491.8,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 204376,
+        "stream_bytes": 954
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2941,
+        "dirty_fraction": 1,
+        "events": 964,
+        "id": "rel1-r1-zero",
+        "ops_per_transition": 21702.666666666668,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 164192,
+        "stream_bytes": 2941
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2959,
+        "dirty_fraction": 1,
+        "events": 946,
+        "id": "rel1-r1-last",
+        "ops_per_transition": 21685.866666666665,
+        "predictor": "last",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 164192,
+        "stream_bytes": 2959
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2763,
+        "dirty_fraction": 1,
+        "events": 810,
+        "id": "rel1-r1-linear",
+        "ops_per_transition": 22651.2,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 229728,
+        "stream_bytes": 2763
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3386,
+        "dirty_fraction": 1,
+        "events": 953,
+        "id": "rel1-r2-zero",
+        "ops_per_transition": 22511.6,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 188768,
+        "stream_bytes": 3386
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3434,
+        "dirty_fraction": 1,
+        "events": 940,
+        "id": "rel1-r2-last",
+        "ops_per_transition": 22499.466666666667,
+        "predictor": "last",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 188768,
+        "stream_bytes": 3434
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3426,
+        "dirty_fraction": 1,
+        "events": 897,
+        "id": "rel1-r2-linear",
+        "ops_per_transition": 23551.6,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 2,
+        "state_bytes": 254304,
+        "stream_bytes": 3426
+      },
+      {
+        "bound_ok": true,
+        "bytes": 6255,
+        "dirty_fraction": 0.19479166666666667,
+        "events": 3354,
+        "id": "rel0-r0-zero",
+        "ops_per_transition": 2902.866666666667,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 133432,
+        "stream_bytes": 6255
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1033,
+        "dirty_fraction": 0.19479166666666667,
+        "events": 437,
+        "id": "rel0-r0-last",
+        "ops_per_transition": 1521.9333333333334,
+        "predictor": "last",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 133432,
+        "stream_bytes": 1033
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1512,
+        "dirty_fraction": 0.41875,
+        "events": 635,
+        "id": "rel0-r0-linear",
+        "ops_per_transition": 2813.3333333333335,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 200688,
+        "stream_bytes": 1512
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4989,
+        "dirty_fraction": 1,
+        "events": 1961,
+        "id": "rel0-r1-zero",
+        "ops_per_transition": 21950.533333333333,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 172384,
+        "stream_bytes": 4989
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4824,
+        "dirty_fraction": 1,
+        "events": 1845,
+        "id": "rel0-r1-last",
+        "ops_per_transition": 21842.266666666666,
+        "predictor": "last",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 172384,
+        "stream_bytes": 4824
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3941,
+        "dirty_fraction": 1,
+        "events": 1362,
+        "id": "rel0-r1-linear",
+        "ops_per_transition": 22483.733333333334,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 237920,
+        "stream_bytes": 3941
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5408,
+        "dirty_fraction": 1,
+        "events": 1926,
+        "id": "rel0-r2-zero",
+        "ops_per_transition": 23010.133333333335,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 205152,
+        "stream_bytes": 5408
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5358,
+        "dirty_fraction": 1,
+        "events": 1864,
+        "id": "rel0-r2-last",
+        "ops_per_transition": 22952.266666666666,
+        "predictor": "last",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 205152,
+        "stream_bytes": 5358
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5073,
+        "dirty_fraction": 1,
+        "events": 1678,
+        "id": "rel0-r2-linear",
+        "ops_per_transition": 23870.933333333334,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 270688,
+        "stream_bytes": 5073
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5909,
+        "dirty_fraction": 0.80625,
+        "events": 2334,
+        "id": "rel1-r0-zero",
+        "ops_per_transition": 3353.733333333333,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 138128,
+        "stream_bytes": 5909
+      },
+      {
+        "bound_ok": true,
+        "bytes": 730,
+        "dirty_fraction": 0.80625,
+        "events": 229,
+        "id": "rel1-r0-last",
+        "ops_per_transition": 2322.6666666666665,
+        "predictor": "last",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 138128,
+        "stream_bytes": 730
+      },
+      {
+        "bound_ok": true,
+        "bytes": 978,
+        "dirty_fraction": 0.953125,
+        "events": 313,
+        "id": "rel1-r0-linear",
+        "ops_per_transition": 3502.733333333333,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 204792,
+        "stream_bytes": 978
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3316,
+        "dirty_fraction": 1,
+        "events": 1122,
+        "id": "rel1-r1-zero",
+        "ops_per_transition": 21850.133333333335,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 164192,
+        "stream_bytes": 3316
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3363,
+        "dirty_fraction": 1,
+        "events": 1115,
+        "id": "rel1-r1-last",
+        "ops_per_transition": 21843.6,
+        "predictor": "last",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 164192,
+        "stream_bytes": 3363
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2840,
+        "dirty_fraction": 1,
+        "events": 816,
+        "id": "rel1-r1-linear",
+        "ops_per_transition": 22656.8,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 229728,
+        "stream_bytes": 2840
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3767,
+        "dirty_fraction": 1,
+        "events": 1106,
+        "id": "rel1-r2-zero",
+        "ops_per_transition": 22654.4,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 188768,
+        "stream_bytes": 3767
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3805,
+        "dirty_fraction": 1,
+        "events": 1088,
+        "id": "rel1-r2-last",
+        "ops_per_transition": 22637.6,
+        "predictor": "last",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 188768,
+        "stream_bytes": 3805
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3713,
+        "dirty_fraction": 1,
+        "events": 1001,
+        "id": "rel1-r2-linear",
+        "ops_per_transition": 23648.666666666668,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 3,
+        "state_bytes": 254304,
+        "stream_bytes": 3713
+      },
+      {
+        "bound_ok": true,
+        "bytes": 6197,
+        "dirty_fraction": 0.20625,
+        "events": 3382,
+        "id": "rel0-r0-zero",
+        "ops_per_transition": 2918.5333333333333,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 133520,
+        "stream_bytes": 6197
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1052,
+        "dirty_fraction": 0.20625,
+        "events": 448,
+        "id": "rel0-r0-last",
+        "ops_per_transition": 1532.9333333333334,
+        "predictor": "last",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 133520,
+        "stream_bytes": 1052
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1518,
+        "dirty_fraction": 0.3854166666666667,
+        "events": 640,
+        "id": "rel0-r0-linear",
+        "ops_per_transition": 2815.866666666667,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 200432,
+        "stream_bytes": 1518
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4340,
+        "dirty_fraction": 0.90625,
+        "events": 1651,
+        "id": "rel0-r1-zero",
+        "ops_per_transition": 21655.2,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 171664,
+        "stream_bytes": 4340
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3737,
+        "dirty_fraction": 0.90625,
+        "events": 1328,
+        "id": "rel0-r1-last",
+        "ops_per_transition": 21353.733333333334,
+        "predictor": "last",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 171664,
+        "stream_bytes": 3737
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3602,
+        "dirty_fraction": 0.90625,
+        "events": 1220,
+        "id": "rel0-r1-linear",
+        "ops_per_transition": 22345.2,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 237200,
+        "stream_bytes": 3602
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4692,
+        "dirty_fraction": 0.90625,
+        "events": 1602,
+        "id": "rel0-r2-zero",
+        "ops_per_transition": 22701.733333333334,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 204432,
+        "stream_bytes": 4692
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4509,
+        "dirty_fraction": 0.90625,
+        "events": 1479,
+        "id": "rel0-r2-last",
+        "ops_per_transition": 22586.933333333334,
+        "predictor": "last",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 204432,
+        "stream_bytes": 4509
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4453,
+        "dirty_fraction": 0.90625,
+        "events": 1409,
+        "id": "rel0-r2-linear",
+        "ops_per_transition": 23613.866666666665,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 269968,
+        "stream_bytes": 4453
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5892,
+        "dirty_fraction": 0.778125,
+        "events": 2374,
+        "id": "rel1-r0-zero",
+        "ops_per_transition": 3373.266666666667,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 137912,
+        "stream_bytes": 5892
+      },
+      {
+        "bound_ok": true,
+        "bytes": 727,
+        "dirty_fraction": 0.778125,
+        "events": 229,
+        "id": "rel1-r0-last",
+        "ops_per_transition": 2320.866666666667,
+        "predictor": "last",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 137912,
+        "stream_bytes": 727
+      },
+      {
+        "bound_ok": true,
+        "bytes": 963,
+        "dirty_fraction": 0.859375,
+        "events": 308,
+        "id": "rel1-r0-linear",
+        "ops_per_transition": 3492.0666666666666,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 204072,
+        "stream_bytes": 963
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2706,
+        "dirty_fraction": 0.984375,
+        "events": 842,
+        "id": "rel1-r1-zero",
+        "ops_per_transition": 21587.8,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 164072,
+        "stream_bytes": 2706
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2479,
+        "dirty_fraction": 0.984375,
+        "events": 705,
+        "id": "rel1-r1-last",
+        "ops_per_transition": 21459.933333333334,
+        "predictor": "last",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 164072,
+        "stream_bytes": 2479
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2460,
+        "dirty_fraction": 0.984375,
+        "events": 656,
+        "id": "rel1-r1-linear",
+        "ops_per_transition": 22506.466666666667,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 229608,
+        "stream_bytes": 2460
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3134,
+        "dirty_fraction": 0.984375,
+        "events": 831,
+        "id": "rel1-r2-zero",
+        "ops_per_transition": 22396.733333333334,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 188648,
+        "stream_bytes": 3134
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3121,
+        "dirty_fraction": 0.984375,
+        "events": 792,
+        "id": "rel1-r2-last",
+        "ops_per_transition": 22360.333333333332,
+        "predictor": "last",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 188648,
+        "stream_bytes": 3121
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3133,
+        "dirty_fraction": 0.984375,
+        "events": 758,
+        "id": "rel1-r2-linear",
+        "ops_per_transition": 23420.866666666665,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 4,
+        "state_bytes": 254184,
+        "stream_bytes": 3133
+      },
+      {
+        "bound_ok": true,
+        "bytes": 6272,
+        "dirty_fraction": 0.2,
+        "events": 3323,
+        "id": "rel0-r0-zero",
+        "ops_per_transition": 2886.6666666666665,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 133472,
+        "stream_bytes": 6272
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1045,
+        "dirty_fraction": 0.2,
+        "events": 444,
+        "id": "rel0-r0-last",
+        "ops_per_transition": 1528.8,
+        "predictor": "last",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 133472,
+        "stream_bytes": 1045
+      },
+      {
+        "bound_ok": true,
+        "bytes": 1505,
+        "dirty_fraction": 0.37395833333333334,
+        "events": 634,
+        "id": "rel0-r0-linear",
+        "ops_per_transition": 2809.5333333333333,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 200344,
+        "stream_bytes": 1505
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4287,
+        "dirty_fraction": 0.90625,
+        "events": 1634,
+        "id": "rel0-r1-zero",
+        "ops_per_transition": 21639.333333333332,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 171664,
+        "stream_bytes": 4287
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4064,
+        "dirty_fraction": 0.90625,
+        "events": 1500,
+        "id": "rel0-r1-last",
+        "ops_per_transition": 21514.266666666666,
+        "predictor": "last",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 171664,
+        "stream_bytes": 4064
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3849,
+        "dirty_fraction": 0.90625,
+        "events": 1354,
+        "id": "rel0-r1-linear",
+        "ops_per_transition": 22470.266666666666,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 237200,
+        "stream_bytes": 3849
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4669,
+        "dirty_fraction": 0.90625,
+        "events": 1605,
+        "id": "rel0-r2-zero",
+        "ops_per_transition": 22704.533333333333,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 204432,
+        "stream_bytes": 4669
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4554,
+        "dirty_fraction": 0.90625,
+        "events": 1513,
+        "id": "rel0-r2-last",
+        "ops_per_transition": 22618.666666666668,
+        "predictor": "last",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 204432,
+        "stream_bytes": 4554
+      },
+      {
+        "bound_ok": true,
+        "bytes": 4476,
+        "dirty_fraction": 0.90625,
+        "events": 1434,
+        "id": "rel0-r2-linear",
+        "ops_per_transition": 23637.2,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": false,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 269968,
+        "stream_bytes": 4476
+      },
+      {
+        "bound_ok": true,
+        "bytes": 5869,
+        "dirty_fraction": 0.840625,
+        "events": 2304,
+        "id": "rel1-r0-zero",
+        "ops_per_transition": 3339.9333333333334,
+        "predictor": "zero",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 138392,
+        "stream_bytes": 5869
+      },
+      {
+        "bound_ok": true,
+        "bytes": 728,
+        "dirty_fraction": 0.840625,
+        "events": 229,
+        "id": "rel1-r0-last",
+        "ops_per_transition": 2324.866666666667,
+        "predictor": "last",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 138392,
+        "stream_bytes": 728
+      },
+      {
+        "bound_ok": true,
+        "bytes": 957,
+        "dirty_fraction": 0.9677083333333333,
+        "events": 306,
+        "id": "rel1-r0-linear",
+        "ops_per_transition": 3497.133333333333,
+        "predictor": "linear",
+        "rank": 0,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 204904,
+        "stream_bytes": 957
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2631,
+        "dirty_fraction": 1,
+        "events": 814,
+        "id": "rel1-r1-zero",
+        "ops_per_transition": 21562.666666666668,
+        "predictor": "zero",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 164192,
+        "stream_bytes": 2631
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2603,
+        "dirty_fraction": 1,
+        "events": 777,
+        "id": "rel1-r1-last",
+        "ops_per_transition": 21528.133333333335,
+        "predictor": "last",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 164192,
+        "stream_bytes": 2603
+      },
+      {
+        "bound_ok": true,
+        "bytes": 2484,
+        "dirty_fraction": 1,
+        "events": 679,
+        "id": "rel1-r1-linear",
+        "ops_per_transition": 22528.933333333334,
+        "predictor": "linear",
+        "rank": 1,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 229728,
+        "stream_bytes": 2484
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3043,
+        "dirty_fraction": 1,
+        "events": 800,
+        "id": "rel1-r2-zero",
+        "ops_per_transition": 22368.8,
+        "predictor": "zero",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 188768,
+        "stream_bytes": 3043
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3048,
+        "dirty_fraction": 1,
+        "events": 768,
+        "id": "rel1-r2-last",
+        "ops_per_transition": 22338.933333333334,
+        "predictor": "last",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 188768,
+        "stream_bytes": 3048
+      },
+      {
+        "bound_ok": true,
+        "bytes": 3035,
+        "dirty_fraction": 1,
+        "events": 722,
+        "id": "rel1-r2-linear",
+        "ops_per_transition": 23388.266666666666,
+        "predictor": "linear",
+        "rank": 2,
+        "relations": true,
+        "safe_disagree": 0,
+        "seed": 5,
+        "state_bytes": 254304,
+        "stream_bytes": 3035
+      }
+    ],
+    "e5": [
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 7215,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "v0.1",
+        "ops_per_transition": 0,
+        "ratio_vs_full_q": 0.41330561330561333,
+        "safe_disagree": 0,
+        "state_bytes": 0,
+        "strategy": "full_f64",
+        "stream_bytes": 7215
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 2982,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "v0.1",
+        "ops_per_transition": 30.11764705882353,
+        "ratio_vs_full_q": 1,
+        "safe_disagree": 0,
+        "state_bytes": 0,
+        "strategy": "full_q",
+        "stream_bytes": 2982
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 2556,
+        "dirty_fraction": 1,
+        "events": 765,
+        "fixture": "v0.1",
+        "ops_per_transition": 36.141176470588235,
+        "ratio_vs_full_q": 1.1666666666666667,
+        "safe_disagree": 0,
+        "state_bytes": 24576,
+        "strategy": "delta",
+        "stream_bytes": 2556
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 3169,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "v0.1",
+        "ops_per_transition": 69.6470588235294,
+        "ratio_vs_full_q": 0.9409908488482172,
+        "safe_disagree": 0,
+        "state_bytes": 24576,
+        "strategy": "tensor_bound",
+        "stream_bytes": 3169
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": false,
+        "bytes": 3169,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "v0.1",
+        "ops_per_transition": 69.6470588235294,
+        "ratio_vs_full_q": 0.9409908488482172,
+        "safe_disagree": 0,
+        "state_bytes": 24576,
+        "strategy": "tensor_energy",
+        "stream_bytes": 3169
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 2069,
+        "dirty_fraction": 1,
+        "events": 241,
+        "fixture": "v0.1",
+        "ops_per_transition": 39.333333333333336,
+        "ratio_vs_full_q": 1.4412759787336877,
+        "safe_disagree": 0,
+        "state_bytes": 36864,
+        "strategy": "scp4d",
+        "stream_bytes": 2069
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 215,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "A-medicare",
+        "ops_per_transition": 0,
+        "ratio_vs_full_q": 0.5534883720930233,
+        "safe_disagree": 0,
+        "state_bytes": 0,
+        "strategy": "full_f64",
+        "stream_bytes": 215
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 119,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "A-medicare",
+        "ops_per_transition": 36,
+        "ratio_vs_full_q": 1,
+        "safe_disagree": 0,
+        "state_bytes": 0,
+        "strategy": "full_q",
+        "stream_bytes": 119
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 122,
+        "dirty_fraction": 1,
+        "events": 15,
+        "fixture": "A-medicare",
+        "ops_per_transition": 43.2,
+        "ratio_vs_full_q": 0.9754098360655737,
+        "safe_disagree": 0,
+        "state_bytes": 576,
+        "strategy": "delta",
+        "stream_bytes": 122
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 205,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "A-medicare",
+        "ops_per_transition": 138.6,
+        "ratio_vs_full_q": 0.5804878048780487,
+        "safe_disagree": 0,
+        "state_bytes": 792,
+        "strategy": "tensor_bound",
+        "stream_bytes": 205
+      },
+      {
+        "bound_ok": false,
+        "bounded_claim": false,
+        "bytes": 169,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "A-medicare",
+        "ops_per_transition": 120.6,
+        "ratio_vs_full_q": 0.7041420118343196,
+        "safe_disagree": 0,
+        "state_bytes": 576,
+        "strategy": "tensor_energy",
+        "stream_bytes": 169
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 124,
+        "dirty_fraction": 1,
+        "events": 18,
+        "fixture": "A-medicare",
+        "ops_per_transition": 45.6,
+        "ratio_vs_full_q": 0.9596774193548387,
+        "safe_disagree": 0,
+        "state_bytes": 576,
+        "strategy": "scp4d",
+        "stream_bytes": 124
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 7223,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "B256",
+        "ops_per_transition": 0,
+        "ratio_vs_full_q": 0.36203793437629794,
+        "safe_disagree": 0,
+        "state_bytes": 0,
+        "strategy": "full_f64",
+        "stream_bytes": 7223
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 2615,
+        "dirty_fraction": 0.9764705882352941,
+        "events": 0,
+        "fixture": "B256",
+        "ops_per_transition": 30.11764705882353,
+        "ratio_vs_full_q": 1,
+        "safe_disagree": 0,
+        "state_bytes": 0,
+        "strategy": "full_q",
+        "stream_bytes": 2615
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 1975,
+        "dirty_fraction": 0.9764705882352941,
+        "events": 747,
+        "fixture": "B256",
+        "ops_per_transition": 36.141176470588235,
+        "ratio_vs_full_q": 1.3240506329113924,
+        "safe_disagree": 0,
+        "state_bytes": 24576,
+        "strategy": "delta",
+        "stream_bytes": 1975
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 4213,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "B256",
+        "ops_per_transition": 85.07058823529412,
+        "ratio_vs_full_q": 0.6206978400189889,
+        "safe_disagree": 0,
+        "state_bytes": 33792,
+        "strategy": "tensor_bound",
+        "stream_bytes": 4213
+      },
+      {
+        "bound_ok": false,
+        "bounded_claim": false,
+        "bytes": 3177,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "B256",
+        "ops_per_transition": 70.01176470588236,
+        "ratio_vs_full_q": 0.823103556814605,
+        "safe_disagree": 0,
+        "state_bytes": 24576,
+        "strategy": "tensor_energy",
+        "stream_bytes": 3177
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 1980,
+        "dirty_fraction": 0.9620915032679739,
+        "events": 739,
+        "fixture": "B256",
+        "ops_per_transition": 37.23921568627451,
+        "ratio_vs_full_q": 1.3207070707070707,
+        "safe_disagree": 0,
+        "state_bytes": 24576,
+        "strategy": "scp4d",
+        "stream_bytes": 1980
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 114927,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "B4096",
+        "ops_per_transition": 0,
+        "ratio_vs_full_q": 0.3575661071810802,
+        "safe_disagree": 0,
+        "state_bytes": 0,
+        "strategy": "full_f64",
+        "stream_bytes": 114927
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 41094,
+        "dirty_fraction": 0.9768823768823769,
+        "events": 0,
+        "fixture": "B4096",
+        "ops_per_transition": 30.007326007326007,
+        "ratio_vs_full_q": 1,
+        "safe_disagree": 0,
+        "state_bytes": 0,
+        "strategy": "full_q",
+        "stream_bytes": 41094
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 30734,
+        "dirty_fraction": 0.9768823768823769,
+        "events": 12001,
+        "fixture": "B4096",
+        "ops_per_transition": 36.00879120879121,
+        "ratio_vs_full_q": 1.3370859634281251,
+        "safe_disagree": 0,
+        "state_bytes": 393216,
+        "strategy": "delta",
+        "stream_bytes": 30734
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 65837,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "B4096",
+        "ops_per_transition": 84.0893772893773,
+        "ratio_vs_full_q": 0.6241778938894542,
+        "safe_disagree": 0,
+        "state_bytes": 540672,
+        "strategy": "tensor_bound",
+        "stream_bytes": 65837
+      },
+      {
+        "bound_ok": false,
+        "bounded_claim": false,
+        "bytes": 49441,
+        "dirty_fraction": 1,
+        "events": 0,
+        "fixture": "B4096",
+        "ops_per_transition": 69.08571428571429,
+        "ratio_vs_full_q": 0.8311725086466698,
+        "safe_disagree": 0,
+        "state_bytes": 393216,
+        "strategy": "tensor_energy",
+        "stream_bytes": 49441
+      },
+      {
+        "bound_ok": true,
+        "bounded_claim": true,
+        "bytes": 30739,
+        "dirty_fraction": 0.9570207570207571,
+        "events": 11760,
+        "fixture": "B4096",
+        "ops_per_transition": 36.977777777777774,
+        "ratio_vs_full_q": 1.3368684732749927,
+        "safe_disagree": 0,
+        "state_bytes": 393216,
+        "strategy": "scp4d",
+        "stream_bytes": 30739
+      }
+    ],
+    "h3_levels": [
+      {
+        "churn": "low",
+        "delta_ops_median": 3348,
+        "full_q_ops_median": 2801.866666666667,
+        "holds": true,
+        "lower_than_delta": true,
+        "ratio_median": 2.042077644429328,
+        "scp_ops_median": 1372.0666666666666,
+        "seeds": 5,
+        "seeds_holding": 5
+      },
+      {
+        "churn": "medium",
+        "delta_ops_median": 3348,
+        "full_q_ops_median": 2801.866666666667,
+        "holds": true,
+        "lower_than_delta": true,
+        "ratio_median": 1.8332024775364215,
+        "scp_ops_median": 1528.4,
+        "seeds": 5,
+        "seeds_holding": 5
+      },
+      {
+        "churn": "high",
+        "delta_ops_median": 3348,
+        "full_q_ops_median": 2801.866666666667,
+        "holds": false,
+        "lower_than_delta": true,
+        "ratio_median": 1.3074099421389909,
+        "scp_ops_median": 2143.0666666666666,
+        "seeds": 5,
+        "seeds_holding": 0
+      },
+      {
+        "churn": "very_high",
+        "delta_ops_median": 3348,
+        "full_q_ops_median": 2801.866666666667,
+        "holds": false,
+        "lower_than_delta": true,
+        "ratio_median": 0.9709823491359395,
+        "scp_ops_median": 2885.6,
+        "seeds": 5,
+        "seeds_holding": 0
+      }
+    ],
+    "h5_flip": "high",
+    "hypotheses": [
+      {
+        "id": "H1",
+        "reason": "bound_ok on every bounded arm (295 rows)",
+        "verdict": "PASS"
+      },
+      {
+        "id": "H2",
+        "reason": "safe_disagree = 0 and retention >= 0.99 on 100 episode rows",
+        "verdict": "PASS"
+      },
+      {
+        "id": "H3",
+        "reason": "low median ratio 2.042077644429328 holding 5/5; medium median ratio 1.8332024775364215 holding 5/5",
+        "verdict": "PASS"
+      },
+      {
+        "id": "H4",
+        "reason": "wins on stream bytes but loses on state bytes touched: low stream true state false moved false; medium stream true state false moved false",
+        "verdict": "MIXED"
+      },
+      {
+        "id": "H5",
+        "reason": "H3 flips at high",
+        "verdict": "PASS"
+      }
+    ],
+    "measurements": [
+      {
+        "bound": 0,
+        "commitment": "8ad2e33a039aa99b7dc6f3f6492abb9fbcdb0b8c6c0166d3af792218f2712500",
+        "compressed_bytes": 17676,
+        "compression_ratio": 12.846515048653542,
+        "delta_e": 0,
+        "determinism": {
+          "head_sha256": "36b67ee814ccf664c5fac0c80488e793ae59808f2712b6035d5a3e6883a1f6f5",
+          "ok": true
+        },
+        "e": 0,
+        "e0": 0,
+        "fidelity": {
+          "mode": "lossless",
+          "ok": true
+        },
+        "metric": 12.846515048653542,
+        "pass": true,
+        "raw_bytes": 227075,
+        "retained_task_performance": {
+          "n": 256,
+          "score": 1
+        }
+      },
+      {
+        "bound": 0,
+        "commitment": "0a0beeea4b551efe01ae3fcb6ed83bd2bbcef68ea17dc4a0e718ff3bd1605f5c",
+        "compressed_bytes": 17873,
+        "compression_ratio": 12.704918032786885,
+        "delta_e": 0,
+        "determinism": {
+          "head_sha256": "f286cf831a4bdcbc60a454335405ddd967671173fba75368b0d9d54f595d46bb",
+          "ok": true
+        },
+        "e": 0,
+        "e0": 0,
+        "fidelity": {
+          "epsilon": 0.0001,
+          "mode": "bounded",
+          "ok": true
+        },
+        "metric": 12.704918032786885,
+        "pass": true,
+        "raw_bytes": 227075,
+        "retained_task_performance": {
+          "n": 256,
+          "score": 1
+        }
+      },
+      {
+        "bound": 1,
+        "commitment": "52d53a86673fc074d07427b61a3a7a9e11598b04853e47ed7d6879d69bfc797e",
+        "fidelity": {
+          "mode": "bounded",
+          "ok": true
+        },
+        "metric": 1,
+        "pass": true
+      },
+      {
+        "bound": 0.99,
+        "commitment": "f3200eaec62fdd7ae3d53befcbd566655ebd960ef63a608d99327cc6ee233324",
+        "metric": 1,
+        "pass": true,
+        "retained_task_performance": {
+          "n": 100,
+          "score": 1
+        }
+      },
+      {
+        "bound": 1.5,
+        "commitment": "2c3c5879e87cf32e9a26c5279c7e34fb37f844e3033024e59f03c2f00e238b72",
+        "metric": 1.8332024775364215,
+        "pass": true
+      },
+      {
+        "bound": 1,
+        "commitment": "3b8d488eafca4bed3002d034870b29b3b302253ecb87a5aa9d8d72869c10dde4",
+        "metric": 0,
+        "pass": false
+      },
+      {
+        "bound": 1,
+        "commitment": "7cc035f92501706d64ad42a74649987c4a9796605dc8f70b22ce34a1eab60508",
+        "metric": 0.5,
+        "pass": true
+      }
+    ]
+  },
+  "reported_not_asserted": {
+    "energy": "needs real board",
+    "power": "needs real board",
+    "latency_ms": {
+      "p50": 0.917886,
+      "p95": 9.363963,
+      "samples": 301,
+      "wall_ms": 1205.89662,
+      "label": "JS wall time of each timed bench call on one machine. Not a gate."
+    }
+  }
+}
