@@ -1763,7 +1763,7 @@ H2's gate arms are the five E2 arms. `tensor_energy` is reported as an unbounded
 
 The proof run that wrote the report took 1205.9 ms. Bench-call latency on that machine (not a gate): p50 0.917886 ms, p95 9.363963 ms, 301 calls.
 
-**K1 (measured in Icarus Verilog).** `scp4d_ede` defaults to temporal-only; `mode_relations` is the relations mode bit. `scp4d_fsd` is the full-scan baseline. 66 standalone runs (temporal and relations, plus full scan on the temporal vectors) were bit-exact with `scripts/scp-v0120-ede-model.ts`, including decision-change records, cycles and eval counts. Census ≤ 16 ≤ 32 held on every vector. The loop `tenc_q` → `tdec_s` → `scp4d_ede` on one tiny temporal job (D = 4, T = 3, W = 2, L = 2) was bit-exact on decoder codes and on decision records; EDE reported 20 cycles in that run. Yosys 0.33 generic `synth` (not an ECP5 map, memories came out as flip-flops, not EBR): `scp4d_ede` 54572 cells, `scp4d_fsd` 18979 cells. These are synthesis estimates. Place-and-route was not run. Power is **needs real board**.
+**K1 (measured in Icarus Verilog).** `scp4d_ede` defaults to temporal-only; `mode_relations` is the relations mode bit. `scp4d_fsd` is the full-scan baseline. 66 standalone runs (temporal and relations, plus full scan on the temporal vectors) were bit-exact with `scripts/scp-v0120-ede-model.ts`, including decision-change records, cycles and eval counts. Census ≤ 16 ≤ 32 held on every vector. The loop `tenc_q` → `tdec_s` → `scp4d_ede` on one tiny temporal job (D = 4, T = 3, W = 2, L = 2) was bit-exact on decoder codes and on decision records. The block-RAM synthesis and the place-and-route numbers for this RTL are the OSS CAD Suite 20261118 results in the paragraphs below. Power is **needs real board**.
 
 **K1 block RAM (measured, OSS CAD Suite 20261118, Yosys 0.71+50 `583f380c6`, `synth_ecp5`, ADDR_W = 8, same tool before and after).** The RTL on main read the dirty bitmap and the decision bit asynchronously, and `synth_ecp5` mapped those memories to `TRELLIS_DPR16X4` (LUT RAM). Before: `scp4d_ede` 1631 cells, 998 LUT4, 175 flip-flops, 2 `DP16KD`, 192 `TRELLIS_DPR16X4`. `scp4d_fsd` 573 cells, 281 LUT4, 142 flip-flops, 1 `DP16KD`, 16 `TRELLIS_DPR16X4` (the decision bit). After the synchronous read and `ram_style = "block"`: `scp4d_ede` 1111 cells, 487 LUT4, 412 flip-flops, 6 `DP16KD`, no `TRELLIS_DPR16X4`. Yosys mapped `dirty_m` and `dec_m` through `$__DP16KD_`. `scp4d_fsd` 454 cells, 169 LUT4, 196 flip-flops, 2 `DP16KD`, and `dec_m` through `$__DP16KD_`. Decision records are unchanged. The first temporal vector is 53 cycles. The tiny loop's EDE counter is 28. Power is **needs real board**.
 
@@ -1800,6 +1800,9 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120.ts
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts --synth   # Yosys only; no nextpnr
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/scp-v0120-select-next.ts
+# K1 place-and-route uses the v0.1.19 harness. Design ids:
+# ede-temporal, ede-relations, fsd, loop-ede-w4l8
+# See docs/design/v0119-reproduce.md
 ```
 
 Without Icarus the RTL check prints `SKIP sim` and still runs the 12 counted checks. The loop and the 66 standalone runs are re-simulated when `iverilog` is on PATH.
