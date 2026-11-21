@@ -21390,17 +21390,200 @@
           "report_sha256": "20220109d5f93d6fe2deaa456692713f04a316dcce889f33ad1ce13dc394281a",
           "netlist_sha256": "a9073ca784ef9e431b7364d7795308e0b9822ced5959c1da7f0618b43a2f1ef9",
           "log_sha256": "18ee6b1c1684f28cef9b20fc08581f617a52621bba9beed7dfe63198fb1e68de"
+        },
+        {
+          "seed": 5,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/workspace/fixtures/scp/v0119-work/tenc-p-w2l8/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "5",
+            "--timing-allow-fail",
+            "--report",
+            "/workspace/fixtures/scp/v0119-pnr/tenc-p-w2l8/45F-route-seed5.report.json"
+          ],
+          "command_sha256": "74660dd59e687eb5253e16929e79c3b415687caddd95fab7d1bb686fb9a9ab6c",
+          "wall_clock_s": 78.811,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 35.99193572998047,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 35.99193572998047
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 25,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GND": {
+              "used": 1,
+              "available": 1
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 3,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 15568,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 8125,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 82,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            },
+            "VCC": {
+              "used": 1,
+              "available": 1
+            }
+          },
+          "lut": 15568,
+          "ff": 8125,
+          "bram": 25,
+          "dsp": 3,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/tenc-p-w2l8/45F-route-seed5.report.json",
+          "report_sha256": "b0dd30785aa6b546add48ccae5041e3d98ef3e122a88b9ffdfefd3ffb1cb0def",
+          "netlist_sha256": "a9073ca784ef9e431b7364d7795308e0b9822ced5959c1da7f0618b43a2f1ef9",
+          "log_sha256": "d26c5000644894d66061e22a76e0cdbb1763f7a603ee94b6228ed9ed077abfc3"
         }
       ],
       "fit": {},
-      "fmax_mhz": null,
-      "throughput_values_per_s": null,
-      "resources_at_median_fmax_seed": null,
-      "efficiency": null,
+      "fmax_mhz": {
+        "min": 31.76620101928711,
+        "median": 35.99193572998047,
+        "max": 37.99392318725586,
+        "n": 5
+      },
+      "throughput_values_per_s": {
+        "min": 142410626.94530904,
+        "median": 161354961.17932758,
+        "max": 170330044.12217396
+      },
+      "resources_at_median_fmax_seed": {
+        "seed": 5,
+        "lut": 15568,
+        "ff": 8125,
+        "bram": 25
+      },
+      "efficiency": {
+        "per_lut": 10364.527311107886,
+        "per_ff": 19859.07214514801,
+        "per_bram": 6454198.447173103,
+        "per_bram_note": null
+      },
       "fits": {
         "12F": null,
         "25F": null,
-        "45F": null,
+        "45F": true,
         "85F": null
       },
       "smallest_part": null,
@@ -21423,6 +21606,7 @@
       "rdec-w-w4",
       "rdec-w-w2",
       "tdec-s-w4",
+      "tenc-p-w2l8",
       "tdec-w-w2",
       "tenc-w-w2l8",
       "tdec-r-w4",
@@ -21434,6 +21618,7 @@
       "tdec-r-w2",
       "tdec-r-w4",
       "tdec-w-w4",
+      "tenc-p-w2l8",
       "tdec-w-w2",
       "tenc-w-w2l8",
       "tdec",
@@ -21451,6 +21636,7 @@
       "rdec-w-w2",
       "tdec-w-w4",
       "tenc-w-w2l8",
+      "tenc-p-w2l8",
       "tdec-r-w4",
       "rdec-w-w4"
     ]
