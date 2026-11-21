@@ -15,6 +15,7 @@ import { canonicalJson } from "../src/scp/measurement";
 import { runAgent } from "../src/scp/subsystem";
 import { makeGridworld } from "./scp-v0120-gridworld";
 import { runProof, type V0120Prereg } from "./scp-v0120-proof";
+import { runSelection } from "./scp-v0120-select-next";
 
 const root = resolve(join(import.meta.dirname, ".."));
 const PREREG = "fixtures/scp/v0120-prereg.json";
@@ -98,6 +99,11 @@ const full = runAgent(low.surface.frames, low.surface.shape, low.surface.relatio
 const event = runAgent(low.surface.frames, low.surface.shape, low.surface.relations, "event_driven", false);
 check("event-driven agent evaluates fewer cells than full-scan at 1% churn", event.cells_evaluated < full.cells_evaluated && event.meter.gap_compute === 0 && full.meter.gap_compute === 0,
   `${event.cells_evaluated} < ${full.cells_evaluated}`);
+
+const sel = runSelection();
+check("selector finds no v0.1.19 manifest and does not run place-and-route", sel.pending_v0119 && sel.live.executed_in_this_run === false && sel.live.I === 0 && sel.power === "needs real board");
+check("back-test as of v0.1.16 proposes the historical decoder issue-path split", sel.backtest.matches_historical_split && sel.backtest.top === "decoder_variant", sel.backtest.bottleneck);
+check("recording the v0.1.17 outcome changes the next ranking", sel.live.ranking_changed && sel.live.chosen === "pipeline_split" && sel.live.ranking_before[0] === "decoder_variant");
 
 const text = readFileSync(join(root, REPORT), "utf8");
 check("report energy is needs real board and contains no numeric energy",

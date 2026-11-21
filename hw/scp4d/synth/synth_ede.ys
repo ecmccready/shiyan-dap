@@ -1,0 +1,9 @@
+# TEST ONLY. Yosys synthesis-only sanity check for K1. Not place-and-route.
+# Power is needs real board. Do not treat stat as a silicon measurement.
+read_verilog -I rtl rtl/scp4d_ede.v rtl/scp4d_fsd.v
+hierarchy -top scp4d_ede
+synth
+stat
+hierarchy -top scp4d_fsd
+synth
+stat

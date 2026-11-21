@@ -1751,9 +1751,23 @@ Without a simulator, it prints `SKIP sim` and runs the same 22 counted checks ag
 
 H2's gate arms are the five E2 arms. `tensor_energy` is reported as an unbounded probe and is not an H2 gate arm. H3/H4 use `scp4d_temporal` (locked hardware default). H5's flip is the first churn, in low → very high order, where the H3 level test goes from holding to not holding. A negative verdict is written as measured.
 
-**Results.** Not measured yet. The runner has not been executed. No verdict is stated in this draft.
+**Results (measured by `scripts/scp-v0120-proof-path.ts`, report `fixtures/scp/v0120-proof-report.json`).** Thresholds were not edited after the run. One machine, JS. Energy is **needs real board**.
 
-**K1.** Not in this header's result tables. The design default is temporal-only, with a relations mode bit. Declared code width 32 bits; the analytic bound used for the vectors is 16 bits; the check will assert census ≤ analytic bound ≤ declared width. Margin of at least one code. 0 multipliers. Power is **needs real board**.
+| Hypothesis | Verdict | What was measured |
+|---|---|---|
+| H1 Fidelity | **PASS** | `bound_ok` on every bounded arm (295 rows) |
+| H2 Intelligence | **PASS** | `safe_disagree` = 0 and retention ≥ 0.99 on 100 episode rows |
+| H3 Redundant processing | **PASS** | low-churn median ratio 2.042077644429328, 5/5 seeds holding; medium 1.8332024775364215, 5/5. Medians of ops/transition: low scp4d 1372.0666666666666, full_q 2801.866666666667, delta 3348; medium scp4d 1528.4, full_q 2801.866666666667, delta 3348 |
+| H4 Data movement | **MIXED** | wins on stream bytes and loses on state bytes touched at low and at medium churn, so bytes moved does not win |
+| H5 Crossover | **PASS** | H3 holds at low and medium and flips at high (high median ratio 1.3074099421389909, 0/5 holding; very high 0.9709823491359395) |
+
+The proof run that wrote the report took 1205.9 ms. Bench-call latency on that machine (not a gate): p50 0.917886 ms, p95 9.363963 ms, 301 calls.
+
+**K1 (measured in Icarus Verilog).** `scp4d_ede` defaults to temporal-only; `mode_relations` is the relations mode bit. `scp4d_fsd` is the full-scan baseline. 66 standalone runs (temporal and relations, plus full scan on the temporal vectors) were bit-exact with `scripts/scp-v0120-ede-model.ts`, including decision-change records, cycles and eval counts. Census ≤ 16 ≤ 32 held on every vector. The loop `tenc_q` → `tdec_s` → `scp4d_ede` on one tiny temporal job (D = 4, T = 3, W = 2, L = 2) was bit-exact on decoder codes and on decision records; EDE reported 20 cycles in that run. Yosys 0.33 generic `synth` (not an ECP5 map, memories came out as flip-flops, not EBR): `scp4d_ede` 54572 cells, `scp4d_fsd` 18979 cells. These are synthesis estimates. Place-and-route was not run. Power is **needs real board**.
+
+**Selector (one run, no new place-and-route).** As of the committed v0.1.16 report, the W4 decoder (`ref v0.1.13 scp4d_tdec_w W=4`) is the loop limiter and the frozen catalogue's top candidate is `decoder_variant`, which is the split v0.1.17–v0.1.18 actually built. The committed loop clocks are 18.31 MHz (v0.1.16) and 22.29 MHz (v0.1.17). After that outcome is recorded, the next ranking's first candidate is `pipeline_split`. The five-seed gate is closed (`I` = 0) because there is no v0.1.19 manifest. Power is **needs real board**.
+
+**System model.** `scripts/scp-v0120-system-model.ts` reproduced the committed v0.1.18 medicare-6 W2 decoder cycle count, 108, with tolerance 0, and the K1 exact cycle count of the first temporal vector, 41, with tolerance 0.
 
 **Benchmark (pending v0.1.19).** Task 8 is not done on this branch. The v0.1.19 harness is not merged, and this run does not place-and-route K1 and does not register it in that harness. Yosys synthesis-only sanity checks are in scope. Registration steps, to be done after v0.1.19 merges, and not before:
 
@@ -1766,3 +1780,14 @@ H2's gate arms are the five E2 arms. `tensor_energy` is reported as an unbounded
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
 **Naming.** `v019` in older filenames means v0.1.9. `v0119` means v0.1.19. `v0120` means v0.1.20.
+
+**Reproduce.**
+
+```bash
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120.ts
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts --synth   # Yosys only; no nextpnr
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/scp-v0120-select-next.ts
+```
+
+Without Icarus the RTL check prints `SKIP sim` and still runs the 12 counted checks. The loop and the 66 standalone runs are re-simulated when `iverilog` is on PATH.
