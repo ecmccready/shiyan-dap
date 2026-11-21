@@ -10,6 +10,8 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/bench-ecp5-v0119.ts --only=<d
 npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/bench-ecp5-v0119.ts --write-docs
 ```
 
+K1 design ids in that harness: `ede-temporal`, `ede-relations`, `fsd`, `loop-ede-w4l8`. Example: `--only=ede-temporal --seed=1`, then `--only=ede-temporal --fit`. A record already present under `fixtures/scp/v0119-pnr/<id>/` is reused and is not re-run.
+
 Place-and-route bound: 7200 s per invocation (`timeout --foreground 7200`). Exit 124 is recorded as not completed within 7200 s. No Fmax is filled in for that seed.
 
 45F route command (seed N):
