@@ -189,8 +189,215 @@
     ],
     "ok": true
   },
-  "designs": {},
+  "designs": {
+    "tdec": {
+      "id": "tdec",
+      "kind": "decoder",
+      "milestone": "v0.1.11",
+      "top": "wrap_tdec",
+      "sets": [],
+      "composed_of": [],
+      "workload": {
+        "stream": "env-16x16x2-T64-temporal-last",
+        "element_frames": 131072,
+        "cycles": 56866,
+        "source_report": "fixtures/scp/v0111-rtl-report.json",
+        "source_field": "measured[id=env-16x16x2-T64-temporal-last].cycles"
+      },
+      "values_per_cycle": 2.30492737312278,
+      "seeds_45f": [
+        {
+          "seed": 1,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/workspace/fixtures/scp/v0119-work/tdec/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "1",
+            "--timing-allow-fail",
+            "--report",
+            "/workspace/fixtures/scp/v0119-pnr/tdec/45F-route-seed1.report.json"
+          ],
+          "command_sha256": "d158068cfcf7c7f6af4e9f684da673f79ba06106253f38d3fcc74de0cfd9dbfc",
+          "wall_clock_s": 6.81279,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 43.540733337402344,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 43.540733337402344
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 8,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GND": {
+              "used": 1,
+              "available": 1
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 1,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 1885,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 783,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 33,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            },
+            "VCC": {
+              "used": 1,
+              "available": 1
+            }
+          },
+          "lut": 1885,
+          "ff": 783,
+          "bram": 8,
+          "dsp": 1,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/tdec/45F-route-seed1.report.json",
+          "report_sha256": "bf18be24919169381c112982012203e1613b2ff47444252057703bdd90dde45f",
+          "netlist_sha256": "f48ea4dce980c4d1b9ef18d4070fc27a2cb86fc102e8fc068b6c7362395e9485",
+          "log_sha256": "41f1761c663b9cbe3827004ead18723f9a92dd3176d0d084d76ce46810aafab3"
+        }
+      ],
+      "fit": {},
+      "fmax_mhz": null,
+      "throughput_values_per_s": null,
+      "resources_at_median_fmax_seed": null,
+      "efficiency": null,
+      "fits": {
+        "12F": null,
+        "25F": null,
+        "45F": null,
+        "85F": null
+      },
+      "smallest_part": null,
+      "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
+    }
+  },
   "pareto": [],
   "ranked": null,
-  "advice": null
+  "advice": {
+    "focus_loop_id": null,
+    "bottleneck": null,
+    "ranked_next": [],
+    "hypotheses": [
+      {
+        "text": "No closed loop in this benchmark has a measured throughput, so no bottleneck is named.",
+        "measured": false
+      }
+    ],
+    "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
+  }
 }
