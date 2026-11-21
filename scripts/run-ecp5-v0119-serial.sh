@@ -7,6 +7,7 @@ export OSS_CAD_SUITE=/opt/eda/oss-cad-suite
 
 commit_push() {
   local msg="$1"
+  mkdir -p fixtures/scp/v0119-pnr
   git add \
     fixtures/scp/v0119-industry-benchmark.json \
     fixtures/scp/v0119-pnr \
@@ -20,9 +21,13 @@ commit_push() {
   git push
 }
 
-echo "BIT-EXACT $(date -Is)"
-npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/bench-ecp5-v0119.ts --bit-exact
-commit_push "chore(scp): v0.1.19 bit-exact regression"
+if [ "${SKIP_BIT_EXACT:-}" = "1" ]; then
+  echo "SKIP bit-exact (already recorded)"
+else
+  echo "BIT-EXACT $(date -Is)"
+  npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/bench-ecp5-v0119.ts --bit-exact
+  commit_push "chore(scp): v0.1.19 bit-exact regression"
+fi
 
 while IFS= read -r id; do
   [ -n "$id" ] || continue

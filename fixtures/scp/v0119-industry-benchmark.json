@@ -103,7 +103,92 @@
       "sha256": "bda5b4f4ddd83469b4375734099da2820981eff4b7f87253f096dfd2443da27b"
     }
   ],
-  "bit_exact": null,
+  "bit_exact": {
+    "method": "Re-simulate each RTL check against the committed golden vectors (Icarus Verilog).",
+    "runs": [
+      {
+        "script": "scripts/check-scp-v0111-rtl.ts",
+        "args": [
+          "--require-sim"
+        ],
+        "exit_code": 0,
+        "wall_clock_s": 12.6127,
+        "pass_line": "PASS check-scp-v0111-rtl (33 checks)",
+        "ok": true
+      },
+      {
+        "script": "scripts/check-scp-v0112-rtl.ts",
+        "args": [
+          "--require-sim"
+        ],
+        "exit_code": 0,
+        "wall_clock_s": 32.7483,
+        "pass_line": "PASS check-scp-v0112-rtl (27 checks)",
+        "ok": true
+      },
+      {
+        "script": "scripts/check-scp-v0113-rtl.ts",
+        "args": [
+          "--require-sim"
+        ],
+        "exit_code": 0,
+        "wall_clock_s": 67.7841,
+        "pass_line": "PASS check-scp-v0113-rtl (27 checks)",
+        "ok": true
+      },
+      {
+        "script": "scripts/check-scp-v0114-rtl.ts",
+        "args": [
+          "--require-sim"
+        ],
+        "exit_code": 0,
+        "wall_clock_s": 212.757,
+        "pass_line": "PASS check-scp-v0114-rtl (19 checks)",
+        "ok": true
+      },
+      {
+        "script": "scripts/check-scp-v0115-rtl.ts",
+        "args": [
+          "--require-sim"
+        ],
+        "exit_code": 0,
+        "wall_clock_s": 374.384,
+        "pass_line": "PASS check-scp-v0115-rtl (20 checks)",
+        "ok": true
+      },
+      {
+        "script": "scripts/check-scp-v0116-rtl.ts",
+        "args": [
+          "--require-sim"
+        ],
+        "exit_code": 0,
+        "wall_clock_s": 388.054,
+        "pass_line": "PASS check-scp-v0116-rtl (22 checks)",
+        "ok": true
+      },
+      {
+        "script": "scripts/check-scp-v0117-rtl.ts",
+        "args": [
+          "--require-sim"
+        ],
+        "exit_code": 0,
+        "wall_clock_s": 347.903,
+        "pass_line": "PASS check-scp-v0117-rtl (22 checks)",
+        "ok": true
+      },
+      {
+        "script": "scripts/check-scp-v0118-rtl.ts",
+        "args": [
+          "--require-sim"
+        ],
+        "exit_code": 0,
+        "wall_clock_s": 474.669,
+        "pass_line": "PASS check-scp-v0118-rtl (24 checks)",
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
   "designs": {},
   "pareto": [],
   "ranked": null,
