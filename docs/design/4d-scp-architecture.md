@@ -1729,120 +1729,65 @@ npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0117-rtl.ts --writ
 
 Without a simulator, it prints `SKIP sim` and runs the same 22 counted checks against the committed report.
 
-## 25. v0.1.18: two-stage decoder (`scp4d_tdec_s`)
+## 27. v0.1.20: live proof path (draft)
 
-`hw/scp4d/rtl/scp4d_tdec_s.v` splits v0.1.17's single issue chain into a token classifier and a bank issuer, joined by a record register and a pop-late record queue (`RQ = 3W`). The front end is the unchanged `scp4d_fe_r.v`. The bank pipeline is text-identical to `scp4d_tdec_r`. Every v0.1.10–v0.1.17 file is unchanged and sha-pinned. The cycle model changed; it is `scripts/scp-v0118-rtl-model.ts`. TEST ONLY and unwired, like §18–§24. All inputs are labelled synthetic or hand-written fixtures.
+**Status of this section.** Draft header, pre-registered before any v0.1.20 result existed. §25 (v0.1.18 synthesis) and §26 (v0.1.19 Industry Performance Benchmark) are not on this branch. This section keeps the locked number §27. v0.2 stays reserved for the first product-facing page. Files use the tag `v0120`. The branch is `feat/scp-v0120-proof-path`.
 
-Cycles below are from Icarus Verilog. Post-route figures are from one run of `scripts/check-scp-v0118-rtl.ts --write --synth` (Yosys 0.71+50 git sha1 583f380c6, nextpnr 0.11.1-103-ge811ba48, OSS CAD Suite 20261118). ECP5 place-and-route is nextpnr `--45k --package CABGA381 --freq 12 --router router2 --seed 1`. The report labels them estimates because no board was programmed. Power and energy were not measured.
+**Locked decisions (owner, 2026-11-20).** Name v0.1.20. Pass thresholds are the section 2 table below, committed in `fixtures/scp/v0120-prereg.json` and not edited after a run. Hardware default is temporal-only; relations stay behind a mode bit. Power board is a Lattice ECP5 Versa or an equivalent open-source-friendly ECP5 45F/85F board. Power and energy stay **needs real board**. This file does not contain a numeric energy or power estimate.
 
-### 25.1 What the RTL changes
+**Seeds, grid, arms.** Environment seeds 1, 2, 3, 4 and 5. Grid 8×8×1, 4 channels, T = 16, 4 episodes, eps 0.01 per channel, built on `scripts/scp-v019-env-fixture.ts`. Churn levels, declared before the run: low 1%, medium 5%, high 20%, very high 50% of cells per step (`max(1, round(fraction × cells))`). H3 and H4 are judged at low and medium. Arms: full-scan agent on `full_q`, `delta` and `tensor_bound`; event-driven agent on `scp4d` rank 0, predictor last, relations off (the H3/H4 arm, `scp4d_temporal`) and the same with relations on. E4 crosses relations on/off, rank 0/1/2 and predictor zero/last/linear at medium churn. E1 runs the fixture tenant through `buildTenantChain` → `verifyTenantChain` and the adapter. E5 runs every strategy on the existing single-cell fixtures (v0.1, synthetic Medicare 6-row, B256, B4096), read-only.
 
-- **Stage 1, token classifier.** Per-position roles are fixed (a head token is classified alone; gap and q then alternate from a registered phase). The gap range check uses the sum already formed for the other gap. The pop count is a priority encode. Records carry the element, q, limit, frame end and error.
-- **Record path.** Classifier records are registered, then enter a pop-late queue. The classifier runs only while `rq_cnt + rec_n + K <= RQ`.
-- **Stage 2, bank issuer.** Last-value hold issues event records in order until a bank repeats. Zero and linear hold issue an aligned block of P elements. A record is consumed only when its limit is within the registered block. Classifier errors travel as records and are raised when the issuer reaches them.
+**Metrics.** Ops per state transition = (encode compute ops + decode compute ops + instrumented agent ops) / max(1, T−1). Encode is always included. Bytes moved = codec `bytes_in` + `bytes_out` + `state_bytes_touched` plus the agent's bytes, over the same denominator. The analytic agent formula is reported next to the instrumented counter, and the gap is reported. Latency (p50/p95, JS, one machine) is printed and is not a gate. Energy is **needs real board**.
 
-### 25.2 Measured cycles (Icarus Verilog, full rate, env streams)
+**PASS (locked).** Copied from the locked plan. These sentences are the thresholds. They are not tightened or loosened in this milestone.
 
-Element-frames are 131,072 on env T64 and 524,288 on env T256 (the same counts as §20–§24). `ref` is the unchanged `scp4d_tdec_w` and `scp4d_tdec_r` on the same stream; both matched v0.1.13's committed cycles.
+| Hypothesis | PASS (locked) | MIXED | FAIL |
+|---|---|---|---|
+| H1 Fidelity | `bound_ok` on every bounded arm, every seed | none: this is a hard gate | any eps violation |
+| H2 Intelligence | `safe_disagree` = 0 on all seeds, and task success retained ≥ 99% on every seed | safe_disagree = 0 but retention under 99% on any seed | any margin-safe flip |
+| H3 Redundant processing | event-driven `scp4d` ops per transition ≥ 1.5× lower than full-scan `full_q` and lower than `delta` (median of 5 seeds, holding in ≥ 4 of 5) at low and medium churn | between 1.0× and 1.5×, or only at the lowest churn | not lower than `delta` |
+| H4 Data movement | `scp4d` bytes moved ≤ `delta` and ≤ `full_q` at low and medium churn | wins on stream bytes but loses on state bytes touched | loses on both |
+| H5 Crossover | The churn level where H3 flips is measured and reported | — | no flip found in the sweep (reported as a finding, not a failure of the build) |
 
-| stream | W | `tdec_s` cycles | ref cycles (v0.1.13 = v0.1.17) |
-|---|---:|---:|---:|
-| env T64 temporal-last | 1 | 56,864 | 56,865 |
-| env T64 temporal-last | 2 | 28,443 | 28,444 |
-| env T64 temporal-last | 4 | 15,197 | 15,494 |
-| env T256 temporal-last | 1 | 226,338 | 226,339 |
-| env T256 temporal-last | 2 | 113,180 | 113,181 |
-| env T256 temporal-last | 4 | 60,461 | 61,705 |
+H2's gate arms are the five E2 arms. `tensor_energy` is reported as an unbounded probe and is not an H2 gate arm. H3/H4 use `scp4d_temporal` (locked hardware default). H5's flip is the first churn, in low → very high order, where the H3 level test goes from holding to not holding. A negative verdict is written as measured.
 
-Closed loop, unchanged `scp4d_tenc_q` into `scp4d_tdec_s` (env T64 temporal-last): W2L8 30,015 cycles, W4L8 19,048 cycles. The v0.1.17 loop on the same jobs was 30,016 and 19,223. Env T256 W4L8 is 75,459 cycles.
+**Results (measured by `scripts/scp-v0120-proof-path.ts`, report `fixtures/scp/v0120-proof-report.json`).** Thresholds were not edited after the run. One machine, JS. Energy is **needs real board**.
 
-- All 7 in-scope temporal-only vectors are bit-exact at W = 1, 2, 4, at full rate and with random input gaps. Every issued value matches `tdec_w` and `tdec_r` on the same stream.
-- The out-of-scope and corrupted streams return the expected code at every W.
-- Measured cycles equal the exact cycle model, including the classifier and issuer counters.
-- The loop is bit-exact and inside the deadband on every job and configuration, at full rate and with gaps.
-- `scripts/check-scp-v0118-rtl.ts` has 24 counted checks. The report pins the RTL, testbenches, wrapper and cycle model by SHA-256.
+| Hypothesis | Verdict | What was measured |
+|---|---|---|
+| H1 Fidelity | **PASS** | `bound_ok` on every bounded arm (295 rows) |
+| H2 Intelligence | **PASS** | `safe_disagree` = 0 and retention ≥ 0.99 on 100 episode rows |
+| H3 Redundant processing | **PASS** | low-churn median ratio 2.042077644429328, 5/5 seeds holding; medium 1.8332024775364215, 5/5. Medians of ops/transition: low scp4d 1372.0666666666666, full_q 2801.866666666667, delta 3348; medium scp4d 1528.4, full_q 2801.866666666667, delta 3348 |
+| H4 Data movement | **MIXED** | wins on stream bytes and loses on state bytes touched at low and at medium churn, so bytes moved does not win |
+| H5 Crossover | **PASS** | H3 holds at low and medium and flips at high (high median ratio 1.3074099421389909, 0/5 holding; very high 0.9709823491359395) |
 
-### 25.3 Post-route (this run, one seed; not a programmed board)
+The proof run that wrote the report took 1205.9 ms. Bench-call latency on that machine (not a gate): p50 0.917886 ms, p95 9.363963 ms, 301 calls.
 
-Same flow for the new decoder, the new loops, and the unchanged `tdec_r`, `tdec_w`, `tenc_q` and v0.1.17 loop re-placed as `ref` rows. ECP5 part is LFE5U-45F. iCE40 is HX8K at ADDR_W 9. Throughput in the report is measured cycles × that run's post-route Fmax.
+**K1 (measured in Icarus Verilog).** `scp4d_ede` defaults to temporal-only; `mode_relations` is the relations mode bit. `scp4d_fsd` is the full-scan baseline. 66 standalone runs (temporal and relations, plus full scan on the temporal vectors) were bit-exact with `scripts/scp-v0120-ede-model.ts`, including decision-change records, cycles and eval counts. Census ≤ 16 ≤ 32 held on every vector. The loop `tenc_q` → `tdec_s` → `scp4d_ede` on one tiny temporal job (D = 4, T = 3, W = 2, L = 2) was bit-exact on decoder codes and on decision records; EDE reported 20 cycles in that run. Yosys 0.33 generic `synth` (not an ECP5 map, memories came out as flip-flops, not EBR): `scp4d_ede` 54572 cells, `scp4d_fsd` 18979 cells. These are synthesis estimates. Place-and-route was not run. Power is **needs real board**.
 
-| config | ECP5-45F LUT4 / FF / DP16KD / MULT18 | ECP5 Fmax | iCE40-HX8K |
-|---|---|---:|---|
-| **tdec_s W2** | 7,955 / 2,279 / 8 / 1 | **44.48 MHz** | does not fit (8,512 LC, device has 7,680) |
-| ref tdec_r W2 | 6,345 / 1,783 / 8 / 1 | 43.98 MHz | fits, 6,661 LC, 39.46 MHz |
-| ref tdec_w W2 | 5,642 / 1,702 / 8 / 1 | 37.24 MHz | — |
-| **tdec_s W4** | 23,785 / 4,017 / 8 / 1 | **37.56 MHz** | does not fit (LC) |
-| ref tdec_r W4 | 17,455 / 3,097 / 8 / 1 | 20.80 MHz | does not fit (LC) |
-| ref tdec_w W4 | 13,196 / 2,948 / 8 / 1 | 19.17 MHz | — |
-| ref tenc_q W4L8 | 18,880 / 8,322 / 25 / 1 | 40.55 MHz | — |
-| **loop W2L8 → tdec_s W2** | 22,702 / 10,470 / 33 / 2 | **40.28 MHz** | does not fit (RAM) |
-| **loop W4L8 → tdec_s W4** | — | **not completed** | does not fit (RAM) |
-| ref loop W4L8 → tdec_r W4 | 36,663 / 11,368 / 33 / 2 | 21.76 MHz | — |
+**Selector (one run, no new place-and-route).** As of the committed v0.1.16 report, the W4 decoder (`ref v0.1.13 scp4d_tdec_w W=4`) is the loop limiter and the frozen catalogue's top candidate is `decoder_variant`, which is the split v0.1.17–v0.1.18 actually built. The committed loop clocks are 18.31 MHz (v0.1.16) and 22.29 MHz (v0.1.17). After that outcome is recorded, the next ranking's first candidate is `pipeline_split`. The five-seed gate is closed (`I` = 0) because there is no v0.1.19 manifest. Power is **needs real board**.
 
-The W4 loop (`tenc_q` W4L8 → `tdec_s` W4) is the one row the script did not finish. Its place-and-route entry is `not run to completion: place-and-route exceeded the 2400 s bound`. No Fmax, LUT, FF or values/s is stated for that configuration. The wrapper log has no END line for it: `timeout` killed the process. The next place-and-route started 3,063 s after that one started.
+**System model.** `scripts/scp-v0120-system-model.ts` reproduced the committed v0.1.18 medicare-6 W2 decoder cycle count, 108, with tolerance 0, and the K1 exact cycle count of the first temporal vector, 41, with tolerance 0.
 
-### 25.4 Throughput (measured cycles × this run's Fmax, env T64, 131,072 values)
+**Benchmark (pending v0.1.19).** Task 8 is not done on this branch. The v0.1.19 harness is not merged, and this run does not place-and-route K1 and does not register it in that harness. Yosys synthesis-only sanity checks are in scope. Registration steps, to be done after v0.1.19 merges, and not before:
 
-| design | cycles | Fmax | values/s | vs same-run ref |
-|---|---:|---:|---:|---:|
-| tdec_s W2 | 28,443 | 44.48 MHz | 204,974,249 | 1.0114× tdec_r |
-| tdec_s W4 | 15,197 | 37.56 MHz | 323,949,748 | 1.8411× tdec_r (1.9976× tdec_w) |
-| tenc_q W4L8 | 18,527 | 40.55 MHz | 286,876,969 | — |
-| loop W2L8 → tdec_s W2 | 30,015 | 40.28 MHz | 175,898,056 | — |
-| loop W4L8 → tdec_s W4 | 19,048 | not completed | not completed | ref loop in this run: 21.76 MHz, 148,370,531 values/s |
+1. Register K1 (`scp4d_ede`, temporal-only and with the relations mode bit set), K1-ref (`scp4d_fsd`) and the `tenc_q` → `tdec_s` → `scp4d_ede` loop in the v0.1.19 design registry. Do not add a second harness.
+2. Run the same five place-and-route seeds that the v0.1.19 manifest records, on LFE5U-45F, and the fit pass on 12F, 25F and 85F.
+3. Add the K1 golden vectors to that harness's bit-exact regression.
+4. Record RTL hashes, vector hashes, the `v0120-prereg.json` hash and tool versions in the manifest. Add Pareto rows and decisions per second per LUT.
+5. Leave power as **needs real board**. Do not estimate it.
 
-On env T256 the same clocks give tdec_s W4 325,701,812 values/s (60,461 cycles) and the W2 loop 176,146,005 values/s. The W4 loop's clock was not produced, so its values/s is not stated (75,459 cycles were measured in simulation).
+**System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-Standalone W4 decoder throughput is 1.1292× the same-run encoder. The report's verdict leaves the loop limiter as `unknown (no estimate)` because the W4 loop did not place.
+**Naming.** `v019` in older filenames means v0.1.9. `v0119` means v0.1.19. `v0120` means v0.1.20.
 
-### 25.5 Wall clock of this run
-
-The `--write --synth` invocation was 4,275 s wall clock (2026-11-21 02:03:10Z to 03:14:25Z), including simulation and synthesis. Place-and-route processes were serialized (one nextpnr at a time) so a 4-wide launch would not exhaust this machine. Seed and command flags are the script's. Per-invocation seconds are in `fixtures/scp/v0118-pnr-times.log`:
-
-| invocation | seconds | exit |
-|---|---:|---:|
-| tdec_s W2 ECP5 | 23 | 0 |
-| tdec_s W2 iCE40 | 2 | 125 (does not fit) |
-| tdec_s W4 ECP5 | 88 | 0 |
-| tdec_s W4 iCE40 | 2 | 125 |
-| loop W2 ECP5 | 98 | 0 |
-| loop W2 iCE40 | 2 | 125 |
-| loop W4 ECP5 | exceeded 2400 s bound | killed |
-| loop W4 iCE40 | 4 | 125 |
-| ref tdec_r W2 ECP5 | 20 | 0 |
-| ref tdec_r W2 iCE40 | 23 | 0 |
-| ref tdec_w W2 ECP5 | 20 | 0 |
-| ref tdec_r W4 ECP5 | 60 | 0 |
-| ref tdec_r W4 iCE40 | 2 | 125 |
-| ref tdec_w W4 ECP5 | 56 | 0 |
-| ref tenc_q W4L8 ECP5 | 94 | 0 |
-| ref loop W4 ECP5 | 213 | 0 |
-
-### 25.6 What this does and does not prove
-
-- **Proves:** the two-stage decoder is bit-exact with the v0.1.10 model, agrees element-for-element with v0.1.13 and v0.1.17, and its cycle counts are the ones in §25.2. In this one place-and-route flow the W4 decoder's post-route clock is 37.56 MHz against 20.80 MHz for `tdec_r` re-placed in the same run. W2 is 44.48 vs 43.98 MHz.
-- **Does not prove:** a post-route clock for the W4 closed loop. That run did not finish inside 2400 s. Board timing, power and energy. `comparison.energy` is "not measured; no pJ figure is reported for v0.1.18". The W4 clock gain is one seed.
-
-### 25.7 Running it
+**Reproduce.**
 
 ```bash
-npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0118-rtl.ts --require-sim
-npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0118-rtl.ts --write --synth
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120.ts
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-scp-v0120-rtl.ts --synth   # Yosys only; no nextpnr
+npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/scp-v0120-select-next.ts
 ```
 
-Without a simulator, it prints `SKIP sim` and runs the same 24 counted checks against the committed report. This machine's `--write --synth` took 4,275 s.
-
-## 26. Industry Performance Benchmark (v0.1.19, Lattice ECP5)
-
-This section is the five-seed post-route benchmark. It is not v0.1.9 (those files are named `v019`) and it is not a product-facing release. The tables are generated from `fixtures/scp/v0119-industry-benchmark.json` into `docs/design/v0119-industry-benchmark.md`. Until a design's five 45F seeds have finished, that row has no Fmax. A seed that exceeds the bound is `not completed within 7200 s`. No Fmax is filled in for it.
-
-Commands, tool versions and the fit rule are in `docs/design/v0119-reproduce.md`. The evidence package is `docs/design/aethel-node-hardware-evidence-v1.md`.
-
-- **Device.** LFE5U-45F, package CABGA381, nextpnr `--router router2 --freq 12 --timing-allow-fail`, seeds 1 through 5. Fmax is the minimum achieved clock in that seed's report. The median is the middle of the five, and it is reported only when all five routed.
-- **Throughput.** `values/s = (element_frames / cycles) × fmax_MHz × 1e6`. `element_frames` and `cycles` are read from the committed simulation report for that design on env T64. The bit-exact phase re-simulates those checks.
-- **Efficiency.** Values/s per LUT, per FF and per BRAM, using the seed whose Fmax is the median. Per BRAM is omitted when that seed uses 0 BRAM.
-- **Fit.** 12F, 25F and 85F, seed 1 only. Pack-only first. Routing runs only if packing exits 0. A packing failure is the record. 45F stays five seeds.
-- **Pareto.** A design is outside the set when another design is at least as high on median Fmax, median throughput and values/s per LUT, and strictly higher on one of them.
-- **Power.** Not measured. It needs a programmed board.
-
-The generated table starts empty and gains a row when that design's run is committed.
+Without Icarus the RTL check prints `SKIP sim` and still runs the 12 counted checks. The loop and the 66 standalone runs are re-simulated when `iverilog` is on PATH.

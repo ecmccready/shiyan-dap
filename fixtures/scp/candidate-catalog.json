@@ -1,0 +1,50 @@
+{
+  "format": "scp4d-v0120-candidate-catalog",
+  "version": 1,
+  "frozen": true,
+  "label": "TEST ONLY. Frozen before the v0.1.20 selection run. Predicted effects are hypotheses, not measurements. Power is needs real board.",
+  "candidates": [
+    {
+      "id": "decoder_variant",
+      "class": "decoder_variant",
+      "targets": "decoder_clock",
+      "order": 1,
+      "note": "Shorten the decoder issue path. This is the step v0.1.17 built. The predicted effect is a hypothesis, not a measurement."
+    },
+    {
+      "id": "pipeline_split",
+      "class": "pipeline_split",
+      "targets": "decoder_clock",
+      "order": 2,
+      "note": "Split the issue path into a token classifier and a bank issuer. This is the step v0.1.18 built. The predicted effect is a hypothesis, not a measurement."
+    },
+    {
+      "id": "w_change",
+      "class": "w_change",
+      "targets": "decoder_clock",
+      "order": 3,
+      "note": "Change the bytes-per-cycle parameter W. Hypothesis, not a measurement."
+    },
+    {
+      "id": "relations_mode",
+      "class": "relations_mode",
+      "targets": "bytes",
+      "order": 4,
+      "note": "Enable the relations mode bit. Hypothesis, not a measurement."
+    },
+    {
+      "id": "rank",
+      "class": "rank",
+      "targets": "bytes",
+      "order": 5,
+      "note": "Change the low-rank base. Hypothesis, not a measurement. K3 stays deferred."
+    },
+    {
+      "id": "k1_placement",
+      "class": "k1_placement",
+      "targets": "agent_ops",
+      "order": 6,
+      "note": "Place K1 in the v0.1.19 harness. Not run in v0.1.20 (task 8 deferred)."
+    }
+  ]
+}

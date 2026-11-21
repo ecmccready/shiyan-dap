@@ -1,0 +1,149 @@
+{
+  "format": "scp4d-v0120-prereg",
+  "version": 1,
+  "milestone": "v0.1.20",
+  "spec": "docs/design/4d-scp-architecture.md §27",
+  "branch": "feat/scp-v0120-proof-path",
+  "label": "TEST ONLY. Pre-registration committed before any v0.1.20 result exists. Thresholds are the locked section 2 table. No measured results in this file.",
+  "locked_decisions": {
+    "name": "v0.1.20",
+    "files": "v0120",
+    "spec_section": 27,
+    "branch": "feat/scp-v0120-proof-path",
+    "v0_2": "reserved for the first product-facing page",
+    "hardware_default": "temporal-only",
+    "relations": "behind a mode bit",
+    "power_board": "Lattice ECP5 Versa or an equivalent open-source-friendly ECP5 45F/85F board",
+    "power": "needs real board",
+    "energy_numeric_estimates": false
+  },
+  "seeds": [1, 2, 3, 4, 5],
+  "grid": {
+    "nx": 8,
+    "ny": 8,
+    "nz": 1,
+    "channels": 4,
+    "T": 16,
+    "episodes": 4,
+    "eps": [0.01, 0.01, 0.01, 0.01],
+    "churn_cells": "max(1, round(fraction * nx * ny * nz))",
+    "built_on": "scripts/scp-v019-env-fixture.ts (mulberry32, envRelations, gridEncoder, ENV_T0)"
+  },
+  "churn_levels": [
+    { "id": "low", "fraction": 0.01 },
+    { "id": "medium", "fraction": 0.05 },
+    { "id": "high", "fraction": 0.2 },
+    { "id": "very_high", "fraction": 0.5 }
+  ],
+  "h3_h4_churns": ["low", "medium"],
+  "state_transitions": "max(1, T - 1)",
+  "ops": {
+    "compute_fields": ["fp_add", "fp_mul", "fp_div", "round", "int_ops", "compare", "sqrt"],
+    "ops_total": "sum of compute fields over encode_ops and decode_ops, plus instrumented agent compute ops",
+    "ops_per_transition": "ops_total / state_transitions",
+    "agent_gap": "instrumented agent compute ops minus the analytic agent formula (cells evaluated × compares, plus the same navigation reads). Both are reported.",
+    "encode_always_included": true,
+    "sha256_per_frame": "not in the op total; the subsystem temporal surface hash is not added"
+  },
+  "bytes": {
+    "bytes_moved": "encode.bytes_in + encode.bytes_out + decode.bytes_in + decode.bytes_out + encode.state_bytes_touched + decode.state_bytes_touched + agent.bytes_in + agent.bytes_out + agent.state_bytes_touched",
+    "bytes_moved_per_transition": "bytes_moved / state_transitions",
+    "stream_bytes": "encode.bytes_out",
+    "state_bytes": "encode.state_bytes_touched + decode.state_bytes_touched + agent.state_bytes_touched"
+  },
+  "arms": {
+    "e1": "lossless and bounded engine modes (fixture tenant scp-v01-fixture) → adapter → full_f64, full_q, delta, tensor_bound, tensor_energy, scp4d",
+    "e2": [
+      { "id": "full_q", "strategy": "full_q", "agent": "full_scan" },
+      { "id": "delta", "strategy": "delta", "agent": "full_scan" },
+      { "id": "tensor_bound", "strategy": "tensor_bound", "agent": "full_scan" },
+      { "id": "scp4d_temporal", "strategy": "scp4d", "agent": "event_driven", "scp4d": { "rank": 0, "relations": false, "predictor": "last" } },
+      { "id": "scp4d_relations", "strategy": "scp4d", "agent": "event_driven", "scp4d": { "rank": 0, "relations": true, "predictor": "last" } }
+    ],
+    "e3": "same agent on the full surface and on each reconstructed gate arm; navigation and threshold decision; 5 seeds × 4 episodes at medium churn",
+    "e4": "relations on/off × rank 0/1/2 × predictor zero/last/linear, at medium churn, episode 0, 5 seeds",
+    "e5": "every strategy on the single-cell frame fixtures (v0.1, synthetic Medicare 6-row, B256, B4096); read-only; no PHI",
+    "h3_arm": "scp4d_temporal",
+    "h4_arm": "scp4d_temporal",
+    "h2_gate_arms": ["full_q", "delta", "tensor_bound", "scp4d_temporal", "scp4d_relations"],
+    "h2_not_a_gate": "tensor_energy is an unbounded probe (E1, E4 is scp4d-only, E5). It is reported and is not an H2 gate arm, matching the v0.1.9 bounded-strategy rule.",
+    "h1_bounded_strategies": ["full_q", "delta", "scp4d", "tensor_bound"]
+  },
+  "task": {
+    "threshold": "c3 > 0.5, marginNeeded = eps[3]",
+    "navigation": "greedy step to the neighbour with strictly smaller c2 (manhattan distance to cell 0); c2 is not churned",
+    "retention": "per seed, min(navigation success on reconstructed / navigation success on the full surface, threshold agreement). If full-surface navigation success is 0, retention is 1 when reconstructed success is also 0 and 0 otherwise. Steps-to-goal are reported and are not a gate.",
+    "retention_min": 0.99
+  },
+  "hypotheses": {
+    "H1": {
+      "name": "Fidelity",
+      "pass": "bound_ok on every bounded arm, every seed",
+      "mixed": "none: this is a hard gate",
+      "fail": "any eps violation"
+    },
+    "H2": {
+      "name": "Intelligence",
+      "pass": "safe_disagree = 0 on all seeds, and task success retained >= 0.99 on every seed",
+      "mixed": "safe_disagree = 0 but retention under 0.99 on any seed",
+      "fail": "any margin-safe flip",
+      "safe_disagree_max": 0,
+      "retention_min": 0.99
+    },
+    "H3": {
+      "name": "Redundant processing",
+      "pass": "event-driven scp4d ops per transition >= 1.5× lower than full-scan full_q and lower than delta (median of 5 seeds, holding in >= 4 of 5) at low and medium churn",
+      "mixed": "between 1.0× and 1.5×, or only at the lowest churn",
+      "fail": "not lower than delta",
+      "ratio_min": 1.5,
+      "seeds": 5,
+      "seeds_holding_min": 4,
+      "lower_means": "strictly lower ops per transition",
+      "aggregation": "median of the 5 per-seed ratios; a seed holds when its ratio is >= 1.5 and its scp4d ops are strictly lower than delta"
+    },
+    "H4": {
+      "name": "Data movement",
+      "pass": "scp4d bytes moved <= delta and <= full_q at low and medium churn",
+      "mixed": "wins on stream bytes but loses on state bytes touched",
+      "fail": "loses on both",
+      "aggregation": "the comparison is on the median of the 5 seeds, at low and at medium churn"
+    },
+    "H5": {
+      "name": "Crossover",
+      "pass": "the churn level where H3 flips is measured and reported",
+      "mixed": null,
+      "fail": "no flip found in the sweep (reported as a finding, not a failure of the build)",
+      "flip": "the first churn in low, medium, high, very_high order where the H3 level test goes from holding to not holding"
+    }
+  },
+  "latency": "p50 / p95 per transition (JS, one machine) are printed by the harness and stored under reported_not_asserted. Never a gate. Not part of the deterministic body.",
+  "energy": "needs real board. No numeric estimate is written.",
+  "system_model": {
+    "decoder_cycle_tolerance_cycles": 0,
+    "k1_cycle_tolerance_cycles": 0,
+    "note": "The system model must reproduce an existing exact decoder cycle model with 0 cycles of difference, and the K1 exact cycle model with 0 cycles of difference. A coarser closed form may be printed beside them and is not a gate."
+  },
+  "k1": {
+    "default_mode": "temporal",
+    "relations_mode_bit": true,
+    "declared_code_bits": 32,
+    "analytic_code_bits": 16,
+    "margin_codes_min": 1,
+    "arithmetic": "integer compare and add",
+    "multipliers": 0
+  },
+  "selector": {
+    "v0119_manifest": "pending",
+    "power": "needs real board",
+    "evidence_files_on_main": [
+      "fixtures/scp/v0116-rtl-report.json",
+      "fixtures/scp/v0117-rtl-report.json",
+      "fixtures/scp/v0118-rtl-report.json"
+    ],
+    "backtest_as_of": "v0.1.16",
+    "historical_split_ids": ["decoder_variant", "pipeline_split"],
+    "gate": "bit-exact AND fits AND five seeds",
+    "five_seed_source": "v0.1.19 manifest (not on main in this run)"
+  },
+  "naming_note": "v019 in older filenames means v0.1.9. From v0.1.20 onward, tags are four digits (v0120). v0119 means v0.1.19."
+}

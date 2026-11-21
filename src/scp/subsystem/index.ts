@@ -30,3 +30,7 @@ export type { BenchRow, BenchRun, EnergyEstimate, EnergyTable } from "./compress
 export { energyProfile, lowRankFit, symmetricEigen } from "./linalg";
 export type { EigenResult, LowRankFactors } from "./linalg";
 export { quantize as quantizeLikePack } from "./format";
+export { decideThreshold, evaluationCells, navigate, runAgent, thresholdTask, THRESHOLD, THRESHOLD_CHANNEL, NAV_CHANNEL, cellCount, splitCell } from "./agent";
+export type { AgentMode, AgentTrace, NavStep } from "./agent";
+export { analyticAgentOps, computeOps, emptyOps, finishMeter, addOpCounts } from "./op-meter";
+export type { AgentMeter } from "./op-meter";
