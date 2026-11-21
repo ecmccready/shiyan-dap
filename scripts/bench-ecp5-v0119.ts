@@ -291,7 +291,12 @@ function summarize(d: Design, seeds: SeedRec[], fit: Record<string, { fits: bool
     "45F": seeds.length === 5 ? fit45 : null,
     "85F": fit["85F"]?.fits ?? null,
   };
-  const smallest = order.find((p) => fits[p] === true) ?? null;
+  // Do not call a larger part the smallest while a smaller part has not been tried.
+  let smallest: string | null = null;
+  for (const p of order) {
+    if (fits[p] === null) break;
+    if (fits[p] === true) { smallest = p; break; }
+  }
   return {
     id: d.id, kind: d.kind, milestone: d.milestone, top: d.top,
     sets: d.sets, composed_of: d.composedOf ?? [],
