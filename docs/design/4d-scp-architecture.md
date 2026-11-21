@@ -1771,13 +1771,9 @@ The proof run that wrote the report took 1205.9 ms. Bench-call latency on that m
 
 **System model.** `scripts/scp-v0120-system-model.ts` reproduced the committed v0.1.18 medicare-6 W2 decoder cycle count, 108, with tolerance 0, and the K1 exact cycle count of the first temporal vector. That count is 53 under the block-RAM schedule above (it was 41 before the memories were synchronous). Tolerance 0.
 
-**Benchmark (pending v0.1.19).** Task 8 is not done on this branch. The v0.1.19 harness is not merged, and this run does not place-and-route K1 and does not register it in that harness. Yosys synthesis-only sanity checks are in scope. Registration steps, to be done after v0.1.19 merges, and not before:
+**K1 on LFE5U-45F (five seeds, nextpnr-ecp5 0.6-3build5, router2, bound 7200 s, one route at a time).** `ede-temporal` median Fmax 60.8939208984375 MHz (min 60.29545211791992, max 63.419586181640625), 639 LUT, 402 FF, 8 BRAM at the median seed. decisions/s at that median is 10017310.677501792, and decisions/s per LUT is 15676.54253130171. `ede-relations` median 63.059654235839844 MHz, 896 LUT, 537 FF, 14 BRAM, decisions/s per LUT 8159.792230254361. `fsd` median 60.96445846557617 MHz, 501 LUT, 309 FF, 5 BRAM, decisions/s per LUT 54638.64843366605. `loop-ede-w4l8` does not fit: nextpnr reports no BELs remaining for `TRELLIS_COMB`. No Fmax is recorded for it. Power is **needs real board**.
 
-1. Register K1 (`scp4d_ede`, temporal-only and with the relations mode bit set), K1-ref (`scp4d_fsd`) and the `tenc_q` → `tdec_s` → `scp4d_ede` loop in the v0.1.19 design registry. Do not add a second harness.
-2. Run the same five place-and-route seeds that the v0.1.19 manifest records, on LFE5U-45F, and the fit pass on 12F, 25F and 85F.
-3. Add the K1 golden vectors to that harness's bit-exact regression.
-4. Record RTL hashes, vector hashes, the `v0120-prereg.json` hash and tool versions in the manifest. Add Pareto rows and decisions per second per LUT.
-5. Leave power as **needs real board**. Do not estimate it.
+**Registration.** K1 is in the v0.1.19 design registry (`ede-temporal`, `ede-relations`, `fsd`, `loop-ede-w4l8`). There is no second harness. The golden-vector check is in that harness's bit-exact list. RTL, vector and `v0120-prereg.json` hashes are in `fixtures/scp/v0120-k1-env.json`. Power is **needs real board**. The 12F / 25F / 85F fit pass is the same pack-then-route procedure as v0.1.19.
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 

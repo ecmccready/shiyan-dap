@@ -37199,9 +37199,2779 @@
       },
       "smallest_part": null,
       "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
+    },
+    "ede-temporal": {
+      "id": "ede-temporal",
+      "kind": "decision",
+      "milestone": "v0.1.20",
+      "top": "wrap_ede",
+      "sets": [
+        {
+          "name": "REL",
+          "value": "0"
+        }
+      ],
+      "composed_of": [],
+      "workload": {
+        "stream": "env-16x16x2-T64-temporal-last",
+        "element_frames": 131072,
+        "cycles": 167716,
+        "evals": 27590,
+        "source_report": "fixtures/scp/v0120-k1-env.json",
+        "source_field": "ede_temporal.cycles"
+      },
+      "values_per_cycle": 0.7815116029478404,
+      "decisions_per_s": {
+        "median": 10017310.677501792
+      },
+      "decisions_per_s_per_lut": 15676.54253130171,
+      "seeds_45f": [
+        {
+          "seed": 1,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-temporal/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "1",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed1.report.json"
+          ],
+          "command_sha256": "3857e4fe0a8332a022348a2b534b8d523ff53697554b3d4610a26d0fb2f0cbe0",
+          "wall_clock_s": 2.28134,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 60.88280487060547,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 60.88280487060547
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 8,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 639,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 402,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 639,
+          "ff": 402,
+          "bram": 8,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed1.report.json",
+          "report_sha256": "7817ef40158ef1344d8c3a98fb57617cd92dcbfe23a80af6660aebf14b1d62f2",
+          "netlist_sha256": "b98d6bad7b219d236d293310f9af371f9b4fffa61bf44339420235ea25ef7a97",
+          "log_sha256": "8a2d3472080aa3161ddbf512bc814c0d04109d6a2883282dfb86184044583afb"
+        },
+        {
+          "seed": 2,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-temporal/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "2",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed2.report.json"
+          ],
+          "command_sha256": "8832def3bf9893690b0c1b5e4a3f1592a14988e6097f4e181e319c5313298e1b",
+          "wall_clock_s": 2.05907,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 63.419586181640625,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 63.419586181640625
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 8,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 639,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 402,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 639,
+          "ff": 402,
+          "bram": 8,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed2.report.json",
+          "report_sha256": "8a7b8b52009e1bcf74cd4759f868903da5b1a8581859c394378845e362b1ea50",
+          "netlist_sha256": "b98d6bad7b219d236d293310f9af371f9b4fffa61bf44339420235ea25ef7a97",
+          "log_sha256": "cfe3839a71439e455bd2fe475ee98c48058a19badc097e29b9ae655d5ceb5ab1"
+        },
+        {
+          "seed": 3,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-temporal/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "3",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed3.report.json"
+          ],
+          "command_sha256": "2b128f0492fa9a00cb560c6f265f0e7b63c5db86b3d6c11e79f5b980434b310d",
+          "wall_clock_s": 1.83606,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 63.29514694213867,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 63.29514694213867
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 8,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 639,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 402,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 639,
+          "ff": 402,
+          "bram": 8,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed3.report.json",
+          "report_sha256": "4bec1b00a7109c9f75b2fec028c7714d619f7798da0c2b9dfefd043d3ba198a4",
+          "netlist_sha256": "b98d6bad7b219d236d293310f9af371f9b4fffa61bf44339420235ea25ef7a97",
+          "log_sha256": "0b0469b51e0bf4861c12806e98e3c4dbfcfd380bc0a7c88ae413dfc73d4c406b"
+        },
+        {
+          "seed": 4,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-temporal/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "4",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed4.report.json"
+          ],
+          "command_sha256": "080aefab98c88b971372976fbc00c899b8bc6d8556942a0300e81c5363f75b70",
+          "wall_clock_s": 1.69148,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 60.8939208984375,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 60.8939208984375
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 8,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 639,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 402,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 639,
+          "ff": 402,
+          "bram": 8,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed4.report.json",
+          "report_sha256": "b782a1cca40b8c3ca543de0926c01447e3eb036db64de7458a5190020cc41b5b",
+          "netlist_sha256": "b98d6bad7b219d236d293310f9af371f9b4fffa61bf44339420235ea25ef7a97",
+          "log_sha256": "795878836a921adf3bb08b172bec3c31618b0a907530390913ca022c08662801"
+        },
+        {
+          "seed": 5,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-temporal/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "5",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed5.report.json"
+          ],
+          "command_sha256": "ba6f70ea8b990233d0ab0f2a651ea4c1e48f8352afd59a4d2b89ddf87772c0fa",
+          "wall_clock_s": 1.77103,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 60.29545211791992,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 60.29545211791992
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 8,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 639,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 402,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 639,
+          "ff": 402,
+          "bram": 8,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-temporal/45F-route-seed5.report.json",
+          "report_sha256": "377ebc7d6d45fe8e03be5fd01c0255f59c18a3b4dae80a42f56fbe9379df8cb6",
+          "netlist_sha256": "b98d6bad7b219d236d293310f9af371f9b4fffa61bf44339420235ea25ef7a97",
+          "log_sha256": "129787dfde8ddc3b4c9499bcf0e465792420d360dd62283ab179524a862f8ed3"
+        }
+      ],
+      "fit": {},
+      "fmax_mhz": {
+        "min": 60.29545211791992,
+        "median": 60.8939208984375,
+        "max": 63.419586181640625,
+        "n": 5
+      },
+      "throughput_values_per_s": {
+        "min": 47121595.43514036,
+        "median": 47589305.73111689,
+        "max": 49563142.455102675
+      },
+      "resources_at_median_fmax_seed": {
+        "seed": 4,
+        "lut": 639,
+        "ff": 402,
+        "bram": 8
+      },
+      "efficiency": {
+        "per_lut": 74474.65685620796,
+        "per_ff": 118381.35754009176,
+        "per_bram": 5948663.216389611,
+        "per_bram_note": null
+      },
+      "fits": {
+        "12F": null,
+        "25F": null,
+        "45F": true,
+        "85F": null
+      },
+      "smallest_part": null,
+      "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
+    },
+    "fsd": {
+      "id": "fsd",
+      "kind": "decision",
+      "milestone": "v0.1.20",
+      "top": "wrap_fsd",
+      "sets": [],
+      "composed_of": [],
+      "workload": {
+        "stream": "env-16x16x2-T64-temporal-last",
+        "element_frames": 131072,
+        "cycles": 291910,
+        "evals": 131072,
+        "source_report": "fixtures/scp/v0120-k1-env.json",
+        "source_field": "fsd.cycles"
+      },
+      "values_per_cycle": 0.4490151073961152,
+      "decisions_per_s": {
+        "median": 27373962.865266692
+      },
+      "decisions_per_s_per_lut": 54638.64843366605,
+      "seeds_45f": [
+        {
+          "seed": 1,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/fsd/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "1",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/fsd/45F-route-seed1.report.json"
+          ],
+          "command_sha256": "061d9836fd57a0dcb0cf8dd8194ae94934069ccc204acd8c6ce2c7d8c5764fb4",
+          "wall_clock_s": 1.95591,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 60.1286735534668,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 60.1286735534668
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 5,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 501,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 309,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 112,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 501,
+          "ff": 309,
+          "bram": 5,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/fsd/45F-route-seed1.report.json",
+          "report_sha256": "a80b1c2e9ccf7a9ced8424ca3effd7d2acd3245399f676d5683005f9c23ddfc7",
+          "netlist_sha256": "dedf3d538266f68750da5f2938b65ebf7d9fafebeedc6b7b1e86ad534f8d16c7",
+          "log_sha256": "43ef128b082072e5e3c20cb4b84ee6ced2c1c304cdcd61678d231c492532fed0"
+        },
+        {
+          "seed": 2,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/fsd/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "2",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/fsd/45F-route-seed2.report.json"
+          ],
+          "command_sha256": "b09ff0fafd9c17d782d084af1d653e245254dcb9ebb1804c7871b7553c24c915",
+          "wall_clock_s": 1.50635,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 58.630393981933594,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 58.630393981933594
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 5,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 501,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 309,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 112,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 501,
+          "ff": 309,
+          "bram": 5,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/fsd/45F-route-seed2.report.json",
+          "report_sha256": "0bc733fe9623ab4b2e5a66b902d6f24225869891cf1e41167c0df878008576d1",
+          "netlist_sha256": "dedf3d538266f68750da5f2938b65ebf7d9fafebeedc6b7b1e86ad534f8d16c7",
+          "log_sha256": "fbe04d0b1a02b2ed9f21a1b4fc1e1b88b69283092b3a89de3f1ef132be0ae80b"
+        },
+        {
+          "seed": 3,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/fsd/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "3",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/fsd/45F-route-seed3.report.json"
+          ],
+          "command_sha256": "166fb082461a086d013d51cf24613c8af4bb31123ffde9c8b7b9e7e031113677",
+          "wall_clock_s": 1.42982,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 62.11565399169922,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 62.11565399169922
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 5,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 501,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 309,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 112,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 501,
+          "ff": 309,
+          "bram": 5,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/fsd/45F-route-seed3.report.json",
+          "report_sha256": "bdb5d6bac1ccf6c421dff87984fdc2a855cf066c4a72ff22d221295920e2ce1c",
+          "netlist_sha256": "dedf3d538266f68750da5f2938b65ebf7d9fafebeedc6b7b1e86ad534f8d16c7",
+          "log_sha256": "5cae7d3f1a71c40752c13909ddf89a7479406882063447a7f53037f876833852"
+        },
+        {
+          "seed": 4,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/fsd/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "4",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/fsd/45F-route-seed4.report.json"
+          ],
+          "command_sha256": "e1d9cb0113baf7f45917d99e4bcb2ff7a5a572b90e981ff74f37a2f6bbeb15e2",
+          "wall_clock_s": 1.66077,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 60.96445846557617,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 60.96445846557617
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 5,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 501,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 309,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 112,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 501,
+          "ff": 309,
+          "bram": 5,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/fsd/45F-route-seed4.report.json",
+          "report_sha256": "d9d570d8265d8558df3bc2f6ae93e58bbd17f64928bcb528f80ef09f9b2dda33",
+          "netlist_sha256": "dedf3d538266f68750da5f2938b65ebf7d9fafebeedc6b7b1e86ad534f8d16c7",
+          "log_sha256": "b8d87cd76ea463289a99b568957a0e9096791b1381e56999f869ed11f6caaf2c"
+        },
+        {
+          "seed": 5,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/fsd/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "5",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/fsd/45F-route-seed5.report.json"
+          ],
+          "command_sha256": "c8b0a35cb7c988a0ee5c53377d55cf7de44e1229cc17f986985ef502fb56d938",
+          "wall_clock_s": 1.53448,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 63.6699333190918,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 63.6699333190918
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 5,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 501,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 309,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 112,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 501,
+          "ff": 309,
+          "bram": 5,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/fsd/45F-route-seed5.report.json",
+          "report_sha256": "1691f33fc4c3fd140c98c5901f7d3a8f8e16704af13eae23675f1bd88852487b",
+          "netlist_sha256": "dedf3d538266f68750da5f2938b65ebf7d9fafebeedc6b7b1e86ad534f8d16c7",
+          "log_sha256": "8250cac84eec7f4e9e5c48b4d2c9792493b9e9131b57a287b590eec43926e7ca"
+        }
+      ],
+      "fit": {},
+      "fmax_mhz": {
+        "min": 58.630393981933594,
+        "median": 60.96445846557617,
+        "max": 63.6699333190918,
+        "n": 5
+      },
+      "throughput_values_per_s": {
+        "min": 26325932.65047446,
+        "median": 27373962.865266692,
+        "max": 28588761.9471755
+      },
+      "resources_at_median_fmax_seed": {
+        "seed": 4,
+        "lut": 501,
+        "ff": 309,
+        "bram": 5
+      },
+      "efficiency": {
+        "per_lut": 54638.64843366605,
+        "per_ff": 88588.87658662359,
+        "per_bram": 5474792.573053339,
+        "per_bram_note": null
+      },
+      "fits": {
+        "12F": null,
+        "25F": null,
+        "45F": true,
+        "85F": null
+      },
+      "smallest_part": null,
+      "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
+    },
+    "ede-relations": {
+      "id": "ede-relations",
+      "kind": "decision",
+      "milestone": "v0.1.20",
+      "top": "wrap_ede",
+      "sets": [
+        {
+          "name": "REL",
+          "value": "1"
+        }
+      ],
+      "composed_of": [],
+      "workload": {
+        "stream": "env-16x16x2-T64-temporal-last",
+        "element_frames": 131072,
+        "cycles": 384076,
+        "evals": 44530,
+        "source_report": "fixtures/scp/v0120-k1-env.json",
+        "source_field": "ede_relations.cycles"
+      },
+      "values_per_cycle": 0.34126579114550243,
+      "decisions_per_s": {
+        "median": 7311173.838307908
+      },
+      "decisions_per_s_per_lut": 8159.792230254361,
+      "seeds_45f": [
+        {
+          "seed": 1,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-relations/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "1",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-relations/45F-route-seed1.report.json"
+          ],
+          "command_sha256": "054821ebc1b074a9d976cb007689cbd9f4fbb276e29e312ad6f35935a0c70324",
+          "wall_clock_s": 2.64908,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 65.6038818359375,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 65.6038818359375
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 14,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 896,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 537,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 896,
+          "ff": 537,
+          "bram": 14,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-relations/45F-route-seed1.report.json",
+          "report_sha256": "eb6b00d87a4eb40f397aef6b09d877da666cf63633737b165f0cd6541be0959b",
+          "netlist_sha256": "d5c5e2bb2d9d33a1c4306543a4b97d0a8996bb0bacf4f953130ff8be78242f33",
+          "log_sha256": "edc90810dd00fb94f4bdbc61822363b0bfdf5ecd995d8ee60086adcef7bca8b3"
+        },
+        {
+          "seed": 2,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-relations/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "2",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-relations/45F-route-seed2.report.json"
+          ],
+          "command_sha256": "0b5e06f40f9b56fb795b88cd9f11d64b6eadecdd69bd1a802a7397013a2de51c",
+          "wall_clock_s": 2.69129,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 64.26322174072266,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 64.26322174072266
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 14,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 896,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 537,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 896,
+          "ff": 537,
+          "bram": 14,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-relations/45F-route-seed2.report.json",
+          "report_sha256": "d48600b5db50dbbb13cf351747a033f5bf5ea71853c815db528344c4ea9448d9",
+          "netlist_sha256": "d5c5e2bb2d9d33a1c4306543a4b97d0a8996bb0bacf4f953130ff8be78242f33",
+          "log_sha256": "6bb80c2bc133853ff82c5c6f5758cb0a53ae500ca5f348a99f25c7132d1b5ae9"
+        },
+        {
+          "seed": 3,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-relations/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "3",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-relations/45F-route-seed3.report.json"
+          ],
+          "command_sha256": "cee6751e36d8ac9fd89b0e14c498e6ab0c45cb4bedda1279b11b6161c9e6044c",
+          "wall_clock_s": 2.33216,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 60.364601135253906,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 60.364601135253906
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 14,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 896,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 537,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 896,
+          "ff": 537,
+          "bram": 14,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-relations/45F-route-seed3.report.json",
+          "report_sha256": "1dec950684de1f9f8fe9f2db96fa1af9cdfeb655022abba5bb3259c2846a1588",
+          "netlist_sha256": "d5c5e2bb2d9d33a1c4306543a4b97d0a8996bb0bacf4f953130ff8be78242f33",
+          "log_sha256": "5ba69d3cac390843a28f2f703133bf058fc6aef2fb47aab14a80671c02cc7549"
+        },
+        {
+          "seed": 4,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-relations/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "4",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-relations/45F-route-seed4.report.json"
+          ],
+          "command_sha256": "eb3e07d62589fc21a31b25808ec2b9b0d84920eef10ef1c22d84423d854c352d",
+          "wall_clock_s": 2.4498,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 57.48447799682617,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 57.48447799682617
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 14,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 896,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 537,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 896,
+          "ff": 537,
+          "bram": 14,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-relations/45F-route-seed4.report.json",
+          "report_sha256": "a8d752c8c533f8d54fe1e188fd0a670213df76935ee21e6995eb1983744467ee",
+          "netlist_sha256": "d5c5e2bb2d9d33a1c4306543a4b97d0a8996bb0bacf4f953130ff8be78242f33",
+          "log_sha256": "079f9293c65cd680ae670afdd43f03a66605ce76f7d9e7d9f013c7e1fc31d36e"
+        },
+        {
+          "seed": 5,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/ede-relations/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "5",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/ede-relations/45F-route-seed5.report.json"
+          ],
+          "command_sha256": "93effd70874ebe19d3ebead26c90819dde80f6b51b7c159b77d632af69462658",
+          "wall_clock_s": 2.28212,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 63.059654235839844,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 63.059654235839844
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 14,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 0,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 896,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 537,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 114,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            }
+          },
+          "lut": 896,
+          "ff": 537,
+          "bram": 14,
+          "dsp": 0,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/ede-relations/45F-route-seed5.report.json",
+          "report_sha256": "aaca41478b5356b956a53a56edeacc9d728e7f9b3d6d5c92c12a8f7d1f7fd1ab",
+          "netlist_sha256": "d5c5e2bb2d9d33a1c4306543a4b97d0a8996bb0bacf4f953130ff8be78242f33",
+          "log_sha256": "0b06086a2467eaf38f40d473f42540e107694b7b6bd004f0271c21bf2bfc5399"
+        }
+      ],
+      "fit": {},
+      "fmax_mhz": {
+        "min": 57.48447799682617,
+        "median": 63.059654235839844,
+        "max": 65.6038818359375,
+        "n": 5
+      },
+      "throughput_values_per_s": {
+        "min": 19617485.86217311,
+        "median": 21520102.792155717,
+        "max": 22388360.636957265
+      },
+      "resources_at_median_fmax_seed": {
+        "seed": 5,
+        "lut": 896,
+        "ff": 537,
+        "bram": 14
+      },
+      "efficiency": {
+        "per_lut": 24017.971866245218,
+        "per_ff": 40074.67931500133,
+        "per_bram": 1537150.199439694,
+        "per_bram_note": null
+      },
+      "fits": {
+        "12F": null,
+        "25F": null,
+        "45F": true,
+        "85F": null
+      },
+      "smallest_part": null,
+      "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
+    },
+    "loop-ede-w4l8": {
+      "id": "loop-ede-w4l8",
+      "kind": "loop",
+      "milestone": "v0.1.20",
+      "top": "wrap_loop_ede",
+      "sets": [
+        {
+          "name": "W",
+          "value": "4"
+        },
+        {
+          "name": "L",
+          "value": "8"
+        }
+      ],
+      "composed_of": [
+        "tenc-q-w4l8",
+        "tdec-s-w4",
+        "ede-temporal"
+      ],
+      "workload": {
+        "stream": "env-16x16x2-T64-temporal-last",
+        "element_frames": 131072,
+        "cycles": 167716,
+        "evals": 27590,
+        "source_report": "fixtures/scp/v0120-k1-env.json",
+        "source_field": "loop_ede_w4l8.cycles"
+      },
+      "values_per_cycle": 0.7815116029478404,
+      "decisions_per_s": null,
+      "decisions_per_s_per_lut": null,
+      "seeds_45f": [
+        {
+          "seed": 1,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/loop-ede-w4l8/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "1",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed1.report.json"
+          ],
+          "command_sha256": "b3f95276d2d339ce8840131b2a9f95a73c6fd68703b4bc4d99209f371abe66b5",
+          "wall_clock_s": 9.30217,
+          "exit_code": 255,
+          "status": "does_not_fit",
+          "not_completed_within_s": null,
+          "fmax_mhz": null,
+          "fmax_clocks": null,
+          "utilization": null,
+          "lut": null,
+          "ff": null,
+          "bram": null,
+          "dsp": null,
+          "error": "ERROR: Unable to place cell 'dec.iss_q_PFUMX_Z_2_BLUT_LUT4_Z', no BELs remaining to implement cell type 'TRELLIS_COMB'",
+          "report_path": null,
+          "report_sha256": null,
+          "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
+          "log_sha256": "678e8ab9d80a4acb65cc2f51605c94405d78d8bfcf35e9c5fa9a2ed6bbabcade"
+        },
+        {
+          "seed": 2,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/loop-ede-w4l8/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "2",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed2.report.json"
+          ],
+          "command_sha256": "9abcd9c675a650b447501b4706aeaf4128093d0b14c8b4969058ae6b201c8457",
+          "wall_clock_s": 9.43995,
+          "exit_code": 255,
+          "status": "does_not_fit",
+          "not_completed_within_s": null,
+          "fmax_mhz": null,
+          "fmax_clocks": null,
+          "utilization": null,
+          "lut": null,
+          "ff": null,
+          "bram": null,
+          "dsp": null,
+          "error": "ERROR: Unable to place cell 'dec.iss_q_PFUMX_Z_2_BLUT_LUT4_Z', no BELs remaining to implement cell type 'TRELLIS_COMB'",
+          "report_path": null,
+          "report_sha256": null,
+          "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
+          "log_sha256": "678e8ab9d80a4acb65cc2f51605c94405d78d8bfcf35e9c5fa9a2ed6bbabcade"
+        },
+        {
+          "seed": 3,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/loop-ede-w4l8/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "3",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed3.report.json"
+          ],
+          "command_sha256": "7b21bd949c7a22a03731df814835452480640b4697f90d583bceffe4808e234f",
+          "wall_clock_s": 9.27304,
+          "exit_code": 255,
+          "status": "does_not_fit",
+          "not_completed_within_s": null,
+          "fmax_mhz": null,
+          "fmax_clocks": null,
+          "utilization": null,
+          "lut": null,
+          "ff": null,
+          "bram": null,
+          "dsp": null,
+          "error": "ERROR: Unable to place cell 'dec.iss_q_PFUMX_Z_2_BLUT_LUT4_Z', no BELs remaining to implement cell type 'TRELLIS_COMB'",
+          "report_path": null,
+          "report_sha256": null,
+          "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
+          "log_sha256": "678e8ab9d80a4acb65cc2f51605c94405d78d8bfcf35e9c5fa9a2ed6bbabcade"
+        },
+        {
+          "seed": 4,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/loop-ede-w4l8/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "4",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed4.report.json"
+          ],
+          "command_sha256": "95de990f54cdad28ec58ebfb2cbfd905937823c9759d58c75d27e92fd2aff224",
+          "wall_clock_s": 9.19856,
+          "exit_code": 255,
+          "status": "does_not_fit",
+          "not_completed_within_s": null,
+          "fmax_mhz": null,
+          "fmax_clocks": null,
+          "utilization": null,
+          "lut": null,
+          "ff": null,
+          "bram": null,
+          "dsp": null,
+          "error": "ERROR: Unable to place cell 'dec.iss_q_PFUMX_Z_2_BLUT_LUT4_Z', no BELs remaining to implement cell type 'TRELLIS_COMB'",
+          "report_path": null,
+          "report_sha256": null,
+          "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
+          "log_sha256": "678e8ab9d80a4acb65cc2f51605c94405d78d8bfcf35e9c5fa9a2ed6bbabcade"
+        },
+        {
+          "seed": 5,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/loop-ede-w4l8/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "5",
+            "--timing-allow-fail",
+            "--report",
+            "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed5.report.json"
+          ],
+          "command_sha256": "008ea1d66148eaeec5a7aa9539ad1f76ff79160162a8e0fb87eeeef51bd9bdd1",
+          "wall_clock_s": 9.51107,
+          "exit_code": 255,
+          "status": "does_not_fit",
+          "not_completed_within_s": null,
+          "fmax_mhz": null,
+          "fmax_clocks": null,
+          "utilization": null,
+          "lut": null,
+          "ff": null,
+          "bram": null,
+          "dsp": null,
+          "error": "ERROR: Unable to place cell 'dec.iss_q_PFUMX_Z_2_BLUT_LUT4_Z', no BELs remaining to implement cell type 'TRELLIS_COMB'",
+          "report_path": null,
+          "report_sha256": null,
+          "netlist_sha256": "6d3faf754c561087de42550bdd8268919b3373df37d4038bffdcb63e515749a3",
+          "log_sha256": "678e8ab9d80a4acb65cc2f51605c94405d78d8bfcf35e9c5fa9a2ed6bbabcade"
+        }
+      ],
+      "fit": {},
+      "fmax_mhz": null,
+      "throughput_values_per_s": null,
+      "resources_at_median_fmax_seed": null,
+      "efficiency": null,
+      "fits": {
+        "12F": null,
+        "25F": null,
+        "45F": false,
+        "85F": null
+      },
+      "smallest_part": null,
+      "power": "NOT MEASURED — needs a programmed board. No board power measurement was taken."
     }
   },
   "pareto": [
+    "ede-relations",
+    "ede-temporal",
+    "fsd",
     "rdec",
     "tdec",
     "tdec-r-w2",
@@ -37211,6 +39981,9 @@
   ],
   "ranked": {
     "by_fmax": [
+      "ede-relations",
+      "fsd",
+      "ede-temporal",
       "rdec",
       "tdec-s-w2",
       "tdec-r-w2",
@@ -37252,13 +40025,19 @@
       "tdec",
       "rdec",
       "rdec-w-w4",
-      "rdec-w-w2"
+      "rdec-w-w2",
+      "ede-temporal",
+      "fsd",
+      "ede-relations"
     ],
     "by_values_per_s_per_lut": [
+      "ede-temporal",
+      "fsd",
       "tdec",
       "tdec-r-w2",
       "tdec-w-w2",
       "tdec-s-w2",
+      "ede-relations",
       "rdec",
       "tenc-q-w4l8",
       "tdec-s-w4",
