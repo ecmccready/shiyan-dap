@@ -33996,17 +33996,200 @@
           "report_sha256": "d0116a1663a3179b3f8d617c163180dd8e643acb41349f733babcda19cf6b3b2",
           "netlist_sha256": "c1219e5c7a2728346ac0965f6a7b7bd9cd279f41a1a21a77cb1c682a72313680",
           "log_sha256": "cdcfa3e8d73f9684674858b34b4a2ba6153627d30e03e0471a59aded94efe94b"
+        },
+        {
+          "seed": 5,
+          "part": "45F",
+          "device": "LFE5U-45F",
+          "mode": "route",
+          "command": [
+            "nextpnr-ecp5",
+            "--45k",
+            "--package",
+            "CABGA381",
+            "--json",
+            "/workspace/fixtures/scp/v0119-work/loop-r-w4l8/n.json",
+            "--lpf-allow-unconstrained",
+            "--freq",
+            "12",
+            "--router",
+            "router2",
+            "--seed",
+            "5",
+            "--timing-allow-fail",
+            "--report",
+            "/workspace/fixtures/scp/v0119-pnr/loop-r-w4l8/45F-route-seed5.report.json"
+          ],
+          "command_sha256": "83b56ce5d640b735b878c3498e1cc6637d62c0d4391e8282734578059b2a305d",
+          "wall_clock_s": 195.703,
+          "exit_code": 0,
+          "status": "routed",
+          "not_completed_within_s": null,
+          "fmax_mhz": 20.368257522583008,
+          "fmax_clocks": {
+            "$glbnet$clk$TRELLIS_IO_IN": 20.368257522583008
+          },
+          "utilization": {
+            "ALU54B": {
+              "used": 0,
+              "available": 36
+            },
+            "CLKDIVF": {
+              "used": 0,
+              "available": 4
+            },
+            "DCCA": {
+              "used": 1,
+              "available": 56
+            },
+            "DCSC": {
+              "used": 0,
+              "available": 2
+            },
+            "DCUA": {
+              "used": 0,
+              "available": 2
+            },
+            "DDRDLL": {
+              "used": 0,
+              "available": 4
+            },
+            "DLLDELD": {
+              "used": 0,
+              "available": 8
+            },
+            "DP16KD": {
+              "used": 33,
+              "available": 108
+            },
+            "DQSBUFM": {
+              "used": 0,
+              "available": 10
+            },
+            "DTR": {
+              "used": 0,
+              "available": 1
+            },
+            "ECLKBRIDGECS": {
+              "used": 0,
+              "available": 2
+            },
+            "ECLKSYNCB": {
+              "used": 0,
+              "available": 10
+            },
+            "EHXPLLL": {
+              "used": 0,
+              "available": 4
+            },
+            "EXTREFB": {
+              "used": 0,
+              "available": 2
+            },
+            "GND": {
+              "used": 1,
+              "available": 1
+            },
+            "GSR": {
+              "used": 0,
+              "available": 1
+            },
+            "IOLOGIC": {
+              "used": 0,
+              "available": 160
+            },
+            "JTAGG": {
+              "used": 0,
+              "available": 1
+            },
+            "MULT18X18D": {
+              "used": 2,
+              "available": 72
+            },
+            "OSCG": {
+              "used": 0,
+              "available": 1
+            },
+            "PCSCLKDIV": {
+              "used": 0,
+              "available": 2
+            },
+            "SEDGA": {
+              "used": 0,
+              "available": 1
+            },
+            "SIOLOGIC": {
+              "used": 0,
+              "available": 85
+            },
+            "TRELLIS_COMB": {
+              "used": 35598,
+              "available": 43848
+            },
+            "TRELLIS_ECLKBUF": {
+              "used": 0,
+              "available": 8
+            },
+            "TRELLIS_FF": {
+              "used": 11368,
+              "available": 43848
+            },
+            "TRELLIS_IO": {
+              "used": 97,
+              "available": 245
+            },
+            "TRELLIS_RAMW": {
+              "used": 0,
+              "available": 5481
+            },
+            "USRMCLK": {
+              "used": 0,
+              "available": 1
+            },
+            "VCC": {
+              "used": 1,
+              "available": 1
+            }
+          },
+          "lut": 35598,
+          "ff": 11368,
+          "bram": 33,
+          "dsp": 2,
+          "error": null,
+          "report_path": "fixtures/scp/v0119-pnr/loop-r-w4l8/45F-route-seed5.report.json",
+          "report_sha256": "f52d1615054c7c089de5d248ab3acf9d37fb79d7009e3748237d96542d03dcd2",
+          "netlist_sha256": "c1219e5c7a2728346ac0965f6a7b7bd9cd279f41a1a21a77cb1c682a72313680",
+          "log_sha256": "021e09c00fee87c9ce3cafa7d99832ec4b48d1e7214a553baee62add78345cdd"
         }
       ],
       "fit": {},
-      "fmax_mhz": null,
-      "throughput_values_per_s": null,
-      "resources_at_median_fmax_seed": null,
-      "efficiency": null,
+      "fmax_mhz": {
+        "min": 20.368257522583008,
+        "median": 21.614145278930664,
+        "max": 23.67144012451172,
+        "n": 5
+      },
+      "throughput_values_per_s": {
+        "min": 138880936.898507,
+        "median": 147376020.9124486,
+        "max": 161403683.08796751
+      },
+      "resources_at_median_fmax_seed": {
+        "seed": 3,
+        "lut": 35598,
+        "ff": 11368,
+        "bram": 33
+      },
+      "efficiency": {
+        "per_lut": 4140.008453071763,
+        "per_ff": 12964.111621432849,
+        "per_bram": 4465940.027649958,
+        "per_bram_note": null
+      },
       "fits": {
         "12F": null,
         "25F": null,
-        "45F": null,
+        "45F": true,
         "85F": null
       },
       "smallest_part": null,
@@ -34038,6 +34221,7 @@
       "loop-w-w2l8",
       "tenc-p-w4l8",
       "tdec-r-w4",
+      "loop-r-w4l8",
       "loop-p-w4l8",
       "loop-q-w4l8",
       "tdec-w-w4"
@@ -34053,6 +34237,7 @@
       "tdec-w-w4",
       "tenc-p-w2l8",
       "tdec-w-w2",
+      "loop-r-w4l8",
       "tenc-w-w2l8",
       "loop-p-w4l8",
       "loop-q-w4l8",
@@ -34080,14 +34265,15 @@
       "tenc-p-w4l8",
       "loop-w-w2l8",
       "loop-q-w4l8",
+      "loop-r-w4l8",
       "loop-p-w4l8"
     ]
   },
   "advice": {
-    "focus_loop_id": "loop-p-w4l8",
+    "focus_loop_id": "loop-r-w4l8",
     "bottleneck": {
-      "design_id": "tdec-w-w4",
-      "reason": "On loop-p-w4l8, tdec-w-w4 median post-route Fmax is 19.325912475585938 MHz and tenc-p-w4l8 is 23.975067138671875 MHz. The slower constituent limits the loop clock."
+      "design_id": "tdec-r-w4",
+      "reason": "On loop-r-w4l8, tdec-r-w4 median post-route Fmax is 21.924535751342773 MHz and tenc-q-w4l8 is 39.91697311401367 MHz. The slower constituent limits the loop clock."
     },
     "ranked_next": [
       {
@@ -34121,14 +34307,14 @@
         "why": "tdec-r-w2 (v0.1.17) measured 212676979.32780197 values/s at median Fmax 46.15313720703125 MHz, 6359 LUT, 33445.03527721371 values/s per LUT."
       },
       {
-        "design_id": "tdec-r-w4",
+        "design_id": "tdec-w-w4",
         "kind": "decoder",
         "measured": true,
-        "fmax_mhz_median": 21.924535751342773,
-        "throughput_values_per_s_median": 185471327.61068797,
-        "lut": 18084,
-        "values_per_s_per_lut": 10256.100841113026,
-        "why": "tdec-r-w4 (v0.1.17) measured 185471327.61068797 values/s at median Fmax 21.924535751342773 MHz, 18084 LUT, 10256.100841113026 values/s per LUT."
+        "fmax_mhz_median": 19.325912475585938,
+        "throughput_values_per_s_median": 163488188.97637793,
+        "lut": 13430,
+        "values_per_s_per_lut": 12173.357332567233,
+        "why": "tdec-w-w4 (v0.1.13) measured 163488188.97637793 values/s at median Fmax 19.325912475585938 MHz, 13430 LUT, 12173.357332567233 values/s per LUT."
       },
       {
         "design_id": "tdec-w-w2",
