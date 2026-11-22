@@ -1,0 +1,9 @@
+{
+  "format": "scp4d-v0123-overhead",
+  "label": "ADDR_W 8. Hybrid resources are the same on every 45F seed. ede and fsd are one seed-1 route each, same flags, not a five-seed median, and they do not replace the committed ADDR_W 11 rows. Fmax is the nextpnr report JSON. Power is needs real board.",
+  "hybrid": { "lut4": 1287, "trellis_comb": 1375, "ff": 762, "dp16kd": 7, "fmax_mhz_median": 60.085323333740234 },
+  "ede_seed1": { "lut4": 514, "trellis_comb": 548, "ff": 362, "dp16kd": 4, "fmax_mhz": 68.80418395996094 },
+  "fsd_seed1": { "lut4": 331, "trellis_comb": 361, "ff": 288, "dp16kd": 2, "fmax_mhz": 64.37491607666016 },
+  "sum_ede_fsd": { "lut4": 845, "trellis_comb": 909, "ff": 650, "dp16kd": 6 },
+  "overhead": { "lut4": 442, "trellis_comb": 466, "ff": 112, "dp16kd": 1 }
+}

@@ -1,0 +1,38 @@
+{
+  "format": "scp4d-v0123-hybrid-sim",
+  "label": "Icarus decision records versus the shared-state model. Fixed-engine cycles are the exact model on the same tokens. Power is needs real board.",
+  "sim_runs": 47,
+  "held_out": [
+    {
+      "addr_w": 8,
+      "hybrid_cycles": 17634,
+      "hybrid_evals": 5040,
+      "ede_cycles": 19040,
+      "ede_evals": 3120,
+      "fsd_cycles": 36208,
+      "fsd_evals": 16384,
+      "switches": 1
+    },
+    {
+      "addr_w": 10,
+      "hybrid_cycles": 70146,
+      "hybrid_evals": 20128,
+      "ede_cycles": 75776,
+      "ede_evals": 12448,
+      "fsd_cycles": 144608,
+      "fsd_evals": 65536,
+      "switches": 1
+    },
+    {
+      "addr_w": 12,
+      "hybrid_cycles": 140226,
+      "hybrid_evals": 40256,
+      "ede_cycles": 151488,
+      "ede_evals": 24896,
+      "fsd_cycles": 289152,
+      "fsd_evals": 131072,
+      "switches": 1
+    }
+  ],
+  "cycles_beat_or_tie_best_fixed": true
+}

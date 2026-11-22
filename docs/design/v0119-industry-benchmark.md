@@ -35,8 +35,9 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 | ede-relations | decision | 63.520294189453125 | 66.26466369628906 | 67.81500244140625 | 22613862.88130474 | 813 | 537 | 14 | 27815.329497299805 | 42111.47650149859 | 1615275.9200931957 | 12F |
 | fsd | decision | 62.71165084838867 | 65.98917388916016 | 66.70223999023438 | 29630136.000822168 | 415 | 309 | 5 | 71397.91807427029 | 95890.40776965104 | 5926027.200164434 | 12F |
 | loop-ede-w4l8 | loop | 32.817012786865234 | 35.09634017944336 | 35.3769416809082 | 27428197.07123948 | 30888 | 9983 | 39 | 887.9887681701463 | 2747.490440873433 | 703287.1043907559 | 45F |
+| hybrid | decision | 58.186893463134766 | 60.085323333740234 | 63.609188079833984 | 55826127.79290008 | 1375 | 762 | 7 | 40600.82021301824 | 73262.634898819 | 7975161.113271439 | 12F |
 
-Pareto set (clock, throughput, values/s per LUT): ede-relations, ede-temporal, fsd, rdec, tdec, tdec-r-w2, tdec-s-w2, tdec-s-w4, tenc-q-w4l8.
+Pareto set (clock, throughput, values/s per LUT): ede-relations, ede-temporal, fsd, hybrid, rdec, tdec, tdec-r-w2, tdec-s-w2, tdec-s-w4, tenc-q-w4l8.
 
 decisions/s = (evals / cycles) * fmax_MHz * 1e6; evals is the threshold-compare count (not the emitted decision-change count) in fixtures/scp/v0120-k1-env.json; cycles is that design's measured cycle count on env-16x16x2-T64-temporal-last; fmax_MHz is the median of five routed 45F seeds; decisions/s per LUT divides that rate by TRELLIS_COMB used on the median-Fmax seed
 
@@ -46,3 +47,4 @@ decisions/s = (evals / cycles) * fmax_MHz * 1e6; evals is the threshold-compare 
 | ede-relations | 44530 | 7682764.542423249 | 9449.894886129458 |
 | fsd | 131072 | 29630136.000822168 | 71397.91807427029 |
 | loop-ede-w4l8 | 27590 | 5773498.208583809 | 186.91719142009225 |
+| hybrid | 5040 | 17173076.420667507 | 12489.510124121824 |

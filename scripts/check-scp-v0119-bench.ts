@@ -32,7 +32,11 @@ check("throughput refuses a non-positive fmax", (() => { try { throughputValuesP
   check("pareto drops a row that loses on clock, throughput and efficiency", JSON.stringify(paretoIds([slow, fast])) === JSON.stringify(["b"]));
   check("pareto keeps a clock/throughput tradeoff", paretoIds([fast, trade]).sort().join(",") === "b,c");
 }
-check("every catalog design loads a positive cycle count from a committed report", DESIGNS.every((d) => workloadFor(root, d).cycles > 0 && workloadFor(root, d).element_frames === 131072));
+check("every catalog design loads a positive cycle count from a committed report", DESIGNS.every((d) => {
+  const w = workloadFor(root, d);
+  const frames = d.workload === "hybrid" ? w.element_frames === 16384 : w.element_frames === 131072;
+  return w.cycles > 0 && frames;
+}));
 {
   const advice = adviseFromBenchmark({
     power: POWER,

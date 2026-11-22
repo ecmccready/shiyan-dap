@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30).
 
 **Reproduce.**
 
@@ -1938,3 +1938,47 @@ Hierarchical LUT4 after the trim, same `synth_ecp5 -noflatten` flow: `scp4d_tenc
 **Queue and memory traffic (Icarus, env T64).** Record: `fixtures/scp/v0122-traffic.json`. Pre-BRAM RTL is git `a6bb68f6^`. Queue pushes and pops are 27590 both before and after the block-RAM schedule. They did not go down. Dirty writes, decision reads, decision writes and state writes also stay 57228, 27590, 29638 and 29638. What went up is the sample clock: dirty reads and state reads go from 27590 to 55180, and cycles go from 57292 to 167652. Full scan has no queue. Its decision reads stay 131072; its cycles go from 160774 to 291846. The same push counts hold on the ADDR_W 12 low and very-high sweep streams (1280 and 65536). There is no remaining duplicate push: every event is one push and one pop. No further queue-op change was applied. The `k1_tap` beat queue still pushes one beat per decoder token; block RAM changed the storage, not the count.
 
 **Selector result.** Held-out seed 9. One iteration, not an autonomous capability. No RTL hybrid, so extra LUT is 0. 576 estimate updates. On every ADDR_W the adaptive cost ties or beats the best single fixed engine. Decisions/s per LUT picks `fsd` for all 64 frames and ties full scan (the best fixed engine); it does not create a K1 win. Evaluations pick `ede` and tie that engine. Cycles pick `ede` for 49 frames and `fsd` for 15, and the sum is below a pure `ede` run (ADDR_W 12: 136128 versus 151488). Verdict **PASS** against the selector rule. The v0.1.21 per-LUT sweep remains **FAIL**. Power is **needs real board**.
+
+## 30. v0.1.23: hybrid RTL (`v0123`)
+
+**Status of this section.** The rule below was locked in `fixtures/scp/v0123-prereg.json` before `scp4d_hybrid` existed and before any hybrid simulation or place-and-route. v0.2 stays reserved. Files use the tag `v0123`. The branch is `cursor/scp-v0123-hybrid-rtl-784b`. Toolchain is OSS CAD Suite 20261118 only. Power is **needs real board**. v0.1.19 and v0.1.22 designs and their recorded results stay byte-identical.
+
+**Design.** `scp4d_hybrid` instantiates `scp4d_ede` and `scp4d_fsd`, plus a selector, an output mux and a running event counter. Temporal-only is the default. `mode_relations` is wired to `scp4d_ede`. Full scan has no fan, so while `mode_relations` is 1 the selector stays on `ede`. The cycles column of the v0.1.22 table picks `ede` for low, medium and high, and `fsd` for very high, at ADDR_W 8, 10 and 12. The only runtime input is the previous frame's accepted events divided by `cfg_D`. The current frame's count is latched at eof and used for the next frame. The initial engine is `ede`, because the initial estimate 0.05 is the medium bin. Integer tests: very high when `events * 20 >= cfg_D * 7`, else high when `events * 10 >= cfg_D`, else medium when `events * 100 >= cfg_D * 3`, else low. A switch happens only at a frame boundary, and not after the last frame.
+
+**Switching cost.** The hybrid cycle counter includes every clock through `done`. While `ede` is selected, each event is also presented to `fsd` in that same cycle, so the code memory stays current and the extra cost is 0. An `ede` to `fsd` switch runs one masked `fsd` frame with no new events; those outputs are dropped and the host stalls. An `fsd` to `ede` switch soft-resets `ede`, replays the code mirror, and runs a masked eof. Reported evals omit compares during a masked sync or replay. Both engines stay in the netlist.
+
+**Fit.** Five seeds on LFE5U-45F, bound 7200 s, `--45k`, package CABGA381, router2, `--freq 12`, `--timing-allow-fail`. ADDR_W 8 is the default. ADDR_W 10 and 12 are placed only after that, serially, if time remains. Overhead is the hybrid's TRELLIS_COMB, LUT4, FF and DP16KD minus one seed-1 route of each engine at the same ADDR_W. Those two routes do not replace the committed ADDR_W 11 rows. 12F, 25F and 85F are one seed.
+
+**Correctness.** Icarus decision-change records match the shared-state model (`stepEde` / `stepFsd` for the engine chosen for that frame) on the existing K1 vectors and on the v0.1.22 held-out workload, seed 9, ADDR_W 8, 10 and 12.
+
+**Expected measurement.** Hybrid loses decisions/s per LUT to full scan, because the netlist contains full scan plus K1 plus the selector. The verdict still asks whether the held-out cycle count, switching cost included, is at most the better fixed engine.
+
+**Verdict.** **PASS** if all five seeds route, the records match, and held-out cycles win or tie at ADDR_W 8, 10 and 12. **MIXED** if the records match and at least three seeds route, but a seed misses or the cycles lose at a width. **FAIL** if fewer than three seeds route, the records do not match, or a frame is chosen from its own event count. If it cannot route, stop and report the demand. Do not change the flags.
+
+**Icarus.** 47 runs, decision records match the shared-state golden, including the held-out seed-9 workload. One switch on that workload (ede, then fsd for the very-high frames after the one-frame lag). Record: `fixtures/scp/v0123-hybrid-sim.json`.
+
+| ADDR_W | hybrid cycles | ede-only | fsd-only | hybrid evals |
+|---|---:|---:|---:|---:|
+| 8 | 17634 | 19040 | 36208 | 5040 |
+| 10 | 70146 | 75776 | 144608 | 20128 |
+| 12 | 140226 | 151488 | 289152 | 40256 |
+
+The fixed-engine columns are the exact model on the same tokens. Hybrid cycles are Icarus and include the masked sync. Hybrid is below ede-only, which is the better fixed engine, at all three widths.
+
+**45F. Verdict PASS.** All five seeds routed. `TRELLIS_COMB` is 1375. Median Fmax is 60.085323333740234 MHz, seed 2. Yosys started at 10:28:40 UTC and the fit finished at 10:29:19 UTC.
+
+| seed | status | wall clock (s) | Fmax (MHz) | TRELLIS_COMB |
+|---|---|---:|---:|---:|
+| 1 | routed | 4.18665 | 60.514373779296875 | 1375 |
+| 2 | routed | 3.97128 | 60.085323333740234 | 1375 |
+| 3 | routed | 3.90599 | 58.186893463134766 | 1375 |
+| 4 | routed | 3.76628 | 59.78715896606445 | 1375 |
+| 5 | routed | 4.43513 | 63.609188079833984 | 1375 |
+
+12F, 25F and 85F seed 1 all route. Smallest part is 12F. LUT4 demand is 1287. FF 762. `DP16KD` 7.
+
+**Overhead, ADDR_W 8.** Seed-1 routes of the two engines, same flags: ede 514 LUT4, 548 `TRELLIS_COMB`, 362 FF, 4 `DP16KD`; fsd 331 LUT4, 361 `TRELLIS_COMB`, 288 FF, 2 `DP16KD`. Sum 845 / 909 / 650 / 6. Hybrid minus that sum is 442 LUT4, 466 `TRELLIS_COMB`, 112 FF, 1 `DP16KD` (the code mirror). These two routes do not replace the ADDR_W 11 rows.
+
+**Decisions/s per LUT, held-out ADDR_W 8.** `(evals / cycles) × Fmax_MHz × 1e6 / TRELLIS_COMB`. Hybrid uses the five-seed median Fmax and its full 1375 COMB: 12489.510124121824. ede uses the seed-1 Fmax 68.80418395996094 and 548 COMB: 20574.15180057717. fsd uses the seed-1 Fmax 64.37491607666016 and 361 COMB: 80690.9589316513. Hybrid is below fsd, as the pre-registration expected, and below ede as well. That loss is not a FAIL. The v0.1.21 sweep stays **FAIL**. Power is **needs real board**.
+
+One ledger iteration, `hybrid_rtl`, not an autonomous capability. ADDR_W 10 and 12 were not placed.
