@@ -1,0 +1,57 @@
+{
+  "format": "scp4d-v0122-selector-prereg",
+  "version": 1,
+  "milestone": "v0.1.22",
+  "title": "Adaptive selector of K1 versus full scan",
+  "spec": "docs/design/4d-scp-architecture.md §29",
+  "label": "TEST ONLY. Committed before the selector is implemented or measured. The v0.1.21 sweep FAIL stands. This file does not claim a per-LUT win for K1. Power is needs real board. No other v0.1.22 fit threshold changes.",
+  "inputs": {
+    "allowed": ["ADDR_W", "running estimate of the previous frame's dirty fraction (events / D)"],
+    "forbidden": "The current frame's true churn, and any oracle that sees the frame being decided.",
+    "initial_estimate": 0.05,
+    "bins": [
+      { "id": "low", "fraction_lt": 0.03 },
+      { "id": "medium", "fraction_lt": 0.1 },
+      { "id": "high", "fraction_lt": 0.35 },
+      { "id": "very_high", "fraction_lt": null }
+    ]
+  },
+  "source": "fixtures/scp/v0121-sweep.json and fixtures/scp/v0121-sweep-cycles.json. Not a new place-and-route.",
+  "objectives": {
+    "decisions_per_s_per_lut": "Higher is better. Full scan's decisions/s per LUT is higher in every committed cell, so the table picks fsd in every cell. There is no K1 region for this objective.",
+    "evaluations": "Lower is better. This is a compute-work proxy, not energy. ede evals are lower in every committed cell, so the table picks ede everywhere.",
+    "cycles": "Lower is better, a latency proxy. ede has fewer cycles except at very_high, where fsd has fewer cycles, at ADDR_W 8, 10 and 12."
+  },
+  "table": [
+    { "addr_w": 8, "churn": "low", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 8, "churn": "medium", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 8, "churn": "high", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 8, "churn": "very_high", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "fsd" },
+    { "addr_w": 10, "churn": "low", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 10, "churn": "medium", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 10, "churn": "high", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 10, "churn": "very_high", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "fsd" },
+    { "addr_w": 12, "churn": "low", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 12, "churn": "medium", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 12, "churn": "high", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "ede" },
+    { "addr_w": 12, "churn": "very_high", "decisions_per_s_per_lut": "fsd", "evaluations": "ede", "cycles": "fsd" }
+  ],
+  "held_out": {
+    "seed": 9,
+    "note": "The v0.1.21 Icarus sweep used seed 1. Seed 9 is not that seed.",
+    "T": 64,
+    "pattern": ["low", "medium", "high", "very_high"],
+    "frames_per_level": 16,
+    "addr_w": [8, 10, 12],
+    "relations": false,
+    "threshold": 0
+  },
+  "comparison": "For each objective, the adaptive sum is compared with the better of the two single fixed engines on that whole workload. The adaptive sum is the chosen engine's evals or cycles. It is not required to beat an oracle that sees the current frame.",
+  "overhead": "Report the number of estimate updates and the fact that no RTL hybrid was built, so the selector adds no LUT. If an RTL hybrid is built later, its five-seed 45F TRELLIS_COMB is part of its cost and it does not run beside the loop seeds.",
+  "verdict": {
+    "PASS": "On every held-out ADDR_W, the adaptive cost is less than or equal to the best single fixed engine for every objective.",
+    "MIXED": "The adaptive cost matches or beats the best fixed engine on at least one objective and loses on another.",
+    "FAIL": "The adaptive cost loses to the best fixed engine on every objective, or a decision uses the current frame's true churn."
+  },
+  "ledger": "One iteration in fixtures/scp/optimization-ledger.jsonl. Not an established autonomous capability."
+}
