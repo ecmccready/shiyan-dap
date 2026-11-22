@@ -50,7 +50,7 @@ module wrap_fsd #(parameter integer A = 11) (
     .clk(clk), .d({out_elem, out_valid, out_decision, out_eof, err_code, evals, cycles}), .sig(sig));
 endmodule
 
-// v0.1.16 scp4d_tenc_q (W, L) -> v0.1.18 scp4d_tdec_s (same W) -> scp4d_k1_tap -> scp4d_ede.
+// v0.1.16 scp4d_tenc_q (W, L) -> v0.1.22 scp4d_tdec_s_w4_bram (same W) -> scp4d_k1_tap -> scp4d_ede.
 module wrap_loop_ede #(parameter integer W = 4, parameter integer L = 8, parameter integer A = 11) (
   input wire clk, input wire rst, input wire start, input wire cfg_bit,
   input wire signed [31:0] threshold, input wire [A:0] cfg_D,
@@ -62,7 +62,7 @@ module wrap_loop_ede #(parameter integer W = 4, parameter integer L = 8, paramet
   always @(posedge clk) begin cfg_sr <= {cfg_sr[133:0], cfg_bit}; x_sr <= {x_sr, x_pins}; end
   wire [8*W-1:0] sd; wire [2:0] sn; wire sv, dec_ready, bz, ed, ee; wire [4:0] ec; wire [A:0] cd;
   wire room;
-  scp4d_tenc_q #(.W(W), .L(L), .ADDR_W(A)) enc (.clk(clk), .rst(rst), .start(start),
+  scp4d_tenc_q_w4l8_bram #(.W(W), .L(L), .ADDR_W(A)) enc (.clk(clk), .rst(rst), .start(start),
     .cfg_nx(cfg_sr[15:0]), .cfg_ny(cfg_sr[31:16]), .cfg_nz(cfg_sr[47:32]), .cfg_c(cfg_sr[63:48]), .cfg_T(cfg_sr[95:64]),
     .cfg_G(cfg_sr[100:96]), .cfg_pred(cfg_sr[102:101]), .cfg_tm_len(cfg_sr[134:103]),
     .hdr_data(hdr_data), .hdr_nbytes(hdr_nbytes), .hdr_valid(hdr_valid), .hdr_ready(hdr_ready),
@@ -71,7 +71,7 @@ module wrap_loop_ede #(parameter integer W = 4, parameter integer L = 8, paramet
     .busy(bz), .done(ed), .err(ee), .err_code(ec), .cfg_D(cd));
   wire [W-1:0] ov, oe; wire [W*A-1:0] el; wire [W*32-1:0] oc; wire eof, uns, de; wire [4:0] dc;
   wire [31:0] hT, cons; wire [A:0] hD; wire [4:0] hG; wire [1:0] hp;
-  scp4d_tdec_s #(.W(W), .ADDR_W(A)) dec (.clk(clk), .rst(rst), .in_data(sd), .in_nbytes(sn), .in_valid(sv && room), .in_ready(dec_ready),
+  scp4d_tdec_s_w4_bram #(.W(W), .ADDR_W(A)) dec (.clk(clk), .rst(rst), .in_data(sd), .in_nbytes(sn), .in_valid(sv && room), .in_ready(dec_ready),
     .out_valid(ov), .out_elem(el), .out_code(oc), .out_event(oe), .out_eof(eof), .done(), .err(de), .unsupported(uns),
     .err_code(dc), .hdr_T(hT), .hdr_D(hD), .hdr_G(hG), .hdr_pred(hp), .consumed(cons));
   wire ede_valid, ede_ready, ede_event, ede_eof, ede_last, ede_out_valid, ede_out_dec, ede_out_eof, ede_done, ede_err, tap_overflow;
