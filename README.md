@@ -340,7 +340,7 @@ Each run needs a unique `run_id` (a reused one returns 409).
 
 ## Aethel Node hardware track
 
-Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industry-benchmark.md`, `docs/design/v0119-reproduce.md`, `docs/design/aethel-node-hardware-evidence-v1.md`, `docs/design/4d-scp-architecture.md` §25–§31, `docs/design/v0124-loop-profile.md`, and `hw/scp4d/README.md`.
+Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industry-benchmark.md`, `docs/design/v0119-reproduce.md`, `docs/design/aethel-node-hardware-evidence-v1.md`, `docs/design/4d-scp-architecture.md` §25–§32, `docs/design/v0124-loop-profile.md`, and `hw/scp4d/README.md`.
 
 ### Vantage points
 
@@ -358,7 +358,8 @@ Measured differentiators so far:
 - Closed loop (tenc_q -> tdec_s -> K1) routes on the ECP5 45F on all five seeds after trim, five-seed median 35.10 MHz; decoder codes and K1 decision records are bit-exact against the golden model in Icarus simulation.
 - K1 temporal path vs full scan on env T64: about 79% fewer evaluations (27,590 vs 131,072) and about 43% fewer cycles (167,716 vs 291,910).
 - Adaptive selector (model level) matches or beats the best fixed engine per objective on a held-out mixed-churn workload: ties full scan on decisions/s per LUT, ties K1 on evaluations, about 10% fewer cycles than the best fixed engine.
-- v0.1.24 pipelined closed loop wall cycles are 16253 / 64527 / 129723 at ADDR_W 8 / 10 / 12, under both the profile K1 loop and the full-scan loop, with matching decision sets. Decisions/s per LUT is 150.30925359248772, below standalone full scan 71397.91807427029.
+- v0.1.24 pipelined closed loop wall cycles are 16253 / 64527 / 129723 at ADDR_W 8 / 10 / 12, under both the profile K1 loop and the full-scan loop, with matching decision sets. Its selector never ran a full scan, and median Fmax fell from 35.09634017944336 MHz to 30.498031616210938 MHz. Decisions/s per LUT is 150.30925359248772, below standalone full scan 71397.91807427029.
+- v0.1.25 is pure pipelined K1, not a hybrid. Held-out wall time is 428.408353 / 1702.959737 / 3428.571671 µs at ADDR_W 8 / 10 / 12, under the bare pipelined-K1 loop, the old K1 loop, and a pure full-scan loop. Median Fmax is 38.318580627441406 MHz. Full-scan frames on that loop are 0.
 - Reproducible evidence package: pinned toolchain, seeds, sha256 manifest with a stale-hash check, reproduce guides.
 - Not claimed: K1 does not beat full scan on decisions/s per LUT (v0.1.21 sweep FAIL, best 0.34x). Power: needs real board.
 
@@ -366,7 +367,7 @@ Measured differentiators so far:
 
 Primary target: Lattice ECP5 (LFE5U-45F main; 12F/25F/85F for fit checks).
 Toolchain: OSS CAD Suite 20261118 (Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, Project Trellis), Icarus Verilog for bit-exact regression.
-Current density: v0.1.24 pipelined loop at 31,567 TRELLIS_COMB (about 72% of the 45F's 43,848). The post-trim K1 loop is 30,888.
+Current density: v0.1.25 retimed loop at 32,497 TRELLIS_COMB (about 74% of the 45F's 43,848). The v0.1.24 pipe is 31,567. The post-trim K1 loop is 30,888.
 
 ### Build summary
 
@@ -378,11 +379,12 @@ Current density: v0.1.24 pipelined loop at 31,567 TRELLIS_COMB (about 72% of the
 | v0.1.21 | K1 loop fit + K1 vs full-scan sweep | loop 41,217 TRELLIS_COMB, routed 1 of 5 seeds (31.37 MHz); sweep FAIL, best ratio 0.34x |
 | v0.1.22 | Trimmed loop + adaptive selector | 30,888 TRELLIS_COMB, 5 of 5 seeds, median 35.10 MHz (32.82-35.38); selector PASS (model level); trimmed encoder variant costs 78% more encoder cycles (18,527 -> 33,032) with loop cycles nearly unchanged (197,870 -> 197,970) |
 | v0.1.23 | Hybrid engine and closed loop | ADDR_W 8/10/12: TRELLIS_COMB 1,375 / 1,523 / 1,610, medians 60.085323333740234 / 59.64807891845703 / 57.91728973388672 MHz, smallest 12F. Hybrid loop: 32,128 TRELLIS_COMB, median 31.92440414428711 MHz, smallest 45F. Cycle verdict MIXED: wall cycles 20,808 / 82,683 / 166,120 versus the trimmed ede loop 18,643 / 74,342 / 149,496. Decision sets match |
-| v0.1.24 | Pipelined K1 closed loop | Wall cycles 16,253 / 64,527 / 129,723 at ADDR_W 8/10/12, under the profile K1 loop (18,643 / 74,342 / 149,496) and the full-scan loop (40,767 / 163,151 / 326,734). Decision sets match. 5 of 5 45F seeds, 31,567 TRELLIS_COMB, 48 DP16KD, median 30.498031616210938 MHz (seed 1), smallest 45F. Decisions/s per LUT 150.30925359248772, below standalone full scan 71,397.91807427029. Verdict PASS on the locked cycle and fit rules |
+| v0.1.24 | Pipelined K1 closed loop | Wall cycles 16,253 / 64,527 / 129,723 at ADDR_W 8/10/12, under the profile K1 loop (18,643 / 74,342 / 149,496) and the full-scan loop (40,767 / 163,151 / 326,734). Decision sets match. 5 of 5 45F seeds, 31,567 TRELLIS_COMB, 48 DP16KD, median 30.498031616210938 MHz (seed 1), smallest 45F. The selector never ran a full scan. Decisions/s per LUT 150.30925359248772, below standalone full scan 71,397.91807427029. Verdict PASS on the locked cycle rule. Wall time stayed near the old 35.10 MHz loop because the clock fell |
+| v0.1.25 | Wall time, pure pipelined K1 | Not a hybrid (0 full-scan frames). Wall time 428.408353 / 1702.959737 / 3428.571671 µs at ADDR_W 8/10/12, under the bare pipelined-K1 loop (508.836007 / 2024.605913 / 4071.567204), the old K1 loop (531.194988 / 2118.226562 / 4259.589440) and the full-scan loop (1213.837365 / 4857.820786 / 9728.504372). Median 38.318580627441406 MHz, 32,497 TRELLIS_COMB, 39 DP16KD, smallest 45F. Decisions/s per LUT 181.13722038937402, still below standalone full scan. Verdict PASS |
 
 ### Recommendations
 
-1. The v0.1.24 loop beats both closed-loop baselines on wall cycles and loses on decisions/s per LUT. That held-out set is closed; a further selector or pipeline change needs a new pre-registration.
+1. v0.1.25 wins held-out wall time as pure pipelined K1. It is not a hybrid win: full scan still does not run on this closed loop. A selector change needs a new pre-registration. The loop still loses decisions/s per LUT to standalone full scan.
 2. Metric discipline: keep decisions/s per LUT, evaluations (a compute-work proxy, not energy) and cycles as separate objectives; pre-register every threshold; keep negative results (v0.1.21 FAIL) in the record.
 3. Power board: measure power on a Lattice ECP5 Versa or equivalent 45F/85F board; until then power stays needs real board, with no estimates.
 4. Next scale: extend the K1 vs full-scan sweep to larger state sizes (85F where the 45F runs out) and recover the encoder throughput given up by the trimmed variant.

@@ -1,0 +1,55 @@
+{
+  "seed": 1,
+  "part": "12F",
+  "device": "LFE5U-12F",
+  "mode": "route",
+  "command": [
+    "nextpnr-ecp5",
+    "--12k",
+    "--package",
+    "CABGA381",
+    "--json",
+    "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/loop-k1fast-w4l8/n.json",
+    "--lpf-allow-unconstrained",
+    "--freq",
+    "12",
+    "--router",
+    "router2",
+    "--seed",
+    "1",
+    "--timing-allow-fail",
+    "--report",
+    "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-k1fast-w4l8/12F-route-seed1.report.json"
+  ],
+  "command_sha256": "d00f21e46bbced6a4674c55d54b288e904b7a704149ecf67ff6472540006a32b",
+  "wall_clock_s": 28.5616,
+  "exit_code": 125,
+  "status": "does_not_fit",
+  "not_completed_within_s": null,
+  "fmax_mhz": null,
+  "fmax_clocks": null,
+  "utilization": null,
+  "lut": null,
+  "ff": null,
+  "bram": null,
+  "dsp": null,
+  "demand": {
+    "lut4": {
+      "used": 31263,
+      "available": 24288
+    },
+    "trellis_comb": {
+      "used": 32497,
+      "available": 24288
+    },
+    "trellis_ff": {
+      "used": 9988,
+      "available": 24288
+    }
+  },
+  "error": "ERROR: Unable to find legal placement for all cells, design is probably at utilisation limit.",
+  "report_path": null,
+  "report_sha256": null,
+  "netlist_sha256": "a28ec77759111ec28b7d3c529a3a6f6c4b9f4e85184a9ed51733c3339bd7ea41",
+  "log_sha256": "e2c5197005b85b9c9c78beba40f7399cf9afe8e12a22ab8d9eec44a1b096d099"
+}
