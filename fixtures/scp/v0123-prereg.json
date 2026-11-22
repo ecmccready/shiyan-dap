@@ -1,0 +1,73 @@
+{
+  "format": "scp4d-v0123-prereg",
+  "version": 1,
+  "milestone": "v0.1.23",
+  "title": "Hybrid RTL: K1 and full scan with a frame-boundary selector",
+  "spec": "docs/design/4d-scp-architecture.md §30",
+  "branch": "cursor/scp-v0123-hybrid-rtl-784b",
+  "label": "TEST ONLY. Committed before scp4d_hybrid is written and before any hybrid simulation or place-and-route. Power is needs real board. v0.1.19 and v0.1.22 RTL and their recorded results stay byte-identical. No flag or bound changes. The v0.1.21 per-LUT FAIL stands.",
+  "toolchain": {
+    "only": "OSS CAD Suite 20261118",
+    "yosys": "0.71+50 583f380c6",
+    "nextpnr_ecp5": "0.11.1-103-ge811ba48",
+    "refuse_other": true
+  },
+  "design": {
+    "module": "scp4d_hybrid",
+    "composition": "scp4d_ede + scp4d_fsd + selector + output mux + running dirty counter",
+    "default": "temporal-only",
+    "relations": "mode_relations is wired to scp4d_ede. fsd has no fan. While mode_relations is 1 the selector stays on ede and does not switch.",
+    "objective": "cycles",
+    "table": "The cycles column of fixtures/scp/v0122-selector-prereg.json. That column is the same at ADDR_W 8, 10 and 12: ede for low, medium and high; fsd for very_high.",
+    "inputs": ["ADDR_W (module parameter)", "running dirty fraction = previous frame's accepted events / cfg_D"],
+    "forbidden": "The current frame's event count is not an input. It is latched at the frame's eof and used only for the next frame.",
+    "initial_engine": "ede. The v0.1.22 initial estimate 0.05 is the medium bin, and medium picks ede. No fake event count is loaded.",
+    "bins_integer": {
+      "note": "Rational form of the v0.1.22 thresholds (fraction < 0.03 low, < 0.1 medium, < 0.35 high, else very_high). Held-out fractions 0.01, 0.05, 0.2 and 0.5 sit inside the bins, so the integer test and the JS test pick the same bin on that workload.",
+      "very_high": "events * 20 >= cfg_D * 7",
+      "high": "events * 10 >= cfg_D",
+      "medium": "events * 100 >= cfg_D * 3",
+      "low": "otherwise"
+    },
+    "switch": "Only at a frame boundary, after the active engine's eof, and only when the frame is not the last frame."
+  },
+  "switching_cost_model": {
+    "clocks": "The hybrid cycle counter counts every clock from reset release through the clock that raises done, including clear, the active engine, and any sync or replay below.",
+    "same_engine": "0 extra cycles. While ede is selected, each accepted event is also presented to fsd in that same cycle (fsd stays in IDLE and updates its code memory). fsd does not receive eof.",
+    "ede_to_fsd": "One masked fsd frame with no new events and in_last = 0. fsd's code memory is already current. The masked scan writes fsd's decision memory. out_valid and out_eof of that frame are dropped. The host is stalled (in_ready = 0) until fsd returns to IDLE.",
+    "fsd_to_ede": "ede is soft-reset (its CLEAR, cfg_D cycles) and then each address of a hybrid code mirror is read. A non-zero code is presented to ede as an event. A masked eof follows. Outputs of the reset, the replay and the masked eof are dropped. The host is stalled until ede is back in IDLE.",
+    "evals": "Reported evals are the active engine's threshold compares on visible frames. Compares during a masked sync or replay are not added.",
+    "area": "Both engines, the mux, the counter and the code mirror are in the netlist. There is no clock gate that removes an engine's LUTs."
+  },
+  "fit": {
+    "part": "LFE5U-45F",
+    "package": "CABGA381",
+    "seeds": [1, 2, 3, 4, 5],
+    "bound_s": 7200,
+    "flags": "--45k --package CABGA381 --lpf-allow-unconstrained --freq 12 --router router2 --timing-allow-fail",
+    "addr_w_default": 8,
+    "addr_w_also": "10 and 12 only if the ADDR_W 8 five-seed run has finished and time remains. Serial. Never beside another nextpnr.",
+    "success": "All five seeds place and route. Selector, mux and counter logic are inside the TRELLIS_COMB, LUT4, FF and DP16KD totals.",
+    "overhead": "Hybrid resources minus the sum of one seed-1 route of scp4d_ede and one seed-1 route of scp4d_fsd at the same ADDR_W, same flags. Those two routes are new files. They do not replace the committed ADDR_W 11 ede-temporal and fsd rows.",
+    "other_parts": "12F, 25F and 85F, seed 1, pack then route, same as v0.1.19. Not a five-seed median."
+  },
+  "correctness": {
+    "golden": "Shared decision state. Each frame runs stepEde or stepFsd from scripts/scp-v0120-ede-model.ts, chosen by the cycles table from the previous frame's event count. Decision-change records must match, including element and decision.",
+    "vectors": "The existing K1 temporal vectors used by scripts/check-scp-v0120-rtl.ts, plus the v0.1.22 held-out mixed-churn workload (seed 9, T = 64, 16 frames each of low, medium, high, very_high, ADDR_W 8, 10 and 12, relations off, threshold 0).",
+    "simulator": "Icarus Verilog from OSS CAD Suite 20261118."
+  },
+  "measurement": {
+    "not_the_only_gate": "Cycles and decisions/s per LUT are pre-stated here and are part of the verdict below.",
+    "cycles": "Held-out workload, hybrid versus ede-only versus fsd-only, switching cost included in the hybrid count.",
+    "decisions_per_s_per_lut": "(evals / cycles) * five-seed 45F median Fmax_MHz * 1e6 / TRELLIS_COMB of the median-Fmax seed. Hybrid evals are the visible compares. Hybrid COMB is the full hybrid total, not the selected engine's COMB.",
+    "expected": "Hybrid loses decisions/s per LUT to fsd, because the netlist contains fsd plus ede plus the selector. That loss is expected and is not by itself a FAIL. The open question is whether the held-out cycle count, with the switching cost above, is still less than or equal to the better fixed engine."
+  },
+  "verdict": {
+    "PASS": "All five 45F seeds route, decision records match the golden on the existing K1 vectors and on the held-out workload at ADDR_W 8, 10 and 12, and held-out hybrid cycles are less than or equal to the better of ede-only and fsd-only at every one of those widths.",
+    "MIXED": "Records match and at least three seeds route, but either some seed does not route or hybrid cycles lose to the better fixed engine at one or more held-out widths.",
+    "FAIL": "Fewer than three seeds route, or the decision records do not match the golden, or a frame's engine is chosen from that frame's own event count."
+  },
+  "stop_rule": "If the trim of flags would be required to route, stop. Report the best demand and the per-seed outcomes. Do not change the bound or the router flags.",
+  "ledger": "One iteration in fixtures/scp/optimization-ledger.jsonl. Not an established autonomous capability.",
+  "power": "needs real board"
+}
