@@ -2089,6 +2089,22 @@ Decisions/s per LUT of the candidate, ADDR_W 12 (20182 evals, 131378 cycles), th
 
 ## 33. v0.1.26: adaptive hybrid wall time (`v0126`)
 
-**Status.** The rule below is locked in `fixtures/scp/v0126-prereg.json` before any held-out measurement. Training is `fixtures/scp/v0126-train.json`. Power is **needs real board**. v0.1.19 through v0.1.25 RTL stay byte-identical.
+**Status.** Measured. Verdict **STOP**. The rule is locked in `fixtures/scp/v0126-prereg.json`, committed before the held-out run. Training is `fixtures/scp/v0126-train.json`. The held-out result is `fixtures/scp/v0126-heldout.json`. Power is **needs real board**. v0.1.19 through v0.1.25 RTL stay byte-identical.
 
 Training seed 4, fractions 0.02, 0.08, 0.15, 0.35, 0.45 and 0.55, eight frames each, behind the v0.1.25 retimed decoder. Full scan had more closed-loop wall cycles than pipelined K1 on every band, at ADDR_W 8, 10 and 12. The frozen selector therefore does not choose full scan. Held-out is seed 9 and fractions 0.01, 0.05, 0.2 and 0.5. Those grids are not in the training file.
+
+**Held-out.** The selector chose 0 full-scan frames and 0 switches at ADDR_W 8, 10 and 12. All 64 frames at each width used pipelined K1. Decision sets match that golden. Cycles are 16463, 65302 and 131426, which is 47, 47 and 48 above the pure pipelined-K1 loop. The threshold was not changed.
+
+**Place and route of `loop-hyfast-w4l8`.** Five of five 45F seeds routed. Fmax 34.431705474853516, 36.759300231933594, 33.60892868041992, 35.78841781616211, 37.5939826965332 MHz. Median 35.78841781616211 MHz (seed 4). `TRELLIS_COMB` 34005, `DP16KD` 48, flip-flops 10386. Seed walls 149.723, 140.042, 185.263, 164.255, 143.925 s. 12F and 25F do not place. 85F seed 1 routed at 36.00749206542969 MHz in 134.721 s. Smallest part 45F.
+
+**Critical path.** The median seed starts at `dec.rq_cnt` and ends at `dec.rq[3]`, 27.942 ns. The cells are in the retimed decoder, not in the selector or the full-scan engine. Carrying that engine still moved the median from 38.318580627441406 MHz on `loop-k1fast-w4l8` to 35.78841781616211 MHz.
+
+**Wall time, microseconds.** The candidate is above pipelined K1 at every width.
+
+| ADDR_W | hybrid | pipelined K1 | full scan |
+| --- | --- | --- | --- |
+| 8 | 460.009160 | 428.408353 | 1213.837365 |
+| 10 | 1824.668538 | 1702.959737 | 4857.820786 |
+| 12 | 3672.305400 | 3428.571671 | 9728.504372 |
+
+Decisions/s per LUT is 161.61535904904028, below the pure pipelined-K1 loop at 181.13722038937402 and below standalone full scan at 71397.91807427029. The v0.1.21 sweep stays **FAIL**. No second threshold was tried.
