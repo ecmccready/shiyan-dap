@@ -22,34 +22,157 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed2.report.json"
   ],
   "command_sha256": "9abcd9c675a650b447501b4706aeaf4128093d0b14c8b4969058ae6b201c8457",
-  "wall_clock_s": 7200.09,
-  "exit_code": 124,
-  "status": "not_completed",
-  "not_completed_within_s": 7200,
-  "fmax_mhz": null,
-  "fmax_clocks": null,
-  "utilization": null,
-  "lut": null,
-  "ff": null,
-  "bram": null,
-  "dsp": null,
+  "wall_clock_s": 126.998,
+  "exit_code": 0,
+  "status": "routed",
+  "not_completed_within_s": null,
+  "fmax_mhz": 35.2435302734375,
+  "fmax_clocks": {
+    "$glbnet$clk$TRELLIS_IO_IN": 35.2435302734375
+  },
+  "utilization": {
+    "ALU54B": {
+      "used": 0,
+      "available": 36
+    },
+    "CLKDIVF": {
+      "used": 0,
+      "available": 4
+    },
+    "DCCA": {
+      "used": 1,
+      "available": 56
+    },
+    "DCSC": {
+      "used": 0,
+      "available": 2
+    },
+    "DCUA": {
+      "used": 0,
+      "available": 2
+    },
+    "DDRDLL": {
+      "used": 0,
+      "available": 4
+    },
+    "DLLDELD": {
+      "used": 0,
+      "available": 8
+    },
+    "DP16KD": {
+      "used": 39,
+      "available": 108
+    },
+    "DQSBUFM": {
+      "used": 0,
+      "available": 10
+    },
+    "DTR": {
+      "used": 0,
+      "available": 1
+    },
+    "ECLKBRIDGECS": {
+      "used": 0,
+      "available": 2
+    },
+    "ECLKSYNCB": {
+      "used": 0,
+      "available": 10
+    },
+    "EHXPLLL": {
+      "used": 0,
+      "available": 4
+    },
+    "EXTREFB": {
+      "used": 0,
+      "available": 2
+    },
+    "GND": {
+      "used": 1,
+      "available": 1
+    },
+    "GSR": {
+      "used": 0,
+      "available": 1
+    },
+    "IOLOGIC": {
+      "used": 0,
+      "available": 160
+    },
+    "JTAGG": {
+      "used": 0,
+      "available": 1
+    },
+    "MULT18X18D": {
+      "used": 2,
+      "available": 72
+    },
+    "OSCG": {
+      "used": 0,
+      "available": 1
+    },
+    "PCSCLKDIV": {
+      "used": 0,
+      "available": 2
+    },
+    "SEDGA": {
+      "used": 0,
+      "available": 1
+    },
+    "SIOLOGIC": {
+      "used": 0,
+      "available": 85
+    },
+    "TRELLIS_COMB": {
+      "used": 30888,
+      "available": 43848
+    },
+    "TRELLIS_ECLKBUF": {
+      "used": 0,
+      "available": 8
+    },
+    "TRELLIS_FF": {
+      "used": 9983,
+      "available": 43848
+    },
+    "TRELLIS_IO": {
+      "used": 141,
+      "available": 245
+    },
+    "TRELLIS_RAMW": {
+      "used": 0,
+      "available": 5481
+    },
+    "USRMCLK": {
+      "used": 0,
+      "available": 1
+    },
+    "VCC": {
+      "used": 1,
+      "available": 1
+    }
+  },
+  "lut": 30888,
+  "ff": 9983,
+  "bram": 39,
+  "dsp": 2,
   "demand": {
     "lut4": {
-      "used": 39397,
+      "used": 29666,
       "available": 43848
     },
     "trellis_comb": {
-      "used": 41217,
+      "used": 30888,
       "available": 43848
     },
     "trellis_ff": {
-      "used": 12978,
+      "used": 9983,
       "available": 43848
     }
   },
   "error": null,
-  "report_path": null,
-  "report_sha256": null,
-  "netlist_sha256": "144e6a130e5b891410999fd3aa378514d301a8bab3411a2bf31df9aec94c8945",
-  "log_sha256": "d29bccf0d40292ccfae6011d3c73282b7158fe6928dc78aff099af10bc515dc1"
+  "report_path": "fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed2.report.json",
+  "report_sha256": "071a77d8a4a54d860f183dffc3710aedb3ad9d511bcf40f91aeb46fb015309c0",
+  "netlist_sha256": "319961c46aeacda61c33929a7eabcc5daa272887ecef5e86d250e977c3bf3900",
+  "log_sha256": "2a11c27a91c025caca360e29b305fc107f0d81277b6b131a0d81fd455cef5636"
 }

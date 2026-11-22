@@ -1,0 +1,27 @@
+{
+  "format": "scp4d-v0122-variant-cycles",
+  "label": "Icarus. Decoder variant cycles match scp4d_tdec_s. Encoder variant is byte-exact and takes more cycles because each L=8 beat is two L=4 beats. Power is needs real board.",
+  "decoder": "cycle-identical to scp4d_tdec_s on medicare-6 and env T64",
+  "encoder": [
+    {
+      "id": "medicare-6",
+      "old_cycles": 59,
+      "new_cycles": 59
+    },
+    {
+      "id": "env-16x16x2-T64-temporal-last",
+      "old_cycles": 18527,
+      "new_cycles": 33032
+    }
+  ],
+  "loop_env_t64": {
+    "cycles": 33042,
+    "mismatches": 0
+  },
+  "k1_pipe_env_t64": {
+    "old_cycles": 197870,
+    "new_cycles": 197970,
+    "ede_cycles": 167716,
+    "evals": 27590
+  }
+}

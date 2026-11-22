@@ -1,0 +1,108 @@
+{
+  "format": "scp4d-v0122-hierarchy-stat",
+  "label": "Yosys synth_ecp5 -noflatten of wrap_loop_ede W=4 L=8 A=11. Cells are those inside each module; a submodule's cells are not counted again in the parent. This is not the flattened nextpnr TRELLIS_COMB. Power is needs real board.",
+  "tools": {
+    "yosys": "Yosys 0.71+50 (git sha1 583f380c6, Release, Clang /usr/bin/clang++ 21.1.8)",
+    "oss_cad_suite": "20261118"
+  },
+  "top": "wrap_loop_ede",
+  "parameters": {
+    "W": 4,
+    "L": 8,
+    "A": 11
+  },
+  "command": "synth_ecp5 -top wrap_loop_ede -noflatten; stat -json",
+  "flattened_v0121_committed": {
+    "note": "Committed v0.1.21 flattened synth of the same wrapper. Not re-measured here.",
+    "LUT4": 30535,
+    "DP16KD": 46,
+    "TRELLIS_FF": 12978,
+    "nextpnr_TRELLIS_COMB": 41217
+  },
+  "modules": [
+    {
+      "module": "scp4d_tenc_q",
+      "num_cells": 26171,
+      "LUT4": 13433,
+      "TRELLIS_FF": 7845,
+      "DP16KD": 25,
+      "PFUMX": 2410,
+      "L6MUX21": 167,
+      "CCU2C": 2290,
+      "MULT18X18D": 1
+    },
+    {
+      "module": "scp4d_tdec_s",
+      "num_cells": 17460,
+      "LUT4": 11125,
+      "TRELLIS_FF": 2815,
+      "DP16KD": 8,
+      "PFUMX": 2229,
+      "L6MUX21": 33,
+      "CCU2C": 1249,
+      "MULT18X18D": 1
+    },
+    {
+      "module": "scp4d_k1_tap",
+      "num_cells": 1143,
+      "LUT4": 427,
+      "TRELLIS_FF": 640,
+      "DP16KD": 5,
+      "PFUMX": 30,
+      "L6MUX21": 13,
+      "CCU2C": 28,
+      "MULT18X18D": 0
+    },
+    {
+      "module": "scp4d_ede",
+      "num_cells": 1222,
+      "LUT4": 531,
+      "TRELLIS_FF": 487,
+      "DP16KD": 14,
+      "PFUMX": 78,
+      "L6MUX21": 22,
+      "CCU2C": 90,
+      "MULT18X18D": 0
+    },
+    {
+      "module": "wrap_loop_ede",
+      "num_cells": 394,
+      "LUT4": 3,
+      "TRELLIS_FF": 391,
+      "DP16KD": 0,
+      "PFUMX": 0,
+      "L6MUX21": 0,
+      "CCU2C": 0,
+      "MULT18X18D": 0
+    },
+    {
+      "module": "N=s32'00000000000000000000000100100000",
+      "num_cells": 454,
+      "LUT4": 121,
+      "TRELLIS_FF": 304,
+      "DP16KD": 0,
+      "PFUMX": 25,
+      "L6MUX21": 4,
+      "CCU2C": 0,
+      "MULT18X18D": 0
+    },
+    {
+      "module": "scp4d_fe_r",
+      "num_cells": 13533,
+      "LUT4": 9348,
+      "TRELLIS_FF": 1060,
+      "DP16KD": 0,
+      "PFUMX": 2047,
+      "L6MUX21": 308,
+      "CCU2C": 770,
+      "MULT18X18D": 0
+    }
+  ],
+  "register_memories": [
+    "scp4d_fe_r tq, bq, cand, ccnt, ne",
+    "scp4d_tdec_s rq, rec_r, rcand, rccnt, c_rec, trec and the per-token arrays",
+    "scp4d_k1_tap lane_code, lane_elem",
+    "scp4d_tenc_q bq"
+  ],
+  "bank_note": "select *bank* matched 0 cells after techmap. tdec_s contains 8 DP16KD, which is 4 banks times mh1 and mh2 (512x32). The v0.1.21 12F/25F placer named dec.bank[2].tB_dq, a 48-bit pipeline register in that generate, after the design asked for 41217 TRELLIS_COMB against 24288 available."
+}

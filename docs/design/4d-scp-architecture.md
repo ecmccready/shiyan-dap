@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29).
 
 **Reproduce.**
 
@@ -1892,3 +1892,49 @@ decisions/s per LUT is `(evals / cycles) × median Fmax_MHz × 1e6 / TRELLIS_COM
 | 12 | very_high | 17017.165871207482 | 61239.16651644512 | 0.27788042913088484 |
 
 K1 wins no cell. The highest ratio is 0.3362874584321748, at ADDR_W 10 and very high churn. There is no crossover at 1.0×. The pre-registered verdict is **FAIL**. Power is **needs real board**.
+
+## 29. v0.1.22: K1 closed loop routes on the 45F with five seeds (draft)
+
+**Status of this section.** The fit rule was locked in `fixtures/scp/v0122-prereg.json` before the measurements below. v0.2 stays reserved for the first product-facing page. Files use the tag `v0122`. The branch is `cursor/scp-v0122-k1-loop-route-784b`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). Power is **needs real board**. The v0.1.21 sweep verdict stays **FAIL**. This milestone does not claim a per-LUT win for K1. No other threshold changes.
+
+**Fit goal.** `loop-ede-w4l8` (`tenc_q` → `tdec_s` → `scp4d_ede`) routes on LFE5U-45F for seeds 1, 2, 3, 4 and 5. Same seeds, same 7200 s bound, same router and flags as v0.1.19 and v0.1.21 (`--45k`, package CABGA381, router2, `--freq 12`, `--timing-allow-fail`, `--lpf-allow-unconstrained`). Target `TRELLIS_COMB` ≤ 37270, which is 85% of 43848. A five-seed median Fmax is reported only when all five seeds route. Decoder codes and K1 decision records stay bit-exact with the golden model. Temporal-only stays the default. Relations stay behind the mode bit.
+
+**Verdict (locked).** **PASS** if all five seeds route and `TRELLIS_COMB` ≤ 37270. **MIXED** if at least three of five seeds route, or if all five route but `TRELLIS_COMB` is above 37270. **FAIL** otherwise. If the trim cannot reach 37270, or the five seeds do not route, the run stops and reports the best demand and the per-seed outcomes. The bound and the flags stay as registered.
+
+**Allowed trims, in this order.** Move register-file and bank storage in the W=4 decoder and the W=4 encoder into `DP16KD` (the 45F has 108; the v0.1.21 loop uses 46). Share or time-multiplex duplicated per-lane logic. Shrink the `k1_tap` queue further. A trim that changes cycle behaviour or outputs ships as a new named variant (`scp4d_tdec_s_w4_bram` or `scp4d_tenc_q_w4l8_bram`) with its own golden vectors and an Icarus bit-exact check. The v0.1.19 designs and their recorded results stay byte-identical. Any variant reports its env T64 cycle count honestly. Power is **needs real board**.
+
+**Where the cells are (measured, `synth_ecp5 -noflatten`, W=4 L=8 A=11).** Record: `fixtures/scp/v0122-hierarchy-stat.json`. A submodule's cells are not counted again in its parent. This is not the flattened nextpnr `TRELLIS_COMB`. The committed v0.1.21 flattened netlist of the same wrapper is 30535 LUT4, 46 `DP16KD`, 12978 `TRELLIS_FF`, and the pack log asked for 41217 `TRELLIS_COMB`.
+
+| module | LUT4 | TRELLIS_FF | DP16KD |
+|---|---:|---:|---:|
+| scp4d_tenc_q | 13433 | 7845 | 25 |
+| scp4d_tdec_s (not including the front end) | 11125 | 2815 | 8 |
+| scp4d_fe_r (the decoder front end) | 9348 | 1060 | 0 |
+| scp4d_k1_tap | 427 | 640 | 5 |
+| scp4d_ede | 531 | 487 | 14 |
+| scp4d_fold16 | 121 | 304 | 0 |
+| wrap_loop_ede glue | 3 | 391 | 0 |
+
+`select *bank*` matched 0 cells after technology mapping. The 8 `DP16KD` inside `scp4d_tdec_s` are the four banks' `mh1` and `mh2` memories (512×32). The v0.1.21 12F/25F placer named `dec.bank[2].tB_dq`, which is the 48-bit pipeline register in that generate, after the design asked for 41217 `TRELLIS_COMB` against 24288 available. Yosys replaced these memories with registers because they are read at more than one address in a cycle: `scp4d_fe_r` `tq`, `bq`, `cand`, `ccnt`, `ne`; `scp4d_tdec_s` `rq`, `rec_r`, `rcand` and the per-token arrays; `scp4d_k1_tap` `lane_code`, `lane_elem`; `scp4d_tenc_q` `bq`. The encoder and decoder state banks that have one synchronous address are already `DP16KD`.
+
+**Selector (pre-registered, not yet measured).** `fixtures/scp/v0122-selector-prereg.json`. The only inputs are `ADDR_W` and a running estimate of the previous frame's dirty fraction. The current frame's true churn is not an input. The table is taken from the committed v0.1.21 sweep. On decisions/s per LUT, full scan won every cell, so that objective picks `fsd` everywhere. There is no K1 region for that objective. Evaluations, a compute-work proxy and not energy, are lower for `ede` in every cell, so that objective picks `ede` everywhere. Cycles are lower for `ede` except at very high churn, where `fsd` is lower at ADDR_W 8, 10 and 12. The held-out workload is seed 9, 16 frames at each of low, medium, high and very high. **PASS** if the adaptive cost matches or beats the best single fixed engine on every objective at every held-out width. **MIXED** if that is true for some objective and not another. **FAIL** if it loses on every objective, or a decision sees the current frame. This does not change the loop fit rule above. Power is **needs real board**.
+
+**Trim.** Two new modules. `scp4d_tdec_s_w4_bram` uses `scp4d_fe_r_share`: one token-queue shift and one record-queue shift, instead of a candidate queue per pop count. It is cycle-identical to `scp4d_tdec_s` (env T64 decoder cycles 15197, the v0.1.18 model). `scp4d_tenc_q_w4l8_bram` keeps the L=8 ports and feeds an unchanged L=4 `scp4d_tenc_q`, two beats per wide input. Bytes match the golden model. Encoder cycles on env T64 go from 18527 to 33032. The encode-decode loop goes from the v0.1.18 19048 cycles to 33042. The concurrent K1 pipe, same machine, goes from 197870 to 197970 cycles. EDE cycles stay 167716 and evals stay 27590, so the pipe is still limited by the decision engine. `scp4d_tenc_q.v`, `scp4d_tdec_s.v` and `scp4d_fe_r.v` are byte-identical to their committed reports. The v0.1.19 designs are untouched.
+
+Hierarchical LUT4 after the trim, same `synth_ecp5 -noflatten` flow: `scp4d_tenc_q` inside the variant 9569 (was 13433) plus 153 in the splitter; `scp4d_fe_r_share` 8130 (the old front end was 9348); `scp4d_tdec_s_w4_bram` 8809 (was 11125) and still 8 `DP16KD` for the banks; `scp4d_k1_tap` unchanged at 427 LUT4 and 5 `DP16KD`; `scp4d_ede` 539 LUT4 and 14 `DP16KD`. Flattened Yosys LUT4 of the loop is 23638. The banks were already block RAM, so the area cut is the shared queues and the half-width encoder, not a new memory mapping.
+
+**45F result. Verdict PASS.** All five seeds routed. `TRELLIS_COMB` is 30888, which is under 37270. Median Fmax is 35.09634017944336 MHz, the middle of the five, seed 4. The run started at 08:59:12 UTC and finished the fit pass at 09:14:30 UTC.
+
+| seed | status | wall clock (s) | Fmax (MHz) | TRELLIS_COMB |
+|---|---|---:|---:|---:|
+| 1 | routed | 138.958 | 32.817012786865234 | 30888 |
+| 2 | routed | 126.998 | 35.2435302734375 | 30888 |
+| 3 | routed | 123.142 | 34.36898422241211 | 30888 |
+| 4 | routed | 146.284 | 35.09634017944336 | 30888 |
+| 5 | routed | 139.907 | 35.3769416809082 | 30888 |
+
+12F and 25F pack, then fail placement: 30888 against 24288. 85F seed 1 routes at 34.4293327331543 MHz in 124.82 s. Smallest part is 45F. No seed hit the 7200 s bound. Power is **needs real board**.
+
+**Queue and memory traffic (Icarus, env T64).** Record: `fixtures/scp/v0122-traffic.json`. Pre-BRAM RTL is git `a6bb68f6^`. Queue pushes and pops are 27590 both before and after the block-RAM schedule. They did not go down. Dirty writes, decision reads, decision writes and state writes also stay 57228, 27590, 29638 and 29638. What went up is the sample clock: dirty reads and state reads go from 27590 to 55180, and cycles go from 57292 to 167652. Full scan has no queue. Its decision reads stay 131072; its cycles go from 160774 to 291846. The same push counts hold on the ADDR_W 12 low and very-high sweep streams (1280 and 65536). There is no remaining duplicate push: every event is one push and one pop. No further queue-op change was applied. The `k1_tap` beat queue still pushes one beat per decoder token; block RAM changed the storage, not the count.
+
+**Selector result.** Held-out seed 9. One iteration, not an autonomous capability. No RTL hybrid, so extra LUT is 0. 576 estimate updates. On every ADDR_W the adaptive cost ties or beats the best single fixed engine. Decisions/s per LUT picks `fsd` for all 64 frames and ties full scan (the best fixed engine); it does not create a K1 win. Evaluations pick `ede` and tie that engine. Cycles pick `ede` for 49 frames and `fsd` for 15, and the sum is below a pure `ede` run (ADDR_W 12: 136128 versus 151488). Verdict **PASS** against the selector rule. The v0.1.21 per-LUT sweep remains **FAIL**. Power is **needs real board**.

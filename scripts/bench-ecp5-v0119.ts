@@ -502,7 +502,7 @@ function writeDocs() {
     "npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/bench-ecp5-v0119.ts --write-docs",
     "```",
     "",
-    `Design ids in that harness: ${DESIGNS.map((d) => `\`${d.id}\``).join(", ")}. Example: \`--only=ede-temporal --seed=1\`, then \`--only=ede-temporal --fit\`. A record already present under \`fixtures/scp/v0119-pnr/<id>/\` is reused and is not re-run.`,
+    `Design ids in that harness: ${DESIGNS.map((d) => `\`${d.id}\``).join(", ")}. Example: \`--only=ede-temporal --seed=1\`, then \`--only=ede-temporal --fit\`. A record already present under \`fixtures/scp/v0119-pnr/<id>/\` is reused and is not re-run. \`loop-ede-w4l8\` instantiates \`scp4d_tenc_q_w4l8_bram\` and \`scp4d_tdec_s_w4_bram\`. The v0.1.19 modules \`scp4d_tenc_q\` and \`scp4d_tdec_s\` are the other design ids.`,
     "",
     `Place-and-route bound: ${BOUND_S} s per invocation (\`timeout --foreground ${BOUND_S}\`). Exit 124 is recorded as not completed within ${BOUND_S} s. No Fmax is filled in for that seed.`,
     "",
