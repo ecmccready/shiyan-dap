@@ -1895,10 +1895,24 @@ K1 wins no cell. The highest ratio is 0.3362874584321748, at ADDR_W 10 and very 
 
 ## 29. v0.1.22: K1 closed loop routes on the 45F with five seeds (draft)
 
-**Status of this section.** Draft header, pre-registered before any v0.1.22 trim measurement or place-and-route. `fixtures/scp/v0122-prereg.json` is the locked text. This section does not yet contain a trimmed cell count, a per-module breakdown, or a five-seed Fmax. v0.2 stays reserved for the first product-facing page. Files use the tag `v0122`. The branch is `cursor/scp-v0122-k1-loop-route-784b`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A place-and-route number from any other toolchain is not recorded. Power is **needs real board**. The v0.1.21 sweep verdict stays **FAIL**. This milestone does not claim a per-LUT win for K1. No other threshold changes.
+**Status of this section.** The fit rule was locked in `fixtures/scp/v0122-prereg.json` before the hierarchy stat below. This section does not yet contain a trimmed cell count or a five-seed Fmax. v0.2 stays reserved for the first product-facing page. Files use the tag `v0122`. The branch is `cursor/scp-v0122-k1-loop-route-784b`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A place-and-route number from any other toolchain is not recorded. Power is **needs real board**. The v0.1.21 sweep verdict stays **FAIL**. This milestone does not claim a per-LUT win for K1. No other threshold changes.
 
 **Fit goal.** `loop-ede-w4l8` (`tenc_q` → `tdec_s` → `scp4d_ede`) routes on LFE5U-45F for seeds 1, 2, 3, 4 and 5. Same seeds, same 7200 s bound, same router and flags as v0.1.19 and v0.1.21 (`--45k`, package CABGA381, router2, `--freq 12`, `--timing-allow-fail`, `--lpf-allow-unconstrained`). Target `TRELLIS_COMB` ≤ 37270, which is 85% of 43848. A five-seed median Fmax is reported only when all five seeds route. Decoder codes and K1 decision records stay bit-exact with the golden model. Temporal-only stays the default. Relations stay behind the mode bit.
 
 **Verdict (locked).** **PASS** if all five seeds route and `TRELLIS_COMB` ≤ 37270. **MIXED** if at least three of five seeds route, or if all five route but `TRELLIS_COMB` is above 37270. **FAIL** otherwise. If the trim cannot reach 37270, or the five seeds do not route, the run stops and reports the best demand and the per-seed outcomes. The bound and the flags stay as registered.
 
 **Allowed trims, in this order.** Move register-file and bank storage in the W=4 decoder and the W=4 encoder into `DP16KD` (the 45F has 108; the v0.1.21 loop uses 46). Share or time-multiplex duplicated per-lane logic. Shrink the `k1_tap` queue further. A trim that changes cycle behaviour or outputs ships as a new named variant (`scp4d_tdec_s_w4_bram` or `scp4d_tenc_q_w4l8_bram`) with its own golden vectors and an Icarus bit-exact check. The v0.1.19 designs and their recorded results stay byte-identical. Any variant reports its env T64 cycle count honestly. Power is **needs real board**.
+
+**Where the cells are (measured, `synth_ecp5 -noflatten`, W=4 L=8 A=11).** Record: `fixtures/scp/v0122-hierarchy-stat.json`. A submodule's cells are not counted again in its parent. This is not the flattened nextpnr `TRELLIS_COMB`. The committed v0.1.21 flattened netlist of the same wrapper is 30535 LUT4, 46 `DP16KD`, 12978 `TRELLIS_FF`, and the pack log asked for 41217 `TRELLIS_COMB`.
+
+| module | LUT4 | TRELLIS_FF | DP16KD |
+|---|---:|---:|---:|
+| scp4d_tenc_q | 13433 | 7845 | 25 |
+| scp4d_tdec_s (not including the front end) | 11125 | 2815 | 8 |
+| scp4d_fe_r (the decoder front end) | 9348 | 1060 | 0 |
+| scp4d_k1_tap | 427 | 640 | 5 |
+| scp4d_ede | 531 | 487 | 14 |
+| scp4d_fold16 | 121 | 304 | 0 |
+| wrap_loop_ede glue | 3 | 391 | 0 |
+
+`select *bank*` matched 0 cells after technology mapping. The 8 `DP16KD` inside `scp4d_tdec_s` are the four banks' `mh1` and `mh2` memories (512×32). The v0.1.21 12F/25F placer named `dec.bank[2].tB_dq`, which is the 48-bit pipeline register in that generate, after the design asked for 41217 `TRELLIS_COMB` against 24288 available. Yosys replaced these memories with registers because they are read at more than one address in a cycle: `scp4d_fe_r` `tq`, `bq`, `cand`, `ccnt`, `ne`; `scp4d_tdec_s` `rq`, `rec_r`, `rcand` and the per-token arrays; `scp4d_k1_tap` `lane_code`, `lane_elem`; `scp4d_tenc_q` `bq`. The encoder and decoder state banks that have one synchronous address are already `DP16KD`.
