@@ -1988,3 +1988,43 @@ One ledger iteration, `hybrid_rtl`, not an autonomous capability. ADDR_W 10 and 
 **ADDR_W 10 and 12.** `wrap_hybrid` with `A` set to 10, then 12. **PASS** if all five 45F seeds route within 7200 s. **MIXED** if at least three route. **FAIL** if fewer than three route. Record per-seed Fmax, the median, `TRELLIS_COMB`, `DP16KD` and the smallest part.
 
 **Loop.** New wrapper `wrap_loop_hybrid`: `scp4d_tenc_q_w4l8_bram` → `scp4d_tdec_s_w4_bram` → `scp4d_k1_tap` → `scp4d_hybrid`, W=4, L=8, ADDR_W=11, temporal-only. `wrap_loop_ede` and the v0.1.22 modules are not edited. **Fit PASS** if all five 45F seeds route. On the v0.1.22 held-out grids, seed 9, ADDR_W 8, 10 and 12, the hybrid loop's wall cycles must be strictly fewer than the trimmed ede loop on the same grids, and its decision records must match the shared-state golden. The loop is expected to lose decisions/s per LUT to standalone full scan, because the netlist contains the encoder, the decoder and both engines. That loss is not a FAIL. **PASS** requires the fit, the stricter cycles, and the bit-exact records. **MIXED** if the records match and either some seed misses or the cycles are not strictly fewer. **FAIL** if fewer than three seeds route or the records do not match. 85F, 12F and 25F seed 1 are recorded and are not a gate. This paragraph contains no measurement.
+
+**ADDR_W 10 result. Fit PASS.** All five 45F seeds routed. `TRELLIS_COMB` 1523. `DP16KD` 10. Median Fmax 59.64807891845703 MHz, seed 3. Smallest part 12F. The five route walls are 4.52908, 5.05525, 4.56324, 4.9402 and 5.0644 s. Seed 1 started at 13:00:10 UTC and the fit finished at 13:00:51 UTC.
+
+| seed | status | wall (s) | Fmax (MHz) | TRELLIS_COMB |
+|---|---|---:|---:|---:|
+| 1 | routed | 4.52908 | 61.659881591796875 | 1523 |
+| 2 | routed | 5.05525 | 58.68889236450195 | 1523 |
+| 3 | routed | 4.56324 | 59.64807891845703 | 1523 |
+| 4 | routed | 4.9402 | 57.087398529052734 | 1523 |
+| 5 | routed | 5.0644 | 60.997928619384766 | 1523 |
+
+**ADDR_W 12 result. Fit PASS.** All five 45F seeds routed. `TRELLIS_COMB` 1610. `DP16KD` 30. Median Fmax 57.91728973388672 MHz, seed 1. Smallest part 12F. Route walls 6.49174, 7.83949, 4.57572, 4.5894 and 4.56037 s. The fit finished at 13:01:44 UTC.
+
+| seed | status | wall (s) | Fmax (MHz) | TRELLIS_COMB |
+|---|---|---:|---:|---:|
+| 1 | routed | 6.49174 | 57.91728973388672 | 1610 |
+| 2 | routed | 7.83949 | 57.964290618896484 | 1610 |
+| 3 | routed | 4.57572 | 53.949073791503906 | 1610 |
+| 4 | routed | 4.5894 | 60.00239944458008 | 1610 |
+| 5 | routed | 4.56037 | 55.44466781616211 | 1610 |
+
+**Hybrid loop result. Fit PASS. Cycle verdict MIXED.** All five 45F seeds routed. `TRELLIS_COMB` 32128. `DP16KD` 48. FF 10413. LUT4 demand 30854. Median Fmax 31.92440414428711 MHz, seed 3. Smallest part 45F. 12F and 25F do not place: 32128 against 24288. 85F seed 1 routes at 34.705352783203125 MHz in 138.942 s. Seed 1 of the 45F route started at 13:02:41 UTC. The 85F route finished at 13:16:28 UTC.
+
+| seed | status | wall (s) | Fmax (MHz) | TRELLIS_COMB |
+|---|---|---:|---:|---:|
+| 1 | routed | 128.29 | 31.230480194091797 | 32128 |
+| 2 | routed | 113.445 | 32.412811279296875 | 32128 |
+| 3 | routed | 125.243 | 31.92440414428711 | 32128 |
+| 4 | routed | 110.094 | 30.071569442749023 | 32128 |
+| 5 | routed | 134.596 | 33.577327728271484 | 32128 |
+
+Held-out wall cycles, same grids, Icarus. Decision sets match the shared-state golden. The hybrid loop is slower than the trimmed ede loop at every width, so the stricter cycle test does not hold.
+
+| ADDR_W | hybrid loop | ede loop |
+|---|---:|---:|
+| 8 | 20808 | 18643 |
+| 10 | 82683 | 74342 |
+| 12 | 166120 | 149496 |
+
+Decisions/s per LUT of the placed loop, using the ADDR_W 12 grid (38600 evals, 166120 cycles), the five-seed median Fmax and 32128 `TRELLIS_COMB`, is 230.88966370879547. Standalone full scan in the committed benchmark is 71397.91807427029. The loop loses, as pre-registered. Power is **needs real board**. The v0.1.21 sweep stays **FAIL**.
