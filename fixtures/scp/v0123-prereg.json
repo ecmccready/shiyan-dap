@@ -69,5 +69,36 @@
   },
   "stop_rule": "If the trim of flags would be required to route, stop. Report the best demand and the per-seed outcomes. Do not change the bound or the router flags.",
   "ledger": "One iteration in fixtures/scp/optimization-ledger.jsonl. Not an established autonomous capability.",
-  "power": "needs real board"
+  "power": "needs real board",
+  "v0123b": {
+    "label": "Locked before any ADDR_W 10, ADDR_W 12, or hybrid-loop simulation or place-and-route. The v0123 rules above are unchanged. Power is needs real board. v0.1.19 and v0.1.22 loop RTL and their recorded results stay byte-identical.",
+    "toolchain": "OSS CAD Suite 20261118 only. Yosys 0.71+50 583f380c6. nextpnr-ecp5 0.11.1-103-ge811ba48. router2. Seeds 1 to 5. Bound 7200 s. Flags unchanged: --45k --package CABGA381 --lpf-allow-unconstrained --freq 12 --router router2 --timing-allow-fail.",
+    "order": "ADDR_W 10 five seeds, then its 12F/25F/85F seed-1 fit, then ADDR_W 12 the same way, then the hybrid loop. Serial. If a width does not meet PASS, stop. Do not start the next placement.",
+    "hybrid_addr_w": {
+      "widths": [10, 12],
+      "module": "wrap_hybrid",
+      "record": ["per-seed status", "wall_clock_s", "fmax_mhz", "median Fmax", "TRELLIS_COMB", "DP16KD", "smallest part"],
+      "PASS": "All five 45F seeds route within 7200 s.",
+      "MIXED": "At least three 45F seeds route and at least one does not.",
+      "FAIL": "Fewer than three 45F seeds route.",
+      "stop": "Report the best demand and which seeds routed. No flag changes."
+    },
+    "loop": {
+      "name": "wrap_loop_hybrid",
+      "chain": "scp4d_tenc_q_w4l8_bram -> scp4d_tdec_s_w4_bram -> scp4d_k1_tap -> scp4d_hybrid",
+      "parameters": "W=4, L=8, ADDR_W=11, temporal-only. Same width as the v0.1.22 loop so D=2048 fits. New wrapper file only.",
+      "untouched": ["scp4d_ede_wrap.v wrap_loop_ede", "scp4d_tenc_q_w4l8_bram.v", "scp4d_tdec_s_w4_bram.v", "scp4d_k1_tap.v", "scp4d_ede.v", "scp4d_fsd.v"],
+      "fit_PASS": "All five 45F seeds route within 7200 s.",
+      "fit_MIXED": "At least three 45F seeds route and at least one does not.",
+      "fit_FAIL": "Fewer than three 45F seeds route.",
+      "workload": "The v0.1.22 held-out mixed-churn stream, seed 9, 16 frames each of low, medium, high, very_high, T=64, threshold 0, relations off, ADDR_W 8, 10 and 12. Both loops receive the same dense code grids from that generator.",
+      "cycles_PASS": "At every held-out ADDR_W the hybrid-loop wall cycles, from reset release through done, are strictly fewer than the v0.1.22 trimmed ede loop on that same grid.",
+      "bit_exact_PASS": "Hybrid-loop decision-change records match the shared-state golden (stepEde or stepFsd for the engine chosen from the previous frame) on the events of that grid.",
+      "per_lut_expectation": "The loop's decisions/s per LUT is expected to lose to standalone fsd. The netlist contains the encoder, the decoder, and both decision engines. That loss is not a FAIL.",
+      "verdict_PASS": "fit_PASS and cycles_PASS and bit_exact_PASS.",
+      "verdict_MIXED": "Bit-exact, and either the fit is MIXED or the hybrid loop is not strictly fewer at one or more widths.",
+      "verdict_FAIL": "fit_FAIL, or the decision records do not match the golden.",
+      "also_record": "85F seed 1 fit of the loop, and 12F and 25F, so the smallest part is known. Not a pass gate."
+    }
+  }
 }
