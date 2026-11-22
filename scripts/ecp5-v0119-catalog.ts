@@ -40,6 +40,7 @@ export const READ_FILES = [
   "hw/scp4d/synth/scp4d_ede_wrap.v",
   "hw/scp4d/rtl/scp4d_hybrid.v",
   "hw/scp4d/synth/scp4d_hybrid_wrap.v",
+  "hw/scp4d/synth/scp4d_loop_hybrid_wrap.v",
 ] as const;
 
 export type Kind = "encoder" | "decoder" | "loop" | "decision";
@@ -85,6 +86,9 @@ export const DESIGNS: readonly Design[] = [
   { id: "fsd", kind: "decision", milestone: "v0.1.20", top: "wrap_fsd", sets: [], workload: "fsd", field: "cycles" },
   { id: "loop-ede-w4l8", kind: "loop", milestone: "v0.1.20", top: "wrap_loop_ede", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }], composedOf: ["tenc-q-w4l8", "tdec-s-w4", "ede-temporal"], workload: "loop_ede", field: "cycles" },
   { id: "hybrid", kind: "decision", milestone: "v0.1.23", top: "wrap_hybrid", sets: [{ name: "A", value: "8" }, { name: "REL", value: "0" }], workload: "hybrid", field: "cycles" },
+  { id: "hybrid-a10", kind: "decision", milestone: "v0.1.23", top: "wrap_hybrid", sets: [{ name: "A", value: "10" }, { name: "REL", value: "0" }], workload: "hybrid", field: "cycles" },
+  { id: "hybrid-a12", kind: "decision", milestone: "v0.1.23", top: "wrap_hybrid", sets: [{ name: "A", value: "12" }, { name: "REL", value: "0" }], workload: "hybrid", field: "cycles" },
+  { id: "loop-hybrid-w4l8", kind: "loop", milestone: "v0.1.23", top: "wrap_loop_hybrid", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
 ];
 
 export type Workload = {
@@ -140,15 +144,29 @@ export function workloadFor(root: string, d: Design): Workload {
     };
   }
   if (d.workload === "hybrid") {
+    if (d.id === "loop-hybrid-w4l8") {
+      const sim = load(root, "fixtures/scp/v0123b-loop-sim.json") as { rows: { addr_w: number; hybrid_cycles: number; hybrid_evals: number }[] };
+      const cell = sim.rows.find((r) => r.addr_w === 12);
+      return {
+        stream: "held-out-seed9-a12-loop",
+        element_frames: 2048 * 64,
+        cycles: int(cell?.hybrid_cycles, "hybrid loop cycles"),
+        evals: int(cell?.hybrid_evals, "hybrid loop evals"),
+        source_report: "fixtures/scp/v0123b-loop-sim.json",
+        source_field: "rows[addr_w=12].hybrid_cycles",
+      };
+    }
+    const aw = d.id === "hybrid-a12" ? 12 : d.id === "hybrid-a10" ? 10 : 8;
+    const D = aw >= 12 ? 2048 : 1 << aw;
     const sim = load(root, "fixtures/scp/v0123-hybrid-sim.json") as { held_out: { addr_w: number; hybrid_cycles: number; hybrid_evals: number }[] };
-    const cell = sim.held_out.find((r) => r.addr_w === 8);
+    const cell = sim.held_out.find((r) => r.addr_w === aw);
     return {
-      stream: "held-out-seed9-a8",
-      element_frames: 256 * 64,
+      stream: `held-out-seed9-a${aw}`,
+      element_frames: D * 64,
       cycles: int(cell?.hybrid_cycles, "hybrid cycles"),
       evals: int(cell?.hybrid_evals, "hybrid evals"),
       source_report: "fixtures/scp/v0123-hybrid-sim.json",
-      source_field: "held_out[addr_w=8].hybrid_cycles",
+      source_field: `held_out[addr_w=${aw}].hybrid_cycles`,
     };
   }
   if (d.workload === "ede" || d.workload === "ede_rel" || d.workload === "fsd" || d.workload === "loop_ede") {

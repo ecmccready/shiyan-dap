@@ -1,0 +1,38 @@
+{
+  "format": "scp4d-v0123b-loop-sim",
+  "label": "Icarus wall cycles of the closed loop on the held-out grids. Power is needs real board.",
+  "rows": [
+    {
+      "addr_w": 8,
+      "D": 256,
+      "hybrid_cycles": 20808,
+      "ede_cycles": 18643,
+      "hybrid_evals": 4847,
+      "ede_evals": 2527,
+      "bit_exact": true,
+      "strictly_fewer": false
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "hybrid_cycles": 82683,
+      "ede_cycles": 74342,
+      "hybrid_evals": 19292,
+      "ede_evals": 10075,
+      "bit_exact": true,
+      "strictly_fewer": false
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "hybrid_cycles": 166120,
+      "ede_cycles": 149496,
+      "hybrid_evals": 38600,
+      "ede_evals": 20182,
+      "bit_exact": true,
+      "strictly_fewer": false
+    }
+  ],
+  "bit_exact": true,
+  "strictly_fewer": false
+}
