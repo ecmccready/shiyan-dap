@@ -2031,10 +2031,22 @@ Decisions/s per LUT of the placed loop, using the ADDR_W 12 grid (38600 evals, 1
 
 ## 31. v0.1.24: closed-loop wall cycles (`v0124`)
 
-**Status.** The profile is `docs/design/v0124-loop-profile.md`. The rule below is locked in `fixtures/scp/v0124-prereg.json` before the fix is simulated or placed. Power is **needs real board**. v0.1.19, v0.1.22 and v0.1.23 RTL stay byte-identical.
+**Status.** Measured. Verdict **PASS**. The rule is locked in `fixtures/scp/v0124-prereg.json`, committed before this run. The profile is `docs/design/v0124-loop-profile.md`. The Icarus result is `fixtures/scp/v0124-measure.json`. Power is **needs real board**. v0.1.19, v0.1.22 and v0.1.23 RTL stay byte-identical.
 
 The profile shows that a blocking full scan is slower than K1 in this closed loop at every churn band, including very high. The v0.1.23 hybrid's extra wall cycles are the 15 full-scan frames and one switch. Using that fact to keep the event engine is labeled held-out tuning.
 
-**Fix, not yet measured.** `scp4d_ede_pipe` keeps `scp4d_ede`'s ports and end-of-frame decision records. After the first queued element, evaluation is 2 cycles: the compare cycle issues the next decision-RAM address. `scp4d_hybrid_pipe` instantiates that engine and `scp4d_fsd`, and the pipe selector picks the event engine in every band, so it does not run a masked scan. `wrap_loop_k1pipe` is the v0.1.22 codec and tap into `scp4d_hybrid_pipe`.
+**Fix.** `scp4d_ede_pipe` keeps `scp4d_ede`'s ports and end-of-frame decision records. After the first queued element, evaluation is 2 cycles: the compare cycle issues the next decision-RAM address. `scp4d_hybrid_pipe` instantiates that engine and `scp4d_fsd`, and the pipe selector picks the event engine in every band, so it does not run a masked scan. `wrap_loop_k1pipe` is the v0.1.22 codec and tap into `scp4d_hybrid_pipe`.
 
 **Success.** All three widths are required. The fixed loop's wall cycles must be strictly under the smaller of the profile's K1 loop and full-scan loop at ADDR_W 8, 10 and 12. The decision-change set must match the shared-state golden for the event engine. The new loop is placed: five 45F seeds, 7200 s, the pinned OSS CAD Suite 20261118 router2 flags. **PASS** needs the cycles, the records and all five routes. **MIXED** if the records match and a width or a seed misses. **FAIL** if the records do not match or fewer than three seeds route. Decisions/s per LUT is expected to lose to standalone full scan. If the cycles do not beat both baselines, stop. Do not tune this held-out set again.
+
+**Icarus, one run.** Decision-change sets match the event-engine golden at all three widths. Wall cycles are under both profile totals:
+
+| ADDR_W | pipe | K1 loop | full-scan loop |
+| --- | --- | --- | --- |
+| 8 | 16253 | 18643 | 40767 |
+| 10 | 64527 | 74342 | 163151 |
+| 12 | 129723 | 149496 | 326734 |
+
+**Place and route of `loop-k1pipe-w4l8`.** Five of five 45F seeds routed. `TRELLIS_COMB` 31567, LUT4 demand 30291, flip-flops 10382, `DP16KD` 48. Fmax 30.498031616210938, 28.08121109008789, 29.78406524658203, 31.476234436035156, 31.339120864868164 MHz. Median 30.498031616210938 MHz (seed 1). Seed walls 119.961, 122.923, 117.347, 125.527, 109.355 s. 12F and 25F do not place (31567 against 24288). 85F seed 1 routed at 31.26954460144043 MHz in 127.752 s. Smallest part 45F.
+
+Decisions/s per LUT, using the ADDR_W 12 grid (20182 evals, 129723 cycles), the five-seed median and 31567 `TRELLIS_COMB`, is 150.30925359248772. Standalone full scan in the committed benchmark is 71397.91807427029. The loop loses, as pre-registered. That loss is not a FAIL. The v0.1.21 sweep stays **FAIL**. The stop rule was not reached.
