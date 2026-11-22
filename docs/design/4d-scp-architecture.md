@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31).
 
 **Reproduce.**
 
@@ -2028,3 +2028,13 @@ Held-out wall cycles, same grids, Icarus. Decision sets match the shared-state g
 | 12 | 166120 | 149496 |
 
 Decisions/s per LUT of the placed loop, using the ADDR_W 12 grid (38600 evals, 166120 cycles), the five-seed median Fmax and 32128 `TRELLIS_COMB`, is 230.88966370879547. Standalone full scan in the committed benchmark is 71397.91807427029. The loop loses, as pre-registered. Power is **needs real board**. The v0.1.21 sweep stays **FAIL**.
+
+## 31. v0.1.24: closed-loop wall cycles (`v0124`)
+
+**Status.** The profile is `docs/design/v0124-loop-profile.md`. The rule below is locked in `fixtures/scp/v0124-prereg.json` before the fix is simulated or placed. Power is **needs real board**. v0.1.19, v0.1.22 and v0.1.23 RTL stay byte-identical.
+
+The profile shows that a blocking full scan is slower than K1 in this closed loop at every churn band, including very high. The v0.1.23 hybrid's extra wall cycles are the 15 full-scan frames and one switch. Using that fact to keep the event engine is labeled held-out tuning.
+
+**Fix, not yet measured.** `scp4d_ede_pipe` keeps `scp4d_ede`'s ports and end-of-frame decision records. After the first queued element, evaluation is 2 cycles: the compare cycle issues the next decision-RAM address. `scp4d_hybrid_pipe` instantiates that engine and `scp4d_fsd`, and the pipe selector picks the event engine in every band, so it does not run a masked scan. `wrap_loop_k1pipe` is the v0.1.22 codec and tap into `scp4d_hybrid_pipe`.
+
+**Success.** All three widths are required. The fixed loop's wall cycles must be strictly under the smaller of the profile's K1 loop and full-scan loop at ADDR_W 8, 10 and 12. The decision-change set must match the shared-state golden for the event engine. The new loop is placed: five 45F seeds, 7200 s, the pinned OSS CAD Suite 20261118 router2 flags. **PASS** needs the cycles, the records and all five routes. **MIXED** if the records match and a width or a seed misses. **FAIL** if the records do not match or fewer than three seeds route. Decisions/s per LUT is expected to lose to standalone full scan. If the cycles do not beat both baselines, stop. Do not tune this held-out set again.

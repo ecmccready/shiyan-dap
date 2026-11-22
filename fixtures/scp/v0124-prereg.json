@@ -1,0 +1,32 @@
+{
+  "format": "scp4d-v0124-prereg",
+  "version": 1,
+  "milestone": "v0.1.24",
+  "spec": "docs/design/4d-scp-architecture.md §31",
+  "branch": "cursor/scp-v0124-loop-cycles-784b",
+  "label": "Locked after the profile in fixtures/scp/v0124-profile.json and before any fix is simulated or placed. Power is needs real board. v0.1.19, v0.1.22 and v0.1.23 RTL stay byte-identical.",
+  "profile_fact": "On the held-out closed loop, full scan's wall cycles are higher than K1 in every churn band, including very high. The v0.1.23 hybrid's extra wall cycles are that band: 15 full-scan frames and one switch. This selector change is labeled as held-out tuning. It is not a new workload.",
+  "fix": {
+    "ede": "scp4d_ede_pipe. Same ports and the same end-of-frame decision records as scp4d_ede. Steady-state evaluation is 2 cycles per queued element: the compare cycle issues the next decision-RAM address, and the following cycle uses that read. The first element of a frame stays 3 cycles.",
+    "hybrid": "scp4d_hybrid_pipe instantiates scp4d_ede_pipe and scp4d_fsd. The pipe selector picks ede in every churn band, so it does not run a masked full scan. Full scan remains instantiated.",
+    "loop": "wrap_loop_k1pipe: scp4d_tenc_q_w4l8_bram -> scp4d_tdec_s_w4_bram -> scp4d_k1_tap -> scp4d_hybrid_pipe. W=4, L=8, ADDR_W=11, temporal-only."
+  },
+  "widths_required": "All three of ADDR_W 8, 10 and 12.",
+  "baselines": "The profile's K1 loop and pure full-scan loop on the same grids. Success uses those wall-cycle totals.",
+  "cycles_PASS": "Fixed-loop wall cycles are strictly less than the smaller of the K1 loop and the full-scan loop at every required width.",
+  "bit_exact_PASS": "The fixed loop's decision-change set matches the shared-state golden for an ede engine on that grid. Order inside a frame may follow the tap.",
+  "fit": {
+    "when": "The new loop RTL is timing-relevant, so it is placed.",
+    "PASS": "All five 45F seeds route within 7200 s.",
+    "flags": "OSS CAD Suite 20261118, Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, router2, seeds 1-5, --45k CABGA381, --freq 12, --timing-allow-fail.",
+    "record": ["per-seed Fmax", "median", "TRELLIS_COMB", "DP16KD", "smallest part", "85F seed 1"]
+  },
+  "per_lut_expectation": "The loop contains the codec and the decision engines. Its decisions/s per LUT is expected to lose to standalone fsd (committed 71397.91807427029). That loss is not a FAIL.",
+  "verdict": {
+    "PASS": "cycles_PASS and bit_exact_PASS and fit PASS.",
+    "MIXED": "Bit-exact, and either a width misses the cycle test or the fit is at least 3 of 5 but not 5 of 5.",
+    "FAIL": "Decision records do not match, or fewer than three seeds route."
+  },
+  "stop": "If the fixed loop does not beat both baselines, report the measured cycles and stop. Do not change the selector or the pipeline again on this held-out set.",
+  "power": "needs real board"
+}
