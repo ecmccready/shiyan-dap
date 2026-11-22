@@ -12,7 +12,7 @@
     "hw/scp4d/rtl/scp4d_ede.v": "2a5a619e7626b706c046650a33b540e89630f0d73512c995789c96dadf1b2e93",
     "hw/scp4d/rtl/scp4d_fsd.v": "7a4dba118628cd14f04ad0aaf3dbe3f74f18a6c283f2bf46df2308df99a0d3d7",
     "hw/scp4d/tb/scp4d_ede_tb.v": "aa47df5872d184b8792978a1c4559e47ca0120d78d5e8751e78efc29818591fb",
-    "scripts/scp-v0120-ede-model.ts": "5d097982ed74d69ee906c22bfb7dac1f7bc472e7a3c6482557b685102bdbef98",
+    "scripts/scp-v0120-ede-model.ts": "bb26e2d0607811abdc02dec4befa414fa400396adb322d4e85126a8b5cccc16f",
     "scripts/scp-v0121-sweep-cycles.ts": "6e29f160c41888a07d364d59d1c5dc4c9d5115a16fe5ced993a2700301a8476b"
   },
   "rows": [
@@ -36,7 +36,7 @@
       "cycles": 33280,
       "evals": 16384,
       "changes": 92,
-      "icarus_s": 0.196
+      "icarus_s": 0.197
     },
     {
       "addr_w": 8,
@@ -47,7 +47,7 @@
       "cycles": 5312,
       "evals": 832,
       "changes": 416,
-      "icarus_s": 0.061
+      "icarus_s": 0.063
     },
     {
       "addr_w": 8,
@@ -58,7 +58,7 @@
       "cycles": 33920,
       "evals": 16384,
       "changes": 416,
-      "icarus_s": 0.207
+      "icarus_s": 0.21
     },
     {
       "addr_w": 8,
@@ -69,7 +69,7 @@
       "cycles": 19904,
       "evals": 3264,
       "changes": 1571,
-      "icarus_s": 0.154
+      "icarus_s": 0.161
     },
     {
       "addr_w": 8,
@@ -80,7 +80,7 @@
       "cycles": 36352,
       "evals": 16384,
       "changes": 1571,
-      "icarus_s": 0.232
+      "icarus_s": 0.248
     },
     {
       "addr_w": 8,
@@ -91,7 +91,7 @@
       "cycles": 49472,
       "evals": 8192,
       "changes": 4074,
-      "icarus_s": 0.345
+      "icarus_s": 0.355
     },
     {
       "addr_w": 8,
@@ -102,7 +102,7 @@
       "cycles": 41280,
       "evals": 16384,
       "changes": 4074,
-      "icarus_s": 0.291
+      "icarus_s": 0.296
     },
     {
       "addr_w": 10,
@@ -113,7 +113,7 @@
       "cycles": 4928,
       "evals": 640,
       "changes": 314,
-      "icarus_s": 0.069
+      "icarus_s": 0.07
     },
     {
       "addr_w": 10,
@@ -124,7 +124,7 @@
       "cycles": 132800,
       "evals": 65536,
       "changes": 314,
-      "icarus_s": 0.716
+      "icarus_s": 0.713
     },
     {
       "addr_w": 10,
@@ -135,7 +135,7 @@
       "cycles": 20672,
       "evals": 3264,
       "changes": 1625,
-      "icarus_s": 0.168
+      "icarus_s": 0.172
     },
     {
       "addr_w": 10,
@@ -146,7 +146,7 @@
       "cycles": 135424,
       "evals": 65536,
       "changes": 1625,
-      "icarus_s": 0.737
+      "icarus_s": 0.75
     },
     {
       "addr_w": 10,
@@ -157,7 +157,7 @@
       "cycles": 79808,
       "evals": 13120,
       "changes": 6604,
-      "icarus_s": 0.546
+      "icarus_s": 0.544
     },
     {
       "addr_w": 10,
@@ -168,7 +168,7 @@
       "cycles": 145280,
       "evals": 65536,
       "changes": 6604,
-      "icarus_s": 0.874
+      "icarus_s": 0.865
     },
     {
       "addr_w": 10,
@@ -179,7 +179,7 @@
       "cycles": 197696,
       "evals": 32768,
       "changes": 16336,
-      "icarus_s": 1.312
+      "icarus_s": 1.3
     },
     {
       "addr_w": 10,
@@ -190,7 +190,7 @@
       "cycles": 164928,
       "evals": 65536,
       "changes": 16336,
-      "icarus_s": 1.103
+      "icarus_s": 1.139
     },
     {
       "addr_w": 12,
@@ -201,7 +201,7 @@
       "cycles": 9792,
       "evals": 1280,
       "changes": 653,
-      "icarus_s": 0.112
+      "icarus_s": 0.114
     },
     {
       "addr_w": 12,
@@ -212,7 +212,7 @@
       "cycles": 265536,
       "evals": 131072,
       "changes": 653,
-      "icarus_s": 1.397
+      "icarus_s": 1.393
     },
     {
       "addr_w": 12,
@@ -223,7 +223,7 @@
       "cycles": 41280,
       "evals": 6528,
       "changes": 3283,
-      "icarus_s": 0.312
+      "icarus_s": 0.311
     },
     {
       "addr_w": 12,
@@ -234,7 +234,7 @@
       "cycles": 270784,
       "evals": 131072,
       "changes": 3283,
-      "icarus_s": 1.465
+      "icarus_s": 1.457
     },
     {
       "addr_w": 12,
@@ -245,7 +245,7 @@
       "cycles": 159552,
       "evals": 26240,
       "changes": 12976,
-      "icarus_s": 1.082
+      "icarus_s": 1.073
     },
     {
       "addr_w": 12,
@@ -256,7 +256,7 @@
       "cycles": 290496,
       "evals": 131072,
       "changes": 12976,
-      "icarus_s": 1.697
+      "icarus_s": 1.773
     },
     {
       "addr_w": 12,
@@ -267,7 +267,7 @@
       "cycles": 395328,
       "evals": 65536,
       "changes": 32929,
-      "icarus_s": 2.631
+      "icarus_s": 2.582
     },
     {
       "addr_w": 12,
@@ -278,7 +278,7 @@
       "cycles": 329792,
       "evals": 131072,
       "changes": 32929,
-      "icarus_s": 2.182
+      "icarus_s": 2.194
     }
   ]
 }
