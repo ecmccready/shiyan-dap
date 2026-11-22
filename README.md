@@ -337,3 +337,50 @@ unset STAGING_TENANT_A_KEY STAGING_TENANT_B_KEY
 ```
 
 Each run needs a unique `run_id` (a reused one returns 409).
+
+## Aethel Node hardware track
+
+Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industry-benchmark.md`, `docs/design/v0119-reproduce.md`, `docs/design/aethel-node-hardware-evidence-v1.md`, `docs/design/4d-scp-architecture.md` §25–§29, and `hw/scp4d/README.md`.
+
+### Vantage points
+
+- Evidence-first hardware track: every claim comes from a committed run; thresholds are pre-registered; negative results are kept.
+- Open-toolchain baseline on Lattice ECP5.
+- 4D state compression + event-driven path.
+- Adaptive selection between the event-driven engine (K1) and full scan.
+
+### Value proposition
+
+An AI processor does not have to recompute a full representation of the environment on every step. It can maintain a compressed, evolving 4D state surface and compute mainly on the changes that matter, while an adaptive layer chooses the cheaper execution path for the current workload.
+
+Measured differentiators so far:
+
+- Closed loop (tenc_q -> tdec_s -> K1) routes on the ECP5 45F on all five seeds after trim, five-seed median 35.10 MHz; decoder codes and K1 decision records are bit-exact against the golden model in Icarus simulation.
+- K1 temporal path vs full scan on env T64: about 79% fewer evaluations (27,590 vs 131,072) and about 43% fewer cycles (167,716 vs 291,910).
+- Adaptive selector (model level, no RTL hybrid yet) matches or beats the best fixed engine per objective on a held-out mixed-churn workload: ties full scan on decisions/s per LUT, ties K1 on evaluations, about 10% fewer cycles than the best fixed engine.
+- Reproducible evidence package: pinned toolchain, seeds, sha256 manifest with a stale-hash check, reproduce guides.
+- Not claimed: K1 does not beat full scan on decisions/s per LUT (v0.1.21 sweep FAIL, best 0.34x). Power: needs real board.
+
+### Semiconductor reference
+
+Primary target: Lattice ECP5 (LFE5U-45F main; 12F/25F/85F for fit checks).
+Toolchain: OSS CAD Suite 20261118 (Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, Project Trellis), Icarus Verilog for bit-exact regression.
+Current density: post-trim K1 loop at 30,888 TRELLIS_COMB (about 70% of the 45F's 43,848).
+
+### Build summary
+
+| Version | Milestone | Key measured outcomes |
+| --- | --- | --- |
+| v0.1.18 | First ECP5 synthesis of decoders/loop (seed 1) | tdec_s W2 44.48 MHz, tdec_s W4 37.56 MHz, tdec_r W4 20.80 MHz, loop W2L8 40.28 MHz; W4 loop not completed within the 2,400 s bound |
+| v0.1.19 | Five-seed ECP5 industry benchmark | 21 designs, 102 recorded 45F seed runs all routed, 20 five-seed medians; bit-exact 8/8; top throughput tdec-s W4 329.8M values/s at 38.24 MHz; Pareto set of 6 at the close of that milestone (the manifest on main now lists 9); loop-s W4L8 2 of 5 seeds recorded (no median); recorded 45F route wall clock 8,314 s |
+| v0.1.20 | 4D-SCP proof path + K1 engine | H1, H2, H3, H5 PASS, H4 MIXED; K1 bit-exact in 66 Icarus runs; block-RAM fix 998 -> 487 LUT4; K1 65.44 MHz vs full scan 65.99 MHz median; full scan 4.18x better decisions/s per LUT |
+| v0.1.21 | K1 loop fit + K1 vs full-scan sweep | loop 41,217 TRELLIS_COMB, routed 1 of 5 seeds (31.37 MHz); sweep FAIL, best ratio 0.34x |
+| v0.1.22 | Trimmed loop + adaptive selector | 30,888 TRELLIS_COMB, 5 of 5 seeds, median 35.10 MHz (32.82-35.38); selector PASS (model level); trimmed encoder variant costs 78% more encoder cycles (18,527 -> 33,032) with loop cycles nearly unchanged (197,870 -> 197,970) |
+
+### Recommendations
+
+1. Hybrid RTL: build K1 + full scan with a selector mux in RTL and run it through the same five-seed 45F harness, counting both engines' logic against it, before claiming the selector's cycle gain in hardware.
+2. Metric discipline: keep decisions/s per LUT, evaluations (a compute-work proxy, not energy) and cycles as separate objectives; pre-register every threshold; keep negative results (v0.1.21 FAIL) in the record.
+3. Power board: measure power on a Lattice ECP5 Versa or equivalent 45F/85F board; until then power stays needs real board, with no estimates.
+4. Next scale: extend the K1 vs full-scan sweep to larger state sizes (85F where the 45F runs out) and recover the encoder throughput given up by the trimmed variant.
+5. Process: one branch and one PR per milestone, pinned toolchain only, serial place-and-route, manifest and hash check updated with every result.
