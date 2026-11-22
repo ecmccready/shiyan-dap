@@ -1837,8 +1837,28 @@ Without Icarus the RTL check prints `SKIP sim` and still runs the 12 counted che
 
 ## 28. v0.1.21: K1 closed loop on the 45F, and K1 versus full scan (draft)
 
-**Status of this section.** Draft header, pre-registered before any v0.1.21 measurement. `fixtures/scp/v0121-prereg.json` is the locked text. This section does not yet contain an Fmax, a trimmed cell count, or a sweep verdict. Icarus cycle counts for the sweep grid, with no Fmax, are in `fixtures/scp/v0121-sweep-cycles.json`. v0.2 stays reserved for the first product-facing page. Files use the tag `v0121`. The branch is `feat/scp-v0121-k1-loop-fit`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A place-and-route number from any other toolchain is not recorded. Power is **needs real board**.
+**Status of this section.** The fit goal below was locked in `fixtures/scp/v0121-prereg.json` before the run. The loop place-and-route is recorded. The sweep verdict is not in this section until `fixtures/scp/v0121-sweep.json` exists. Icarus cycle counts for the sweep grid, with no Fmax, are in `fixtures/scp/v0121-sweep-cycles.json`. v0.2 stays reserved for the first product-facing page. Files use the tag `v0121`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A place-and-route number from any other toolchain is not recorded. Power is **needs real board**.
 
 **Fit goal.** `loop-ede-w4l8` (`tenc_q` → `tdec_s` → `scp4d_ede`) places and routes on LFE5U-45F for seeds 1, 2, 3, 4 and 5, bound 7200 s, the same flow as v0.1.19. `TRELLIS_COMB` ≤ 43848. Decoder codes and K1 decision records stay bit-exact with the golden model. The aim is a margin of at least 5% of the part (`TRELLIS_COMB` ≤ 95% of 43848). The v0.1.20 pack log asked for 46454 `TRELLIS_COMB`, which is 2606 over 43848. The allowed trim is the W=4 encoder and/or the W=4 decoder (placed at 18882 and 24084 LUT in v0.1.19). K1 RTL stays as it is except where the loop integration requires a change. Temporal-only stays the default; relations stay behind the mode bit. A trim that still passes the v0.1.19 bit-exact regression may edit the existing module. A trim that does not ships as a new named variant (`tenc_q_w4l8_lite` or `tdec_s_w4_lite`) with its own golden vectors, and the v0.1.19 designs stay untouched. If the loop cannot place on the 45F without breaking bit-exactness, the run stops and reports the best demand. It does not invent a fit.
 
 **Sweep.** K1 (`ede-temporal`) versus `fsd`. decisions/s per LUT is the §27 definition: `(evals / cycles) × five-seed 45F median Fmax_MHz × 1e6 / TRELLIS_COMB` of the median-Fmax seed. `evals` is the threshold-compare count, not the emitted decision-change records. The grid is ADDR_W in {8, 10, 12}, or the largest of those that places on the 45F, crossed with churn low 1%, medium 5%, high 20%, very high 50% (the E1–E5 fractions in `fixtures/scp/v0120-prereg.json`). Each ADDR_W is placed once, five seeds, on the 45F. Churn does not get its own place-and-route: the same Fmax and LUT are reused, and only evals and cycles change, from Icarus. D is 256 at ADDR_W 8, 1024 at ADDR_W 10, and 2048 at ADDR_W 12. T = 64. Predictor last. Relations off. K1 wins a cell when its decisions/s per LUT is at least 1.0× `fsd`. **PASS** if K1 wins at least one cell and that is not the mixed case. **MIXED** if the only wins are at the largest placed ADDR_W and every one of those ratios is under 1.1. **FAIL** if K1 wins no cell. The sweep place-and-route does not run at the same time as the loop fit.
+
+**What changed.** The W=4 encoder (`scp4d_tenc_q.v`) and the W=4 decoder (`scp4d_tdec_s.v`) are unchanged from main, and so are `scp4d_ede.v` and `scp4d_fsd.v`. The only RTL edit is the loop integration queue, `scp4d_k1_tap.v`: the beat queue is a synchronous block RAM instead of a register file. v0.1.19 bit-exact checks for the encoder and decoder are unchanged. `check-scp-v0120-rtl` reports 66 K1 runs bit-exact in both modes, and the tiny loop bit-exact with EDE cycles 28.
+
+**Loop demand, same toolchain, nextpnr pack log.** v0.1.20 asked for 44624 LUT4 and 46454 `TRELLIS_COMB`. This netlist asks for 39397 LUT4 and 41217 `TRELLIS_COMB`, 12978 flip-flops, 46 `DP16KD`. That is 5237 fewer `TRELLIS_COMB` than v0.1.20. 41217 is under 43848, and under 95% of 43848 (41655.6). Yosys 0.71+50 `583f380c6` `stat` of the same netlist: 30535 LUT4, 46 `DP16KD`, 12978 `TRELLIS_FF`.
+
+**45F, five seeds, router2, bound 7200 s.** There is no five-seed median, because four seeds did not finish. The harness therefore leaves Fmax, values/s and decisions/s blank. Seed 4 is one routed seed, not a median.
+
+| seed | status | wall clock (s) | Fmax (MHz) | TRELLIS_COMB |
+|---|---|---:|---:|---:|
+| 1 | not completed within 7200 s | 7200.08 | — | 41217/43848 |
+| 2 | not completed within 7200 s | 7200.09 | — | 41217/43848 |
+| 3 | not completed within 7200 s | 7200.1 | — | 41217/43848 |
+| 4 | routed | 366.452 | 31.36861228942871 | 41217 |
+| 5 | not completed within 7200 s | 7200.03 | — | 41217/43848 |
+
+On the seeds that hit the bound, router2's overuse fell for the first few iterations and then rose. Seed 1 was at overuse 41915 on iteration 21. Seed 2 was at 29127 on iteration 23. Seed 3 reached overuse 432 on iteration 25 and was at 10201 on iteration 260. Seed 5 also hit the bound. The fit goal (all five seeds routed) is not met.
+
+**Other parts, seed 1.** Pack succeeds on 12F, 25F and 85F. 12F and 25F then fail placement: 41217 `TRELLIS_COMB` against 24288 available, no BELs left for `TRELLIS_COMB` (the named cell is in `dec.bank`). 85F routes: Fmax 28.93937110900879 MHz, 41217 LUT, 165.074 s. That is one seed, not a five-seed median. The harness records the smallest part as 45F because seed 4 routed there and 12F and 25F did not.
+
+Power is **needs real board**.

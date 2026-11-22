@@ -34,7 +34,7 @@ A five-seed median is reported only when all five 45F routes finished. A seed th
 | ede-temporal | decision | 64.39979553222656 | 65.44074249267578 | 66.56460571289062 | 51142699.5635479 | 631 | 395 | 8 | 81050.23702622489 | 129475.1887684757 | 6392837.445443488 | 12F |
 | ede-relations | decision | 63.520294189453125 | 66.26466369628906 | 67.81500244140625 | 22613862.88130474 | 813 | 537 | 14 | 27815.329497299805 | 42111.47650149859 | 1615275.9200931957 | 12F |
 | fsd | decision | 62.71165084838867 | 65.98917388916016 | 66.70223999023438 | 29630136.000822168 | 415 | 309 | 5 | 71397.91807427029 | 95890.40776965104 | 5926027.200164434 | 12F |
-| loop-ede-w4l8 | loop | does not fit on 45F | | | | | | | | | | 85F |
+| loop-ede-w4l8 | loop | not completed within 7200 s (4 seeds) | | | | | | | | | | 45F |
 
 Pareto set (clock, throughput, values/s per LUT): ede-relations, ede-temporal, fsd, rdec, tdec, tdec-r-w2, tdec-s-w2, tdec-s-w4, tenc-q-w4l8.
 

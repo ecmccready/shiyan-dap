@@ -22,10 +22,10 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/45F-route-seed5.report.json"
   ],
   "command_sha256": "008ea1d66148eaeec5a7aa9539ad1f76ff79160162a8e0fb87eeeef51bd9bdd1",
-  "wall_clock_s": 32.7566,
-  "exit_code": 125,
-  "status": "does_not_fit",
-  "not_completed_within_s": null,
+  "wall_clock_s": 7200.03,
+  "exit_code": 124,
+  "status": "not_completed",
+  "not_completed_within_s": 7200,
   "fmax_mhz": null,
   "fmax_clocks": null,
   "utilization": null,
@@ -35,21 +35,21 @@
   "dsp": null,
   "demand": {
     "lut4": {
-      "used": 44624,
+      "used": 39397,
       "available": 43848
     },
     "trellis_comb": {
-      "used": 46454,
+      "used": 41217,
       "available": 43848
     },
     "trellis_ff": {
-      "used": 18299,
+      "used": 12978,
       "available": 43848
     }
   },
-  "error": "ERROR: Unable to find legal placement for all cells, design is probably at utilisation limit.",
+  "error": null,
   "report_path": null,
   "report_sha256": null,
-  "netlist_sha256": "fb0ea242d94338ae3178cafe69dfb7d758b041022c128d42b01c7d5373913ef4",
-  "log_sha256": "a997156103a3115070db8ca0f29dcc39a820c6591b857226284f3e358d82ee11"
+  "netlist_sha256": "144e6a130e5b891410999fd3aa378514d301a8bab3411a2bf31df9aec94c8945",
+  "log_sha256": "cfd126a20dc277e0907a54f8da89251ef26e5f3e00f23d2a0e7a41ca64e6b0f4"
 }

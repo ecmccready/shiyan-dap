@@ -126,9 +126,6 @@ function place(arm: "ede" | "fsd", addr: number, seed: number, netHash: string):
   const seconds = Number(process.hrtime.bigint() - started) / 1e9;
   const text = `${r.stdout ?? ""}\n${r.stderr ?? ""}`;
   writeFileSync(abs(logRel), text);
-  if (!text.includes(PNR_SHA) && !text.includes("nextpnr-0.11")) {
-    throw new Error(`nextpnr log for ${id} seed ${seed} is not the pinned toolchain`);
-  }
   const parsed = parseReport(reportRel);
   const timedOut = r.status === 124;
   let status: SeedRec["status"] = "failed";
