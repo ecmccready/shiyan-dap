@@ -1,5 +1,6 @@
 // TEST ONLY. v0.1.24 cycle profile of the closed loop.
-// ENGINE 0 = trimmed K1 (ede), 1 = v0.1.23 hybrid, 2 = pure full scan (fsd).
+// ENGINE 0 = trimmed K1 (ede), 1 = v0.1.23 hybrid, 2 = pure full scan (fsd),
+// 3 = v0.1.24 scp4d_hybrid_pipe.
 // Does not edit those designs. One line per frame, then TOTAL.
 `timescale 1ns/1ps
 `default_nettype none
@@ -62,7 +63,15 @@ module scp4d_loop_profile_tb;
     .ede_valid(eng_valid), .ede_ready(eng_ready), .ede_elem(eng_elem), .ede_code(eng_code),
     .ede_event(eng_event), .ede_eof(eng_eof), .ede_last(eng_last));
   generate
-    if (ENGINE == 1) begin : ghy
+    if (ENGINE == 3) begin : gpi
+      scp4d_hybrid_pipe #(.ADDR_W(ADDR_W), .FAN(4)) hp (
+        .clk(clk), .rst(rst), .mode_relations(1'b0), .threshold(32'sd0), .cfg_D(eng_cfg_D),
+        .cfg_we(1'b0), .cfg_src({ADDR_W{1'b0}}), .cfg_tgt({4*ADDR_W{1'b0}}), .cfg_vld(4'b0),
+        .in_valid(eng_valid), .in_ready(eng_ready), .in_elem(eng_elem), .in_code(eng_code),
+        .in_event(eng_event), .in_eof(eng_eof), .in_last(eng_last),
+        .out_valid(eng_ov), .out_elem(eng_oelem), .out_decision(eng_od), .out_eof(eng_oe),
+        .sel_fsd(eng_sel), .done(eng_done), .err(eng_err), .err_code(), .evals(eng_evals), .cycles(eng_cycles));
+    end else if (ENGINE == 1) begin : ghy
       scp4d_hybrid #(.ADDR_W(ADDR_W), .FAN(4)) hy (
         .clk(clk), .rst(rst), .mode_relations(1'b0), .threshold(32'sd0), .cfg_D(eng_cfg_D),
         .cfg_we(1'b0), .cfg_src({ADDR_W{1'b0}}), .cfg_tgt({4*ADDR_W{1'b0}}), .cfg_vld(4'b0),
@@ -182,6 +191,7 @@ module scp4d_loop_profile_tb;
     if (in_valid && !in_ready) enc_stall = enc_stall + 1;
     if (s_valid && !(dec_ready && room)) out_stall = out_stall + 1;
     if (eng_valid && eng_ready && eng_event) frame_events = frame_events + 1;
+    if (eng_ov) $display("CHG %0d %0d %0d", frame, eng_oelem, eng_od);
     if (eng_oe) begin
       $display("FRAME %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d",
         frame, busy + idle + handoff, eng_cycles - prev_eng, busy, idle, handoff,

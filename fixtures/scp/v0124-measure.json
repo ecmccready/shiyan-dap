@@ -1,0 +1,39 @@
+{
+  "format": "scp4d-v0124-measure",
+  "label": "One Icarus run of scp4d_hybrid_pipe in the closed loop. Power is needs real board.",
+  "rows": [
+    {
+      "addr_w": 8,
+      "pipe_cycles": 16253,
+      "pipe_evals": 2527,
+      "k1_cycles": 18643,
+      "fsd_cycles": 40767,
+      "best": 18643,
+      "beats": true,
+      "bit_exact": true
+    },
+    {
+      "addr_w": 10,
+      "pipe_cycles": 64527,
+      "pipe_evals": 10075,
+      "k1_cycles": 74342,
+      "fsd_cycles": 163151,
+      "best": 74342,
+      "beats": true,
+      "bit_exact": true
+    },
+    {
+      "addr_w": 12,
+      "pipe_cycles": 129723,
+      "pipe_evals": 20182,
+      "k1_cycles": 149496,
+      "fsd_cycles": 326734,
+      "best": 149496,
+      "beats": true,
+      "bit_exact": true
+    }
+  ],
+  "beats_both_baselines": true,
+  "bit_exact": true,
+  "pass": true
+}
