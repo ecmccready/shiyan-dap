@@ -1,0 +1,35 @@
+{
+  "format": "scp4d-v0125-candidate",
+  "label": "Icarus of wrap_loop_k1fast. Pure pipelined K1. Power is needs real board. No place-and-route in this file.",
+  "rows": [
+    {
+      "addr_w": 8,
+      "cycles": 16416,
+      "evals": 2527,
+      "bare_cycles": 16206,
+      "bit_exact": true,
+      "ok": 1,
+      "fsd_frames": 0
+    },
+    {
+      "addr_w": 10,
+      "cycles": 65255,
+      "evals": 10075,
+      "bare_cycles": 64482,
+      "bit_exact": true,
+      "ok": 1,
+      "fsd_frames": 0
+    },
+    {
+      "addr_w": 12,
+      "cycles": 131378,
+      "evals": 20182,
+      "bare_cycles": 129676,
+      "bit_exact": true,
+      "ok": 1,
+      "fsd_frames": 0
+    }
+  ],
+  "bit_exact": true,
+  "full_scan_frames": 0
+}

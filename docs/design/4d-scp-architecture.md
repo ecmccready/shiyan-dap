@@ -2053,12 +2053,36 @@ Decisions/s per LUT, using the ADDR_W 12 grid (20182 evals, 129723 cycles), the 
 
 ## 32. v0.1.25: closed-loop wall time (`v0125`)
 
-**Status.** The rule below is locked in `fixtures/scp/v0125-prereg.json` before any new simulation or place-and-route. Power is **needs real board**. v0.1.19, v0.1.22, v0.1.23 and v0.1.24 RTL stay byte-identical.
+**Status.** Measured. Verdict **PASS**. The rule is locked in `fixtures/scp/v0125-prereg.json`, committed before this run. The result is pure pipelined K1, not a hybrid. Power is **needs real board**. v0.1.19, v0.1.22, v0.1.23 and v0.1.24 RTL stay byte-identical.
 
 v0.1.24 won on cycles and left three honest gaps. The pipe selector never ran a full scan. There was no placed pipelined-K1 loop without that unused engine. The five-seed median Fmax fell from 35.09634017944336 MHz on `loop-ede-w4l8` to 30.498031616210938 MHz on `loop-k1pipe-w4l8`, so wall time (cycles / Fmax) was nearly a tie. The committed seed-1 timing report for that pipe puts the critical path in the decoder (`dec.ph` to `dec.fe.tq`), 32.789 ns, mostly routing. This milestone does not call a pure pipelined-K1 result a hybrid win.
 
 **Metric.** Wall time in microseconds is held-out loop cycles divided by that design's own five-seed 45F median Fmax in MHz. All three of ADDR_W 8, 10 and 12 are required. One placed netlist per design, ADDR_W 11, `cfg_D` equal to the workload D.
 
-**Baselines, not yet measured.** `wrap_loop_k1bare` is the v0.1.22 codec and tap into `scp4d_ede_pipe`, with no full-scan engine and no selector. `wrap_loop_fsdonly` is the same codec and tap into `scp4d_fsd` only. The v0.1.22 loop stays the reference: median 35.09634017944336 MHz and the profile's K1 cycle totals. Strongest K1 is the smaller wall time of the bare pipe and that reference.
+**Baselines.** `wrap_loop_k1bare` is the v0.1.22 codec and tap into `scp4d_ede_pipe`, with no full-scan engine and no selector. `wrap_loop_fsdonly` is the same codec and tap into `scp4d_fsd` only. The v0.1.22 loop stays the reference: median 35.09634017944336 MHz and the profile's K1 cycle totals. Strongest K1 is the smaller wall time of the bare pipe and that reference.
 
-**Candidate, not yet measured.** One new loop, `wrap_loop_k1fast`. It keeps the pipelined event engine's decision records. Its only change from the bare pipe is one register cut, in a new copy of whichever module owns the bare pipe's critical path. One cut, then one simulation and one place-and-route. No second cut on this held-out set.
+**Candidate.** One new loop, `wrap_loop_k1fast`. It keeps the pipelined event engine's decision records. Its only change from the bare pipe is one register cut, in a new copy of the module that owns the bare pipe's critical path. One cut, then one simulation and one place-and-route.
+
+**Critical path.** On `loop-k1bare-w4l8` the median seed is seed 1. The path starts at `dec.ph` and ends at `dec.fe.tq`, 31.398 ns, the seed's 31.84916114807129 MHz. It is the decoder pop into the token queue, the same cone as the v0.1.24 seed-1 path. `scp4d_fe_r_fast` shifts that queue by the previous cycle's pop, and `scp4d_tdec_s_w4_fast` holds the classifier for that one cycle. After the cut, the median seed is seed 5. The path starts at `dec.cbe` and ends at `dec.rq[0]`, 26.097 ns, 38.318580627441406 MHz. The pop path is no longer the limiter.
+
+**Icarus.** Decision sets match. Full-scan frames on the candidate are 0. Cycles: bare 16206 / 64482 / 129676, full scan 40767 / 163151 / 326734, candidate 16416 / 65255 / 131378. The extra pop cycle adds 210 / 773 / 1702 cycles.
+
+**Place and route.** Five of five 45F seeds routed for each new loop. 12F and 25F do not place. Smallest part is 45F.
+
+| Loop | Median Fmax (MHz) | Seed | TRELLIS_COMB | DP16KD | 85F seed 1 |
+| --- | --- | --- | --- | --- | --- |
+| bare pipelined K1 | 31.84916114807129 | 1 | 31192 | 39 | 34.168174743652344 MHz, 127.38 s |
+| full scan | 33.58522415161133 | 5 | 31173 | 36 | 30.67578887939453 MHz, 134.708 s |
+| retimed pipelined K1 | 38.318580627441406 | 5 | 32497 | 39 | 37.285606384277344 MHz, 131.367 s |
+
+Bare seeds 31.84916114807129, 34.547088623046875, 33.00983810424805, 31.557687759399414, 30.29109764099121 MHz. Walls 117.233, 105.164, 132.019, 108.324, 177.218 s. Full-scan seeds 32.148136138916016, 34.485137939453125, 31.475244522094727, 34.1413459777832, 33.58522415161133 MHz. Walls 132.689, 117.473, 127.286, 113.658, 143.713 s. Candidate seeds 38.5178337097168, 38.393611907958984, 36.12586212158203, 38.02714920043945, 38.318580627441406 MHz. Walls 143.511, 142.867, 159.418, 134.424, 134.488 s.
+
+**Wall time, microseconds.** Strongest K1 is the bare pipe at every width. The candidate is under that and under the full-scan loop.
+
+| ADDR_W | candidate | bare pipe | old K1 | full scan |
+| --- | --- | --- | --- | --- |
+| 8 | 428.408353 | 508.836007 | 531.194988 | 1213.837365 |
+| 10 | 1702.959737 | 2024.605913 | 2118.226562 | 4857.820786 |
+| 12 | 3428.571671 | 4071.567204 | 4259.589440 | 9728.504372 |
+
+Decisions/s per LUT of the candidate, ADDR_W 12 (20182 evals, 131378 cycles), the median Fmax and 32497 `TRELLIS_COMB`, is 181.13722038937402. Standalone full scan remains 71397.91807427029. The loop loses, as pre-registered. The v0.1.21 sweep stays **FAIL**.

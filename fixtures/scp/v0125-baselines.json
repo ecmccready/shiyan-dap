@@ -1,0 +1,55 @@
+{
+  "format": "scp4d-v0125-baselines",
+  "label": "Icarus cycles of wrap-equivalent bare pipelined K1 and pure full scan. Power is needs real board. No place-and-route.",
+  "rows": [
+    {
+      "engine": "k1bare",
+      "addr_w": 8,
+      "cycles": 16206,
+      "evals": 2527,
+      "bit_exact": true,
+      "ok": 1
+    },
+    {
+      "engine": "fsdonly",
+      "addr_w": 8,
+      "cycles": 40767,
+      "evals": 16384,
+      "bit_exact": true,
+      "ok": 1
+    },
+    {
+      "engine": "k1bare",
+      "addr_w": 10,
+      "cycles": 64482,
+      "evals": 10075,
+      "bit_exact": true,
+      "ok": 1
+    },
+    {
+      "engine": "fsdonly",
+      "addr_w": 10,
+      "cycles": 163151,
+      "evals": 65536,
+      "bit_exact": true,
+      "ok": 1
+    },
+    {
+      "engine": "k1bare",
+      "addr_w": 12,
+      "cycles": 129676,
+      "evals": 20182,
+      "bit_exact": true,
+      "ok": 1
+    },
+    {
+      "engine": "fsdonly",
+      "addr_w": 12,
+      "cycles": 326734,
+      "evals": 131072,
+      "bit_exact": true,
+      "ok": 1
+    }
+  ],
+  "bit_exact": true
+}
