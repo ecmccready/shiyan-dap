@@ -1,0 +1,75 @@
+{
+  "format": "scp4d-v0122-prereg",
+  "version": 1,
+  "milestone": "v0.1.22",
+  "title": "K1 closed loop routes on the 45F with five seeds",
+  "spec": "docs/design/4d-scp-architecture.md §29",
+  "branch": "cursor/scp-v0122-k1-loop-route-784b",
+  "label": "TEST ONLY. Pre-registration committed before any v0.1.22 trim measurement or place-and-route. No Fmax and no trimmed cell count in this file. Power is needs real board. The v0.1.21 sweep verdict stays FAIL. This milestone does not claim a per-LUT win for K1. No other threshold changes.",
+  "locked_decisions": {
+    "name": "v0.1.22",
+    "files": "v0122",
+    "spec_section": 29,
+    "branch": "cursor/scp-v0122-k1-loop-route-784b",
+    "v0_2": "reserved for the first product-facing page",
+    "hardware_default": "temporal-only",
+    "relations": "behind a mode bit",
+    "power": "needs real board",
+    "energy_numeric_estimates": false,
+    "no_per_lut_win_claim": true,
+    "v0121_sweep_verdict_stands": "FAIL",
+    "other_thresholds_unchanged": true,
+    "toolchain": {
+      "oss_cad_suite": "20261118",
+      "yosys": "Yosys 0.71+50 (git sha1 583f380c6)",
+      "nextpnr_ecp5": "nextpnr-0.11.1-103-ge811ba48",
+      "refuse_other_toolchains": true
+    }
+  },
+  "seeds": [1, 2, 3, 4, 5],
+  "bound_s": 7200,
+  "flow": {
+    "same_as": ["v0.1.19", "v0.1.21"],
+    "device": "LFE5U-45F",
+    "package": "CABGA381",
+    "router": "router2",
+    "freq_mhz_target": 12,
+    "timing_allow_fail": true,
+    "lpf_allow_unconstrained": true,
+    "note": "The 12 MHz flag is the target, not the result. Do not loosen the bound or change these flags."
+  },
+  "part_45f": {
+    "device": "LFE5U-45F",
+    "package": "CABGA381",
+    "trellis_comb_capacity": 43848,
+    "target_trellis_comb": 37270,
+    "target_fraction": 0.85,
+    "dp16kd_available": 108
+  },
+  "fit": {
+    "design": "loop-ede-w4l8",
+    "path": "tenc_q -> tdec_s -> scp4d_ede",
+    "success": "All five seeds route on LFE5U-45F and a five-seed median Fmax is reported. TRELLIS_COMB <= 37270. Decoder codes and K1 decision records stay bit-exact with the golden model.",
+    "baseline_from_v0121": {
+      "note": "Committed v0.1.21 nextpnr demand. Not a v0.1.22 measurement.",
+      "loop_trellis_comb": 41217,
+      "loop_lut4": 39397,
+      "loop_ff": 12978,
+      "loop_dp16kd": 46,
+      "seeds_routed": 1,
+      "seeds_not_completed": 4
+    },
+    "allowed_trims_in_order": [
+      "Move register-file and bank storage in the W4 decoder and the W4 encoder into DP16KD.",
+      "Share or time-multiplex duplicated per-lane logic.",
+      "Shrink the k1_tap queue further."
+    ],
+    "bit_exact_rule": "A trim that changes cycle behaviour or outputs ships as a new named variant (scp4d_tdec_s_w4_bram or scp4d_tenc_q_w4l8_bram) with its own golden vectors and an Icarus bit-exact check. The v0.1.19 designs and their recorded results stay byte-identical. Any variant reports its env T64 cycle count.",
+    "stop_rule": "If the trim cannot reach TRELLIS_COMB <= 37270, or the five seeds do not route, stop and report the best demand and the per-seed outcomes. Do not loosen the bound. Do not change the flags. Do not invent a fit."
+  },
+  "verdict": {
+    "PASS": "All five seeds route and TRELLIS_COMB <= 37270.",
+    "MIXED": "At least three of five seeds route, or all five route but TRELLIS_COMB is above 37270.",
+    "FAIL": "Fewer than three seeds route."
+  }
+}

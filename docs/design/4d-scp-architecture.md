@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29).
 
 **Reproduce.**
 
@@ -1892,3 +1892,13 @@ decisions/s per LUT is `(evals / cycles) × median Fmax_MHz × 1e6 / TRELLIS_COM
 | 12 | very_high | 17017.165871207482 | 61239.16651644512 | 0.27788042913088484 |
 
 K1 wins no cell. The highest ratio is 0.3362874584321748, at ADDR_W 10 and very high churn. There is no crossover at 1.0×. The pre-registered verdict is **FAIL**. Power is **needs real board**.
+
+## 29. v0.1.22: K1 closed loop routes on the 45F with five seeds (draft)
+
+**Status of this section.** Draft header, pre-registered before any v0.1.22 trim measurement or place-and-route. `fixtures/scp/v0122-prereg.json` is the locked text. This section does not yet contain a trimmed cell count, a per-module breakdown, or a five-seed Fmax. v0.2 stays reserved for the first product-facing page. Files use the tag `v0122`. The branch is `cursor/scp-v0122-k1-loop-route-784b`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A place-and-route number from any other toolchain is not recorded. Power is **needs real board**. The v0.1.21 sweep verdict stays **FAIL**. This milestone does not claim a per-LUT win for K1. No other threshold changes.
+
+**Fit goal.** `loop-ede-w4l8` (`tenc_q` → `tdec_s` → `scp4d_ede`) routes on LFE5U-45F for seeds 1, 2, 3, 4 and 5. Same seeds, same 7200 s bound, same router and flags as v0.1.19 and v0.1.21 (`--45k`, package CABGA381, router2, `--freq 12`, `--timing-allow-fail`, `--lpf-allow-unconstrained`). Target `TRELLIS_COMB` ≤ 37270, which is 85% of 43848. A five-seed median Fmax is reported only when all five seeds route. Decoder codes and K1 decision records stay bit-exact with the golden model. Temporal-only stays the default. Relations stay behind the mode bit.
+
+**Verdict (locked).** **PASS** if all five seeds route and `TRELLIS_COMB` ≤ 37270. **MIXED** if at least three of five seeds route, or if all five route but `TRELLIS_COMB` is above 37270. **FAIL** otherwise. If the trim cannot reach 37270, or the five seeds do not route, the run stops and reports the best demand and the per-seed outcomes. The bound and the flags stay as registered.
+
+**Allowed trims, in this order.** Move register-file and bank storage in the W=4 decoder and the W=4 encoder into `DP16KD` (the 45F has 108; the v0.1.21 loop uses 46). Share or time-multiplex duplicated per-lane logic. Shrink the `k1_tap` queue further. A trim that changes cycle behaviour or outputs ships as a new named variant (`scp4d_tdec_s_w4_bram` or `scp4d_tenc_q_w4l8_bram`) with its own golden vectors and an Icarus bit-exact check. The v0.1.19 designs and their recorded results stay byte-identical. Any variant reports its env T64 cycle count honestly. Power is **needs real board**.
