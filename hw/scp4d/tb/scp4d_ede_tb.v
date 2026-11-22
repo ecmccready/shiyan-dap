@@ -14,8 +14,8 @@
 module scp4d_ede_tb;
   parameter integer ADDR_W = 8;
   parameter integer FAN = 4;
-  localparam integer MAX_T = 32768;
-  localparam integer MAX_E = 32768;
+  localparam integer MAX_T = 131072;
+  localparam integer MAX_E = 131072;
   localparam integer MAX_FAN = 4096;
 
   reg clk = 0, rst = 1;

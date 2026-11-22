@@ -1,0 +1,284 @@
+{
+  "format": "scp4d-v0121-sweep-cycles",
+  "label": "Icarus cycle counts only. Fmax is not in this file. Power is needs real board. Churn reuses one place-and-route per ADDR_W.",
+  "T": 64,
+  "threshold": 0,
+  "predictor": "last",
+  "relations": false,
+  "tools": {
+    "iverilog": "Icarus Verilog version 14.0 (devel) (s20260301-1164-g0b15315c1-dirty)"
+  },
+  "hashes": {
+    "hw/scp4d/rtl/scp4d_ede.v": "2a5a619e7626b706c046650a33b540e89630f0d73512c995789c96dadf1b2e93",
+    "hw/scp4d/rtl/scp4d_fsd.v": "7a4dba118628cd14f04ad0aaf3dbe3f74f18a6c283f2bf46df2308df99a0d3d7",
+    "hw/scp4d/tb/scp4d_ede_tb.v": "aa47df5872d184b8792978a1c4559e47ca0120d78d5e8751e78efc29818591fb",
+    "scripts/scp-v0120-ede-model.ts": "5d097982ed74d69ee906c22bfb7dac1f7bc472e7a3c6482557b685102bdbef98",
+    "scripts/scp-v0121-sweep-cycles.ts": "6e29f160c41888a07d364d59d1c5dc4c9d5115a16fe5ced993a2700301a8476b"
+  },
+  "rows": [
+    {
+      "addr_w": 8,
+      "D": 256,
+      "churn": "low",
+      "fraction": 0.01,
+      "arm": "ede",
+      "cycles": 1472,
+      "evals": 192,
+      "changes": 92,
+      "icarus_s": 0.038
+    },
+    {
+      "addr_w": 8,
+      "D": 256,
+      "churn": "low",
+      "fraction": 0.01,
+      "arm": "fsd",
+      "cycles": 33280,
+      "evals": 16384,
+      "changes": 92,
+      "icarus_s": 0.196
+    },
+    {
+      "addr_w": 8,
+      "D": 256,
+      "churn": "medium",
+      "fraction": 0.05,
+      "arm": "ede",
+      "cycles": 5312,
+      "evals": 832,
+      "changes": 416,
+      "icarus_s": 0.061
+    },
+    {
+      "addr_w": 8,
+      "D": 256,
+      "churn": "medium",
+      "fraction": 0.05,
+      "arm": "fsd",
+      "cycles": 33920,
+      "evals": 16384,
+      "changes": 416,
+      "icarus_s": 0.207
+    },
+    {
+      "addr_w": 8,
+      "D": 256,
+      "churn": "high",
+      "fraction": 0.2,
+      "arm": "ede",
+      "cycles": 19904,
+      "evals": 3264,
+      "changes": 1571,
+      "icarus_s": 0.154
+    },
+    {
+      "addr_w": 8,
+      "D": 256,
+      "churn": "high",
+      "fraction": 0.2,
+      "arm": "fsd",
+      "cycles": 36352,
+      "evals": 16384,
+      "changes": 1571,
+      "icarus_s": 0.232
+    },
+    {
+      "addr_w": 8,
+      "D": 256,
+      "churn": "very_high",
+      "fraction": 0.5,
+      "arm": "ede",
+      "cycles": 49472,
+      "evals": 8192,
+      "changes": 4074,
+      "icarus_s": 0.345
+    },
+    {
+      "addr_w": 8,
+      "D": 256,
+      "churn": "very_high",
+      "fraction": 0.5,
+      "arm": "fsd",
+      "cycles": 41280,
+      "evals": 16384,
+      "changes": 4074,
+      "icarus_s": 0.291
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "churn": "low",
+      "fraction": 0.01,
+      "arm": "ede",
+      "cycles": 4928,
+      "evals": 640,
+      "changes": 314,
+      "icarus_s": 0.069
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "churn": "low",
+      "fraction": 0.01,
+      "arm": "fsd",
+      "cycles": 132800,
+      "evals": 65536,
+      "changes": 314,
+      "icarus_s": 0.716
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "churn": "medium",
+      "fraction": 0.05,
+      "arm": "ede",
+      "cycles": 20672,
+      "evals": 3264,
+      "changes": 1625,
+      "icarus_s": 0.168
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "churn": "medium",
+      "fraction": 0.05,
+      "arm": "fsd",
+      "cycles": 135424,
+      "evals": 65536,
+      "changes": 1625,
+      "icarus_s": 0.737
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "churn": "high",
+      "fraction": 0.2,
+      "arm": "ede",
+      "cycles": 79808,
+      "evals": 13120,
+      "changes": 6604,
+      "icarus_s": 0.546
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "churn": "high",
+      "fraction": 0.2,
+      "arm": "fsd",
+      "cycles": 145280,
+      "evals": 65536,
+      "changes": 6604,
+      "icarus_s": 0.874
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "churn": "very_high",
+      "fraction": 0.5,
+      "arm": "ede",
+      "cycles": 197696,
+      "evals": 32768,
+      "changes": 16336,
+      "icarus_s": 1.312
+    },
+    {
+      "addr_w": 10,
+      "D": 1024,
+      "churn": "very_high",
+      "fraction": 0.5,
+      "arm": "fsd",
+      "cycles": 164928,
+      "evals": 65536,
+      "changes": 16336,
+      "icarus_s": 1.103
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "churn": "low",
+      "fraction": 0.01,
+      "arm": "ede",
+      "cycles": 9792,
+      "evals": 1280,
+      "changes": 653,
+      "icarus_s": 0.112
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "churn": "low",
+      "fraction": 0.01,
+      "arm": "fsd",
+      "cycles": 265536,
+      "evals": 131072,
+      "changes": 653,
+      "icarus_s": 1.397
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "churn": "medium",
+      "fraction": 0.05,
+      "arm": "ede",
+      "cycles": 41280,
+      "evals": 6528,
+      "changes": 3283,
+      "icarus_s": 0.312
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "churn": "medium",
+      "fraction": 0.05,
+      "arm": "fsd",
+      "cycles": 270784,
+      "evals": 131072,
+      "changes": 3283,
+      "icarus_s": 1.465
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "churn": "high",
+      "fraction": 0.2,
+      "arm": "ede",
+      "cycles": 159552,
+      "evals": 26240,
+      "changes": 12976,
+      "icarus_s": 1.082
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "churn": "high",
+      "fraction": 0.2,
+      "arm": "fsd",
+      "cycles": 290496,
+      "evals": 131072,
+      "changes": 12976,
+      "icarus_s": 1.697
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "churn": "very_high",
+      "fraction": 0.5,
+      "arm": "ede",
+      "cycles": 395328,
+      "evals": 65536,
+      "changes": 32929,
+      "icarus_s": 2.631
+    },
+    {
+      "addr_w": 12,
+      "D": 2048,
+      "churn": "very_high",
+      "fraction": 0.5,
+      "arm": "fsd",
+      "cycles": 329792,
+      "evals": 131072,
+      "changes": 32929,
+      "icarus_s": 2.182
+    }
+  ]
+}

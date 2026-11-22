@@ -22,13 +22,13 @@
     "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-ede-w4l8/85F-route-seed1.report.json"
   ],
   "command_sha256": "58763377a96e551f953622d416932dd6fd9d57e518322f657bd7b5b25c6030b5",
-  "wall_clock_s": 225.281,
+  "wall_clock_s": 165.074,
   "exit_code": 0,
   "status": "routed",
   "not_completed_within_s": null,
-  "fmax_mhz": 35.2957763671875,
+  "fmax_mhz": 28.93937110900879,
   "fmax_clocks": {
-    "$glbnet$clk$TRELLIS_IO_IN": 35.2957763671875
+    "$glbnet$clk$TRELLIS_IO_IN": 28.93937110900879
   },
   "utilization": {
     "ALU54B": {
@@ -60,7 +60,7 @@
       "available": 8
     },
     "DP16KD": {
-      "used": 41,
+      "used": 46,
       "available": 208
     },
     "DQSBUFM": {
@@ -124,7 +124,7 @@
       "available": 141
     },
     "TRELLIS_COMB": {
-      "used": 46454,
+      "used": 41217,
       "available": 83640
     },
     "TRELLIS_ECLKBUF": {
@@ -132,7 +132,7 @@
       "available": 8
     },
     "TRELLIS_FF": {
-      "used": 18299,
+      "used": 12978,
       "available": 83640
     },
     "TRELLIS_IO": {
@@ -140,7 +140,7 @@
       "available": 365
     },
     "TRELLIS_RAMW": {
-      "used": 6,
+      "used": 0,
       "available": 10455
     },
     "USRMCLK": {
@@ -152,27 +152,27 @@
       "available": 1
     }
   },
-  "lut": 46454,
-  "ff": 18299,
-  "bram": 41,
+  "lut": 41217,
+  "ff": 12978,
+  "bram": 46,
   "dsp": 2,
   "demand": {
     "lut4": {
-      "used": 44624,
+      "used": 39397,
       "available": 83640
     },
     "trellis_comb": {
-      "used": 46454,
+      "used": 41217,
       "available": 83640
     },
     "trellis_ff": {
-      "used": 18299,
+      "used": 12978,
       "available": 83640
     }
   },
   "error": null,
   "report_path": "fixtures/scp/v0119-pnr/loop-ede-w4l8/85F-route-seed1.report.json",
-  "report_sha256": "b75c77da23059cc1e755694420b966cf68b0d860439a43de52aa2946137f6a1c",
-  "netlist_sha256": "fb0ea242d94338ae3178cafe69dfb7d758b041022c128d42b01c7d5373913ef4",
-  "log_sha256": "e73b852f081be651545aec5a4af8fc83c4787e490cdae7fbaa214b8e0e23db30"
+  "report_sha256": "3c2e07c9ffe2eb1d13e98a9a44f9ae64e33fcfa22943d11a6b517b71bd1777b7",
+  "netlist_sha256": "144e6a130e5b891410999fd3aa378514d301a8bab3411a2bf31df9aec94c8945",
+  "log_sha256": "58a06fda36a8956856c78fb12d2a910bef7401d3cde00b2b37788ce5ef81b72d"
 }

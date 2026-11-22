@@ -1,0 +1,74 @@
+{
+  "format": "scp4d-v0121-prereg",
+  "version": 1,
+  "milestone": "v0.1.21",
+  "title": "K1 closed loop on the 45F + K1-vs-full-scan sweep",
+  "spec": "docs/design/4d-scp-architecture.md §28",
+  "branch": "feat/scp-v0121-k1-loop-fit",
+  "label": "TEST ONLY. Pre-registration committed before any v0.1.21 measurement. No Fmax, no sweep verdict, and no trimmed cell count in this file. Power is needs real board.",
+  "locked_decisions": {
+    "name": "v0.1.21",
+    "files": "v0121",
+    "spec_section": 28,
+    "branch": "feat/scp-v0121-k1-loop-fit",
+    "v0_2": "reserved for the first product-facing page",
+    "hardware_default": "temporal-only",
+    "relations": "behind a mode bit",
+    "power": "needs real board",
+    "energy_numeric_estimates": false,
+    "toolchain": {
+      "oss_cad_suite": "20261118",
+      "yosys": "Yosys 0.71+50 (git sha1 583f380c6)",
+      "nextpnr_ecp5": "nextpnr-0.11.1-103-ge811ba48",
+      "refuse_other_toolchains": true
+    }
+  },
+  "seeds": [1, 2, 3, 4, 5],
+  "bound_s": 7200,
+  "part_45f": {
+    "device": "LFE5U-45F",
+    "package": "CABGA381",
+    "trellis_comb_capacity": 43848
+  },
+  "fit": {
+    "design": "loop-ede-w4l8",
+    "path": "tenc_q -> tdec_s -> scp4d_ede",
+    "goal": "places and routes on LFE5U-45F for all five seeds, TRELLIS_COMB <= 43848, bit-exact decoder codes and K1 decision records versus the golden model",
+    "margin": "aim for TRELLIS_COMB <= 95% of 43848",
+    "baseline_from_v0120": {
+      "note": "Committed v0.1.20 pack-log demand and placed constituent LUT counts. Not a v0.1.21 measurement.",
+      "loop_trellis_comb": 46454,
+      "part_capacity": 43848,
+      "shortfall": 2606,
+      "tenc_q_w4l8_lut": 18882,
+      "tdec_s_w4_lut": 24084,
+      "ede_temporal_lut": 631
+    },
+    "allowed_trims": "W4 encoder and/or W4 decoder datapath only. K1 RTL (scp4d_ede, scp4d_fsd) stays unchanged except where the loop integration requires it. Temporal-only stays the default.",
+    "bit_exact_rule": "A trim keeps the v0.1.19 bit-exact regression passing for the trimmed modules, or it ships as a new named variant (tenc_q_w4l8_lite / tdec_s_w4_lite) with its own golden vectors. The v0.1.19 designs stay untouched.",
+    "stop_rule": "If the loop cannot place on the 45F without breaking bit-exactness, stop and report the best demand. Do not invent a fit."
+  },
+  "sweep": {
+    "metric": "decisions/s per LUT = (evals / cycles) * five-seed 45F median Fmax_MHz * 1e6 / TRELLIS_COMB of the median-Fmax seed",
+    "evals": "threshold compares (code > threshold), not emitted decision-change records",
+    "arms": ["ede-temporal", "fsd"],
+    "addr_w": [8, 10, 12],
+    "addr_w_fallback": "If an ADDR_W does not place on the 45F, drop it and keep the largest ADDR_W that does place. Do not invent an Fmax for a width that did not route.",
+    "churn_levels": [
+      { "id": "low", "fraction": 0.01 },
+      { "id": "medium", "fraction": 0.05 },
+      { "id": "high", "fraction": 0.2 },
+      { "id": "very_high", "fraction": 0.5 }
+    ],
+    "churn_source": "fixtures/scp/v0120-prereg.json churn_levels (the E1-E5 definitions)",
+    "temporal_stream": "For each ADDR_W the five 45F seeds are placed once. Fmax and TRELLIS_COMB are that placement. Churn does not get its own place-and-route: evals and cycles come from Icarus on a temporal-only stream at that ADDR_W, and the same Fmax and LUT are reused.",
+    "stream_width": "D is the largest power-of-two depth that fits in ADDR_W and in the env T64 spatial size (D = 2048) . ADDR_W 8 uses D = 256. ADDR_W 10 uses D = 1024. ADDR_W 12 uses D = 2048. T = 64. Predictor last. Relations off. Churn picks max(1, round(fraction * D)) elements per frame.",
+    "win": "K1 wins a cell (ADDR_W, churn) when its decisions/s per LUT is >= 1.0 times fsd, using the five-seed median Fmax and the median-Fmax seed's TRELLIS_COMB.",
+    "verdict": {
+      "PASS": "K1 wins at least one pre-registered cell, and the win is not only the MIXED case.",
+      "MIXED": "K1 wins only at the largest ADDR_W that was placed, and every winning cell at that width has ratio < 1.1.",
+      "FAIL": "K1 wins no pre-registered cell."
+    },
+    "serial": "The sweep place-and-route does not run at the same time as the loop fit place-and-route."
+  }
+}
