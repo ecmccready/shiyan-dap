@@ -1,0 +1,73 @@
+{
+  "format": "scp4d-v0125-prereg",
+  "version": 1,
+  "milestone": "v0.1.25",
+  "spec": "docs/design/4d-scp-architecture.md §32",
+  "branch": "cursor/scp-v0125-wall-clock-784b",
+  "label": "Locked before any v0.1.25 simulation or place-and-route. Power is needs real board. v0.1.19, v0.1.22, v0.1.23 and v0.1.24 RTL stay byte-identical. This candidate is pure pipelined K1. It is not a hybrid.",
+  "caveats_from_v0124": {
+    "selector": "scp4d_hybrid_pipe sets next_fsd to 0, so full scan never ran. That is not a hybrid result.",
+    "missing_baseline": "There is no placed loop that is scp4d_ede_pipe alone, without scp4d_fsd and without a selector.",
+    "fmax": "loop-ede-w4l8 median Fmax is 35.09634017944336 MHz. loop-k1pipe-w4l8 median Fmax is 30.498031616210938 MHz. Cycle wins and the slower clock nearly cancel in wall time."
+  },
+  "known_critical_path": "Committed fixtures/scp/v0119-pnr/loop-k1pipe-w4l8/45F-route-seed1.report.json. The seed-1 path starts at dec.ph and ends at dec.fe.tq[4]. Sum of hop delays is 32.78899972140789 ns, which is that seed's 30.498031616210938 MHz. The path is routing-dominated and sits in scp4d_tdec_s_w4_bram. The cut for the candidate follows wrap_loop_k1bare's median-seed report if that path is in a different module. The seed-1 decoder path is the expected target.",
+  "metric": {
+    "name": "held-out wall time",
+    "unit": "microseconds",
+    "formula": "wall_us = cycles / fmax_mhz",
+    "fmax": "That design's own five-seed 45F median Fmax. One netlist, used at every width.",
+    "cycles": "Icarus wall cycles of that named wrapper on the held-out grid at that ADDR_W. RTL parameter ADDR_W is 11. cfg_D is the workload D.",
+    "workload": "The v0.1.24 held-out grids: seed 9, T=64, 16 frames each of low, medium, high, very_high. Not a new workload."
+  },
+  "baselines": {
+    "pipelined_k1": {
+      "id": "loop-k1bare-w4l8",
+      "top": "wrap_loop_k1bare",
+      "path": "scp4d_tenc_q_w4l8_bram -> scp4d_tdec_s_w4_bram -> scp4d_k1_tap -> scp4d_ede_pipe",
+      "full_scan": false,
+      "selector": false
+    },
+    "full_scan": {
+      "id": "loop-fsdonly-w4l8",
+      "top": "wrap_loop_fsdonly",
+      "path": "scp4d_tenc_q_w4l8_bram -> scp4d_tdec_s_w4_bram -> scp4d_k1_tap -> scp4d_fsd",
+      "full_scan": true,
+      "selector": false
+    },
+    "old_k1_reference": {
+      "id": "loop-ede-w4l8",
+      "fmax_mhz_median": 35.09634017944336,
+      "cycles": {"8": 18643, "10": 74342, "12": 149496},
+      "cycle_source": "fixtures/scp/v0124-profile.json totals, engine ede",
+      "fmax_source": "fixtures/scp/v0119-industry-benchmark.json designs loop-ede-w4l8 fmax_mhz.median",
+      "rerun": false
+    }
+  },
+  "strongest_k1": "At each ADDR_W, the smaller wall time of loop-k1bare-w4l8 and the old K1 reference.",
+  "candidate": {
+    "id": "loop-k1fast-w4l8",
+    "top": "wrap_loop_k1fast",
+    "kind": "pure pipelined K1",
+    "not_a_hybrid": true,
+    "full_scan_frames_required": 0,
+    "rule": "Same decision records as scp4d_ede_pipe. One register cut, in a new copy of the module that owns wrap_loop_k1bare's critical path at the median-Fmax seed. v0.1.22, v0.1.23 and v0.1.24 sources are not edited. One cut, one simulation, one place-and-route."
+  },
+  "selector": "None. No threshold is fit. A hybrid that must run both engines is not this candidate. The committed profile shows a blocking full scan is slower than K1 in this closed loop at every churn band. Calling a pure pipelined-K1 result a hybrid win is a FAIL of the label, even if the wall time wins.",
+  "widths_required": "All three of ADDR_W 8, 10 and 12.",
+  "wall_PASS": "Candidate wall time is strictly less than the smaller of strongest K1 and the full-scan loop at every required width.",
+  "bit_exact_PASS": "The candidate's decision-change set matches the shared-state golden for an ede engine on that grid. Order inside a frame may follow the tap. The full-scan baseline is checked against the full-scan golden. The bare pipe is checked against the ede golden.",
+  "fit": {
+    "designs": ["loop-k1bare-w4l8", "loop-fsdonly-w4l8", "loop-k1fast-w4l8"],
+    "PASS": "All five 45F seeds of that design route within 7200 s.",
+    "flags": "OSS CAD Suite 20261118, Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, router2, seeds 1-5, --45k CABGA381, --freq 12, --timing-allow-fail. Serial. No parallel nextpnr.",
+    "record": ["per-seed Fmax", "median", "TRELLIS_COMB", "DP16KD", "smallest part", "85F seed 1", "critical path of the bare pipe and of the candidate"]
+  },
+  "per_lut_expectation": "The loop contains the codec. Decisions/s per LUT uses (evals/cycles) * median Fmax_MHz * 1e6 / TRELLIS_COMB on the ADDR_W 12 grid. Standalone full scan in the committed benchmark is 71397.91807427029. v0.1.24's placed pipe is 150.30925359248772. A faster clock raises the loop's number and it is still expected to lose to standalone full scan by a wide margin. That loss is not a FAIL. The v0.1.21 sweep stays FAIL.",
+  "verdict": {
+    "PASS": "wall_PASS and bit_exact_PASS and fit PASS for the candidate, and the result is labeled pure pipelined K1 with zero full-scan frames.",
+    "STOP": "Bit-exact, at least three 45F seeds route, and at least one width does not strictly beat min(strongest K1, full-scan loop). Report the measured wall times and stop. No second cut.",
+    "FAIL": "Decision records do not match, or fewer than three candidate seeds route, or a pure pipelined-K1 result is labeled a hybrid win."
+  },
+  "stop": "One candidate. If it does not PASS, report the best wall times of the candidate, the bare pipe, the old K1 reference and the full-scan loop, and stop. Do not tune a selector on this held-out set. Do not add another pipeline cut after seeing the wall times.",
+  "power": "needs real board"
+}
