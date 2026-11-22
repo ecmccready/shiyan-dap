@@ -1,0 +1,144 @@
+{
+  "format": "scp4d-v0126-train",
+  "label": "Training only. Seed 4. Not the held-out seed 9 grids. Power is needs real board.",
+  "seed": 4,
+  "fractions": [
+    0.02,
+    0.08,
+    0.15,
+    0.35,
+    0.45,
+    0.55
+  ],
+  "frames_per_fraction": 8,
+  "disjoint_from_held_out": "Held-out uses seed 9 and fractions 0.01, 0.05, 0.2, 0.5. Training uses seed 4 and fractions 0.02, 0.08, 0.15, 0.35, 0.45, 0.55. The RNG is mulberry32((seed * 10007 + addrW) >>> 0). No training frame is a held-out frame.",
+  "bands": [
+    {
+      "addr_w": 8,
+      "fraction": 0.02,
+      "k1_cycles": 621,
+      "fsd_cycles": 4493,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 8,
+      "fraction": 0.08,
+      "k1_cycles": 948,
+      "fsd_cycles": 4586,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 8,
+      "fraction": 0.15,
+      "k1_cycles": 1589,
+      "fsd_cycles": 4951,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 8,
+      "fraction": 0.35,
+      "k1_cycles": 3417,
+      "fsd_cycles": 5917,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 8,
+      "fraction": 0.45,
+      "k1_cycles": 4421,
+      "fsd_cycles": 6427,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 8,
+      "fraction": 0.55,
+      "k1_cycles": 5494,
+      "fsd_cycles": 6940,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 10,
+      "fraction": 0.02,
+      "k1_cycles": 2678,
+      "fsd_cycles": 17974,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 10,
+      "fraction": 0.08,
+      "k1_cycles": 3816,
+      "fsd_cycles": 18480,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 10,
+      "fraction": 0.15,
+      "k1_cycles": 6503,
+      "fsd_cycles": 19949,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 10,
+      "fraction": 0.35,
+      "k1_cycles": 14164,
+      "fsd_cycles": 23962,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 10,
+      "fraction": 0.45,
+      "k1_cycles": 18258,
+      "fsd_cycles": 26004,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 10,
+      "fraction": 0.55,
+      "k1_cycles": 21960,
+      "fsd_cycles": 27800,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 12,
+      "fraction": 0.02,
+      "k1_cycles": 5831,
+      "fsd_cycles": 35978,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 12,
+      "fraction": 0.08,
+      "k1_cycles": 7528,
+      "fsd_cycles": 36942,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 12,
+      "fraction": 0.15,
+      "k1_cycles": 12831,
+      "fsd_cycles": 39767,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 12,
+      "fraction": 0.35,
+      "k1_cycles": 28027,
+      "fsd_cycles": 47687,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 12,
+      "fraction": 0.45,
+      "k1_cycles": 36052,
+      "fsd_cycles": 51790,
+      "fsd_fewer": false
+    },
+    {
+      "addr_w": 12,
+      "fraction": 0.55,
+      "k1_cycles": 43856,
+      "fsd_cycles": 55630,
+      "fsd_fewer": false
+    }
+  ],
+  "fsd_fewer_on_any_band": false
+}

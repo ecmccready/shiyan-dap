@@ -1,0 +1,70 @@
+{
+  "format": "scp4d-v0126-prereg",
+  "version": 1,
+  "milestone": "v0.1.26",
+  "spec": "docs/design/4d-scp-architecture.md §33",
+  "branch": "cursor/scp-v0126-hybrid-wall-784b",
+  "label": "Locked after the training fit and before any held-out measurement. Power is needs real board. v0.1.19 through v0.1.25 RTL stay byte-identical.",
+  "training": {
+    "file": "fixtures/scp/v0126-train.json",
+    "seed": 4,
+    "rng": "mulberry32((seed * 10007 + addrW) >>> 0)",
+    "fractions": [0.02, 0.08, 0.15, 0.35, 0.45, 0.55],
+    "frames_per_fraction": 8,
+    "widths": [8, 10, 12],
+    "engines": "scp4d_ede_pipe and scp4d_fsd, both behind scp4d_tdec_s_w4_fast",
+    "disjoint_from_held_out": "Held-out is seed 9 and fractions 0.01, 0.05, 0.2, 0.5, 16 frames each. Training uses a different seed and different fractions. No held-out frame is regenerated or edited."
+  },
+  "selector": {
+    "feature": "event count of the frame just completed",
+    "compare": "closed-loop wall cycles of scp4d_ede_pipe versus scp4d_fsd behind scp4d_tdec_s_w4_fast",
+    "threshold": "select full scan only for a training fraction whose full-scan wall cycles were strictly lower. No training fraction qualified.",
+    "rtl": "next_fsd = 1'b0",
+    "switch": "between frames only, masked, and only if next_fsd differs from the engine in use. A constant 0 selects no switch from the initial K1 engine.",
+    "source": "fixtures/scp/v0126-train.json",
+    "sha256": "4cb66c57f747cdf457d7431af71c46317c2f4f211195954deae906d44f4b97e8"
+  },
+  "fit_fact": "fsd_fewer_on_any_band is false. At fraction 0.55, the highest training band, full scan still costs more wall cycles: ADDR_W 8 is 6940 versus 5494, ADDR_W 10 is 27800 versus 21960, ADDR_W 12 is 55630 versus 43856.",
+  "candidate": {
+    "id": "loop-hyfast-w4l8",
+    "top": "wrap_loop_hyfast",
+    "path": "scp4d_tenc_q_w4l8_bram -> scp4d_tdec_s_w4_fast -> scp4d_k1_tap -> scp4d_hybrid_fast",
+    "keeps": "The v0.1.25 pop register in scp4d_fe_r_fast and scp4d_tdec_s_w4_fast. Those files are not edited. scp4d_hybrid_fast is new and instantiates scp4d_ede_pipe and scp4d_fsd.",
+    "initial_engine": "ede"
+  },
+  "baselines_already_measured": {
+    "pipelined_k1": {
+      "id": "loop-k1fast-w4l8",
+      "fmax_mhz_median": 38.318580627441406,
+      "cycles": {"8": 16416, "10": 65255, "12": 131378},
+      "wall_us": {"8": 428.408353, "10": 1702.959737, "12": 3428.571671}
+    },
+    "full_scan": {
+      "id": "loop-fsdonly-w4l8",
+      "fmax_mhz_median": 33.58522415161133,
+      "cycles": {"8": 40767, "10": 163151, "12": 326734},
+      "wall_us": {"8": 1213.837365, "10": 4857.820786, "12": 9728.504372}
+    },
+    "rerun": false
+  },
+  "metric": {
+    "formula": "wall_us = held_out_cycles / fmax_mhz_median",
+    "widths_required": "All three of ADDR_W 8, 10 and 12."
+  },
+  "wall_PASS": "Candidate wall time is strictly less than the smaller of the pipelined-K1 wall time and the full-scan wall time at every required width.",
+  "both_engines_PASS": "On the held-out run, at least one frame uses full scan and at least one frame uses pipelined K1. Report the full-scan frame count and the switch count.",
+  "bit_exact_PASS": "The decision-change set matches the golden for the engine that frame used. Order inside a frame may follow the tap.",
+  "fit": {
+    "PASS": "All five 45F seeds route within 7200 s.",
+    "flags": "OSS CAD Suite 20261118, Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, router2, seeds 1-5, --45k CABGA381, --freq 12, --timing-allow-fail. Serial.",
+    "record": ["per-seed Fmax", "median", "TRELLIS_COMB", "DP16KD", "smallest part", "critical path"]
+  },
+  "per_lut_expectation": "The loop contains the codec and both decision engines. Decisions/s per LUT on the ADDR_W 12 grid is expected to lose to standalone full scan (71397.91807427029) and also to the pure pipelined-K1 loop (181.13722038937402), because the extra engine adds logic and the training fit does not remove cycles. That loss is not itself the wall-time verdict. The v0.1.21 sweep stays FAIL.",
+  "verdict": {
+    "PASS": "wall_PASS and both_engines_PASS and bit_exact_PASS and fit PASS.",
+    "STOP": "Bit-exact, and either the held-out run chooses fewer than one full-scan frame or the wall time is not strictly under both baselines. Report the measured counts and wall times. Do not change the threshold.",
+    "FAIL": "Decision records do not match, or fewer than three 45F seeds route."
+  },
+  "stop": "One held-out measurement. If the frozen selector does not choose both engines, or the hybrid does not beat pipelined K1 on wall time while switching, stop. Do not retune on the held-out set.",
+  "power": "needs real board"
+}

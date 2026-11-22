@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33).
 
 **Reproduce.**
 
@@ -2086,3 +2086,9 @@ Bare seeds 31.84916114807129, 34.547088623046875, 33.00983810424805, 31.55768775
 | 12 | 3428.571671 | 4071.567204 | 4259.589440 | 9728.504372 |
 
 Decisions/s per LUT of the candidate, ADDR_W 12 (20182 evals, 131378 cycles), the median Fmax and 32497 `TRELLIS_COMB`, is 181.13722038937402. Standalone full scan remains 71397.91807427029. The loop loses, as pre-registered. The v0.1.21 sweep stays **FAIL**.
+
+## 33. v0.1.26: adaptive hybrid wall time (`v0126`)
+
+**Status.** The rule below is locked in `fixtures/scp/v0126-prereg.json` before any held-out measurement. Training is `fixtures/scp/v0126-train.json`. Power is **needs real board**. v0.1.19 through v0.1.25 RTL stay byte-identical.
+
+Training seed 4, fractions 0.02, 0.08, 0.15, 0.35, 0.45 and 0.55, eight frames each, behind the v0.1.25 retimed decoder. Full scan had more closed-loop wall cycles than pipelined K1 on every band, at ADDR_W 8, 10 and 12. The frozen selector therefore does not choose full scan. Held-out is seed 9 and fractions 0.01, 0.05, 0.2 and 0.5. Those grids are not in the training file.
