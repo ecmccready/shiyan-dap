@@ -1,0 +1,246 @@
+{
+  "format": "scp4d-v0122-selector-result",
+  "label": "One iteration. Not an autonomous capability. No RTL hybrid, so no extra LUT. Power is needs real board. The v0.1.21 per-LUT FAIL stands.",
+  "held_out_seed": 9,
+  "overhead": {
+    "estimate_updates": 576,
+    "extra_lut": 0,
+    "rtl_hybrid": false
+  },
+  "by_objective": [
+    {
+      "objective": "decisions_per_s_per_lut",
+      "widths": 3,
+      "beats_or_ties": 3
+    },
+    {
+      "objective": "evaluations",
+      "widths": 3,
+      "beats_or_ties": 3
+    },
+    {
+      "objective": "cycles",
+      "widths": 3,
+      "beats_or_ties": 3
+    }
+  ],
+  "rows": [
+    {
+      "addr_w": 8,
+      "objective": "decisions_per_s_per_lut",
+      "adaptive": {
+        "cycles": 36208,
+        "evals": 16384,
+        "picks": {
+          "ede": 0,
+          "fsd": 64
+        }
+      },
+      "ede": {
+        "cycles": 19040,
+        "evals": 3120
+      },
+      "fsd": {
+        "cycles": 36208,
+        "evals": 16384
+      },
+      "best_fixed": "fsd",
+      "adaptive_cost": 82204.45191708601,
+      "best_fixed_cost": 82204.45191708601,
+      "beats_or_ties_best": true
+    },
+    {
+      "addr_w": 8,
+      "objective": "evaluations",
+      "adaptive": {
+        "cycles": 19040,
+        "evals": 3120,
+        "picks": {
+          "ede": 64,
+          "fsd": 0
+        }
+      },
+      "ede": {
+        "cycles": 19040,
+        "evals": 3120
+      },
+      "fsd": {
+        "cycles": 36208,
+        "evals": 16384
+      },
+      "best_fixed": "ede",
+      "adaptive_cost": 3120,
+      "best_fixed_cost": 3120,
+      "beats_or_ties_best": true
+    },
+    {
+      "addr_w": 8,
+      "objective": "cycles",
+      "adaptive": {
+        "cycles": 17120,
+        "evals": 5040,
+        "picks": {
+          "ede": 49,
+          "fsd": 15
+        }
+      },
+      "ede": {
+        "cycles": 19040,
+        "evals": 3120
+      },
+      "fsd": {
+        "cycles": 36208,
+        "evals": 16384
+      },
+      "best_fixed": "ede",
+      "adaptive_cost": 17120,
+      "best_fixed_cost": 19040,
+      "beats_or_ties_best": true
+    },
+    {
+      "addr_w": 10,
+      "objective": "decisions_per_s_per_lut",
+      "adaptive": {
+        "cycles": 144608,
+        "evals": 65536,
+        "picks": {
+          "ede": 0,
+          "fsd": 64
+        }
+      },
+      "ede": {
+        "cycles": 75776,
+        "evals": 12448
+      },
+      "fsd": {
+        "cycles": 144608,
+        "evals": 65536
+      },
+      "best_fixed": "fsd",
+      "adaptive_cost": 76922.85133508433,
+      "best_fixed_cost": 76922.85133508433,
+      "beats_or_ties_best": true
+    },
+    {
+      "addr_w": 10,
+      "objective": "evaluations",
+      "adaptive": {
+        "cycles": 75776,
+        "evals": 12448,
+        "picks": {
+          "ede": 64,
+          "fsd": 0
+        }
+      },
+      "ede": {
+        "cycles": 75776,
+        "evals": 12448
+      },
+      "fsd": {
+        "cycles": 144608,
+        "evals": 65536
+      },
+      "best_fixed": "ede",
+      "adaptive_cost": 12448,
+      "best_fixed_cost": 12448,
+      "beats_or_ties_best": true
+    },
+    {
+      "addr_w": 10,
+      "objective": "cycles",
+      "adaptive": {
+        "cycles": 68096,
+        "evals": 20128,
+        "picks": {
+          "ede": 49,
+          "fsd": 15
+        }
+      },
+      "ede": {
+        "cycles": 75776,
+        "evals": 12448
+      },
+      "fsd": {
+        "cycles": 144608,
+        "evals": 65536
+      },
+      "best_fixed": "ede",
+      "adaptive_cost": 68096,
+      "best_fixed_cost": 75776,
+      "beats_or_ties_best": true
+    },
+    {
+      "addr_w": 12,
+      "objective": "decisions_per_s_per_lut",
+      "adaptive": {
+        "cycles": 289152,
+        "evals": 131072,
+        "picks": {
+          "ede": 0,
+          "fsd": 64
+        }
+      },
+      "ede": {
+        "cycles": 151488,
+        "evals": 24896
+      },
+      "fsd": {
+        "cycles": 289152,
+        "evals": 131072
+      },
+      "best_fixed": "fsd",
+      "adaptive_cost": 69846.26495335142,
+      "best_fixed_cost": 69846.26495335142,
+      "beats_or_ties_best": true
+    },
+    {
+      "addr_w": 12,
+      "objective": "evaluations",
+      "adaptive": {
+        "cycles": 151488,
+        "evals": 24896,
+        "picks": {
+          "ede": 64,
+          "fsd": 0
+        }
+      },
+      "ede": {
+        "cycles": 151488,
+        "evals": 24896
+      },
+      "fsd": {
+        "cycles": 289152,
+        "evals": 131072
+      },
+      "best_fixed": "ede",
+      "adaptive_cost": 24896,
+      "best_fixed_cost": 24896,
+      "beats_or_ties_best": true
+    },
+    {
+      "addr_w": 12,
+      "objective": "cycles",
+      "adaptive": {
+        "cycles": 136128,
+        "evals": 40256,
+        "picks": {
+          "ede": 49,
+          "fsd": 15
+        }
+      },
+      "ede": {
+        "cycles": 151488,
+        "evals": 24896
+      },
+      "fsd": {
+        "cycles": 289152,
+        "evals": 131072
+      },
+      "best_fixed": "ede",
+      "adaptive_cost": 136128,
+      "best_fixed_cost": 151488,
+      "beats_or_ties_best": true
+    }
+  ],
+  "verdict": "PASS"
+}

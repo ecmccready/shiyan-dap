@@ -47,11 +47,86 @@ export interface EdeRun {
   err: number;
 }
 
+/** Continuing decision state. Frames are applied one at a time by stepEde / stepFsd. */
+export interface EdeState {
+  codes: number[];
+  decs: (0 | 1)[];
+  dirty: boolean[];
+  queue: number[];
+  frame: number;
+  cycles: number;
+  evals: number;
+}
+
+export function freshEde(D: number): EdeState {
+  return {
+    codes: new Array<number>(D).fill(0),
+    decs: new Array<0 | 1>(D).fill(0),
+    dirty: new Array<boolean>(D).fill(false),
+    queue: [],
+    frame: 0,
+    cycles: D,
+    evals: 0,
+  };
+}
+
 function push(queue: number[], dirty: boolean[], elem: number): void {
   if (!dirty[elem]) { dirty[elem] = true; queue.push(elem); }
 }
 
 /** Event-driven decision engine. `fan[src]` has EDE_FAN slots. */
+export function stepEde(
+  state: EdeState,
+  D: number,
+  threshold: number,
+  relations: boolean,
+  fan: readonly (readonly FanSlot[])[],
+  tokens: readonly Tok[],
+): EdeRun {
+  const changes: Change[] = [];
+  const beforeC = state.cycles;
+  const beforeE = state.evals;
+  const fail = (code: number): EdeRun => ({ changes, cycles: state.cycles - beforeC, evals: state.evals - beforeE, err: code });
+  for (const tok of tokens) {
+    state.cycles += 1;
+    if (tok.event) {
+      if (tok.elem >= D || tok.elem < 0) return fail(1);
+      state.cycles += 2;
+      state.codes[tok.elem] = tok.code;
+      push(state.queue, state.dirty, tok.elem);
+      if (relations) {
+        const slots = fan[tok.elem] ?? [];
+        for (let s = 0; s < EDE_FAN; s++) {
+          state.cycles += 1;
+          const slot = slots[s];
+          if (slot && slot.valid) {
+            if (slot.tgt < 0 || slot.tgt >= D) return fail(2);
+            state.cycles += 2;
+            push(state.queue, state.dirty, slot.tgt);
+          }
+        }
+      }
+    }
+    if (tok.eof) {
+      if (state.queue.length === 0) state.cycles += 1;
+      else {
+        while (state.queue.length) {
+          const e = state.queue.shift()!;
+          state.cycles += 3;
+          state.evals += 1;
+          const nd = decideThreshold(state.codes[e], threshold) as 0 | 1;
+          if (nd !== state.decs[e]) changes.push({ frame: state.frame, elem: e, decision: nd });
+          state.decs[e] = nd;
+          state.dirty[e] = false;
+        }
+        state.cycles += 1;
+      }
+      state.frame += 1;
+    }
+  }
+  return { changes, cycles: state.cycles - beforeC, evals: state.evals - beforeE, err: 0 };
+}
+
 export function runEde(
   D: number,
   threshold: number,
@@ -60,84 +135,44 @@ export function runEde(
   tokens: readonly Tok[],
 ): EdeRun {
   if (D < 1) throw new RangeError("D");
-  const codes = new Array<number>(D).fill(0);
-  const decs = new Array<0 | 1>(D).fill(0);
-  const dirty = new Array<boolean>(D).fill(false);
-  const queue: number[] = [];
-  const changes: Change[] = [];
-  let cycles = D;
-  let evals = 0;
-  let frame = 0;
-  const err = 0;
-  const fail = (code: number): EdeRun => ({ changes, cycles, evals, err: code });
-  for (const tok of tokens) {
-    cycles += 1;
-    if (tok.event) {
-      if (tok.elem >= D || tok.elem < 0) return fail(1);
-      cycles += 2;
-      codes[tok.elem] = tok.code;
-      push(queue, dirty, tok.elem);
-      if (relations) {
-        const slots = fan[tok.elem] ?? [];
-        for (let s = 0; s < EDE_FAN; s++) {
-          cycles += 1;
-          const slot = slots[s];
-          if (slot && slot.valid) {
-            if (slot.tgt < 0 || slot.tgt >= D) return fail(2);
-            cycles += 2;
-            push(queue, dirty, slot.tgt);
-          }
-        }
-      }
-    }
-    if (tok.eof) {
-      if (queue.length === 0) cycles += 1;
-      else {
-        while (queue.length) {
-          const e = queue.shift()!;
-          cycles += 3;
-          evals += 1;
-          const nd = decideThreshold(codes[e], threshold) as 0 | 1;
-          if (nd !== decs[e]) changes.push({ frame, elem: e, decision: nd });
-          decs[e] = nd;
-          dirty[e] = false;
-        }
-        cycles += 1;
-      }
-      frame += 1;
-    }
-  }
-  return { changes, cycles, evals, err };
+  const state = freshEde(D);
+  const step = stepEde(state, D, threshold, relations, fan, tokens);
+  return { changes: step.changes, cycles: state.cycles, evals: state.evals, err: step.err };
 }
 
 /** Full-scan baseline. Same ingest and the same decision. Scan 0..D-1 every frame. */
-export function runFsd(D: number, threshold: number, tokens: readonly Tok[]): EdeRun {
-  if (D < 1) throw new RangeError("D");
-  const codes = new Array<number>(D).fill(0);
-  const decs = new Array<0 | 1>(D).fill(0);
+export function stepFsd(state: EdeState, D: number, threshold: number, tokens: readonly Tok[]): EdeRun {
   const changes: Change[] = [];
-  let cycles = D;
-  let evals = 0;
-  let frame = 0;
+  const beforeC = state.cycles;
+  const beforeE = state.evals;
   for (const tok of tokens) {
-    cycles += 1;
+    state.cycles += 1;
     if (tok.event) {
-      if (tok.elem >= D || tok.elem < 0) return { changes, cycles, evals, err: 1 };
-      codes[tok.elem] = tok.code;
+      if (tok.elem >= D || tok.elem < 0) return { changes, cycles: state.cycles - beforeC, evals: state.evals - beforeE, err: 1 };
+      state.codes[tok.elem] = tok.code;
     }
     if (tok.eof) {
       for (let e = 0; e < D; e++) {
-        cycles += 2;
-        evals += 1;
-        const nd = decideThreshold(codes[e], threshold) as 0 | 1;
-        if (nd !== decs[e]) changes.push({ frame, elem: e, decision: nd });
-        decs[e] = nd;
+        state.cycles += 2;
+        state.evals += 1;
+        const nd = decideThreshold(state.codes[e], threshold) as 0 | 1;
+        if (nd !== state.decs[e]) changes.push({ frame: state.frame, elem: e, decision: nd });
+        state.decs[e] = nd;
+        state.dirty[e] = false;
       }
-      cycles += 1;
-      frame += 1;
+      state.queue.length = 0;
+      state.cycles += 1;
+      state.frame += 1;
     }
   }
-  return { changes, cycles, evals, err: 0 };
+  return { changes, cycles: state.cycles - beforeC, evals: state.evals - beforeE, err: 0 };
+}
+
+export function runFsd(D: number, threshold: number, tokens: readonly Tok[]): EdeRun {
+  if (D < 1) throw new RangeError("D");
+  const state = freshEde(D);
+  const step = stepFsd(state, D, threshold, tokens);
+  return { changes: step.changes, cycles: state.cycles, evals: state.evals, err: step.err };
 }
 
 export function changeKey(c: Change): string {
