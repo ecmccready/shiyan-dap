@@ -1941,7 +1941,7 @@ Hierarchical LUT4 after the trim, same `synth_ecp5 -noflatten` flow: `scp4d_tenc
 
 ## 30. v0.1.23: hybrid RTL (`v0123`)
 
-**Status of this section.** The rule below was locked in `fixtures/scp/v0123-prereg.json` before `scp4d_hybrid` existed and before any hybrid simulation or place-and-route. This section does not yet contain a routed seed, a cycle count, or an Fmax. v0.2 stays reserved. Files use the tag `v0123`. The branch is `cursor/scp-v0123-hybrid-rtl-784b`. Toolchain is OSS CAD Suite 20261118 only. Power is **needs real board**. v0.1.19 and v0.1.22 designs and their recorded results stay byte-identical.
+**Status of this section.** The rule below was locked in `fixtures/scp/v0123-prereg.json` before `scp4d_hybrid` existed and before any hybrid simulation or place-and-route. v0.2 stays reserved. Files use the tag `v0123`. The branch is `cursor/scp-v0123-hybrid-rtl-784b`. Toolchain is OSS CAD Suite 20261118 only. Power is **needs real board**. v0.1.19 and v0.1.22 designs and their recorded results stay byte-identical.
 
 **Design.** `scp4d_hybrid` instantiates `scp4d_ede` and `scp4d_fsd`, plus a selector, an output mux and a running event counter. Temporal-only is the default. `mode_relations` is wired to `scp4d_ede`. Full scan has no fan, so while `mode_relations` is 1 the selector stays on `ede`. The cycles column of the v0.1.22 table picks `ede` for low, medium and high, and `fsd` for very high, at ADDR_W 8, 10 and 12. The only runtime input is the previous frame's accepted events divided by `cfg_D`. The current frame's count is latched at eof and used for the next frame. The initial engine is `ede`, because the initial estimate 0.05 is the medium bin. Integer tests: very high when `events * 20 >= cfg_D * 7`, else high when `events * 10 >= cfg_D`, else medium when `events * 100 >= cfg_D * 3`, else low. A switch happens only at a frame boundary, and not after the last frame.
 
@@ -1954,3 +1954,31 @@ Hierarchical LUT4 after the trim, same `synth_ecp5 -noflatten` flow: `scp4d_tenc
 **Expected measurement.** Hybrid loses decisions/s per LUT to full scan, because the netlist contains full scan plus K1 plus the selector. The verdict still asks whether the held-out cycle count, switching cost included, is at most the better fixed engine.
 
 **Verdict.** **PASS** if all five seeds route, the records match, and held-out cycles win or tie at ADDR_W 8, 10 and 12. **MIXED** if the records match and at least three seeds route, but a seed misses or the cycles lose at a width. **FAIL** if fewer than three seeds route, the records do not match, or a frame is chosen from its own event count. If it cannot route, stop and report the demand. Do not change the flags.
+
+**Icarus.** 47 runs, decision records match the shared-state golden, including the held-out seed-9 workload. One switch on that workload (ede, then fsd for the very-high frames after the one-frame lag). Record: `fixtures/scp/v0123-hybrid-sim.json`.
+
+| ADDR_W | hybrid cycles | ede-only | fsd-only | hybrid evals |
+|---|---:|---:|---:|---:|
+| 8 | 17634 | 19040 | 36208 | 5040 |
+| 10 | 70146 | 75776 | 144608 | 20128 |
+| 12 | 140226 | 151488 | 289152 | 40256 |
+
+The fixed-engine columns are the exact model on the same tokens. Hybrid cycles are Icarus and include the masked sync. Hybrid is below ede-only, which is the better fixed engine, at all three widths.
+
+**45F. Verdict PASS.** All five seeds routed. `TRELLIS_COMB` is 1375. Median Fmax is 60.085323333740234 MHz, seed 2. Yosys started at 10:28:40 UTC and the fit finished at 10:29:19 UTC.
+
+| seed | status | wall clock (s) | Fmax (MHz) | TRELLIS_COMB |
+|---|---|---:|---:|---:|
+| 1 | routed | 4.18665 | 60.514373779296875 | 1375 |
+| 2 | routed | 3.97128 | 60.085323333740234 | 1375 |
+| 3 | routed | 3.90599 | 58.186893463134766 | 1375 |
+| 4 | routed | 3.76628 | 59.78715896606445 | 1375 |
+| 5 | routed | 4.43513 | 63.609188079833984 | 1375 |
+
+12F, 25F and 85F seed 1 all route. Smallest part is 12F. LUT4 demand is 1287. FF 762. `DP16KD` 7.
+
+**Overhead, ADDR_W 8.** Seed-1 routes of the two engines, same flags: ede 514 LUT4, 548 `TRELLIS_COMB`, 362 FF, 4 `DP16KD`; fsd 331 LUT4, 361 `TRELLIS_COMB`, 288 FF, 2 `DP16KD`. Sum 845 / 909 / 650 / 6. Hybrid minus that sum is 442 LUT4, 466 `TRELLIS_COMB`, 112 FF, 1 `DP16KD` (the code mirror). These two routes do not replace the ADDR_W 11 rows.
+
+**Decisions/s per LUT, held-out ADDR_W 8.** `(evals / cycles) × Fmax_MHz × 1e6 / TRELLIS_COMB`. Hybrid uses the five-seed median Fmax and its full 1375 COMB: 12489.510124121824. ede uses the seed-1 Fmax 68.80418395996094 and 548 COMB: 20574.15180057717. fsd uses the seed-1 Fmax 64.37491607666016 and 361 COMB: 80690.9589316513. Hybrid is below fsd, as the pre-registration expected, and below ede as well. That loss is not a FAIL. The v0.1.21 sweep stays **FAIL**. Power is **needs real board**.
+
+One ledger iteration, `hybrid_rtl`, not an autonomous capability. ADDR_W 10 and 12 were not placed.

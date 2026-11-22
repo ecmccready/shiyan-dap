@@ -38,6 +38,8 @@ export const READ_FILES = [
   "hw/scp4d/rtl/scp4d_fsd.v",
   "hw/scp4d/rtl/scp4d_k1_tap.v",
   "hw/scp4d/synth/scp4d_ede_wrap.v",
+  "hw/scp4d/rtl/scp4d_hybrid.v",
+  "hw/scp4d/synth/scp4d_hybrid_wrap.v",
 ] as const;
 
 export type Kind = "encoder" | "decoder" | "loop" | "decision";
@@ -51,7 +53,7 @@ export type Design = {
   sets: readonly SetParam[];
   /** Closed loops name the encoder and decoder placed at the same configuration. */
   composedOf?: readonly string[];
-  workload: "tdec" | "tdec_w" | "rdec" | "rdec_w" | "tenc_w" | "tenc_p" | "tenc_q" | "loop_w" | "loop_p" | "loop_q" | "loop_r" | "loop_s" | "ede" | "ede_rel" | "fsd" | "loop_ede";
+  workload: "tdec" | "tdec_w" | "rdec" | "rdec_w" | "tenc_w" | "tenc_p" | "tenc_q" | "loop_w" | "loop_p" | "loop_q" | "loop_r" | "loop_s" | "ede" | "ede_rel" | "fsd" | "loop_ede" | "hybrid";
   /** W or the cfg key such as W4L8. */
   field: string;
 };
@@ -82,6 +84,7 @@ export const DESIGNS: readonly Design[] = [
   { id: "ede-relations", kind: "decision", milestone: "v0.1.20", top: "wrap_ede", sets: [{ name: "REL", value: "1" }], workload: "ede_rel", field: "cycles" },
   { id: "fsd", kind: "decision", milestone: "v0.1.20", top: "wrap_fsd", sets: [], workload: "fsd", field: "cycles" },
   { id: "loop-ede-w4l8", kind: "loop", milestone: "v0.1.20", top: "wrap_loop_ede", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }], composedOf: ["tenc-q-w4l8", "tdec-s-w4", "ede-temporal"], workload: "loop_ede", field: "cycles" },
+  { id: "hybrid", kind: "decision", milestone: "v0.1.23", top: "wrap_hybrid", sets: [{ name: "A", value: "8" }, { name: "REL", value: "0" }], workload: "hybrid", field: "cycles" },
 ];
 
 export type Workload = {
@@ -134,6 +137,18 @@ export function workloadFor(root: string, d: Design): Workload {
       stream: STREAM_R, element_frames: frames(root, "relations", STREAM_R),
       cycles: measuredCycles(root, "fixtures/scp/v0112-rtl-report.json", "array", STREAM_R, "cycles"),
       source_report: "fixtures/scp/v0112-rtl-report.json", source_field: `measured[id=${STREAM_R}].cycles`,
+    };
+  }
+  if (d.workload === "hybrid") {
+    const sim = load(root, "fixtures/scp/v0123-hybrid-sim.json") as { held_out: { addr_w: number; hybrid_cycles: number; hybrid_evals: number }[] };
+    const cell = sim.held_out.find((r) => r.addr_w === 8);
+    return {
+      stream: "held-out-seed9-a8",
+      element_frames: 256 * 64,
+      cycles: int(cell?.hybrid_cycles, "hybrid cycles"),
+      evals: int(cell?.hybrid_evals, "hybrid evals"),
+      source_report: "fixtures/scp/v0123-hybrid-sim.json",
+      source_field: "held_out[addr_w=8].hybrid_cycles",
     };
   }
   if (d.workload === "ede" || d.workload === "ede_rel" || d.workload === "fsd" || d.workload === "loop_ede") {
