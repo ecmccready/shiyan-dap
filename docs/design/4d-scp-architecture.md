@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32).
 
 **Reproduce.**
 
@@ -2050,3 +2050,15 @@ The profile shows that a blocking full scan is slower than K1 in this closed loo
 **Place and route of `loop-k1pipe-w4l8`.** Five of five 45F seeds routed. `TRELLIS_COMB` 31567, LUT4 demand 30291, flip-flops 10382, `DP16KD` 48. Fmax 30.498031616210938, 28.08121109008789, 29.78406524658203, 31.476234436035156, 31.339120864868164 MHz. Median 30.498031616210938 MHz (seed 1). Seed walls 119.961, 122.923, 117.347, 125.527, 109.355 s. 12F and 25F do not place (31567 against 24288). 85F seed 1 routed at 31.26954460144043 MHz in 127.752 s. Smallest part 45F.
 
 Decisions/s per LUT, using the ADDR_W 12 grid (20182 evals, 129723 cycles), the five-seed median and 31567 `TRELLIS_COMB`, is 150.30925359248772. Standalone full scan in the committed benchmark is 71397.91807427029. The loop loses, as pre-registered. That loss is not a FAIL. The v0.1.21 sweep stays **FAIL**. The stop rule was not reached.
+
+## 32. v0.1.25: closed-loop wall time (`v0125`)
+
+**Status.** The rule below is locked in `fixtures/scp/v0125-prereg.json` before any new simulation or place-and-route. Power is **needs real board**. v0.1.19, v0.1.22, v0.1.23 and v0.1.24 RTL stay byte-identical.
+
+v0.1.24 won on cycles and left three honest gaps. The pipe selector never ran a full scan. There was no placed pipelined-K1 loop without that unused engine. The five-seed median Fmax fell from 35.09634017944336 MHz on `loop-ede-w4l8` to 30.498031616210938 MHz on `loop-k1pipe-w4l8`, so wall time (cycles / Fmax) was nearly a tie. The committed seed-1 timing report for that pipe puts the critical path in the decoder (`dec.ph` to `dec.fe.tq`), 32.789 ns, mostly routing. This milestone does not call a pure pipelined-K1 result a hybrid win.
+
+**Metric.** Wall time in microseconds is held-out loop cycles divided by that design's own five-seed 45F median Fmax in MHz. All three of ADDR_W 8, 10 and 12 are required. One placed netlist per design, ADDR_W 11, `cfg_D` equal to the workload D.
+
+**Baselines, not yet measured.** `wrap_loop_k1bare` is the v0.1.22 codec and tap into `scp4d_ede_pipe`, with no full-scan engine and no selector. `wrap_loop_fsdonly` is the same codec and tap into `scp4d_fsd` only. The v0.1.22 loop stays the reference: median 35.09634017944336 MHz and the profile's K1 cycle totals. Strongest K1 is the smaller wall time of the bare pipe and that reference.
+
+**Candidate, not yet measured.** One new loop, `wrap_loop_k1fast`. It keeps the pipelined event engine's decision records. Its only change from the bare pipe is one register cut, in a new copy of whichever module owns the bare pipe's critical path. One cut, then one simulation and one place-and-route. No second cut on this held-out set.
