@@ -49,6 +49,8 @@ export const READ_FILES = [
   "hw/scp4d/rtl/scp4d_fe_r_fast.v",
   "hw/scp4d/rtl/scp4d_tdec_s_w4_fast.v",
   "hw/scp4d/synth/scp4d_loop_k1fast_wrap.v",
+  "hw/scp4d/rtl/scp4d_hybrid_fast.v",
+  "hw/scp4d/synth/scp4d_loop_hyfast_wrap.v",
 ] as const;
 
 export type Kind = "encoder" | "decoder" | "loop" | "decision";
@@ -101,6 +103,7 @@ export const DESIGNS: readonly Design[] = [
   { id: "loop-k1bare-w4l8", kind: "loop", milestone: "v0.1.25", top: "wrap_loop_k1bare", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
   { id: "loop-fsdonly-w4l8", kind: "loop", milestone: "v0.1.25", top: "wrap_loop_fsdonly", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
   { id: "loop-k1fast-w4l8", kind: "loop", milestone: "v0.1.25", top: "wrap_loop_k1fast", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
+  { id: "loop-hyfast-w4l8", kind: "loop", milestone: "v0.1.26", top: "wrap_loop_hyfast", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
 ];
 
 export type Workload = {
@@ -156,6 +159,18 @@ export function workloadFor(root: string, d: Design): Workload {
     };
   }
   if (d.workload === "hybrid") {
+    if (d.id === "loop-hyfast-w4l8") {
+      const sim = load(root, "fixtures/scp/v0126-heldout.json") as { rows: { addr_w: number; cycles: number; evals: number }[] };
+      const cell = sim.rows.find((r) => r.addr_w === 12);
+      return {
+        stream: "held-out-seed9-a12-hyfast",
+        element_frames: 2048 * 64,
+        cycles: int(cell?.cycles, "hyfast cycles"),
+        evals: int(cell?.evals, "hyfast evals"),
+        source_report: "fixtures/scp/v0126-heldout.json",
+        source_field: "rows[addr_w=12].cycles",
+      };
+    }
     if (d.id === "loop-k1fast-w4l8") {
       const sim = load(root, "fixtures/scp/v0125-candidate.json") as { rows: { addr_w: number; cycles: number; evals: number }[] };
       const cell = sim.rows.find((r) => r.addr_w === 12);

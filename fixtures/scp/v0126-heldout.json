@@ -1,0 +1,40 @@
+{
+  "format": "scp4d-v0126-heldout",
+  "label": "One held-out run of the frozen selector. Power is needs real board. Fmax is not in this file.",
+  "rows": [
+    {
+      "addr_w": 8,
+      "cycles": 16463,
+      "evals": 2527,
+      "fsd_frames": 0,
+      "switches": 0,
+      "k1_frames": 64,
+      "bit_exact": true,
+      "cycles_at_k1_fmax_us": 429.6349115867359
+    },
+    {
+      "addr_w": 10,
+      "cycles": 65302,
+      "evals": 10075,
+      "fsd_frames": 0,
+      "switches": 0,
+      "k1_frames": 64,
+      "bit_exact": true,
+      "cycles_at_k1_fmax_us": 1704.1862963273418
+    },
+    {
+      "addr_w": 12,
+      "cycles": 131426,
+      "evals": 20182,
+      "fsd_frames": 0,
+      "switches": 0,
+      "k1_frames": 64,
+      "bit_exact": true,
+      "cycles_at_k1_fmax_us": 3429.8243266839795
+    }
+  ],
+  "bit_exact": true,
+  "both_engines": false,
+  "fsd_frames_total": 0,
+  "switches_total": 0
+}

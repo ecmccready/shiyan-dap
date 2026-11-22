@@ -2089,7 +2089,7 @@ Decisions/s per LUT of the candidate, ADDR_W 12 (20182 evals, 131378 cycles), th
 
 ## 33. v0.1.26: adaptive hybrid wall time (`v0126`)
 
-**Status.** The rule below is locked in `fixtures/scp/v0126-prereg.json` before any held-out measurement. Training is `fixtures/scp/v0126-train.json`. Power is **needs real board**. v0.1.19 through v0.1.25 RTL stay byte-identical.
+**Status.** Measured. Verdict **STOP**. The rule is locked in `fixtures/scp/v0126-prereg.json`, committed before the held-out run. Training is `fixtures/scp/v0126-train.json`. The held-out result is `fixtures/scp/v0126-heldout.json`. Power is **needs real board**. v0.1.19 through v0.1.25 RTL stay byte-identical.
 
 Training seed 4, fractions 0.02, 0.08, 0.15, 0.35, 0.45 and 0.55, eight frames each, behind the v0.1.25 retimed decoder. Full scan had more closed-loop wall cycles than pipelined K1 on every band, at ADDR_W 8, 10 and 12. The frozen selector therefore does not choose full scan. Held-out is seed 9 and fractions 0.01, 0.05, 0.2 and 0.5. Those grids are not in the training file.
 
