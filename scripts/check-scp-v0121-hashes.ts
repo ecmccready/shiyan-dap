@@ -73,6 +73,20 @@ for (const [id, design] of Object.entries(manifest.designs ?? {})) {
   }
 }
 const reportBad = mismatches(reportMap);
+const sweepReports: Record<string, string> = {};
+const sweepRoot = join(root, "fixtures/scp/v0121-pnr");
+if (existsSync(sweepRoot)) {
+  for (const id of readdirSync(sweepRoot)) {
+    const dir = join(sweepRoot, id);
+    for (const name of readdirSync(dir)) {
+      if (!name.endsWith(".json") || name.endsWith(".report.json")) continue;
+      const rec = JSON.parse(readFileSync(join(dir, name), "utf8")) as { report_path?: string | null; report_sha256?: string | null };
+      if (rec.report_path && rec.report_sha256) sweepReports[rec.report_path] = rec.report_sha256;
+    }
+  }
+}
+const sweepReportBad = mismatches(sweepReports);
+check("v0121 sweep report hashes match the report files", Object.keys(sweepReports).length > 0 && sweepReportBad.length === 0, sweepReportBad.slice(0, 3).join("; "));
 check("manifest nextpnr report hashes match the report files", reportRows > 0 && reportBad.length === 0, reportBad.slice(0, 3).join("; "));
 check("present netlist and log hashes match the manifest", workBad.length === 0, workBad.slice(0, 3).join("; "));
 

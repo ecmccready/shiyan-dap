@@ -1837,7 +1837,7 @@ Without Icarus the RTL check prints `SKIP sim` and still runs the 12 counted che
 
 ## 28. v0.1.21: K1 closed loop on the 45F, and K1 versus full scan (draft)
 
-**Status of this section.** The fit goal below was locked in `fixtures/scp/v0121-prereg.json` before the run. The loop place-and-route is recorded. The sweep verdict is not in this section until `fixtures/scp/v0121-sweep.json` exists. Icarus cycle counts for the sweep grid, with no Fmax, are in `fixtures/scp/v0121-sweep-cycles.json`. v0.2 stays reserved for the first product-facing page. Files use the tag `v0121`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A place-and-route number from any other toolchain is not recorded. Power is **needs real board**.
+**Status of this section.** The fit goal and the verdict rule below were locked in `fixtures/scp/v0121-prereg.json` before either run. v0.2 stays reserved for the first product-facing page. Files use the tag `v0121`. Toolchain is OSS CAD Suite 20261118 only (Yosys 0.71+50 `583f380c6`, nextpnr-ecp5 0.11.1-103-ge811ba48). A place-and-route number from any other toolchain is not recorded. Power is **needs real board**.
 
 **Fit goal.** `loop-ede-w4l8` (`tenc_q` → `tdec_s` → `scp4d_ede`) places and routes on LFE5U-45F for seeds 1, 2, 3, 4 and 5, bound 7200 s, the same flow as v0.1.19. `TRELLIS_COMB` ≤ 43848. Decoder codes and K1 decision records stay bit-exact with the golden model. The aim is a margin of at least 5% of the part (`TRELLIS_COMB` ≤ 95% of 43848). The v0.1.20 pack log asked for 46454 `TRELLIS_COMB`, which is 2606 over 43848. The allowed trim is the W=4 encoder and/or the W=4 decoder (placed at 18882 and 24084 LUT in v0.1.19). K1 RTL stays as it is except where the loop integration requires a change. Temporal-only stays the default; relations stay behind the mode bit. A trim that still passes the v0.1.19 bit-exact regression may edit the existing module. A trim that does not ships as a new named variant (`tenc_q_w4l8_lite` or `tdec_s_w4_lite`) with its own golden vectors, and the v0.1.19 designs stay untouched. If the loop cannot place on the 45F without breaking bit-exactness, the run stops and reports the best demand. It does not invent a fit.
 
@@ -1862,3 +1862,33 @@ On the seeds that hit the bound, router2's overuse fell for the first few iterat
 **Other parts, seed 1.** Pack succeeds on 12F, 25F and 85F. 12F and 25F then fail placement: 41217 `TRELLIS_COMB` against 24288 available, no BELs left for `TRELLIS_COMB` (the named cell is in `dec.bank`). 85F routes: Fmax 28.93937110900879 MHz, 41217 LUT, 165.074 s. That is one seed, not a five-seed median. The harness records the smallest part as 45F because seed 4 routed there and 12F and 25F did not.
 
 Power is **needs real board**.
+
+**Sweep result (measured after the loop run, not at the same time).** All three widths placed on the 45F, five seeds each, for `ede` (REL=0) and `fsd`. Churn does not have its own place-and-route: each width's five-seed median Fmax and the median-Fmax seed's `TRELLIS_COMB` are reused, and only evals and cycles change. Those counts are the Icarus rows in `fixtures/scp/v0121-sweep-cycles.json` (Icarus Verilog 14.0 devel). The route record is `fixtures/scp/v0121-sweep.json`. The successful sweep process ran from 06:41:00 to 06:42:13 UTC.
+
+| ADDR_W | arm | median Fmax (MHz) | median seed | TRELLIS_COMB |
+|---|---|---:|---:|---:|
+| 8 | ede | 67.65899658203125 | 5 | 548 |
+| 8 | fsd | 65.5823745727539 | 5 | 361 |
+| 10 | ede | 73.3460464477539 | 4 | 536 |
+| 10 | fsd | 64.83822631835938 | 1 | 382 |
+| 12 | ede | 65.9021987915039 | 4 | 642 |
+| 12 | fsd | 65.02373504638672 | 4 | 422 |
+
+decisions/s per LUT is `(evals / cycles) × median Fmax_MHz × 1e6 / TRELLIS_COMB` of that median seed. K1 wins a cell at ≥ 1.0× `fsd`.
+
+| ADDR_W | churn | ede per LUT | fsd per LUT | ratio |
+|---|---|---:|---:|---:|
+| 8 | low | 16104.172464780526 | 89436.86283094503 | 0.1800619113309116 |
+| 8 | medium | 19337.942036021595 | 87749.37485300266 | 0.22037697782367593 |
+| 8 | high | 20246.724867296416 | 81878.81808466798 | 0.24727671137558432 |
+| 8 | very_high | 20444.451805223747 | 72104.13747611071 | 0.2835406194547065 |
+| 10 | low | 17771.381674683536 | 83762.49763451713 | 0.21216394181828033 |
+| 10 | medium | 21606.258772904723 | 82139.500279595 | 0.263043465072944 |
+| 10 | high | 22495.690435836383 | 76567.04078926126 | 0.29380383783868874 |
+| 10 | very_high | 22681.092623590932 | 67445.55009376135 | 0.3362874584321748 |
+| 12 | low | 13418.483658400814 | 76058.18873445208 | 0.17642391807737912 |
+| 12 | medium | 16233.244649070004 | 74584.1231527397 | 0.2176501373600141 |
+| 12 | high | 16882.099476363474 | 69523.11633823346 | 0.242827139598162 |
+| 12 | very_high | 17017.165871207482 | 61239.16651644512 | 0.27788042913088484 |
+
+K1 wins no cell. The highest ratio is 0.3362874584321748, at ADDR_W 10 and very high churn. There is no crossover at 1.0×. The pre-registered verdict is **FAIL**. Power is **needs real board**.
