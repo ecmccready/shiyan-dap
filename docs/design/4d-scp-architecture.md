@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33). `v0127` means v0.1.27 (§34).
 
 **Reproduce.**
 
@@ -2092,3 +2092,9 @@ Decisions/s per LUT of the candidate, ADDR_W 12 (20182 evals, 131378 cycles), th
 **Status.** The rule below is locked in `fixtures/scp/v0126-prereg.json` before any held-out measurement. Training is `fixtures/scp/v0126-train.json`. Power is **needs real board**. v0.1.19 through v0.1.25 RTL stay byte-identical.
 
 Training seed 4, fractions 0.02, 0.08, 0.15, 0.35, 0.45 and 0.55, eight frames each, behind the v0.1.25 retimed decoder. Full scan had more closed-loop wall cycles than pipelined K1 on every band, at ADDR_W 8, 10 and 12. The frozen selector therefore does not choose full scan. Held-out is seed 9 and fractions 0.01, 0.05, 0.2 and 0.5. Those grids are not in the training file.
+
+## 34. v0.1.27: a faster full scan, then a hybrid (`v0127`)
+
+**Status.** The rule below is locked in `fixtures/scp/v0127-prereg.json` before any v0.1.27 simulation or place-and-route. Power is **needs real board**. v0.1.19 through v0.1.26 RTL stay byte-identical. This workload family is new on purpose: fractions above 0.55 are there so a faster full scan has a regime the old mixed-churn set did not give it. The original held-out set is still reported and is not regenerated.
+
+The current full scan spends two cycles on each element because the block RAM is used on the following clock. `scp4d_fsd_n` is a new engine. N is 2 or 4, chosen by the rule in the pre-registration after both are placed. Each element lives in bank `e % N`. A steady cycle compares one row of N elements and issues the next row address. Up to N decision changes are recorded in that cycle. The scan does not wait to drain a one-result port. The decision set matches `scp4d_fsd`.

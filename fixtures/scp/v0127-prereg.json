@@ -1,0 +1,101 @@
+{
+  "format": "scp4d-v0127-prereg",
+  "version": 1,
+  "milestone": "v0.1.27",
+  "spec": "docs/design/4d-scp-architecture.md §34",
+  "branch": "cursor/scp-v0127-fast-scan-784b",
+  "label": "Locked before any v0.1.27 simulation or place-and-route. Power is needs real board. v0.1.19 through v0.1.26 RTL stay byte-identical. The high-churn family is a new workload, chosen so full scan has a regime above 55 percent. The original held-out set is not regenerated.",
+  "does_not_depend_on": "https://github.com/ecmccready/shiyan-dap/pull/18",
+  "path1": {
+    "module": "scp4d_fsd_n",
+    "n_candidates": [2, 4],
+    "why_these": "The current scp4d_fsd uses two cycles per element. N=2 and N=4 are the candidates. N=8 is not a candidate: eight 32-bit banks would add a lot of block RAM and a wider compare.",
+    "design": "New module only. scp4d_fsd.v is not edited. Element e is stored in bank e % N at index e / N. Code and decision memories are both banked. The compare cycle issues the next row address, so the steady state is one row of N elements per cycle. Up to N decision changes are recorded in that same cycle. Done does not wait for a one-result drain. Ingest stays one token per cycle. The compare is code > threshold. The decision set matches scp4d_fsd.",
+    "loops": {
+      "fast_scan": "wrap_loop_fsdn: scp4d_tenc_q_w4l8_bram -> scp4d_tdec_s_w4_fast -> scp4d_k1_tap -> scp4d_fsd_n. One placed loop per N.",
+      "hybrid": "wrap_loop_hnfast: the same codec, fast decoder and tap into scp4d_hybrid_n, which instantiates scp4d_ede_pipe and the chosen scp4d_fsd_n."
+    },
+    "critical_path_intent": "The v0.1.25 decoder files are not edited. The fast scan and the selector sit after the tap, not in the decoder issue path. The placed critical path is recorded. It is not iterated on a held-out set."
+  },
+  "path2": {
+    "disclosure": "New workload family. Fractions from 0.55 through 0.95, plus a mixed low/high tail, so a faster full scan has a chance the original mixed-churn set did not give the old full scan.",
+    "rng": "mulberry32((seed * 10007 + addrW) >>> 0), then the same shuffle and code update as the v0.1.24 held-out generator, with this seed in the code magnitude.",
+    "training_low": {
+      "seed": 4,
+      "fractions": [0.02, 0.08, 0.15, 0.35, 0.45, 0.55],
+      "frames_per_fraction": 8,
+      "note": "Same seed and fractions as fixtures/scp/v0126-train.json. Remeasured with the new engine. Not held-out."
+    },
+    "training_high": {
+      "seed": 11,
+      "fractions": [0.55, 0.65, 0.75, 0.85, 0.95],
+      "frames_per_fraction": 8,
+      "mixed_tail": [0.05, 0.85, 0.05, 0.85, 0.05, 0.85, 0.05, 0.85]
+    },
+    "held_out_high": {
+      "seed": 13,
+      "fractions": [0.55, 0.65, 0.75, 0.85, 0.95],
+      "frames_per_fraction": 8,
+      "mixed_tail": [0.05, 0.85, 0.05, 0.85, 0.05, 0.85, 0.05, 0.85],
+      "not_used_to_fit": true
+    },
+    "held_out_original": {
+      "seed": 9,
+      "fractions": [0.01, 0.05, 0.2, 0.5],
+      "frames_per_fraction": 16,
+      "regenerated": false,
+      "not_used_to_fit": true
+    }
+  },
+  "selector_procedure": {
+    "feature": "event count of the completed frame",
+    "integer_test": "events * 100 >= D * percent",
+    "percent_grid": [55, 60, 65, 70, 75, 80, 85, 90, 95],
+    "n_candidates": [2, 4],
+    "n_rule": "Place both N. Choose the N with the smaller sum of training wall times at fraction 0.95 across ADDR_W 8, 10 and 12. A tie takes the smaller N.",
+    "percent_rule": "Smallest grid percent such that every training band with nominal fraction >= percent/100 has fast-scan wall time strictly below pipelined K1 at ADDR_W 8, 10 and 12, and at least one training band stays on K1. If no such percent exists, next_fsd is 0.",
+    "wall": "training cycles / that design's own five-seed 45F median Fmax",
+    "not_used_to_fit": "held-out seed 9 and held-out seed 13",
+    "sha256": "45f9539fbb70f3f4ab750170022d3fbeaaabf9a90d060bc918172db12131b6cd",
+    "freeze": "After training and the fast-scan place-and-route, and before either held-out run, write fixtures/scp/v0127-freeze.json with the chosen N and percent. Do not edit this pre-registration to chase a held-out number."
+  },
+  "baselines_already_measured": {
+    "pipelined_k1": {
+      "id": "loop-k1fast-w4l8",
+      "fmax_mhz_median": 38.318580627441406,
+      "cycles": {"8": 16416, "10": 65255, "12": 131378},
+      "wall_us": {"8": 428.408353, "10": 1702.959737, "12": 3428.571671},
+      "rerun": false
+    },
+    "old_full_scan": {
+      "id": "loop-fsdonly-w4l8",
+      "fmax_mhz_median": 33.58522415161133,
+      "cycles": {"8": 40767, "10": 163151, "12": 326734},
+      "wall_us": {"8": 1213.837365, "10": 4857.820786, "12": 9728.504372},
+      "rerun": false
+    }
+  },
+  "best_full_scan": "At each ADDR_W, the smaller wall time of the chosen fast full-scan loop and loop-fsdonly-w4l8.",
+  "widths_required": "All three of ADDR_W 8, 10 and 12. RTL ADDR_W is 11. cfg_D is the workload D.",
+  "fast_scan_training_test": "On each training band, compare fast-scan wall time with pipelined K1 wall time at ADDR_W 8, 10 and 12. This is the crossover table. It is not a held-out claim.",
+  "hybrid_success": {
+    "per_workload": "Separately for held-out seed 13 and held-out seed 9.",
+    "both_engines": "At least one full-scan frame and at least one K1 frame. Report both counts and the switch count.",
+    "wall_PASS": "Hybrid wall time strictly under min(pipelined K1, best full scan) at every required width.",
+    "bit_exact_PASS": "The decision-change set matches the golden for the engine that frame used. Order inside a frame may follow the tap or the scan row.",
+    "fit_PASS": "All five 45F seeds of that new loop route within 7200 s."
+  },
+  "fit": {
+    "designs": ["loop-fsd2-w4l8", "loop-fsd4-w4l8", "loop-hnfast-w4l8"],
+    "flags": "OSS CAD Suite 20261118, Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, router2, seeds 1-5, --45k CABGA381, --freq 12, --timing-allow-fail. Serial. No parallel nextpnr.",
+    "record": ["per-seed Fmax", "median", "TRELLIS_COMB", "DP16KD", "smallest part", "critical path"]
+  },
+  "per_lut_expectation": "Every loop here contains the codec. Decisions/s per LUT on the ADDR_W 12 grid is expected to lose to standalone full scan (71397.91807427029). The pure pipelined-K1 loop is 181.13722038937402. A faster scan can raise the full-scan loop's number and is still expected to lose to the standalone engine. That loss is not itself the wall-time verdict. The v0.1.21 sweep stays FAIL.",
+  "verdict": {
+    "PASS": "For a workload: both engines, wall_PASS, bit-exact, and the hybrid's five seeds route.",
+    "STOP": "The fast scan never beats pipelined K1 on the training wall-time test, or the frozen selector does not choose both engines on that held-out workload, or the hybrid wall time is not strictly under both baselines. Report the numbers. Do not change N or the percent.",
+    "FAIL": "Decision records do not match, or fewer than three seeds route for a loop that was required to place."
+  },
+  "stop": "One freeze. One held-out run of each workload. No retune. No regeneration of either held-out set.",
+  "power": "needs real board"
+}
