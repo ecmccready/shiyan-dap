@@ -1,0 +1,92 @@
+{
+  "format": "scp4d-v0128-prereg",
+  "version": 1,
+  "milestone": "v0.1.28",
+  "spec": "docs/design/4d-scp-architecture.md §35",
+  "branch": "cursor/scp-v0128-hybrid-fix-784b",
+  "label": "Locked before any v0.1.28 simulation or place-and-route. Power is needs real board. v0.1.19 through v0.1.27 RTL stay byte-identical. Seed 9 and seed 13 are not regenerated and are not used to choose the percent.",
+  "engines": {
+    "k1": "scp4d_ede_pipe",
+    "full_scan": "scp4d_fsd_n with N=4",
+    "module": "scp4d_hybrid_fix",
+    "loop": "wrap_loop_hnfix",
+    "unchanged": ["scp4d_hybrid_n.v", "scp4d_fsd_n.v", "scp4d_ede_pipe.v", "scp4d_tdec_s_w4_fast.v", "scp4d_fe_r_fast.v"]
+  },
+  "handoff": "The new module's replay end-of-frame beat must not take in_event, in_elem, or in_code from the host pins. The next frame's token is already presented while in_ready is low. scp4d_hybrid_n.v is not edited. A direct regression drives a synthetic switch-heavy trace into scp4d_hybrid_n and scp4d_hybrid_fix. The old module's decision set must differ from the golden. The new module's set must match. The trace is not seed 9 and not seed 13.",
+  "training": {
+    "seed": 17,
+    "fractions": [0.08, 0.15, 0.25, 0.35, 0.45, 0.55, 0.7, 0.85],
+    "frames_per_fraction": 8,
+    "addr_w": [8, 10, 12],
+    "rng": "mulberry32((seed * 10007 + addrW) >>> 0), then the same shuffle and code update as fixtures/scp/v0127-prereg.json.",
+    "note": "New seed. Disjoint from v0.1.26 training seed 4, v0.1.27 training seed 11, held-out seed 9, and held-out seed 13."
+  },
+  "held_out_original": {
+    "seed": 9,
+    "fractions": [0.01, 0.05, 0.2, 0.5],
+    "frames_per_fraction": 16,
+    "regenerated": false,
+    "not_used_to_fit": true
+  },
+  "held_out_high": {
+    "seed": 13,
+    "fractions": [0.55, 0.65, 0.75, 0.85, 0.95],
+    "frames_per_fraction": 8,
+    "mixed_tail": [0.05, 0.85, 0.05, 0.85, 0.05, 0.85, 0.05, 0.85],
+    "regenerated": false,
+    "not_used_to_fit": true
+  },
+  "selector_procedure": {
+    "feature": "event count of the completed frame",
+    "integer_test": "events * 100 >= D * percent",
+    "percent_grid": [8, 15, 25, 35, 45, 55, 70, 85],
+    "percent_rule": "Run scp4d_hybrid_fix on training seed 17 at ADDR_W 8, 10 and 12 once for each percent in percent_grid. A percent is legal only if all three runs are bit-exact against the golden model that uses the same percent, and each ADDR_W uses at least one pipelined-K1 frame and at least one N=4 frame. Among legal percents, choose the smallest sum of those three cycle counts. A tie takes the smaller percent. If no percent is legal, next_fsd is 0.",
+    "engine_timing": "The first frame starts on pipelined K1. The event count of a completed frame chooses the engine of the next frame. The golden model uses that same delay.",
+    "tie": "A tie on the training cycle sum takes the smaller percent.",
+    "fail": "If the synthetic regression is not bit-exact, stop before training. If no percent is legal, freeze next_fsd = 0. After the freeze, place once and run each held-out workload once. Do not change the percent. Do not regenerate seed 9 or seed 13. If a held-out decision set differs, or the wall time is not strictly under both baselines at ADDR_W 8, 10 and 12 on both workloads, report the numbers and stop.",
+    "wall": "held-out cycles / the fixed hybrid's own five-seed 45F median Fmax",
+    "not_used_to_fit": "held-out seed 9 and held-out seed 13",
+    "sha256": "aa4026ee3d12d458b46131df04f302c95974e9d814a2dad82f726dda1e38fe09",
+    "freeze": "After the training runs and before either held-out run, write fixtures/scp/v0128-freeze.json with the chosen percent and this hash. Do not edit this pre-registration to chase a held-out number."
+  },
+  "baselines_already_measured": {
+    "pipelined_k1": {
+      "id": "loop-k1fast-w4l8",
+      "fmax_mhz_median": 38.318580627441406,
+      "cycles_original": {"8": 16416, "10": 65255, "12": 131378},
+      "wall_us_original": {"8": 428.408353, "10": 1702.959737, "12": 3428.571671},
+      "cycles_high": {"8": 40497, "10": 161409, "12": 322876},
+      "wall_us_high": {"8": 1056.850210, "10": 4212.290679, "12": 8426.094984},
+      "rerun": false
+    },
+    "n4_full_scan": {
+      "id": "loop-fsd4-w4l8",
+      "fmax_mhz_median": 34.75722122192383,
+      "cycles_original": {"8": 12512, "10": 49609, "12": 99731},
+      "wall_us_original": {"8": 359.982748, "10": 1427.300522, "12": 2869.360567},
+      "cycles_high": {"8": 21374, "10": 84736, "12": 169499},
+      "wall_us_high": {"8": 614.951347, "10": 2437.939427, "12": 4876.655672},
+      "rerun": false
+    }
+  },
+  "hybrid_success": {
+    "workloads": "Both held-out seed 9 and held-out seed 13, at ADDR_W 8, 10 and 12.",
+    "bit_exact_PASS": "The decision-change set matches the golden for the engine that frame used. Zero dropped records and zero extra records.",
+    "both_engines": "Where the frozen percent assigns both engines on that workload's completed-frame event counts, the run uses each engine for at least one frame. Report frame counts and switches either way.",
+    "wall_PASS": "Hybrid wall time strictly under pipelined K1 and strictly under the pure N=4 loop, at every required width, on both workloads.",
+    "fit_PASS": "All five 45F seeds of loop-hnfix-w4l8 route within 7200 s. 12F and 25F placement is reported and is not required to pass."
+  },
+  "fit": {
+    "designs": ["loop-hnfix-w4l8"],
+    "flags": "OSS CAD Suite 20261118, Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, router2, seeds 1-5, --45k CABGA381, --freq 12, --timing-allow-fail. Serial. No parallel nextpnr.",
+    "record": ["per-seed Fmax", "median", "TRELLIS_COMB", "DP16KD", "route wall-clock seconds", "smallest part", "12F and 25F placement", "critical path"]
+  },
+  "per_lut_expectation": "The loop contains the codec. Decisions/s per LUT is expected to lose to standalone full scan (71397.91807427029). The v0.1.21 sweep stays FAIL unless a measured number exceeds that standalone figure.",
+  "verdict": {
+    "PASS": "Both held-out workloads are bit-exact, wall_PASS holds at ADDR_W 8, 10 and 12, both_engines holds where the frozen rule assigns both, and five 45F seeds route.",
+    "STOP": "The frozen hybrid is bit-exact but the wall time is not strictly under both baselines. Report the best numbers. Do not change the percent.",
+    "FAIL": "A held-out decision set does not match, or fewer than five 45F seeds route."
+  },
+  "stop": "One freeze. One held-out run of each workload. No retune. No regeneration of either held-out set.",
+  "power": "needs real board"
+}
