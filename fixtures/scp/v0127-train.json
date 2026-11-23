@@ -1,0 +1,871 @@
+{
+  "format": "scp4d-v0127-train",
+  "label": "Training cycles only. Not held-out seed 9 or seed 13. Power is needs real board. No place-and-route.",
+  "rows": [
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.02,
+      "cycles": 621,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.08,
+      "cycles": 948,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.15,
+      "cycles": 1589,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.35,
+      "cycles": 3417,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.45,
+      "cycles": 4421,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.55,
+      "cycles": 5494,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.02,
+      "cycles": 1322,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.08,
+      "cycles": 1534,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.15,
+      "cycles": 1887,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.35,
+      "cycles": 2853,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.45,
+      "cycles": 3363,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.55,
+      "cycles": 3876,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.02,
+      "cycles": 806,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.08,
+      "cycles": 1034,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.15,
+      "cycles": 1375,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.35,
+      "cycles": 2341,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.45,
+      "cycles": 2851,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.55,
+      "cycles": 3364,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.02,
+      "cycles": 2678,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.08,
+      "cycles": 3816,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.15,
+      "cycles": 6503,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.35,
+      "cycles": 14164,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.45,
+      "cycles": 18258,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.55,
+      "cycles": 21960,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.02,
+      "cycles": 5182,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.08,
+      "cycles": 6200,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.15,
+      "cycles": 7669,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.35,
+      "cycles": 11682,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.45,
+      "cycles": 13724,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.55,
+      "cycles": 15520,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.02,
+      "cycles": 3093,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.08,
+      "cycles": 4152,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.15,
+      "cycles": 5621,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.35,
+      "cycles": 9634,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.45,
+      "cycles": 11676,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.55,
+      "cycles": 13472,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.02,
+      "cycles": 5831,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.08,
+      "cycles": 7528,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.15,
+      "cycles": 12831,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.35,
+      "cycles": 28027,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.45,
+      "cycles": 36052,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.55,
+      "cycles": 43856,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.02,
+      "cycles": 10386,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.08,
+      "cycles": 12374,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.15,
+      "cycles": 15199,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.35,
+      "cycles": 23119,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.45,
+      "cycles": 27222,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.55,
+      "cycles": 31062,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.02,
+      "cycles": 6174,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.08,
+      "cycles": 8278,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.15,
+      "cycles": 11103,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.35,
+      "cycles": 19023,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.45,
+      "cycles": 23126,
+      "bit_exact": true
+    },
+    {
+      "regime": "low",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.55,
+      "cycles": 26966,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.55,
+      "cycles": 6009,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.65,
+      "cycles": 6201,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.75,
+      "cycles": 7151,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.85,
+      "cycles": 12297,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.95,
+      "cycles": 8286,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 8,
+      "fraction": 0.05,
+      "cycles": 261,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.55,
+      "cycles": 4126,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.65,
+      "cycles": 4083,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.75,
+      "cycles": 4263,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.85,
+      "cycles": 6749,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.95,
+      "cycles": 4522,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 8,
+      "fraction": 0.05,
+      "cycles": 671,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.55,
+      "cycles": 3614,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.65,
+      "cycles": 3571,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.75,
+      "cycles": 3751,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.85,
+      "cycles": 5981,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.95,
+      "cycles": 4010,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 8,
+      "fraction": 0.05,
+      "cycles": 415,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.55,
+      "cycles": 23865,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.65,
+      "cycles": 25113,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.75,
+      "cycles": 28351,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.85,
+      "cycles": 49178,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.95,
+      "cycles": 33556,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 10,
+      "fraction": 0.05,
+      "cycles": 949,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.55,
+      "cycles": 16353,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.65,
+      "cycles": 16111,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.75,
+      "cycles": 16971,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.85,
+      "cycles": 26984,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.95,
+      "cycles": 18160,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 10,
+      "fraction": 0.05,
+      "cycles": 2561,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.55,
+      "cycles": 14078,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.65,
+      "cycles": 14063,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.75,
+      "cycles": 14923,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.85,
+      "cycles": 23912,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.95,
+      "cycles": 16112,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 10,
+      "fraction": 0.05,
+      "cycles": 1537,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.55,
+      "cycles": 48062,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.65,
+      "cycles": 50245,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.75,
+      "cycles": 56483,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.85,
+      "cycles": 98294,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.95,
+      "cycles": 67583,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "k1",
+      "addr_w": 12,
+      "fraction": 0.05,
+      "cycles": 1879,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.55,
+      "cycles": 32820,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.65,
+      "cycles": 32275,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.75,
+      "cycles": 33803,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.85,
+      "cycles": 53906,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.95,
+      "cycles": 36405,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n2",
+      "addr_w": 12,
+      "fraction": 0.05,
+      "cycles": 5133,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.55,
+      "cycles": 28245,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.65,
+      "cycles": 28179,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.75,
+      "cycles": 29707,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.85,
+      "cycles": 47762,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.95,
+      "cycles": 32309,
+      "bit_exact": true
+    },
+    {
+      "regime": "high",
+      "engine": "n4",
+      "addr_w": 12,
+      "fraction": 0.05,
+      "cycles": 3085,
+      "bit_exact": true
+    }
+  ],
+  "bit_exact": true
+}

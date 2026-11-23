@@ -34,7 +34,8 @@ check("throughput refuses a non-positive fmax", (() => { try { throughputValuesP
 }
 check("every catalog design loads a positive cycle count from a committed report", DESIGNS.every((d) => {
   const w = workloadFor(root, d);
-  const expectFrames = d.id === "hybrid" ? 16384 : d.id === "hybrid-a10" ? 65536 : 131072;
+  const expectFrames = d.id === "hybrid" ? 16384 : d.id === "hybrid-a10" ? 65536
+    : d.id === "loop-fsd2-w4l8" || d.id === "loop-fsd4-w4l8" ? 2048 * 48 : 131072;
   const frames = w.element_frames === expectFrames;
   return w.cycles > 0 && frames;
 }));

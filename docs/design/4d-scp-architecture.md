@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33). `v0127` means v0.1.27 (§34).
 
 **Reproduce.**
 
@@ -2093,18 +2093,18 @@ Decisions/s per LUT of the candidate, ADDR_W 12 (20182 evals, 131378 cycles), th
 
 Training seed 4, fractions 0.02, 0.08, 0.15, 0.35, 0.45 and 0.55, eight frames each, behind the v0.1.25 retimed decoder. Full scan had more closed-loop wall cycles than pipelined K1 on every band, at ADDR_W 8, 10 and 12. The frozen selector therefore does not choose full scan. Held-out is seed 9 and fractions 0.01, 0.05, 0.2 and 0.5. Those grids are not in the training file.
 
-**Held-out.** The selector chose 0 full-scan frames and 0 switches at ADDR_W 8, 10 and 12. All 64 frames at each width used pipelined K1. Decision sets match that golden. Cycles are 16463, 65302 and 131426, which is 47, 47 and 48 above the pure pipelined-K1 loop. The threshold was not changed.
+## 34. v0.1.27: a faster full scan, then a hybrid (`v0127`)
 
-**Place and route of `loop-hyfast-w4l8`.** Five of five 45F seeds routed. Fmax 34.431705474853516, 36.759300231933594, 33.60892868041992, 35.78841781616211, 37.5939826965332 MHz. Median 35.78841781616211 MHz (seed 4). `TRELLIS_COMB` 34005, `DP16KD` 48, flip-flops 10386. Seed walls 149.723, 140.042, 185.263, 164.255, 143.925 s. 12F and 25F do not place. 85F seed 1 routed at 36.00749206542969 MHz in 134.721 s. Smallest part 45F.
+**Status.** The rule below is locked in `fixtures/scp/v0127-prereg.json` before any v0.1.27 simulation or place-and-route. Power is **needs real board**. v0.1.19 through v0.1.26 RTL stay byte-identical. This workload family is new on purpose: fractions above 0.55 are there so a faster full scan has a regime the old mixed-churn set did not give it. The original held-out set is still reported and is not regenerated.
 
-**Critical path.** The median seed starts at `dec.rq_cnt` and ends at `dec.rq[3]`, 27.942 ns. The cells are in the retimed decoder, not in the selector or the full-scan engine. Carrying that engine still moved the median from 38.318580627441406 MHz on `loop-k1fast-w4l8` to 35.78841781616211 MHz.
+The current full scan spends two cycles on each element because the block RAM is used on the following clock. `scp4d_fsd_n` is a new engine. N is 2 or 4, chosen by the rule in the pre-registration after both are placed. Each element lives in bank `e % N`. A steady cycle compares one row of N elements and issues the next row address. Up to N decision changes are recorded in that cycle. The scan does not wait to drain a one-result port. The decision set matches `scp4d_fsd`.
 
-**Wall time, microseconds.** The candidate is above pipelined K1 at every width.
+**Measured.** Verdict for the hybrid: **STOP**. N=4 is the chosen fast scan. Its five-seed median is 34.75722122192383 MHz, `TRELLIS_COMB` 33281, `DP16KD` 39, smallest part 45F. N=2 is 36.79446792602539 MHz, 32745 `TRELLIS_COMB`, 37 `DP16KD`. The fraction-0.95 training wall-time sum is lower for N=4. The frozen percent is 55. Training bands at 0.02, 0.05 and 0.08 stay on K1. Every band at or above 0.55 has N=4 wall time under pipelined K1 at all three widths.
 
-| ADDR_W | hybrid | pipelined K1 | full scan |
-| --- | --- | --- | --- |
-| 8 | 460.009160 | 428.408353 | 1213.837365 |
-| 10 | 1824.668538 | 1702.959737 | 4857.820786 |
-| 12 | 3672.305400 | 3428.571671 | 9728.504372 |
+The N=4 critical path, median seed, starts at `dec.rq_cnt` and ends at `dec.rq[3]`, 28.771 ns. It is in the decoder, not in the scan. The hybrid's median-seed path is the same decoder queue, `dec.rq_cnt` to `dec.rq[7]`, 26.807 ns. Median hybrid Fmax is 37.30369186401367 MHz, `TRELLIS_COMB` 34070, `DP16KD` 51.
 
-Decisions/s per LUT is 161.61535904904028, below the pure pipelined-K1 loop at 181.13722038937402 and below standalone full scan at 71397.91807427029. The v0.1.21 sweep stays **FAIL**. No second threshold was tried.
+On the original held-out set the hybrid chooses 0 full-scan frames. Its wall time is 441.323611 / 1750.550595 / 3523.136543 µs, above pipelined K1. The pure N=4 loop is 359.982748 / 1427.300522 / 2869.360567 µs, under pipelined K1. Decisions of that pure loop match the full-scan golden.
+
+On the new high-churn held-out set (seed 13) the hybrid chooses 28, 27 and 27 full-scan frames and 20, 21 and 21 K1 frames, with 10, 8 and 8 switches. The decision set is short by 2, 3 and 1 records, so it is not bit-exact. Wall time is 1094.422508 / 4157.872646 / 8318.720869 µs. Pure N=4 is 614.951347 / 2437.939427 / 4876.655672 µs. Pipelined K1 is 1056.850210 / 4212.290679 / 8426.094984 µs. The hybrid does not beat the pure N=4 loop. The percent was not changed.
+
+Decisions/s per LUT of the N=4 loop is 606.4517615469025. The hybrid is 168.1367285999046. Standalone full scan remains 71397.91807427029. The v0.1.21 sweep stays **FAIL**. This is not a hybrid win. The pure N=4 loop is the design that beats pipelined K1 on wall time.

@@ -51,6 +51,10 @@ export const READ_FILES = [
   "hw/scp4d/synth/scp4d_loop_k1fast_wrap.v",
   "hw/scp4d/rtl/scp4d_hybrid_fast.v",
   "hw/scp4d/synth/scp4d_loop_hyfast_wrap.v",
+  "hw/scp4d/rtl/scp4d_fsd_n.v",
+  "hw/scp4d/synth/scp4d_loop_fsdn_wrap.v",
+  "hw/scp4d/rtl/scp4d_hybrid_n.v",
+  "hw/scp4d/synth/scp4d_loop_hnfast_wrap.v",
 ] as const;
 
 export type Kind = "encoder" | "decoder" | "loop" | "decision";
@@ -104,6 +108,9 @@ export const DESIGNS: readonly Design[] = [
   { id: "loop-fsdonly-w4l8", kind: "loop", milestone: "v0.1.25", top: "wrap_loop_fsdonly", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
   { id: "loop-k1fast-w4l8", kind: "loop", milestone: "v0.1.25", top: "wrap_loop_k1fast", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
   { id: "loop-hyfast-w4l8", kind: "loop", milestone: "v0.1.26", top: "wrap_loop_hyfast", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
+  { id: "loop-fsd2-w4l8", kind: "loop", milestone: "v0.1.27", top: "wrap_loop_fsdn", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }, { name: "N", value: "2" }], workload: "hybrid", field: "cycles" },
+  { id: "loop-fsd4-w4l8", kind: "loop", milestone: "v0.1.27", top: "wrap_loop_fsdn", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }, { name: "N", value: "4" }], workload: "hybrid", field: "cycles" },
+  { id: "loop-hnfast-w4l8", kind: "loop", milestone: "v0.1.27", top: "wrap_loop_hnfast", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
 ];
 
 export type Workload = {
@@ -169,6 +176,31 @@ export function workloadFor(root: string, d: Design): Workload {
         evals: int(cell?.evals, "hyfast evals"),
         source_report: "fixtures/scp/v0126-heldout.json",
         source_field: "rows[addr_w=12].cycles",
+      };
+    }
+    if (d.id === "loop-hnfast-w4l8") {
+      const sim = load(root, "fixtures/scp/v0127-heldout.json") as { rows: { workload: string; addr_w: number; cycles: number; evals: number }[] };
+      const cell = sim.rows.find((r) => r.workload === "original" && r.addr_w === 12);
+      return {
+        stream: "held-out-seed9-a12-hnfast",
+        element_frames: 2048 * 64,
+        cycles: int(cell?.cycles, "hnfast cycles"),
+        evals: int(cell?.evals, "hnfast evals"),
+        source_report: "fixtures/scp/v0127-heldout.json",
+        source_field: "rows[workload=original,addr_w=12].cycles",
+      };
+    }
+    if (d.id === "loop-fsd2-w4l8" || d.id === "loop-fsd4-w4l8") {
+      const sim = load(root, "fixtures/scp/v0127-train.json") as { rows: { regime: string; engine: string; addr_w: number; cycles: number }[] };
+      const engine = d.id === "loop-fsd2-w4l8" ? "n2" : "n4";
+      const cycles = sim.rows.filter((r) => r.regime === "high" && r.engine === engine && r.addr_w === 12).reduce((a, r) => a + r.cycles, 0);
+      return {
+        stream: `train-seed11-high-a12-${engine}`,
+        element_frames: 2048 * 48,
+        cycles,
+        evals: 2048 * 48,
+        source_report: "fixtures/scp/v0127-train.json",
+        source_field: `rows[regime=high,engine=${engine},addr_w=12].cycles`,
       };
     }
     if (d.id === "loop-k1fast-w4l8") {
