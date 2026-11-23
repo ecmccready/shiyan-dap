@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33). `v0127` means v0.1.27 (§34). `v0128` means v0.1.28 (§35).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33). `v0127` means v0.1.27 (§34). `v0128` means v0.1.28 (§35). `v0129` means v0.1.29 (§36).
 
 **Reproduce.**
 
@@ -2118,3 +2118,9 @@ The v0.1.27 drop was the replay end-of-frame beat. `ede_iev` was the host `in_ev
 Training seed 17, eight frames at each of 0.08, 0.15, 0.25, 0.35, 0.45, 0.55, 0.70 and 0.85. Percent 15 has the smallest legal cycle sum, 274143. Percents 70 and 85 never select full scan because the codec event count stays under the test. The critical path of the median seed starts at `dec.rq_cnt` and ends at `dec.rq[4]`, 26.587 ns. It is in the decoder. Median Fmax is 37.61236572265625 MHz, `TRELLIS_COMB` 34559, `DP16KD` 51, smallest part 45F. 12F and 25F do not place. 85F seed 1 routes at 34.52204513549805 MHz.
 
 Both held-out workloads are bit-exact and use both engines. Original wall time is 383.677009 / 1260.968277 / 2547.991815 µs. That is under both baselines at ADDR_W 10 and 12, and above the pure N=4 loop at ADDR_W 8 (359.982748 µs). High-churn wall time is 900.714415 / 3582.172975 / 7161.660662 µs, under pipelined K1 and above the pure N=4 loop at all three widths. The percent was not changed. Decisions/s per LUT is 745.3661690238097. Standalone full scan remains 71397.91807427029. The v0.1.21 sweep stays **FAIL**.
+
+## 36. v0.1.29: nearly free engine switches (`v0129`)
+
+**Status.** The rule below is locked in `fixtures/scp/v0129-prereg.json` before any v0.1.29 held-out run. The profile is `fixtures/scp/v0129-profile.json`. Power is **needs real board**. v0.1.19 through v0.1.28 RTL stay byte-identical. The new module is `scp4d_hybrid_coh`.
+
+On training seed 19 with a high-churn shape, steady full-scan frames already match standalone N=4 engine cycles (delta 0). The extra host cycles are the fsd-to-K1 replay (`clr`, `arm`, `wait`, `use`, `drain`, `reof`) and the K1-to-fsd catch-up scan (`sync`). At ADDR_W 8 those phase cycles are 9244 and 272. Four frames that begin on K1 after a switch account for 11674 of the 12472 extra host cycles.

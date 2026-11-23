@@ -1,0 +1,361 @@
+{
+  "format": "scp4d-v0129-profile",
+  "label": "Training and synthetic-shape profile of scp4d_hybrid_fix at percent 15. Not seed 9 or seed 13. Power is needs real board.",
+  "percent": 15,
+  "rows": [
+    {
+      "shape": "dense",
+      "seed": 17,
+      "addr_w": 8,
+      "hybrid_host": 21118,
+      "n4_host": 20654,
+      "k1_host": 33299,
+      "hybrid_eng": 10904,
+      "n4_eng": 9853,
+      "k1_eng": 27953,
+      "host_minus_n4": 464,
+      "phase_cycles": {
+        "run": 21050,
+        "sync": 68,
+        "clr": 0,
+        "arm": 0,
+        "wait": 0,
+        "use": 0,
+        "drain": 0,
+        "reof": 0
+      },
+      "classes": [
+        {
+          "class": "full_scan_after_switch",
+          "frames": 1,
+          "hybrid_host": 326,
+          "n4_host": 253,
+          "host_delta": 73,
+          "hybrid_eng": 188,
+          "n4_eng": 121,
+          "eng_delta": 67
+        },
+        {
+          "class": "full_scan_steady",
+          "frames": 46,
+          "hybrid_host": 17572,
+          "n4_host": 17526,
+          "host_delta": 46,
+          "hybrid_eng": 8059,
+          "n4_eng": 8059,
+          "eng_delta": 0
+        },
+        {
+          "class": "k1_steady",
+          "frames": 17,
+          "hybrid_host": 3220,
+          "n4_host": 2875,
+          "host_delta": 345,
+          "hybrid_eng": 2657,
+          "n4_eng": 1673,
+          "eng_delta": 984
+        }
+      ]
+    },
+    {
+      "shape": "dense",
+      "seed": 17,
+      "addr_w": 10,
+      "hybrid_host": 84566,
+      "n4_host": 82622,
+      "k1_host": 134011,
+      "hybrid_eng": 43248,
+      "n4_eng": 39037,
+      "k1_eng": 112241,
+      "host_minus_n4": 1944,
+      "phase_cycles": {
+        "run": 84306,
+        "sync": 260,
+        "clr": 0,
+        "arm": 0,
+        "wait": 0,
+        "use": 0,
+        "drain": 0,
+        "reof": 0
+      },
+      "classes": [
+        {
+          "class": "full_scan_after_switch",
+          "frames": 1,
+          "hybrid_host": 1211,
+          "n4_host": 950,
+          "host_delta": 261,
+          "hybrid_eng": 725,
+          "n4_eng": 466,
+          "eng_delta": 259
+        },
+        {
+          "class": "full_scan_steady",
+          "frames": 46,
+          "hybrid_host": 70549,
+          "n4_host": 70503,
+          "host_delta": 46,
+          "hybrid_eng": 32028,
+          "n4_eng": 32028,
+          "eng_delta": 0
+        },
+        {
+          "class": "k1_steady",
+          "frames": 17,
+          "hybrid_host": 12806,
+          "n4_host": 11169,
+          "host_delta": 1637,
+          "hybrid_eng": 10495,
+          "n4_eng": 6543,
+          "eng_delta": 3952
+        }
+      ]
+    },
+    {
+      "shape": "dense",
+      "seed": 17,
+      "addr_w": 12,
+      "hybrid_host": 168459,
+      "n4_host": 164525,
+      "k1_host": 266512,
+      "hybrid_eng": 86023,
+      "n4_eng": 77640,
+      "k1_eng": 223080,
+      "host_minus_n4": 3934,
+      "phase_cycles": {
+        "run": 167943,
+        "sync": 516,
+        "clr": 0,
+        "arm": 0,
+        "wait": 0,
+        "use": 0,
+        "drain": 0,
+        "reof": 0
+      },
+      "classes": [
+        {
+          "class": "full_scan_after_switch",
+          "frames": 1,
+          "hybrid_host": 2387,
+          "n4_host": 1870,
+          "host_delta": 517,
+          "hybrid_eng": 1437,
+          "n4_eng": 922,
+          "eng_delta": 515
+        },
+        {
+          "class": "full_scan_steady",
+          "frames": 46,
+          "hybrid_host": 140661,
+          "n4_host": 140615,
+          "host_delta": 46,
+          "hybrid_eng": 63692,
+          "n4_eng": 63692,
+          "eng_delta": 0
+        },
+        {
+          "class": "k1_steady",
+          "frames": 17,
+          "hybrid_host": 25411,
+          "n4_host": 22040,
+          "host_delta": 3371,
+          "hybrid_eng": 20894,
+          "n4_eng": 13026,
+          "eng_delta": 7868
+        }
+      ]
+    },
+    {
+      "shape": "high",
+      "seed": 19,
+      "addr_w": 8,
+      "hybrid_host": 33717,
+      "n4_host": 21245,
+      "k1_host": 40124,
+      "hybrid_eng": 23240,
+      "n4_eng": 10120,
+      "k1_eng": 34600,
+      "host_minus_n4": 12472,
+      "phase_cycles": {
+        "run": 24201,
+        "sync": 272,
+        "clr": 1036,
+        "arm": 1024,
+        "wait": 1024,
+        "use": 1024,
+        "drain": 3072,
+        "reof": 2064
+      },
+      "classes": [
+        {
+          "class": "full_scan_after_switch",
+          "frames": 4,
+          "hybrid_host": 983,
+          "n4_host": 707,
+          "host_delta": 276,
+          "hybrid_eng": 679,
+          "n4_eng": 411,
+          "eng_delta": 268
+        },
+        {
+          "class": "full_scan_steady",
+          "frames": 39,
+          "hybrid_host": 17895,
+          "n4_host": 17856,
+          "host_delta": 39,
+          "hybrid_eng": 8372,
+          "n4_eng": 8372,
+          "eng_delta": 0
+        },
+        {
+          "class": "k1_after_switch",
+          "frames": 4,
+          "hybrid_host": 13750,
+          "n4_host": 2076,
+          "host_delta": 11674,
+          "hybrid_eng": 13225,
+          "n4_eng": 1065,
+          "eng_delta": 12160
+        },
+        {
+          "class": "k1_steady",
+          "frames": 1,
+          "hybrid_host": 1089,
+          "n4_host": 606,
+          "host_delta": 483,
+          "hybrid_eng": 964,
+          "n4_eng": 272,
+          "eng_delta": 692
+        }
+      ]
+    },
+    {
+      "shape": "high",
+      "seed": 19,
+      "addr_w": 10,
+      "hybrid_host": 134512,
+      "n4_host": 84558,
+      "k1_host": 160955,
+      "hybrid_eng": 92653,
+      "n4_eng": 40213,
+      "k1_eng": 138793,
+      "host_minus_n4": 49954,
+      "phase_cycles": {
+        "run": 96580,
+        "sync": 1040,
+        "clr": 4108,
+        "arm": 4096,
+        "wait": 4096,
+        "use": 4096,
+        "drain": 12288,
+        "reof": 8208
+      },
+      "classes": [
+        {
+          "class": "full_scan_after_switch",
+          "frames": 4,
+          "hybrid_host": 3890,
+          "n4_host": 2846,
+          "host_delta": 1044,
+          "hybrid_eng": 2642,
+          "n4_eng": 1606,
+          "eng_delta": 1036
+        },
+        {
+          "class": "full_scan_steady",
+          "frames": 39,
+          "hybrid_host": 71355,
+          "n4_host": 71308,
+          "host_delta": 47,
+          "hybrid_eng": 33296,
+          "n4_eng": 33296,
+          "eng_delta": 0
+        },
+        {
+          "class": "k1_after_switch",
+          "frames": 4,
+          "hybrid_host": 54934,
+          "n4_host": 8316,
+          "host_delta": 46618,
+          "hybrid_eng": 52873,
+          "n4_eng": 4233,
+          "eng_delta": 48640
+        },
+        {
+          "class": "k1_steady",
+          "frames": 1,
+          "hybrid_host": 4333,
+          "n4_host": 2088,
+          "host_delta": 2245,
+          "hybrid_eng": 3842,
+          "n4_eng": 1078,
+          "eng_delta": 2764
+        }
+      ]
+    },
+    {
+      "shape": "high",
+      "seed": 19,
+      "addr_w": 12,
+      "hybrid_host": 269035,
+      "n4_host": 169221,
+      "k1_host": 322540,
+      "hybrid_eng": 185272,
+      "n4_eng": 80424,
+      "k1_eng": 278152,
+      "host_minus_n4": 99814,
+      "phase_cycles": {
+        "run": 193215,
+        "sync": 2064,
+        "clr": 8204,
+        "arm": 8192,
+        "wait": 8192,
+        "use": 8192,
+        "drain": 24576,
+        "reof": 16400
+      },
+      "classes": [
+        {
+          "class": "full_scan_after_switch",
+          "frames": 4,
+          "hybrid_host": 7822,
+          "n4_host": 5762,
+          "host_delta": 2060,
+          "hybrid_eng": 5282,
+          "n4_eng": 3222,
+          "eng_delta": 2060
+        },
+        {
+          "class": "full_scan_steady",
+          "frames": 39,
+          "hybrid_host": 142740,
+          "n4_host": 142701,
+          "host_delta": 39,
+          "hybrid_eng": 66597,
+          "n4_eng": 66597,
+          "eng_delta": 0
+        },
+        {
+          "class": "k1_after_switch",
+          "frames": 4,
+          "hybrid_host": 109813,
+          "n4_host": 16615,
+          "host_delta": 93198,
+          "hybrid_eng": 105712,
+          "n4_eng": 8452,
+          "eng_delta": 97260
+        },
+        {
+          "class": "k1_steady",
+          "frames": 1,
+          "hybrid_host": 8660,
+          "n4_host": 4143,
+          "host_delta": 4517,
+          "hybrid_eng": 7681,
+          "n4_eng": 2153,
+          "eng_delta": 5528
+        }
+      ]
+    }
+  ]
+}
