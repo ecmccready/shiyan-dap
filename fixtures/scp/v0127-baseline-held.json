@@ -1,0 +1,77 @@
+{
+  "format": "scp4d-v0127-baseline-held",
+  "rows": [
+    {
+      "workload": "original",
+      "engine": "k1",
+      "addr_w": 8,
+      "cycles": 16416
+    },
+    {
+      "workload": "original",
+      "engine": "n4",
+      "addr_w": 8,
+      "cycles": 12512
+    },
+    {
+      "workload": "original",
+      "engine": "k1",
+      "addr_w": 10,
+      "cycles": 65255
+    },
+    {
+      "workload": "original",
+      "engine": "n4",
+      "addr_w": 10,
+      "cycles": 49609
+    },
+    {
+      "workload": "original",
+      "engine": "k1",
+      "addr_w": 12,
+      "cycles": 131378
+    },
+    {
+      "workload": "original",
+      "engine": "n4",
+      "addr_w": 12,
+      "cycles": 99731
+    },
+    {
+      "workload": "high",
+      "engine": "k1",
+      "addr_w": 8,
+      "cycles": 40497
+    },
+    {
+      "workload": "high",
+      "engine": "n4",
+      "addr_w": 8,
+      "cycles": 21374
+    },
+    {
+      "workload": "high",
+      "engine": "k1",
+      "addr_w": 10,
+      "cycles": 161409
+    },
+    {
+      "workload": "high",
+      "engine": "n4",
+      "addr_w": 10,
+      "cycles": 84736
+    },
+    {
+      "workload": "high",
+      "engine": "k1",
+      "addr_w": 12,
+      "cycles": 322876
+    },
+    {
+      "workload": "high",
+      "engine": "n4",
+      "addr_w": 12,
+      "cycles": 169499
+    }
+  ]
+}

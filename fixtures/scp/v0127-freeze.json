@@ -1,0 +1,14 @@
+{
+  "format": "scp4d-v0127-freeze",
+  "label": "Chosen after training and the five-seed 45F routes, before either held-out run. Power is needs real board.",
+  "procedure_sha256": "45f9539fbb70f3f4ab750170022d3fbeaaabf9a90d060bc918172db12131b6cd",
+  "n": 4,
+  "n_reason": "Sum of training wall times at fraction 0.95 is smaller for N=4 than for N=2.",
+  "n2_fmax_mhz_median": 36.79446792602539,
+  "n4_fmax_mhz_median": 34.75722122192383,
+  "n2_f095_wall_us_sum": 1605.8664068411952,
+  "n4_f095_wall_us_sum": 1508.4922832360394,
+  "percent": 55,
+  "percent_reason": "55 is the smallest grid percent. Every training band at or above 0.55 has N=4 wall time strictly under pipelined K1 at ADDR_W 8, 10 and 12. Fractions 0.02, 0.05 and 0.08 stay on K1.",
+  "rtl": "next_fsd = !mode_relations && (ev_count * 100 >= cfg_D * 55)"
+}
