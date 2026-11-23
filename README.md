@@ -340,7 +340,9 @@ Each run needs a unique `run_id` (a reused one returns 409).
 
 ## Aethel Node hardware track
 
-Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industry-benchmark.md`, `docs/design/v0119-reproduce.md`, `docs/design/aethel-node-hardware-evidence-v1.md`, `docs/design/4d-scp-architecture.md` §25–§34, `docs/design/v0124-loop-profile.md`, and `hw/scp4d/README.md`.
+Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industry-benchmark.md`, `docs/design/v0119-reproduce.md`, `docs/design/aethel-node-hardware-evidence-v1.md`, `docs/design/4d-scp-architecture.md` §25–§36, `docs/design/v0124-loop-profile.md`, and `hw/scp4d/README.md`.
+
+The same measurement loop is described as a virtual chip in `docs/virtual-chip.md`. Proposals are pre-registered, frozen on training, measured on the pinned toolchain, and accepted or rejected from the fixtures. `scripts/check-virtual-chip.ts` rebuilds those verdicts. Power on a board is still **needs real board**.
 
 ### Vantage points
 
@@ -363,6 +365,7 @@ Measured differentiators so far:
 - v0.1.26 trained a selector on seed 4 only. Full scan was slower on every training band through fraction 0.55, so the frozen selector chooses no full scan. On held-out it ran 0 full-scan frames. Wall time is 460.009160 / 1824.668538 / 3672.305400 µs, above pipelined K1, because the extra engine lowered median Fmax to 35.78841781616211 MHz. Verdict STOP.
 - v0.1.27 N=4 full scan beats pipelined K1 on wall time: 359.982748 / 1427.300522 / 2869.360567 µs on the original held-out set, and 614.951347 / 2437.939427 / 4876.655672 µs on the new high-churn set. The hybrid does not. On the original set it chooses 0 full-scan frames. On the high-churn set it switches, but the decision set misses a few records and its wall time loses to the pure N=4 loop.
 - v0.1.28 fixes the replay eof so it does not ingest the next frame's token. The synthetic trace drops element 0 on the old hybrid and matches on the new one. Percent 15 is frozen on training seed 17. Both held-out workloads are bit-exact and use both engines. Wall time beats both baselines at original ADDR_W 10 and 12, and loses to pure N=4 at original ADDR_W 8 and on the high-churn set. Verdict STOP.
+- v0.1.29 removes the replay walk and the catch-up scan. Percent 8, hold 1, start K1. Both held-out sets are bit-exact and use both engines. Original wall time 326.547240 / 1292.154530 / 2595.163816 µs is under both baselines. High-churn wall time 664.853800 / 2633.292516 / 5264.063221 µs is still above pure N=4. Verdict STOP.
 - Reproducible evidence package: pinned toolchain, seeds, sha256 manifest with a stale-hash check, reproduce guides.
 - Not claimed: K1 does not beat full scan on decisions/s per LUT (v0.1.21 sweep FAIL, best 0.34x). Power: needs real board.
 
@@ -370,7 +373,7 @@ Measured differentiators so far:
 
 Primary target: Lattice ECP5 (LFE5U-45F main; 12F/25F/85F for fit checks).
 Toolchain: OSS CAD Suite 20261118 (Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, Project Trellis), Icarus Verilog for bit-exact regression.
-Current density: v0.1.28 fixed hybrid at 34,559 TRELLIS_COMB. The v0.1.27 N=4 full-scan loop is 33,281. The v0.1.25 retimed K1 loop is 32,497. The post-trim K1 loop is 30,888.
+Current density: v0.1.29 coherent hybrid at 34,920 TRELLIS_COMB. The v0.1.27 N=4 full-scan loop is 33,281. The v0.1.25 retimed K1 loop is 32,497. The post-trim K1 loop is 30,888.
 
 ### Build summary
 
@@ -387,10 +390,11 @@ Current density: v0.1.28 fixed hybrid at 34,559 TRELLIS_COMB. The v0.1.27 N=4 fu
 | v0.1.26 | Training-frozen hybrid | Selector fit on seed 4 only; full scan lost every band through fraction 0.55, so `next_fsd` stays 0. Held-out full-scan frames 0, switches 0, decisions match pipelined K1. Wall time 460.009160 / 1824.668538 / 3672.305400 µs, above pipelined K1. Median 35.78841781616211 MHz, 34,005 TRELLIS_COMB, 48 DP16KD, smallest 45F. Critical path stays in the decoder. Verdict STOP. The threshold was not changed |
 | v0.1.27 | N-wide full scan, then hybrid | N=4 chosen over N=2. Pure N=4 loop wall time 359.982748 / 1427.300522 / 2869.360567 µs on the original held-out set, under pipelined K1. Median 34.75722122192383 MHz, 33,281 TRELLIS_COMB, 39 DP16KD, smallest 45F. On the new high-churn set (seed 13) it is 614.951347 / 2437.939427 / 4876.655672 µs, also under K1. The hybrid, percent 55, chooses 0 full-scan frames on the original set. On the high-churn set it chooses both engines but misses a few decision records and loses wall time to the pure N=4 loop. Hybrid verdict STOP. Not a hybrid win |
 | v0.1.28 | Fixed hybrid handoff | Replay eof no longer takes the host token. Percent 15 frozen on seed 17. Both held-out sets bit-exact, both engines. Original wall 383.677009 / 1260.968277 / 2547.991815 µs: under both baselines at 10 and 12, above N=4 at 8. High-churn wall 900.714415 / 3582.172975 / 7161.660662 µs, above N=4 at 8, 10 and 12. Median 37.61236572265625 MHz, 34,559 TRELLIS_COMB, 51 DP16KD, smallest 45F. Critical path stays in the decoder. Verdict STOP. The percent was not changed |
+| v0.1.29 | Coherent hybrid, nearly free switches | Replay and catch-up scan removed. Percent 8, hold 1, start K1. Both held-out sets bit-exact and both engines. Original wall 326.547240 / 1292.154530 / 2595.163816 µs, under both baselines. High-churn wall 664.853800 / 2633.292516 / 5264.063221 µs, above N=4. Median 36.48170471191406 MHz, 34,920 TRELLIS_COMB, 53 DP16KD, FF 10859, smallest 45F. Critical path stays in the decoder. Verdict STOP. The selector was not changed |
 
 ### Recommendations
 
-1. v0.1.28's fixed hybrid is bit-exact and uses both engines. It beats both baselines at original ADDR_W 10 and 12. It does not beat the pure N=4 loop at original ADDR_W 8 or on the high-churn set, because those frames are already cheaper on a full scan and the switch adds cycles. Verdict STOP. Decisions/s per LUT still loses to standalone full scan.
+1. v0.1.29's coherent hybrid beats both baselines on the original held-out set. On the high-churn set the frozen rule still starts on K1, so the opening high-churn frame costs more than a full scan and the wall time stays above pure N=4. Verdict STOP. Decisions/s per LUT still loses to standalone full scan.
 2. Metric discipline: keep decisions/s per LUT, evaluations (a compute-work proxy, not energy) and cycles as separate objectives; pre-register every threshold; keep negative results (v0.1.21 FAIL) in the record.
 3. Power board: measure power on a Lattice ECP5 Versa or equivalent 45F/85F board; until then power stays needs real board, with no estimates.
 4. Next scale: extend the K1 vs full-scan sweep to larger state sizes (85F where the 45F runs out) and recover the encoder throughput given up by the trimmed variant.
