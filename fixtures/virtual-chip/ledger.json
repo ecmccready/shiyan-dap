@@ -224,7 +224,7 @@
       "id": "v0.1.30",
       "verdict": "PASS",
       "accepted": true,
-      "pr": "https://github.com/ecmccready/shiyan-dap/pull/25",
+      "pr": "https://github.com/ecmccready/shiyan-dap/pull/28",
       "prereg_commit": "54d533e6",
       "freeze_commit": "1c540468",
       "result_commit": "57ab9189",
