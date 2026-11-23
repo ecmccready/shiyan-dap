@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33). `v0127` means v0.1.27 (§34).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33). `v0127` means v0.1.27 (§34). `v0128` means v0.1.28 (§35).
 
 **Reproduce.**
 
@@ -2108,3 +2108,7 @@ On the original held-out set the hybrid chooses 0 full-scan frames. Its wall tim
 On the new high-churn held-out set (seed 13) the hybrid chooses 28, 27 and 27 full-scan frames and 20, 21 and 21 K1 frames, with 10, 8 and 8 switches. The decision set is short by 2, 3 and 1 records, so it is not bit-exact. Wall time is 1094.422508 / 4157.872646 / 8318.720869 µs. Pure N=4 is 614.951347 / 2437.939427 / 4876.655672 µs. Pipelined K1 is 1056.850210 / 4212.290679 / 8426.094984 µs. The hybrid does not beat the pure N=4 loop. The percent was not changed.
 
 Decisions/s per LUT of the N=4 loop is 606.4517615469025. The hybrid is 168.1367285999046. Standalone full scan remains 71397.91807427029. The v0.1.21 sweep stays **FAIL**. This is not a hybrid win. The pure N=4 loop is the design that beats pipelined K1 on wall time.
+
+## 35. v0.1.28: fix the hybrid handoff (`v0128`)
+
+**Status.** The rule below is locked in `fixtures/scp/v0128-prereg.json` before any v0.1.28 simulation or place-and-route. Power is **needs real board**. v0.1.19 through v0.1.27 RTL stay byte-identical. The new module is `scp4d_hybrid_fix`. It keeps pipelined K1 (`scp4d_ede_pipe`) and the 4-wide full scan (`scp4d_fsd_n`, N=4). The held-out workloads are seed 9 and seed 13 from v0.1.27. They are not regenerated and they are not used to choose the percent.
