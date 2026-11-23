@@ -1,0 +1,10 @@
+{
+  "format": "scp4d-v0129-freeze",
+  "label": "Chosen from training seed 21 after the coherent hybrid was bit-exact, before either held-out run. Power is needs real board.",
+  "procedure_sha256": "a2b95b5bff379a55ef200a2a1097ba26cb00c44a30fad5bee87ba931a6feafb7",
+  "percent": 8,
+  "hold": 1,
+  "start": "k1",
+  "reason": "percent 8, hold 1, start k1 has the smallest legal sum of closed-loop host cycles, 266848. The next legal sum is percent 8, hold 1, start fsd at 266942. Every candidate in the grid was bit-exact.",
+  "rtl": "vote_fsd = (ev_count * 100 >= cfg_D * 8); first frame starts on K1; hold 1 switches from the completed frame"
+}

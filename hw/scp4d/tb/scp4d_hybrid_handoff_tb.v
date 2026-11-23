@@ -5,6 +5,8 @@
 module scp4d_hybrid_handoff_tb;
   parameter integer OLD = 0;
   parameter integer PERCENT = 55;
+  parameter integer HOLD = 1;
+  parameter integer START_FSD = 0;
   parameter integer ADDR_W = 8;
   localparam integer MAX_T = 512;
 
@@ -20,8 +22,17 @@ module scp4d_hybrid_handoff_tb;
   wire [31:0] evals, cycles;
 
   generate
-    if (OLD != 0) begin : oldm
+    if (OLD == 1) begin : oldm
       scp4d_hybrid_n #(.ADDR_W(ADDR_W), .FAN(4)) hy (
+        .clk(clk), .rst(rst), .mode_relations(1'b0), .threshold(32'sd0), .cfg_D(cfg_D),
+        .cfg_we(1'b0), .cfg_src({ADDR_W{1'b0}}), .cfg_tgt({4*ADDR_W{1'b0}}), .cfg_vld(4'b0),
+        .in_valid(in_valid), .in_ready(in_ready), .in_elem(in_elem), .in_code(in_code),
+        .in_event(in_event), .in_eof(in_eof), .in_last(in_last),
+        .out_valid(out_valid), .out_elem(out_elem), .out_decision(out_decision),
+        .out_hit(out_hit), .out_elem_n(out_elem_n), .out_dec_n(out_dec_n), .out_eof(out_eof),
+        .sel_fsd(sel_fsd), .done(done), .err(err), .err_code(err_code), .evals(evals), .cycles(cycles));
+    end else if (OLD == 2) begin : coh
+      scp4d_hybrid_coh #(.ADDR_W(ADDR_W), .FAN(4), .PERCENT(PERCENT), .HOLD(HOLD), .START_FSD(START_FSD)) hy (
         .clk(clk), .rst(rst), .mode_relations(1'b0), .threshold(32'sd0), .cfg_D(cfg_D),
         .cfg_we(1'b0), .cfg_src({ADDR_W{1'b0}}), .cfg_tgt({4*ADDR_W{1'b0}}), .cfg_vld(4'b0),
         .in_valid(in_valid), .in_ready(in_ready), .in_elem(in_elem), .in_code(in_code),
