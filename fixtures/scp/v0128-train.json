@@ -1,0 +1,258 @@
+{
+  "format": "scp4d-v0128-train",
+  "label": "Training seed 17 only. The selector counts codec event tokens. Not held-out. Power is needs real board.",
+  "seed": 17,
+  "fractions": [
+    0.08,
+    0.15,
+    0.25,
+    0.35,
+    0.45,
+    0.55,
+    0.7,
+    0.85
+  ],
+  "rows": [
+    {
+      "percent": 8,
+      "addr_w": 8,
+      "cycles": 20832,
+      "evals": 14270,
+      "fsd_frames": 55,
+      "k1_frames": 9,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 8,
+      "addr_w": 10,
+      "cycles": 88683,
+      "evals": 58029,
+      "fsd_frames": 56,
+      "k1_frames": 8,
+      "switches": 3,
+      "bit_exact": true
+    },
+    {
+      "percent": 8,
+      "addr_w": 12,
+      "cycles": 176608,
+      "evals": 116062,
+      "fsd_frames": 56,
+      "k1_frames": 8,
+      "switches": 3,
+      "bit_exact": true
+    },
+    {
+      "percent": 15,
+      "addr_w": 8,
+      "cycles": 21118,
+      "evals": 12502,
+      "fsd_frames": 47,
+      "k1_frames": 17,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 15,
+      "addr_w": 10,
+      "cycles": 84566,
+      "evals": 50012,
+      "fsd_frames": 47,
+      "k1_frames": 17,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 15,
+      "addr_w": 12,
+      "cycles": 168459,
+      "evals": 100015,
+      "fsd_frames": 47,
+      "k1_frames": 17,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 25,
+      "addr_w": 8,
+      "cycles": 21820,
+      "evals": 10883,
+      "fsd_frames": 39,
+      "k1_frames": 25,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 25,
+      "addr_w": 10,
+      "cycles": 87440,
+      "evals": 43550,
+      "fsd_frames": 39,
+      "k1_frames": 25,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 25,
+      "addr_w": 12,
+      "cycles": 174209,
+      "evals": 87094,
+      "fsd_frames": 39,
+      "k1_frames": 25,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 35,
+      "addr_w": 8,
+      "cycles": 25963,
+      "evals": 8926,
+      "fsd_frames": 28,
+      "k1_frames": 36,
+      "switches": 3,
+      "bit_exact": true
+    },
+    {
+      "percent": 35,
+      "addr_w": 10,
+      "cycles": 92976,
+      "evals": 37061,
+      "fsd_frames": 30,
+      "k1_frames": 34,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 35,
+      "addr_w": 12,
+      "cycles": 183681,
+      "evals": 75449,
+      "fsd_frames": 31,
+      "k1_frames": 33,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 45,
+      "addr_w": 8,
+      "cycles": 31154,
+      "evals": 7300,
+      "fsd_frames": 17,
+      "k1_frames": 47,
+      "switches": 5,
+      "bit_exact": true
+    },
+    {
+      "percent": 45,
+      "addr_w": 10,
+      "cycles": 124870,
+      "evals": 29306,
+      "fsd_frames": 17,
+      "k1_frames": 47,
+      "switches": 5,
+      "bit_exact": true
+    },
+    {
+      "percent": 45,
+      "addr_w": 12,
+      "cycles": 214933,
+      "evals": 56171,
+      "fsd_frames": 15,
+      "k1_frames": 49,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "percent": 55,
+      "addr_w": 8,
+      "cycles": 33178,
+      "evals": 6545,
+      "fsd_frames": 11,
+      "k1_frames": 53,
+      "switches": 5,
+      "bit_exact": true
+    },
+    {
+      "percent": 55,
+      "addr_w": 10,
+      "cycles": 130068,
+      "evals": 27257,
+      "fsd_frames": 13,
+      "k1_frames": 51,
+      "switches": 5,
+      "bit_exact": true
+    },
+    {
+      "percent": 55,
+      "addr_w": 12,
+      "cycles": 258931,
+      "evals": 54348,
+      "fsd_frames": 13,
+      "k1_frames": 51,
+      "switches": 5,
+      "bit_exact": true
+    },
+    {
+      "percent": 70,
+      "addr_w": 8,
+      "cycles": 33362,
+      "evals": 5501,
+      "fsd_frames": 0,
+      "k1_frames": 64,
+      "switches": 0,
+      "bit_exact": true
+    },
+    {
+      "percent": 70,
+      "addr_w": 10,
+      "cycles": 134074,
+      "evals": 22205,
+      "fsd_frames": 0,
+      "k1_frames": 64,
+      "switches": 0,
+      "bit_exact": true
+    },
+    {
+      "percent": 70,
+      "addr_w": 12,
+      "cycles": 266575,
+      "evals": 44168,
+      "fsd_frames": 0,
+      "k1_frames": 64,
+      "switches": 0,
+      "bit_exact": true
+    },
+    {
+      "percent": 85,
+      "addr_w": 8,
+      "cycles": 33362,
+      "evals": 5501,
+      "fsd_frames": 0,
+      "k1_frames": 64,
+      "switches": 0,
+      "bit_exact": true
+    },
+    {
+      "percent": 85,
+      "addr_w": 10,
+      "cycles": 134074,
+      "evals": 22205,
+      "fsd_frames": 0,
+      "k1_frames": 64,
+      "switches": 0,
+      "bit_exact": true
+    },
+    {
+      "percent": 85,
+      "addr_w": 12,
+      "cycles": 266575,
+      "evals": 44168,
+      "fsd_frames": 0,
+      "k1_frames": 64,
+      "switches": 0,
+      "bit_exact": true
+    }
+  ],
+  "bit_exact": true
+}

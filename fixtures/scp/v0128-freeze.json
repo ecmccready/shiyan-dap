@@ -1,0 +1,9 @@
+{
+  "format": "scp4d-v0128-freeze",
+  "label": "Chosen from training seed 17 after the handoff fix, before either held-out run. Power is needs real board.",
+  "procedure_sha256": "aa4026ee3d12d458b46131df04f302c95974e9d814a2dad82f726dda1e38fe09",
+  "percent": 15,
+  "percent_reason": "15 is legal and has the smallest sum of training cycles across ADDR_W 8, 10 and 12. The sums are 8: 286123, 15: 274143, 25: 283469, 35: 302620, 45: 370957, 55: 422177. Percents 70 and 85 are not legal: the codec event count never selects full scan on this grid.",
+  "rtl": "next_fsd = !mode_relations && (ev_count * 100 >= cfg_D * 15)",
+  "event_count": "ev_count is the number of event tokens the codec delivered for the completed frame. A raw grid diff can be larger when a code change does not become a token."
+}
