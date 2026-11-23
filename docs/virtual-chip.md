@@ -68,4 +68,4 @@ A record already under `fixtures/scp/v0119-pnr/<id>/` is reused and is not re-ro
 
 Frame 0 is buffered until its own eof and replayed into the engine that count selects. Pre-registration `54d533e6`, hash `202d95ef8fbff7206a4721968f9dfc5d3b755e1674e6ea8422bc48e469674581`. Freeze `1c540468`: percent 8, hold 1. Training seed 31 opens low and stays on K1 for frame 0. Training seed 35 opens high and selects full scan for frame 0. Neither seed is seed 13.
 
-The replay of frame 0 is extra host cycles and is inside the measured total. Median Fmax is 39.474205017089844 MHz. All six held-out cells are strictly under pipelined K1 and pure N=4. The gate's verdict is **PASS**. The ledger entry is in this result, next to the fixtures the check reads. PR #26 recorded v0.1.25 through v0.1.29 and is merged.
+The replay of frame 0 is extra host cycles and is inside the measured total. Median Fmax is 39.474205017089844 MHz. All six held-out cells are strictly under pipelined K1 and pure N=4. The gate's verdict is **PASS**. Measurement commit `57ab9189`. The ledger entry is in this result, next to the fixtures the check reads. PR #26 recorded v0.1.25 through v0.1.29 and is merged.
