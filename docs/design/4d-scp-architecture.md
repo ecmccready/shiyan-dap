@@ -2121,6 +2121,10 @@ Both held-out workloads are bit-exact and use both engines. Original wall time i
 
 ## 36. v0.1.29: nearly free engine switches (`v0129`)
 
-**Status.** The rule below is locked in `fixtures/scp/v0129-prereg.json` before any v0.1.29 held-out run. The profile is `fixtures/scp/v0129-profile.json`. Power is **needs real board**. v0.1.19 through v0.1.28 RTL stay byte-identical. The new module is `scp4d_hybrid_coh`.
+**Status.** Measured. Verdict **STOP**. The rule is locked in `fixtures/scp/v0129-prereg.json`. The freeze is `fixtures/scp/v0129-freeze.json`, percent 8, hold 1, start K1, committed before either held-out run. Power is **needs real board**. v0.1.19 through v0.1.28 RTL stay byte-identical.
 
-On training seed 19 with a high-churn shape, steady full-scan frames already match standalone N=4 engine cycles (delta 0). The extra host cycles are the fsd-to-K1 replay (`clr`, `arm`, `wait`, `use`, `drain`, `reof`) and the K1-to-fsd catch-up scan (`sync`). At ADDR_W 8 those phase cycles are 9244 and 272. Four frames that begin on K1 after a switch account for 11674 of the 12472 extra host cycles.
+On training seed 19 with a high-churn shape, steady full-scan frames already match standalone N=4 engine cycles (delta 0). The extra host cycles in v0.1.28 are the fsd-to-K1 replay and the K1-to-fsd catch-up scan. `scp4d_hybrid_coh` writes those memories in the scan or event cycle, so a switch only flips the engine.
+
+Training seed 21 picks percent 8, hold 1, start K1, sum 266848. The critical path of the median seed starts at `dec.rq_cnt` and ends at `dec.rq[6]`, 27.411 ns. It is in the decoder. Median Fmax is 36.48170471191406 MHz, `TRELLIS_COMB` 34920, `DP16KD` 53, FF 10859, smallest part 45F. 12F and 25F do not place. 85F seed 1 routes at 35.0238151550293 MHz.
+
+Both held-out workloads are bit-exact and use both engines. Original wall time is 326.547240 / 1292.154530 / 2595.163816 µs, under both baselines at ADDR_W 8, 10 and 12. High-churn wall time is 664.853800 / 2633.292516 / 5264.063221 µs, under pipelined K1 and above pure N=4 at all three widths. The first high-churn frame still runs on K1 because the frozen start is K1. The selector was not changed. Decisions/s per LUT is 724.2522623434322. Standalone full scan remains 71397.91807427029. The v0.1.21 sweep stays **FAIL**.
