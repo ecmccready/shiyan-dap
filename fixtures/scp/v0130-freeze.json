@@ -1,0 +1,9 @@
+{
+  "format": "scp4d-v0130-freeze",
+  "label": "Chosen from training seeds 31 and 35 before either held-out run. Power is needs real board.",
+  "procedure_sha256": "202d95ef8fbff7206a4721968f9dfc5d3b755e1674e6ea8422bc48e469674581",
+  "percent": 8,
+  "hold": 1,
+  "reason": "percent 8, hold 1 has the smallest legal sum of closed-loop host cycles across seeds 31 and 35 and ADDR_W 8, 10 and 12: 589961. The next legal sum is percent 8, hold 2 at 590575. Every candidate was bit-exact. Seed 31's first frame stays on K1. Seed 35's first frame selects full scan.",
+  "rtl": "Frame 0 is buffered until eof. events * 100 >= cfg_D * 8 selects full scan for that replay. Later frames use hold 1."
+}
