@@ -340,7 +340,9 @@ Each run needs a unique `run_id` (a reused one returns 409).
 
 ## Aethel Node hardware track
 
-Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industry-benchmark.md`, `docs/design/v0119-reproduce.md`, `docs/design/aethel-node-hardware-evidence-v1.md`, `docs/design/4d-scp-architecture.md` §25–§34, `docs/design/v0124-loop-profile.md`, and `hw/scp4d/README.md`.
+Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industry-benchmark.md`, `docs/design/v0119-reproduce.md`, `docs/design/aethel-node-hardware-evidence-v1.md`, `docs/design/4d-scp-architecture.md` §25–§36, `docs/design/v0124-loop-profile.md`, and `hw/scp4d/README.md`.
+
+The same measurement loop is described as a virtual chip in `docs/virtual-chip.md`. Proposals are pre-registered, frozen on training, measured on the pinned toolchain, and accepted or rejected from the fixtures. `scripts/check-virtual-chip.ts` rebuilds those verdicts. Power on a board is still **needs real board**.
 
 ### Vantage points
 

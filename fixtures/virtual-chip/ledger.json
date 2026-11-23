@@ -1,0 +1,102 @@
+{
+  "format": "virtual-chip-ledger",
+  "power": "needs real board",
+  "note": "Verdicts are rebuilt by scripts/check-virtual-chip.ts from the cited fixtures. v0.1.30 is added on the technical branch that holds its fixtures.",
+  "entries": [
+    {
+      "id": "v0.1.25",
+      "verdict": "PASS",
+      "accepted": true,
+      "pr": "https://github.com/ecmccready/shiyan-dap/pull/16",
+      "prereg_commit": "a90ba051",
+      "result_commit": "feee243d",
+      "design": "loop-k1fast-w4l8",
+      "cycles_file": "fixtures/scp/v0125-candidate.json",
+      "widths": [8, 10, 12],
+      "baselines": [
+        {"id": "bare", "design": "loop-k1bare-w4l8", "cycles": {"8": 16206, "10": 64482, "12": 129676}},
+        {"id": "old_k1", "design": "loop-ede-w4l8", "cycles": {"8": 18643, "10": 74342, "12": 149496}},
+        {"id": "full_scan", "design": "loop-fsdonly-w4l8", "cycles": {"8": 40767, "10": 163151, "12": 326734}}
+      ]
+    },
+    {
+      "id": "v0.1.26",
+      "verdict": "STOP",
+      "accepted": false,
+      "pr": "https://github.com/ecmccready/shiyan-dap/pull/18",
+      "prereg_commit": "497a1a33",
+      "result_commit": "a22ead04",
+      "procedure_sha256": "4cb66c57f747cdf457d7431af71c46317c2f4f211195954deae906d44f4b97e8",
+      "prereg": "fixtures/scp/v0126-prereg.json",
+      "design": "loop-hyfast-w4l8",
+      "cycles_file": "fixtures/scp/v0126-heldout.json",
+      "widths": [8, 10, 12],
+      "require_fsd_frames": true,
+      "baselines": [
+        {"id": "k1", "design": "loop-k1fast-w4l8", "cycles": {"8": 16416, "10": 65255, "12": 131378}}
+      ]
+    },
+    {
+      "id": "v0.1.27",
+      "verdict": "STOP",
+      "accepted": false,
+      "pr": "https://github.com/ecmccready/shiyan-dap/pull/20",
+      "prereg_commit": "4fec48af",
+      "result_commit": "08ba8c54",
+      "procedure_sha256": "45f9539fbb70f3f4ab750170022d3fbeaaabf9a90d060bc918172db12131b6cd",
+      "prereg": "fixtures/scp/v0127-prereg.json",
+      "freeze": "fixtures/scp/v0127-freeze.json",
+      "design": "loop-hnfast-w4l8",
+      "cycles_file": "fixtures/scp/v0127-heldout.json",
+      "workload": "original",
+      "require_bit_exact": true,
+      "widths": [8, 10, 12],
+      "baselines": [
+        {"id": "k1", "design": "loop-k1fast-w4l8", "cycles": {"8": 16416, "10": 65255, "12": 131378}},
+        {"id": "n4", "design": "loop-fsd4-w4l8", "cycles": {"8": 12512, "10": 49609, "12": 99731}}
+      ]
+    },
+    {
+      "id": "v0.1.28",
+      "verdict": "STOP",
+      "accepted": false,
+      "pr": "https://github.com/ecmccready/shiyan-dap/pull/22",
+      "prereg_commit": "03528c15",
+      "freeze_commit": "f6fffb12",
+      "result_commit": "2248a732",
+      "procedure_sha256": "aa4026ee3d12d458b46131df04f302c95974e9d814a2dad82f726dda1e38fe09",
+      "prereg": "fixtures/scp/v0128-prereg.json",
+      "freeze": "fixtures/scp/v0128-freeze.json",
+      "design": "loop-hnfix-w4l8",
+      "cycles_file": "fixtures/scp/v0128-heldout.json",
+      "workloads": ["original", "high"],
+      "require_bit_exact": true,
+      "widths": [8, 10, 12],
+      "baselines": {
+        "k1": {"design": "loop-k1fast-w4l8", "original": {"8": 16416, "10": 65255, "12": 131378}, "high": {"8": 40497, "10": 161409, "12": 322876}},
+        "n4": {"design": "loop-fsd4-w4l8", "original": {"8": 12512, "10": 49609, "12": 99731}, "high": {"8": 21374, "10": 84736, "12": 169499}}
+      }
+    },
+    {
+      "id": "v0.1.29",
+      "verdict": "STOP",
+      "accepted": false,
+      "pr": "https://github.com/ecmccready/shiyan-dap/pull/24",
+      "prereg_commit": "c17b3064",
+      "freeze_commit": "6076edfb",
+      "result_commit": "e1291744",
+      "procedure_sha256": "a2b95b5bff379a55ef200a2a1097ba26cb00c44a30fad5bee87ba931a6feafb7",
+      "prereg": "fixtures/scp/v0129-prereg.json",
+      "freeze": "fixtures/scp/v0129-freeze.json",
+      "design": "loop-hcoh-w4l8",
+      "cycles_file": "fixtures/scp/v0129-heldout.json",
+      "workloads": ["original", "high"],
+      "require_bit_exact": true,
+      "widths": [8, 10, 12],
+      "baselines": {
+        "k1": {"design": "loop-k1fast-w4l8", "original": {"8": 16416, "10": 65255, "12": 131378}, "high": {"8": 40497, "10": 161409, "12": 322876}},
+        "n4": {"design": "loop-fsd4-w4l8", "original": {"8": 12512, "10": 49609, "12": 99731}, "high": {"8": 21374, "10": 84736, "12": 169499}}
+      }
+    }
+  ]
+}
