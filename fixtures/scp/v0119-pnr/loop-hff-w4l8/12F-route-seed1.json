@@ -1,0 +1,55 @@
+{
+  "seed": 1,
+  "part": "12F",
+  "device": "LFE5U-12F",
+  "mode": "route",
+  "command": [
+    "nextpnr-ecp5",
+    "--12k",
+    "--package",
+    "CABGA381",
+    "--json",
+    "/agent/repos/shiyan-dap/fixtures/scp/v0119-work/loop-hff-w4l8/n.json",
+    "--lpf-allow-unconstrained",
+    "--freq",
+    "12",
+    "--router",
+    "router2",
+    "--seed",
+    "1",
+    "--timing-allow-fail",
+    "--report",
+    "/agent/repos/shiyan-dap/fixtures/scp/v0119-pnr/loop-hff-w4l8/12F-route-seed1.report.json"
+  ],
+  "command_sha256": "68a4be093d1b3e8b0b9f43d3af1038e7907d8e5a439c90d627d8b7aaa2f715ca",
+  "wall_clock_s": 2.56341,
+  "exit_code": 125,
+  "status": "does_not_fit",
+  "not_completed_within_s": null,
+  "fmax_mhz": null,
+  "fmax_clocks": null,
+  "utilization": null,
+  "lut": null,
+  "ff": null,
+  "bram": null,
+  "dsp": null,
+  "demand": {
+    "lut4": {
+      "used": 34118,
+      "available": 24288
+    },
+    "trellis_comb": {
+      "used": 35438,
+      "available": 24288
+    },
+    "trellis_ff": {
+      "used": 10992,
+      "available": 24288
+    }
+  },
+  "error": "ERROR: Unable to place cell 'enc.core.recm.0.0', no BELs remaining to implement cell type 'DP16KD'",
+  "report_path": null,
+  "report_sha256": null,
+  "netlist_sha256": "a9f1176565305c6376f3f19a4f7f95a0c58e478808456b5f00a913d06b735761",
+  "log_sha256": "0529ea8ec30089cb45bb660be47220e3bc6cd89299e06e0822f4fe7b8b4f8e4c"
+}

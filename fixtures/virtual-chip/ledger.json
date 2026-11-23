@@ -1,7 +1,7 @@
 {
   "format": "virtual-chip-ledger",
   "power": "needs real board",
-  "note": "Verdicts are rebuilt by scripts/check-virtual-chip.ts from the cited fixtures. v0.1.30 is added on the technical branch that holds its fixtures.",
+  "note": "Verdicts are rebuilt by scripts/check-virtual-chip.ts from the cited fixtures. The v0.1.30 entry is in this result, next to the fixtures the check reads.",
   "entries": [
     {
       "id": "v0.1.25",
@@ -12,11 +12,39 @@
       "result_commit": "feee243d",
       "design": "loop-k1fast-w4l8",
       "cycles_file": "fixtures/scp/v0125-candidate.json",
-      "widths": [8, 10, 12],
+      "widths": [
+        8,
+        10,
+        12
+      ],
       "baselines": [
-        {"id": "bare", "design": "loop-k1bare-w4l8", "cycles": {"8": 16206, "10": 64482, "12": 129676}},
-        {"id": "old_k1", "design": "loop-ede-w4l8", "cycles": {"8": 18643, "10": 74342, "12": 149496}},
-        {"id": "full_scan", "design": "loop-fsdonly-w4l8", "cycles": {"8": 40767, "10": 163151, "12": 326734}}
+        {
+          "id": "bare",
+          "design": "loop-k1bare-w4l8",
+          "cycles": {
+            "8": 16206,
+            "10": 64482,
+            "12": 129676
+          }
+        },
+        {
+          "id": "old_k1",
+          "design": "loop-ede-w4l8",
+          "cycles": {
+            "8": 18643,
+            "10": 74342,
+            "12": 149496
+          }
+        },
+        {
+          "id": "full_scan",
+          "design": "loop-fsdonly-w4l8",
+          "cycles": {
+            "8": 40767,
+            "10": 163151,
+            "12": 326734
+          }
+        }
       ]
     },
     {
@@ -30,10 +58,22 @@
       "prereg": "fixtures/scp/v0126-prereg.json",
       "design": "loop-hyfast-w4l8",
       "cycles_file": "fixtures/scp/v0126-heldout.json",
-      "widths": [8, 10, 12],
+      "widths": [
+        8,
+        10,
+        12
+      ],
       "require_fsd_frames": true,
       "baselines": [
-        {"id": "k1", "design": "loop-k1fast-w4l8", "cycles": {"8": 16416, "10": 65255, "12": 131378}}
+        {
+          "id": "k1",
+          "design": "loop-k1fast-w4l8",
+          "cycles": {
+            "8": 16416,
+            "10": 65255,
+            "12": 131378
+          }
+        }
       ]
     },
     {
@@ -50,10 +90,30 @@
       "cycles_file": "fixtures/scp/v0127-heldout.json",
       "workload": "original",
       "require_bit_exact": true,
-      "widths": [8, 10, 12],
+      "widths": [
+        8,
+        10,
+        12
+      ],
       "baselines": [
-        {"id": "k1", "design": "loop-k1fast-w4l8", "cycles": {"8": 16416, "10": 65255, "12": 131378}},
-        {"id": "n4", "design": "loop-fsd4-w4l8", "cycles": {"8": 12512, "10": 49609, "12": 99731}}
+        {
+          "id": "k1",
+          "design": "loop-k1fast-w4l8",
+          "cycles": {
+            "8": 16416,
+            "10": 65255,
+            "12": 131378
+          }
+        },
+        {
+          "id": "n4",
+          "design": "loop-fsd4-w4l8",
+          "cycles": {
+            "8": 12512,
+            "10": 49609,
+            "12": 99731
+          }
+        }
       ]
     },
     {
@@ -69,12 +129,43 @@
       "freeze": "fixtures/scp/v0128-freeze.json",
       "design": "loop-hnfix-w4l8",
       "cycles_file": "fixtures/scp/v0128-heldout.json",
-      "workloads": ["original", "high"],
+      "workloads": [
+        "original",
+        "high"
+      ],
       "require_bit_exact": true,
-      "widths": [8, 10, 12],
+      "widths": [
+        8,
+        10,
+        12
+      ],
       "baselines": {
-        "k1": {"design": "loop-k1fast-w4l8", "original": {"8": 16416, "10": 65255, "12": 131378}, "high": {"8": 40497, "10": 161409, "12": 322876}},
-        "n4": {"design": "loop-fsd4-w4l8", "original": {"8": 12512, "10": 49609, "12": 99731}, "high": {"8": 21374, "10": 84736, "12": 169499}}
+        "k1": {
+          "design": "loop-k1fast-w4l8",
+          "original": {
+            "8": 16416,
+            "10": 65255,
+            "12": 131378
+          },
+          "high": {
+            "8": 40497,
+            "10": 161409,
+            "12": 322876
+          }
+        },
+        "n4": {
+          "design": "loop-fsd4-w4l8",
+          "original": {
+            "8": 12512,
+            "10": 49609,
+            "12": 99731
+          },
+          "high": {
+            "8": 21374,
+            "10": 84736,
+            "12": 169499
+          }
+        }
       }
     },
     {
@@ -90,12 +181,94 @@
       "freeze": "fixtures/scp/v0129-freeze.json",
       "design": "loop-hcoh-w4l8",
       "cycles_file": "fixtures/scp/v0129-heldout.json",
-      "workloads": ["original", "high"],
+      "workloads": [
+        "original",
+        "high"
+      ],
       "require_bit_exact": true,
-      "widths": [8, 10, 12],
+      "widths": [
+        8,
+        10,
+        12
+      ],
       "baselines": {
-        "k1": {"design": "loop-k1fast-w4l8", "original": {"8": 16416, "10": 65255, "12": 131378}, "high": {"8": 40497, "10": 161409, "12": 322876}},
-        "n4": {"design": "loop-fsd4-w4l8", "original": {"8": 12512, "10": 49609, "12": 99731}, "high": {"8": 21374, "10": 84736, "12": 169499}}
+        "k1": {
+          "design": "loop-k1fast-w4l8",
+          "original": {
+            "8": 16416,
+            "10": 65255,
+            "12": 131378
+          },
+          "high": {
+            "8": 40497,
+            "10": 161409,
+            "12": 322876
+          }
+        },
+        "n4": {
+          "design": "loop-fsd4-w4l8",
+          "original": {
+            "8": 12512,
+            "10": 49609,
+            "12": 99731
+          },
+          "high": {
+            "8": 21374,
+            "10": 84736,
+            "12": 169499
+          }
+        }
+      }
+    },
+    {
+      "id": "v0.1.30",
+      "verdict": "PASS",
+      "accepted": true,
+      "pr": "https://github.com/ecmccready/shiyan-dap/pull/25",
+      "prereg_commit": "54d533e6",
+      "freeze_commit": "1c540468",
+      "procedure_sha256": "202d95ef8fbff7206a4721968f9dfc5d3b755e1674e6ea8422bc48e469674581",
+      "prereg": "fixtures/scp/v0130-prereg.json",
+      "freeze": "fixtures/scp/v0130-freeze.json",
+      "design": "loop-hff-w4l8",
+      "cycles_file": "fixtures/scp/v0130-heldout.json",
+      "workloads": [
+        "original",
+        "high"
+      ],
+      "require_bit_exact": true,
+      "widths": [
+        8,
+        10,
+        12
+      ],
+      "baselines": {
+        "k1": {
+          "design": "loop-k1fast-w4l8",
+          "original": {
+            "8": 16416,
+            "10": 65255,
+            "12": 131378
+          },
+          "high": {
+            "8": 40497,
+            "10": 161409,
+            "12": 322876
+          }
+        },
+        "n4": {
+          "design": "loop-fsd4-w4l8",
+          "original": {
+            "8": 12512,
+            "10": 49609,
+            "12": 99731
+          },
+          "high": {
+            "8": 21374,
+            "10": 84736,
+            "12": 169499
+          }
+        }
       }
     }
   ]

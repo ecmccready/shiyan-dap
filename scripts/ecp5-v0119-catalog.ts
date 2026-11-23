@@ -61,6 +61,8 @@ export const READ_FILES = [
   "hw/scp4d/rtl/scp4d_fsd_n_coh.v",
   "hw/scp4d/rtl/scp4d_hybrid_coh.v",
   "hw/scp4d/synth/scp4d_loop_hcoh_wrap.v",
+  "hw/scp4d/rtl/scp4d_hybrid_ff.v",
+  "hw/scp4d/synth/scp4d_loop_hff_wrap.v",
 ] as const;
 
 export type Kind = "encoder" | "decoder" | "loop" | "decision";
@@ -119,6 +121,7 @@ export const DESIGNS: readonly Design[] = [
   { id: "loop-hnfast-w4l8", kind: "loop", milestone: "v0.1.27", top: "wrap_loop_hnfast", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
   { id: "loop-hnfix-w4l8", kind: "loop", milestone: "v0.1.28", top: "wrap_loop_hnfix", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
   { id: "loop-hcoh-w4l8", kind: "loop", milestone: "v0.1.29", top: "wrap_loop_hcoh", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
+  { id: "loop-hff-w4l8", kind: "loop", milestone: "v0.1.30", top: "wrap_loop_hff", sets: [{ name: "W", value: "4" }, { name: "L", value: "8" }, { name: "A", value: "11" }], workload: "hybrid", field: "cycles" },
 ];
 
 export type Workload = {
@@ -184,6 +187,18 @@ export function workloadFor(root: string, d: Design): Workload {
         evals: int(cell?.evals, "hyfast evals"),
         source_report: "fixtures/scp/v0126-heldout.json",
         source_field: "rows[addr_w=12].cycles",
+      };
+    }
+    if (d.id === "loop-hff-w4l8") {
+      const sim = load(root, "fixtures/scp/v0130-heldout.json") as { rows: { workload: string; addr_w: number; cycles: number; evals: number }[] };
+      const cell = sim.rows.find((r) => r.workload === "original" && r.addr_w === 12);
+      return {
+        stream: "held-out-seed9-a12-hff",
+        element_frames: 2048 * 64,
+        cycles: int(cell?.cycles, "hff cycles"),
+        evals: int(cell?.evals, "hff evals"),
+        source_report: "fixtures/scp/v0130-heldout.json",
+        source_field: "rows[workload=original,addr_w=12].cycles",
       };
     }
     if (d.id === "loop-hcoh-w4l8") {

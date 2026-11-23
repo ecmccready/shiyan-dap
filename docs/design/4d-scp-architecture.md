@@ -2131,6 +2131,10 @@ Both held-out workloads are bit-exact and use both engines. Original wall time i
 
 ## 37. v0.1.30: the first frame chooses its own engine (`v0130`)
 
-**Status.** The rule below is locked in `fixtures/scp/v0130-prereg.json` before any v0.1.30 held-out run. Power is **needs real board**. v0.1.19 through v0.1.29 RTL stay byte-identical. The new module is `scp4d_hybrid_ff`. This branch starts at `e1291744` because PR #24 is still open.
+**Status.** Measured. Verdict **PASS**. The rule is locked in `fixtures/scp/v0130-prereg.json`. The freeze is `fixtures/scp/v0130-freeze.json`, percent 8, hold 1, committed before either held-out run. Power is **needs real board**. v0.1.19 through v0.1.29 RTL stay byte-identical. The pre-registration and freeze were committed from `e1291744`, because PR #24 was open then. Both are on main now. This measurement does not change the frozen percent or hold.
 
-Frame 0 is buffered until its own eof. The event count of that buffer picks the engine, and the buffer is replayed into it. That replay is extra host cycles and is part of the measured total. Later frames use the hold rule. Training seeds 31 and 35 open on a low frame and a high frame respectively. They are not seed 13.
+Frame 0 is buffered until its own eof. The event count of that buffer picks the engine, and the buffer is replayed into it. That replay is extra host cycles and is part of the measured total. Later frames use hold 1. Training seed 31 opens low and frame 0 stays on K1. Training seed 35 opens high and frame 0 selects full scan. The legal minimum sum is 589961.
+
+Median Fmax is 39.474205017089844 MHz, `TRELLIS_COMB` 35438, `DP16KD` 59, FF 10992, smallest part 45F. The critical path of the median seed starts at `dec.rq_cnt` and ends at `dec.rq[5]`, 25.333 ns. It is in the decoder. 12F and 25F do not place. 85F seed 1 routes at 35.97769546508789 MHz.
+
+Both held-out workloads are bit-exact and use both engines. Original wall time is 301.792018 / 1194.197577 / 2398.427022 µs. High-churn wall time is 608.422639 / 2410.054869 / 4817.601771 µs. All six cells are strictly under pipelined K1 and pure N=4. Decisions/s per LUT is 772.2059796638306. Standalone full scan remains 71397.91807427029. The v0.1.21 sweep stays **FAIL**.
