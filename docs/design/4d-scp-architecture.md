@@ -1819,7 +1819,7 @@ To fit 45F the netlist has to shed at least 46454 − 43848 = 2606 `TRELLIS_COMB
 
 **System model tolerance (locked before that run).** Decoder cycles must match an existing exact cycle model with tolerance 0. K1 cycles must match the K1 exact cycle model with tolerance 0.
 
-**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33). `v0127` means v0.1.27 (§34). `v0128` means v0.1.28 (§35). `v0129` means v0.1.29 (§36).
+**Naming.** `v019` in older filenames means v0.1.9. `v0118` means v0.1.18 (§25). `v0119` means v0.1.19 (§26). `v0120` means v0.1.20 (§27). `v0121` means v0.1.21 (§28). `v0122` means v0.1.22 (§29). `v0123` means v0.1.23 (§30). `v0124` means v0.1.24 (§31). `v0125` means v0.1.25 (§32). `v0126` means v0.1.26 (§33). `v0127` means v0.1.27 (§34). `v0128` means v0.1.28 (§35). `v0129` means v0.1.29 (§36). `v0130` means v0.1.30 (§37).
 
 **Reproduce.**
 
@@ -2128,3 +2128,9 @@ On training seed 19 with a high-churn shape, steady full-scan frames already mat
 Training seed 21 picks percent 8, hold 1, start K1, sum 266848. The critical path of the median seed starts at `dec.rq_cnt` and ends at `dec.rq[6]`, 27.411 ns. It is in the decoder. Median Fmax is 36.48170471191406 MHz, `TRELLIS_COMB` 34920, `DP16KD` 53, FF 10859, smallest part 45F. 12F and 25F do not place. 85F seed 1 routes at 35.0238151550293 MHz.
 
 Both held-out workloads are bit-exact and use both engines. Original wall time is 326.547240 / 1292.154530 / 2595.163816 µs, under both baselines at ADDR_W 8, 10 and 12. High-churn wall time is 664.853800 / 2633.292516 / 5264.063221 µs, under pipelined K1 and above pure N=4 at all three widths. The first high-churn frame still runs on K1 because the frozen start is K1. The selector was not changed. Decisions/s per LUT is 724.2522623434322. Standalone full scan remains 71397.91807427029. The v0.1.21 sweep stays **FAIL**.
+
+## 37. v0.1.30: the first frame chooses its own engine (`v0130`)
+
+**Status.** The rule below is locked in `fixtures/scp/v0130-prereg.json` before any v0.1.30 held-out run. Power is **needs real board**. v0.1.19 through v0.1.29 RTL stay byte-identical. The new module is `scp4d_hybrid_ff`. This branch starts at `e1291744` because PR #24 is still open.
+
+Frame 0 is buffered until its own eof. The event count of that buffer picks the engine, and the buffer is replayed into it. That replay is extra host cycles and is part of the measured total. Later frames use the hold rule. Training seeds 31 and 35 open on a low frame and a high frame respectively. They are not seed 13.

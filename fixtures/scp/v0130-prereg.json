@@ -1,0 +1,102 @@
+{
+  "format": "scp4d-v0130-prereg",
+  "version": 1,
+  "milestone": "v0.1.30",
+  "spec": "docs/design/4d-scp-architecture.md §37",
+  "branch": "cursor/scp-v0130-first-frame-784b",
+  "base": "e1291744 because https://github.com/ecmccready/shiyan-dap/pull/24 is still open. origin/main is ffc58c4f.",
+  "label": "Locked before any v0.1.30 held-out run. Power is needs real board. v0.1.19 through v0.1.29 RTL stay byte-identical. Seed 9 and seed 13 are not regenerated and are not used to choose the selector.",
+  "engines": {
+    "module": "scp4d_hybrid_ff",
+    "loop": "wrap_loop_hff",
+    "built_on": "New copies of the coherent K1 and N=4 engines. scp4d_hybrid_coh.v is not edited.",
+    "unchanged": ["scp4d_hybrid_coh.v", "scp4d_ede_coh.v", "scp4d_fsd_n_coh.v", "scp4d_hybrid_fix.v", "scp4d_ede_pipe.v", "scp4d_fsd_n.v"]
+  },
+  "first_frame_rule": "Frame 0 is written into a buffer and is not sent to either engine. When its eof arrives, the buffer's event count is known. events * 100 >= D * percent selects full scan. Otherwise the frame runs on pipelined K1. The buffer is then replayed into that engine, including the eof. Later frames are not buffered. The replay cycles are closed-loop host cycles and are included in the measured total. The rule does not read a later frame.",
+  "training": {
+    "low_open": {
+      "seed": 31,
+      "opening": 0.05,
+      "then": [0.08, 0.15, 0.25, 0.35, 0.45, 0.55, 0.7, 0.85],
+      "frames_per_fraction": 8,
+      "why": "The first frame is a low band, below the fractions where full scan has been the cheaper engine. This is one side of the opening the first-frame rule must handle."
+    },
+    "high_open": {
+      "seed": 35,
+      "opening": 0.75,
+      "then": [0.08, 0.15, 0.25, 0.35, 0.45, 0.55, 0.7, 0.85],
+      "frames_per_fraction": 8,
+      "why": "The first frame is a high band, above those fractions. Seed 35 is not seed 13 and does not use seed 13's tail."
+    },
+    "addr_w": [8, 10, 12],
+    "rng": "mulberry32((seed * 10007 + addrW) >>> 0), then the same shuffle and code update as fixtures/scp/v0128-prereg.json."
+  },
+  "held_out_original": {
+    "seed": 9,
+    "fractions": [0.01, 0.05, 0.2, 0.5],
+    "frames_per_fraction": 16,
+    "regenerated": false,
+    "not_used_to_fit": true
+  },
+  "held_out_high": {
+    "seed": 13,
+    "fractions": [0.55, 0.65, 0.75, 0.85, 0.95],
+    "frames_per_fraction": 8,
+    "mixed_tail": [0.05, 0.85, 0.05, 0.85, 0.05, 0.85, 0.05, 0.85],
+    "regenerated": false,
+    "not_used_to_fit": true
+  },
+  "selector_procedure": {
+    "feature": "codec event count of a completed frame",
+    "integer_test": "events * 100 >= D * percent",
+    "percent_grid": [8, 15, 25, 35, 45, 55, 70, 85],
+    "hold_grid": [1, 2],
+    "first_frame": "Frame 0 is buffered until its eof. The buffer counts events. The same integer test then picks the engine, and the buffer is replayed into that engine. Later frames use the hold rule. There is no fixed start.",
+    "latency": "Frame 0's tokens are stored while the decoder produces them, then replayed into the chosen engine. The replay is extra closed-loop host cycles and is included in the measured cycle count. No later frame is buffered.",
+    "choice_rule": "Run scp4d_hybrid_ff on training seeds 31 and 35 at ADDR_W 8, 10 and 12 once for each percent and hold. A candidate is legal only if all six runs are bit-exact and each run uses at least one K1 frame and one full-scan frame. Among legal candidates, choose the smallest sum of closed-loop host cycles. A tie takes the smaller percent, then the smaller hold. If none is legal, stop.",
+    "engine_timing": "The first frame uses the engine chosen from its own buffered event count. After each later frame, switch only when the last hold completed frames all disagree with the engine that just ran.",
+    "tie": "Smaller percent, then smaller hold.",
+    "fail": "If the synthetic regressions are not bit-exact, stop before training. If no candidate is legal, stop. After the freeze, place once and run each held-out workload once. Do not change percent or hold. Do not regenerate seed 9 or seed 13. If a held-out decision set differs, or any of the six wall times is not strictly under both baselines, report the numbers and stop.",
+    "wall": "held-out host cycles / the new loop's own five-seed 45F median Fmax",
+    "not_used_to_fit": "held-out seed 9 and held-out seed 13",
+    "sha256": "202d95ef8fbff7206a4721968f9dfc5d3b755e1674e6ea8422bc48e469674581",
+    "freeze": "After the training runs and before either held-out run, write fixtures/scp/v0130-freeze.json with the chosen percent, hold and this hash. Do not edit this pre-registration to chase a held-out number."
+  },
+  "baselines_already_measured": {
+    "pipelined_k1": {
+      "id": "loop-k1fast-w4l8",
+      "fmax_mhz_median": 38.318580627441406,
+      "wall_us_original": {"8": 428.408353, "10": 1702.959737, "12": 3428.571671},
+      "wall_us_high": {"8": 1056.850210, "10": 4212.290679, "12": 8426.094984},
+      "rerun": false
+    },
+    "n4_full_scan": {
+      "id": "loop-fsd4-w4l8",
+      "fmax_mhz_median": 34.75722122192383,
+      "wall_us_original": {"8": 359.982748, "10": 1427.300522, "12": 2869.360567},
+      "wall_us_high": {"8": 614.951347, "10": 2437.939427, "12": 4876.655672},
+      "rerun": false
+    }
+  },
+  "hybrid_success": {
+    "cells": "Both held-out workloads at ADDR_W 8, 10 and 12. Six cells.",
+    "bit_exact_PASS": "The decision-change set matches the golden for the engine that frame used. Zero dropped records and zero extra records.",
+    "both_engines": "Where the frozen rule assigns both engines on that workload, the run uses each engine for at least one frame. Report frame counts and switches either way.",
+    "wall_PASS": "Hybrid wall time strictly under pipelined K1 and strictly under pure N=4 at every one of the six cells.",
+    "fit_PASS": "All five 45F seeds of loop-hff-w4l8 route within 7200 s. 12F, 25F and 85F seed 1 are reported and are not required to route."
+  },
+  "regressions": "The v0.1.28 trace that drops 3:0:0 and 5:0:1 on scp4d_hybrid_n must match on scp4d_hybrid_ff. A switch-heavy synthetic trace must match. A first-frame-high trace and a first-frame-low trace must pick the engine the integer test names. None of these traces is seed 9 or seed 13.",
+  "fit": {
+    "designs": ["loop-hff-w4l8"],
+    "flags": "OSS CAD Suite 20261118, Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, router2, seeds 1-5, --45k CABGA381, --freq 12, --timing-allow-fail. Serial. No parallel nextpnr.",
+    "record": ["per-seed Fmax", "median", "TRELLIS_COMB", "DP16KD", "FF", "route wall-clock seconds", "critical path", "12F 25F 85F seed 1"]
+  },
+  "per_lut_expectation": "The loop contains the codec. Decisions/s per LUT is expected to lose to standalone full scan (71397.91807427029). The v0.1.21 sweep stays FAIL unless a measured number exceeds that standalone figure.",
+  "verdict": {
+    "PASS": "Both held-out workloads are bit-exact, wall_PASS holds at all six cells, both_engines holds where the frozen rule assigns both, and five 45F seeds route.",
+    "STOP": "The frozen hybrid is bit-exact but any of the six wall times is not strictly under both baselines. Report the best numbers. Do not change the selector.",
+    "FAIL": "A held-out decision set does not match, or fewer than five 45F seeds route."
+  },
+  "stop": "One freeze. One held-out run of each workload. No retune. No regeneration of either held-out set.",
+  "power": "needs real board"
+}
