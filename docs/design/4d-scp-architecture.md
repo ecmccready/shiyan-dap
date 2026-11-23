@@ -2111,4 +2111,10 @@ Decisions/s per LUT of the N=4 loop is 606.4517615469025. The hybrid is 168.1367
 
 ## 35. v0.1.28: fix the hybrid handoff (`v0128`)
 
-**Status.** The rule below is locked in `fixtures/scp/v0128-prereg.json` before any v0.1.28 simulation or place-and-route. Power is **needs real board**. v0.1.19 through v0.1.27 RTL stay byte-identical. The new module is `scp4d_hybrid_fix`. It keeps pipelined K1 (`scp4d_ede_pipe`) and the 4-wide full scan (`scp4d_fsd_n`, N=4). The held-out workloads are seed 9 and seed 13 from v0.1.27. They are not regenerated and they are not used to choose the percent.
+**Status.** Measured. Verdict **STOP**. The rule is locked in `fixtures/scp/v0128-prereg.json`, committed before any simulation. The freeze is `fixtures/scp/v0128-freeze.json`, percent 15, committed before either held-out run. Power is **needs real board**. v0.1.19 through v0.1.27 RTL stay byte-identical.
+
+The v0.1.27 drop was the replay end-of-frame beat. `ede_iev` was the host `in_event` pin, and the next frame's token is already presented while `in_ready` is low. That token was evaluated while the outputs were hidden, then accepted again with no decision change. A synthetic trace, not seed 9 or seed 13, drops `3:0:0` and `5:0:1` on `scp4d_hybrid_n` and matches the golden on `scp4d_hybrid_fix`.
+
+Training seed 17, eight frames at each of 0.08, 0.15, 0.25, 0.35, 0.45, 0.55, 0.70 and 0.85. Percent 15 has the smallest legal cycle sum, 274143. Percents 70 and 85 never select full scan because the codec event count stays under the test. The critical path of the median seed starts at `dec.rq_cnt` and ends at `dec.rq[4]`, 26.587 ns. It is in the decoder. Median Fmax is 37.61236572265625 MHz, `TRELLIS_COMB` 34559, `DP16KD` 51, smallest part 45F. 12F and 25F do not place. 85F seed 1 routes at 34.52204513549805 MHz.
+
+Both held-out workloads are bit-exact and use both engines. Original wall time is 383.677009 / 1260.968277 / 2547.991815 µs. That is under both baselines at ADDR_W 10 and 12, and above the pure N=4 loop at ADDR_W 8 (359.982748 µs). High-churn wall time is 900.714415 / 3582.172975 / 7161.660662 µs, under pipelined K1 and above the pure N=4 loop at all three widths. The percent was not changed. Decisions/s per LUT is 745.3661690238097. Standalone full scan remains 71397.91807427029. The v0.1.21 sweep stays **FAIL**.

@@ -1,0 +1,68 @@
+{
+  "format": "scp4d-v0128-heldout",
+  "label": "Held-out after fixtures/scp/v0128-freeze.json. Percent was not changed. Power is needs real board. Fmax is not in this file.",
+  "percent": 15,
+  "rows": [
+    {
+      "workload": "high",
+      "addr_w": 8,
+      "cycles": 33878,
+      "evals": 11953,
+      "fsd_frames": 43,
+      "k1_frames": 5,
+      "switches": 8,
+      "bit_exact": true
+    },
+    {
+      "workload": "high",
+      "addr_w": 10,
+      "cycles": 134734,
+      "evals": 47807,
+      "fsd_frames": 43,
+      "k1_frames": 5,
+      "switches": 8,
+      "bit_exact": true
+    },
+    {
+      "workload": "high",
+      "addr_w": 12,
+      "cycles": 269367,
+      "evals": 95596,
+      "fsd_frames": 43,
+      "k1_frames": 5,
+      "switches": 8,
+      "bit_exact": true
+    },
+    {
+      "workload": "original",
+      "addr_w": 8,
+      "cycles": 14431,
+      "evals": 7777,
+      "fsd_frames": 29,
+      "k1_frames": 35,
+      "switches": 3,
+      "bit_exact": true
+    },
+    {
+      "workload": "original",
+      "addr_w": 10,
+      "cycles": 47428,
+      "evals": 32811,
+      "fsd_frames": 31,
+      "k1_frames": 33,
+      "switches": 1,
+      "bit_exact": true
+    },
+    {
+      "workload": "original",
+      "addr_w": 12,
+      "cycles": 95836,
+      "evals": 65634,
+      "fsd_frames": 31,
+      "k1_frames": 33,
+      "switches": 1,
+      "bit_exact": true
+    }
+  ],
+  "bit_exact": true
+}
