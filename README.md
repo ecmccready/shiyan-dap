@@ -345,6 +345,8 @@ Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industr
 
 The same measurement loop is described as a virtual chip in `docs/virtual-chip.md`. Proposals are pre-registered, frozen on training, measured on the pinned toolchain, and accepted or rejected from the fixtures. `scripts/check-virtual-chip.ts` rebuilds those verdicts. Power on a board is still **needs real board**.
 
+The optional `scp4d` codec on `scripts/compress-tenant.ts` (`--codec scp4d` or `SCP_CODEC=scp4d`, default off) writes an S4DI sidecar line and does not change sealed segment bytes. `wrap_uart_ff` is a UART wrapper around `scp4d_hybrid_ff`; its Icarus test is bit-exact against a direct instance of that engine. A signed receipt can be posted to `/api/v1/hw/receipts`. Migration `db/migrations/007_shiyan_hw_receipts.sql` is unapplied. None of this has been run on a board. Commands and the pinout limit are in `docs/hw/ecp5-versa-uart.md`.
+
 ### Vantage points
 
 - Evidence-first hardware track: every claim comes from a committed run; thresholds are pre-registered; negative results are kept.

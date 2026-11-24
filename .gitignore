@@ -11,5 +11,6 @@ src/data/playlist.json
 
 # v0.1.19 place-and-route scratch (netlists and logs). Reports and the manifest are committed.
 fixtures/scp/v0119-work/
+fixtures/scp/uart-ff-work/
 # v0.1.21 sweep scratch. Reports under fixtures/scp/v0121-pnr/ are committed.
 fixtures/scp/v0121-work/
