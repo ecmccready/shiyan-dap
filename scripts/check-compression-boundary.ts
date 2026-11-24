@@ -250,7 +250,7 @@ const CLI_ALLOWED_BUILTINS = ["node:fs", "node:os", "node:path", "node:url"];
 const anchorCliFile = join(root, "scripts", "anchor-state-chain.ts");
 const syncCliFile = join(root, "scripts", "sync-state-chains.ts");
 const CLI_FILES = ["scripts/compress-tenant.ts", PERSIST_CLI, ANCHOR_CLI, SYNC_CLI];
-const CLI_ALLOWED = ["src/core/neon-db.ts", "src/core/storage-diagnostics.ts", "src/core/tenant-auth.ts"];
+const CLI_ALLOWED = ["src/core/neon-db.ts", "src/core/storage-diagnostics.ts", "src/core/tenant-auth.ts", "scripts/scp4d-segment-codec.ts"];
 /** Routes, Level 4, the engine, and every module that appends, publishes or persists. */
 const EDGE_FORBIDDEN_PREFIX = ["src/app/", "src/lib/level4/", "src/components/"];
 const EDGE_FORBIDDEN = [

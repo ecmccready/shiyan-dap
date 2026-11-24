@@ -26,6 +26,7 @@ import {
   type AnchorSource, type ChainOptions, type LossOption, type SourceRow, type TenantChain,
 } from "../src/core/compression/index";
 import { openStorageClient, readTenantAnchors, readTenantRows, type ReadOnlyClient } from "../src/core/compression/source";
+import { encodeWindowScp4d } from "./scp4d-segment-codec";
 
 type Env = Record<string, string | undefined>;
 
@@ -122,6 +123,15 @@ export function readUrl(label: string, file: string | undefined, fallback: strin
   return { ok: true, checked: checked.value };
 }
 
+export function codecChoice(argv: readonly string[], env: Env): { ok: true; codec: "off" | "scp4d" } | { ok: false; line: string } {
+  const fromArg = argv.includes("--codec") ? argValue(argv, "--codec") : undefined;
+  if (argv.includes("--codec") && !fromArg) return { ok: false, line: "usage: --codec needs off or scp4d" };
+  const name = fromArg ?? (env.SCP_CODEC && env.SCP_CODEC.length > 0 ? env.SCP_CODEC : "off");
+  if (name === "off") return { ok: true, codec: "off" };
+  if (name === "scp4d") return { ok: true, codec: "scp4d" };
+  return { ok: false, line: "usage: --codec must be off or scp4d (or set SCP_CODEC)" };
+}
+
 export const dbFail = (label: string, error: unknown) =>
   `FAIL ${label}.read: class=${diagnosticErrorClass(error) || "unknown"} code=${diagnosticErrorCode(error) || "none"}`;
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -132,6 +142,8 @@ export async function runCompressTenant(argv: readonly string[], env: Env, deps:
   if (env[FLAG] !== "1") {
     return { exitCode: 2, lines: [`REFUSED: state compression is off by default; set ${FLAG}=1 to run this local read-only reader`] };
   }
+  const codec = codecChoice(argv, env);
+  if (!codec.ok) return { exitCode: 2, lines: [codec.line] };
   const tenant = argValue(argv, "--tenant");
   if (!tenant || !TENANT_ID_PATTERN.test(tenant)) {
     return { exitCode: 2, lines: ["usage: compress-tenant.ts --tenant <tenant-id> [--storage-file <path>] [--anchor-file <path>] [--loss lossless|bounded --eps p,o,phi] [--cutoff-hours h | --full-windows-only] [--grace-minutes m] [--as-of ISO]  (tenant must match TENANT_ID_PATTERN)"] };
@@ -239,6 +251,20 @@ export async function runCompressTenant(argv: readonly string[], env: Env, deps:
     else lines.push(`PASS ${name}`);
   }
   lines.push(`RESULT: ${failed ? "FAIL" : "PASS"}`);
+  if (codec.codec === "scp4d" && !failed) {
+    try {
+      let bytes = 0;
+      result.windows.forEach((w, i) => {
+        const side = encodeWindowScp4d(w.points);
+        bytes += side.bytes.length;
+        lines.push(`scp4d segment ${result.segments[i].segment.seq}: frames=${side.frames} bytes=${side.bytes.length} sha256=${side.sha256} round_trip=PASS`);
+      });
+      lines.push(`scp4d: segments=${result.windows.length} bytes=${bytes} stored=sidecar round_trip=PASS`);
+    } catch {
+      lines.push("scp4d: FAIL");
+      return { exitCode: 1, lines };
+    }
+  }
   return { exitCode: failed ? 1 : 0, lines };
 }
 

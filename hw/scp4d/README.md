@@ -25,6 +25,7 @@ This directory holds the synthesizable Verilog for the 4D-SCP hardware path. Not
 | **v0.1.28** | `rtl/scp4d_hybrid_fix.v`, `synth/scp4d_loop_hnfix_wrap.v`. §35 | Replay eof no longer ingests the host token. Percent 15. Five of five 45F seeds, 34559 TRELLIS_COMB, 51 DP16KD, median 37.61236572265625 MHz. Both held-out sets are bit-exact and use both engines. Wall time loses to the pure N=4 loop at original ADDR_W 8 and on the high-churn set. Verdict STOP. Power needs a real board. |
 | **v0.1.29** | `rtl/scp4d_hybrid_coh.v`, `rtl/scp4d_ede_coh.v`, `rtl/scp4d_fsd_n_coh.v`, `synth/scp4d_loop_hcoh_wrap.v`. §36 | Switches update both memories in the active cycle. Percent 8, hold 1, start K1. Five of five 45F seeds, 34920 TRELLIS_COMB, 53 DP16KD, median 36.48170471191406 MHz. Original held-out wall time is under both baselines. High-churn wall time is above pure N=4. Verdict STOP. Power needs a real board. |
 | **v0.1.30** | `rtl/scp4d_hybrid_ff.v`, `synth/scp4d_loop_hff_wrap.v`. §37 | Frame 0 is buffered until its eof. Percent 8, hold 1. Five of five 45F seeds, 35438 TRELLIS_COMB, 59 DP16KD, median 39.474205017089844 MHz. All six held-out cells are under both baselines. Verdict PASS. Power needs a real board. |
+| **UART prototype** | `rtl/scp4d_uart_ff.v`. `docs/hw/ecp5-versa-uart.md` | New wrapper around `scp4d_hybrid_ff`. Icarus file bridge is bit-exact on one token. Not loaded on a board. Power needs a real board. |
 
 ## Layout
 

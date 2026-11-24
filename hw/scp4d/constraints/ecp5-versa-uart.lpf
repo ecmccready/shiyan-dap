@@ -1,0 +1,21 @@
+# ECP5 Versa (LFE5UM-45F-8BG381C), from FPGA-EB-02021-2.4 (November 2021).
+# https://www.latticesemi.com user guide FPGA-EB-02021. The pins below are the ones
+# that guide states as ball numbers. UART TXD_UART / RXD_UART are named on schematic
+# sheets 3 and 10 of that guide, but the extracted text does not give their FPGA balls.
+# Those LOCATE lines are omitted rather than guessed. This netlist has not been
+# loaded on a board. Power is needs real board.
+#
+# Section 7.1: 100 MHz LVDS oscillator on P3 (P) and P4 (N). The wrapper port is a
+# single clk. A board image must add the LVDS input buffer; this file documents the pair.
+# LOCATE COMP "clk_p" SITE "P3";
+# LOCATE COMP "clk_n" SITE "P4";
+# IOBUF PORT "clk_p" IO_TYPE=LVDS;
+#
+# Section 6.2: SW1 drives GSRN low when pressed. The guide does not give a user-IO ball
+# for that dedicated pin, so rst_n is not located here.
+#
+# Table 8.2: general-purpose LEDs, LVCMOS25, on when the pin is driven low.
+LOCATE COMP "led0_n" SITE "E16";
+IOBUF PORT "led0_n" IO_TYPE=LVCMOS25;
+LOCATE COMP "led1_n" SITE "D17";
+IOBUF PORT "led1_n" IO_TYPE=LVCMOS25;

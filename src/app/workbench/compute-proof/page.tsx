@@ -217,6 +217,11 @@ acceptance: retain only if measured improvement and correctness preserved`}
         <p className="text-sm text-zinc-400">
           Values filled by the existing closed-loop run. Hashes and commands below allow independent regeneration.
         </p>
+        <p className="text-sm text-zinc-300">
+          Built, not run on a board: an optional scp4d codec (default off) beside the M3 reader,
+          a UART wrapper around scp4d_hybrid_ff checked in Icarus, and a signed receipt route at
+          /api/v1/hw/receipts. Migration 007 is unapplied. Power needs real board. No PHI.
+        </p>
       </section>
 
       <section className="border border-zinc-700 rounded-lg p-5 space-y-3">
