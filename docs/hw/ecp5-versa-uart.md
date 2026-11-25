@@ -6,12 +6,15 @@
 
 Source: Lattice *ECP5 Versa Development Board User Guide*, FPGA-EB-02021-2.4, November 2021. The connections in that guide are for LFE5UM-45F-8BG381C. The 5G board (LFE5UM5G-45F) is a different document, FPGA-EB-02048.
 
-- Section 7.1: a 100 MHz LVDS oscillator is connected to balls P3 and P4 and must be used as an LVDS input.
-- Section 6.2: SW1 drives GSRN to 0 while the button is pressed. The guide does not give a user-IO ball for that dedicated pin.
-- Table 8.2: D25 is ball E16 (yellow) and D24 is ball D17 (yellow). Those LEDs light when the FPGA pin is driven low, and the bank is 2.5 V LVCMOS25.
-- Section 5: J2 is the USB-B connector for the on-board USB UART and for programming. Schematic sheets 3 and 10 name `TXD_UART` and `RXD_UART`. The extracted guide text does not state the FPGA ball for either net, so `hw/scp4d/constraints/ecp5-versa-uart.lpf` does not locate them.
+- Section 7.1: a 100 MHz LVDS oscillator is connected to balls P3 and P4 and must be used as an LVDS input. `IO_TYPE=LVDS`.
+- Section 6.2: SW1 drives the dedicated GSRN pin to 0 while pressed. The guide does not publish a user-IO ball for that pin, so it is not in the LPF.
+- Table 8.1: SW3 position 1 is ball H2. Inputs 1–4 are a 1.5 V bank, so `IO_TYPE=LVCMOS15`. ON is logic 0. `rst_n` uses this switch, not GSRN.
+- Table 8.2: D25 is ball E16 (yellow) and D24 is ball D17 (yellow). The bank is 2.5 V, so `IO_TYPE=LVCMOS25`. The LED lights when the pin is low.
+- Appendix A schematic, bank 0 (the 3.3 V bank, so `IO_TYPE=LVCMOS33`): `PT36A/PCLKT0_1` is ball A11 and net `RXD_UART`. `PT38A/PCLKT0_0` is ball C11 and net `TXD_UART`. Lattice KB 7556: `TXD_UART` is the FT2232H transmitter (BDBUS0), so the FPGA pin is an input (`rx` = C11). `RXD_UART` is the FT2232H receiver (BDBUS1), so the FPGA pin is an output (`tx` = A11).
+- Section 5: J2 is the USB-B connector for that FT2232H UART and for programming. The same USB device is an FT2232HL (bill of materials item U5 in the guide). J50's default jumpers are 1–2, 3–4 and 5–6, which select the ECP5 rather than only the ispClock. Channel 0 of that FT2232H is the JTAG channel used by OpenOCD (`ftdi channel 0` in the LiteX config). The UART is the second channel. The guide does not give a separate channel number in a table; the schematic names the UART nets on the FT2232H B-bus.
+- Corroboration only: `litex-boards` `litex_boards/platforms/lattice_versa_ecp5.py` uses rx C11, tx A11, clk P3, leds E16 and D17. It is not the source of the balls.
 
-The placed netlist uses a single `clk` port and leaves UART pins unconstrained. A board build has to add the LVDS input buffer and the UART balls from the schematic before anyone flashes it.
+The 5G board is FPGA-EB-02048 and was not the source of these balls. The bitstream is built with `nextpnr-ecp5 --um-45k`, which is LFE5UM-45F, the part named in FPGA-EB-02021.
 
 ## Frame
 

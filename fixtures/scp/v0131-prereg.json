@@ -1,0 +1,63 @@
+{
+  "format": "scp4d-v0131-prereg",
+  "power": "needs real board",
+  "note": "Committed before the final five-seed run. The 24.44569206237793 MHz figure below is the already routed wrap_uart_ff seed-3 path, not this variant.",
+  "toolchain": {
+    "oss_cad_suite": "20261118",
+    "yosys": "0.71+50 583f380c6",
+    "nextpnr": "0.11.1-103-ge811ba48",
+    "router": "router2",
+    "device_flag": "--um-45k",
+    "package": "CABGA381",
+    "seeds": [1, 2, 3, 4, 5],
+    "bound_s": 7200,
+    "serial": true
+  },
+  "prior_profile": {
+    "design": "wrap_uart_ff",
+    "device_flag": "--45k",
+    "seed": 3,
+    "fmax_mhz": 24.44569206237793,
+    "path_ns": 40.906999967992306,
+    "from": "need_TRELLIS_FF_Q",
+    "to": "hy.in_code_TRELLIS_FF_Q_26",
+    "trellis_comb_used": 6666,
+    "trellis_comb_available": 43848,
+    "cause": "The payload-length register feeds a runtime divide by the token width in the same cycle that the quotient indexes the payload memory and loads the hybrid code register."
+  },
+  "variant": {
+    "module": "wrap_uart_ff_pipe",
+    "file": "hw/scp4d/rtl/scp4d_uart_ff_pipe.v",
+    "does_not_edit": ["hw/scp4d/rtl/scp4d_uart_ff.v", "hw/scp4d/rtl/scp4d_hybrid_ff.v"],
+    "configuration": {
+      "ADDR_W": 8,
+      "W": 4,
+      "CFG_D": 256,
+      "PERCENT": 8,
+      "HOLD": 1,
+      "PMAX": 2048,
+      "RMAX": 256,
+      "full_v0130_loop": false,
+      "note": "This is scp4d_hybrid_ff only, ADDR_W 8, cfg_D 256. It is not the v0.1.30 closed loop (encoder, fast decoder, ADDR_W 11, 35438 TRELLIS_COMB)."
+    },
+    "change": "Token count increments by one every TOK payload bytes. There is no runtime divide. Payload bytes sit in block RAM. The byte address is registered, the byte is registered on the next clock, and only then is the token presented to the hybrid. Up to four decision records in one cycle are packed into one block-RAM word."
+  },
+  "exploratory_rule": "One seed-1 route may be run and labeled exploratory. If its Fmax is below 35 MHz, one extra register may be inserted on the registered payload byte, and that RTL is then frozen. No third stage. The five-seed run is the result and is not followed by another RTL change.",
+  "pins": "hw/scp4d/constraints/ecp5-versa-uart.lpf, every top-level port located, from FPGA-EB-02021-2.4.",
+  "sim": {
+    "seeds": [9, 13],
+    "frames": 2,
+    "fractions": {"9": 0.01, "13": 0.55},
+    "not_a_fit": true,
+    "bit_exact": "UART decision records equal the direct hybrid_ff records and the software stepEde/stepFsd change list."
+  },
+  "success": {
+    "routes": "5/5",
+    "median_fmax_mhz_min": 35,
+    "median_fmax_mhz_max": 40,
+    "trellis_comb_fraction_max": 0.2,
+    "denominator": "TRELLIS_COMB available in the nextpnr report for this run",
+    "bit_exact": true
+  },
+  "fail": "If the frozen RTL misses the window or the 20% bound or bit-exact, stop. Do not add delay to pull a faster median down into the window."
+}

@@ -1,20 +1,38 @@
-# ECP5 Versa (LFE5UM-45F-8BG381C), from FPGA-EB-02021-2.4 (November 2021).
-# https://www.latticesemi.com user guide FPGA-EB-02021. The pins below are the ones
-# that guide states as ball numbers. UART TXD_UART / RXD_UART are named on schematic
-# sheets 3 and 10 of that guide, but the extracted text does not give their FPGA balls.
-# Those LOCATE lines are omitted rather than guessed. This netlist has not been
-# loaded on a board. Power is needs real board.
+# Lattice ECP5 Versa, LFE5UM-45F-8BG381C.
+# Document: ECP5 Versa Development Board User Guide, FPGA-EB-02021-2.4, November 2021.
+# The schematic appendix is the same board as EB98 (the earlier document number).
+# Every LOCATE below is from that guide. Power is needs real board.
+# This file has not been loaded on a board.
 #
-# Section 7.1: 100 MHz LVDS oscillator on P3 (P) and P4 (N). The wrapper port is a
-# single clk. A board image must add the LVDS input buffer; this file documents the pair.
-# LOCATE COMP "clk_p" SITE "P3";
-# LOCATE COMP "clk_n" SITE "P4";
-# IOBUF PORT "clk_p" IO_TYPE=LVDS;
+# Clock. Section 7.1: 100 MHz LVDS oscillator, balls P3 (positive) and P4 (negative).
+# The pair must be an LVDS input. nextpnr takes the positive site and the complement.
+LOCATE COMP "clk_p" SITE "P3";
+IOBUF PORT "clk_p" IO_TYPE=LVDS;
+LOCATE COMP "clk_n" SITE "P4";
+IOBUF PORT "clk_n" IO_TYPE=LVDS;
 #
-# Section 6.2: SW1 drives GSRN low when pressed. The guide does not give a user-IO ball
-# for that dedicated pin, so rst_n is not located here.
+# UART. Appendix A schematic, FPGA bank 0 symbol (3.3 V bank, so LVCMOS33):
+#   PT36A/PCLKT0_1 ball A11 net RXD_UART
+#   PT38A/PCLKT0_0 ball C11 net TXD_UART
+# Lattice KB 7556: TXD_UART is the FT2232H transmitter (BDBUS0), so the FPGA pin is an input.
+# RXD_UART is the FT2232H receiver (BDBUS1), so the FPGA pin is an output.
+# Therefore C11 is rx and A11 is tx.
+# Corroboration only, not the source of the balls: litex-boards
+# litex_boards/platforms/lattice_versa_ecp5.py uses rx=C11 and tx=A11, LVCMOS33.
+LOCATE COMP "rx" SITE "C11";
+IOBUF PORT "rx" IO_TYPE=LVCMOS33;
+LOCATE COMP "tx" SITE "A11";
+IOBUF PORT "tx" IO_TYPE=LVCMOS33;
 #
-# Table 8.2: general-purpose LEDs, LVCMOS25, on when the pin is driven low.
+# Reset. Section 6.2: SW1 drives the dedicated GSRN pin low while pressed.
+# The guide does not publish a user-IO ball for that dedicated pin, so it is not located.
+# Table 8.1 (FPGA ball to DIP switch): SW3 position 1 is ball H2, bank 1.5 V, LVCMOS15.
+# The switch is logic 0 in the ON position. This port uses that switch, not GSRN.
+LOCATE COMP "rst_n" SITE "H2";
+IOBUF PORT "rst_n" IO_TYPE=LVCMOS15;
+#
+# LEDs. Table 8.2: D25 ball E16 yellow, D24 ball D17 yellow.
+# Bank is 2.5 V, IO type LVCMOS25. The LED lights when the pin is driven low.
 LOCATE COMP "led0_n" SITE "E16";
 IOBUF PORT "led0_n" IO_TYPE=LVCMOS25;
 LOCATE COMP "led1_n" SITE "D17";
