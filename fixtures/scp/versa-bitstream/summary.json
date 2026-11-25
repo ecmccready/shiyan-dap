@@ -1,0 +1,214 @@
+{
+  "label": "final",
+  "device": "LFE5UM-45F",
+  "device_flag": "--um-45k",
+  "package": "CABGA381",
+  "router": "router2",
+  "freq_arg_mhz": 100,
+  "chosen_seed": 2,
+  "fmax_mhz_median": 53.61930465698242,
+  "logic_clock_mhz": 20,
+  "board_clock_mhz": 100,
+  "baud": 125000,
+  "seeds": [
+    {
+      "label": "final",
+      "seed": 1,
+      "device": "LFE5UM-45F",
+      "package": "CABGA381",
+      "freq_arg_mhz": 100,
+      "fmax_mhz": 51.6635627746582,
+      "clocks": {
+        "$glbnet$clk20": {
+          "achieved": 51.6635627746582,
+          "constraint": 100
+        }
+      },
+      "wall_clock_s": 8.718,
+      "exit_code": 0,
+      "signal": null,
+      "timed_out": false,
+      "trellis_comb": {
+        "used": 2447,
+        "available": 43848,
+        "pct": 0.05580642218573253
+      },
+      "trellis_ff": {
+        "used": 1412,
+        "available": 43848,
+        "pct": 0.03220215289180806
+      },
+      "dp16kd": {
+        "used": 28,
+        "available": 108,
+        "pct": 0.25925925925925924
+      },
+      "critical_path_ns": 19.35599996894598,
+      "critical_from": "u.hy.ede.in_ready_TRELLIS_FF_Q",
+      "critical_to": "u.hy.use_fsd_TRELLIS_FF_Q",
+      "netlist_sha256": "dfc6628f6929003a837c5153dff3adcd52565e4708f7937dc847f104b6d94180",
+      "error": null
+    },
+    {
+      "label": "final",
+      "seed": 2,
+      "device": "LFE5UM-45F",
+      "package": "CABGA381",
+      "freq_arg_mhz": 100,
+      "fmax_mhz": 53.61930465698242,
+      "clocks": {
+        "$glbnet$clk20": {
+          "achieved": 53.61930465698242,
+          "constraint": 100
+        }
+      },
+      "wall_clock_s": 6.882,
+      "exit_code": 0,
+      "signal": null,
+      "timed_out": false,
+      "trellis_comb": {
+        "used": 2447,
+        "available": 43848,
+        "pct": 0.05580642218573253
+      },
+      "trellis_ff": {
+        "used": 1412,
+        "available": 43848,
+        "pct": 0.03220215289180806
+      },
+      "dp16kd": {
+        "used": 28,
+        "available": 108,
+        "pct": 0.25925925925925924
+      },
+      "critical_path_ns": 18.649999879300594,
+      "critical_from": "u.hy.ede.in_ready_TRELLIS_FF_Q",
+      "critical_to": "u.hy.use_fsd_TRELLIS_FF_Q",
+      "netlist_sha256": "dfc6628f6929003a837c5153dff3adcd52565e4708f7937dc847f104b6d94180",
+      "error": null
+    },
+    {
+      "label": "final",
+      "seed": 3,
+      "device": "LFE5UM-45F",
+      "package": "CABGA381",
+      "freq_arg_mhz": 100,
+      "fmax_mhz": 53.94615936279297,
+      "clocks": {
+        "$glbnet$clk20": {
+          "achieved": 53.94615936279297,
+          "constraint": 100
+        }
+      },
+      "wall_clock_s": 7.781,
+      "exit_code": 0,
+      "signal": null,
+      "timed_out": false,
+      "trellis_comb": {
+        "used": 2447,
+        "available": 43848,
+        "pct": 0.05580642218573253
+      },
+      "trellis_ff": {
+        "used": 1412,
+        "available": 43848,
+        "pct": 0.03220215289180806
+      },
+      "dp16kd": {
+        "used": 28,
+        "available": 108,
+        "pct": 0.25925925925925924
+      },
+      "critical_path_ns": 18.537000060081482,
+      "critical_from": "u.hy.play_TRELLIS_FF_Q",
+      "critical_to": "u.nrec_bytes_TRELLIS_FF_Q_1",
+      "netlist_sha256": "dfc6628f6929003a837c5153dff3adcd52565e4708f7937dc847f104b6d94180",
+      "error": null
+    },
+    {
+      "label": "final",
+      "seed": 4,
+      "device": "LFE5UM-45F",
+      "package": "CABGA381",
+      "freq_arg_mhz": 100,
+      "fmax_mhz": 56.09154510498047,
+      "clocks": {
+        "$glbnet$clk20": {
+          "achieved": 56.09154510498047,
+          "constraint": 100
+        }
+      },
+      "wall_clock_s": 7.329,
+      "exit_code": 0,
+      "signal": null,
+      "timed_out": false,
+      "trellis_comb": {
+        "used": 2447,
+        "available": 43848,
+        "pct": 0.05580642218573253
+      },
+      "trellis_ff": {
+        "used": 1412,
+        "available": 43848,
+        "pct": 0.03220215289180806
+      },
+      "dp16kd": {
+        "used": 28,
+        "available": 108,
+        "pct": 0.25925925925925924
+      },
+      "critical_path_ns": 17.828000001609325,
+      "critical_from": "u.feed_TRELLIS_FF_Q",
+      "critical_to": "u.hy.use_fsd_TRELLIS_FF_Q",
+      "netlist_sha256": "dfc6628f6929003a837c5153dff3adcd52565e4708f7937dc847f104b6d94180",
+      "error": null
+    },
+    {
+      "label": "final",
+      "seed": 5,
+      "device": "LFE5UM-45F",
+      "package": "CABGA381",
+      "freq_arg_mhz": 100,
+      "fmax_mhz": 52.59006118774414,
+      "clocks": {
+        "$glbnet$clk20": {
+          "achieved": 52.59006118774414,
+          "constraint": 100
+        }
+      },
+      "wall_clock_s": 7.594,
+      "exit_code": 0,
+      "signal": null,
+      "timed_out": false,
+      "trellis_comb": {
+        "used": 2447,
+        "available": 43848,
+        "pct": 0.05580642218573253
+      },
+      "trellis_ff": {
+        "used": 1412,
+        "available": 43848,
+        "pct": 0.03220215289180806
+      },
+      "dp16kd": {
+        "used": 28,
+        "available": 108,
+        "pct": 0.25925925925925924
+      },
+      "critical_path_ns": 19.014999978244305,
+      "critical_from": "u.hy.ede.in_ready_TRELLIS_FF_Q",
+      "critical_to": "u.hy.use_fsd_TRELLIS_FF_Q",
+      "netlist_sha256": "dfc6628f6929003a837c5153dff3adcd52565e4708f7937dc847f104b6d94180",
+      "error": null
+    }
+  ],
+  "bit_sha256": "a433b1461c28dcb847726647cb5eb597b7002b0a99ab2ee5b6f7448b08dc426b",
+  "svf_sha256": "eb44d7b0b82ceb3d626b8e78e0e99453c51e577f27b03383a42fd5b8bb2daa44",
+  "spi_bit_sha256": "99b43d5fc31e5ab7312d72e64bb3f993ec2a59ca2d5798d38f1566767e65afc5",
+  "netlist_sha256": "dfc6628f6929003a837c5153dff3adcd52565e4708f7937dc847f104b6d94180",
+  "yosys_wall_s": 4.163,
+  "ecppack_wall_s": 0.73,
+  "yosys": "Yosys 0.71+50 (git sha1 583f380c6, Release, Clang /usr/bin/clang++ 21.1.8)",
+  "nextpnr": "\"nextpnr-ecp5\" -- Next Generation Place and Route (Version nextpnr-0.11.1-103-ge811ba48)",
+  "power": "needs real board"
+}

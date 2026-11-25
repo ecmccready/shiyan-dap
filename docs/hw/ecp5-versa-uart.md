@@ -33,6 +33,8 @@ FT601 USB3 FIFO is not in this wrapper.
 
 Pinned tools: OSS CAD Suite 20261118, Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48. `router2`, `--45k` (recorded in this repo as LFE5U-45F) package CABGA381, seeds 1–5, one at a time. The Versa guide's device is LFE5UM-45F-8BG381C. The route used `--45k`, not a separate UM part flag.
 
+The table below is the earlier `wrap_uart_ff` route (`--45k`, LFE5U-45F). It is not `wrap_uart_versa`. The Versa image is in `docs/hw/versa-runbook.md` and `fixtures/scp/versa-bitstream/summary.json`.
+
 Measured 2026-11-24, 19:51:59–19:53:45 UTC. All five seeds routed. Median Fmax is 24.44569206237793 MHz (seed 3). `TRELLIS_COMB` 6666, FF 2713, `DP16KD` 19.
 
 | Seed | Fmax (MHz) | Route wall (s) |
