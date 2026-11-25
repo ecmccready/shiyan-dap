@@ -89,8 +89,8 @@ export default function WorkbenchHome() {
         </section>
 
         <p className="mt-8 max-w-2xl text-sm text-zinc-500">
-          Everything else is in the Domains menu above: Know (what it is), Know How (how it works), Show (evidence and
-          reference data) and Do (start, declare, pilot).
+          Other domains stay in the selector above. Semiconductor / FPGA is the core. Each domain keeps its own inputs,
+          rules, agents, measurements, and evidence format.
         </p>
       </main>
     </div>

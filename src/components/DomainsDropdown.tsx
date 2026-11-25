@@ -47,7 +47,7 @@ export default function DomainsDropdown() {
         value={selectedDomain}
         onChange={(e) => {
           const v = e.target.value;
-          if (!v) return;
+          if (!v || v.startsWith("planned:")) return;
           const item = groups.flatMap((g) => g.items).find((i) => i.href === v);
           const target = item ? hrefFor(item) : v;
           // JSON reference links are route handlers: use a full navigation.
@@ -65,8 +65,9 @@ export default function DomainsDropdown() {
           <optgroup key={g.label} label={g.label}>
             {g.items.map((i) => (
               <option
-                key={i.href}
-                value={i.href}
+                key={i.planned ? `planned:${i.label}` : `${i.label}|${i.href}`}
+                value={i.planned ? `planned:${i.label}` : i.href}
+                disabled={i.planned === true}
                 data-phi={i.phi ?? undefined}
                 data-reuse-run={i.reuseRunId ?? undefined}
               >
