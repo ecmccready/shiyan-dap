@@ -1,5 +1,5 @@
 // TEST ONLY. File bridge. The Node driver writes +STIM. This bench sends those
-// bytes into wrap_uart_ff_d and compares the reply with a direct hybrid_ff.
+// bytes into wrap_uart_ff_pipe and compares the reply with a direct hybrid_ff.
 `timescale 1ns/1ps
 `default_nettype none
 module scp4d_uart_file_tb;
@@ -56,7 +56,21 @@ module scp4d_uart_file_tb;
   end
 
   integer i, ti, ntok, fd;
+  reg [15:0] csum;
   reg [1023:0] stim_path;
+
+  function [15:0] crc16_byte;
+    input [15:0] crc_in;
+    input [7:0] b;
+    integer k;
+    reg [15:0] c;
+    begin
+      c = crc_in ^ {b, 8'h00};
+      for (k = 0; k < 8; k = k + 1)
+        c = c[15] ? {c[14:0], 1'b0} ^ 16'h1021 : {c[14:0], 1'b0};
+      crc16_byte = c;
+    end
+  endfunction
   task send;
     input [7:0] b;
     begin
@@ -111,6 +125,16 @@ module scp4d_uart_file_tb;
         $display("FAIL byte %0d got %02x want %02x", i, resp[3 + i], golden[i]);
         $finish(1);
       end
+    end
+    if (rn < gn + 5) begin
+      $display("FAIL truncated frame rn=%0d payload=%0d", rn, gn);
+      $finish(1);
+    end
+    csum = 16'hFFFF;
+    for (i = 0; i < gn; i = i + 1) csum = crc16_byte(csum, golden[i]);
+    if (resp[3 + gn] !== csum[7:0] || resp[4 + gn] !== csum[15:8]) begin
+      $display("FAIL crc got %02x %02x want %02x %02x", resp[3 + gn], resp[4 + gn], csum[7:0], csum[15:8]);
+      $finish(1);
     end
     for (i = 0; i < gn; i = i + 3) $display("REC %0d %0d", golden[i], golden[i + 1][0]);
     $display("PASS uart-file bit-exact records=%0d", gn / 3);
