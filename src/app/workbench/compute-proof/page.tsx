@@ -152,6 +152,15 @@ acceptance: retain only if measured improvement and correctness preserved`}
           Five-seed 45F median Fmax 39.474205017089844 MHz. Wall time is cycles / Fmax.
           Power needs real board.
         </p>
+        <p className="text-sm text-zinc-300">
+          v0.1.31 Versa image of the same hybrid, reduced to ADDR_W 8 and cfg_D 256.
+          Not the 35,438-COMB loop. Five LFE5UM-45F seeds all routed. Median Fmax{" "}
+          <span className="font-mono">53.61930465698242</span> MHz (seed 2), above the
+          pre-registered 35–40 MHz window; no delay was added. TRELLIS_COMB 2447/43848.
+          Median critical path 18.649999879300594 ns. Seed 9 prefix: 6 tokens, 2 records.
+          Seed 13 prefix: 282 tokens, 135 records. Both bit-exact in Icarus. Status:
+          bitstream ready, awaiting physical board. Power needs real board. No PHI.
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="text-xs uppercase tracking-wider text-zinc-500">
@@ -218,9 +227,10 @@ acceptance: retain only if measured improvement and correctness preserved`}
           Values filled by the existing closed-loop run. Hashes and commands below allow independent regeneration.
         </p>
         <p className="text-sm text-zinc-300">
-          Built, not run on a board: an optional scp4d codec (default off) beside the M3 reader,
-          a UART wrapper around scp4d_hybrid_ff checked in Icarus, and a signed receipt route at
-          /api/v1/hw/receipts. Migration 007 is unapplied. Power needs real board. No PHI.
+          Bitstream ready, awaiting physical board: an optional scp4d codec (default off) beside the M3 reader,
+          the Versa UART image checked in Icarus, and a signed receipt route at
+          /api/v1/hw/receipts. Migration 007 is unapplied. The bitstream has not been loaded.
+          Power needs real board. No PHI.
         </p>
       </section>
 

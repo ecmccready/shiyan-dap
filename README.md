@@ -345,7 +345,7 @@ Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industr
 
 The same measurement loop is described as a virtual chip in `docs/virtual-chip.md`. Proposals are pre-registered, frozen on training, measured on the pinned toolchain, and accepted or rejected from the fixtures. `scripts/check-virtual-chip.ts` rebuilds those verdicts. Power on a board is still **needs real board**.
 
-The optional `scp4d` codec on `scripts/compress-tenant.ts` (`--codec scp4d` or `SCP_CODEC=scp4d`, default off) writes an S4DI sidecar line and does not change sealed segment bytes. `wrap_uart_ff` is a UART wrapper around `scp4d_hybrid_ff`; its Icarus test is bit-exact against a direct instance of that engine. A signed receipt can be posted to `/api/v1/hw/receipts`. Migration `db/migrations/007_shiyan_hw_receipts.sql` is unapplied. None of this has been run on a board. Commands and the pinout limit are in `docs/hw/ecp5-versa-uart.md`.
+The optional `scp4d` codec on `scripts/compress-tenant.ts` (`--codec scp4d` or `SCP_CODEC=scp4d`, default off) writes an S4DI sidecar line and does not change sealed segment bytes. `wrap_uart_versa` is a UART image of `scp4d_hybrid_ff` (ADDR_W 8, cfg_D 256, not the full v0.1.30 loop). Its Icarus test is bit-exact on the seed-9 and seed-13 prefixes. A signed receipt can be posted to `/api/v1/hw/receipts`. Migration `db/migrations/007_shiyan_hw_receipts.sql` is unapplied. The bitstream exists and has not been loaded. Status: bitstream ready, awaiting physical board. Power stays needs real board. Commands are in `docs/hw/versa-runbook.md`.
 
 ### Vantage points
 
@@ -370,6 +370,7 @@ Measured differentiators so far:
 - v0.1.28 fixes the replay eof so it does not ingest the next frame's token. The synthetic trace drops element 0 on the old hybrid and matches on the new one. Percent 15 is frozen on training seed 17. Both held-out workloads are bit-exact and use both engines. Wall time beats both baselines at original ADDR_W 10 and 12, and loses to pure N=4 at original ADDR_W 8 and on the high-churn set. Verdict STOP.
 - v0.1.29 removes the replay walk and the catch-up scan. Percent 8, hold 1, start K1. Both held-out sets are bit-exact and use both engines. Original wall time 326.547240 / 1292.154530 / 2595.163816 µs is under both baselines. High-churn wall time 664.853800 / 2633.292516 / 5264.063221 µs is still above pure N=4. Verdict STOP.
 - v0.1.30 buffers frame 0 until its own eof and replays it into the engine that count selects. Percent 8, hold 1. Seed 31 opens on K1. Seed 35 opens on full scan. Both held-out sets are bit-exact. Wall time is 301.792018 / 1194.197577 / 2398.427022 µs on the original set and 608.422639 / 2410.054869 / 4817.601771 µs on the high-churn set, under both baselines at all six cells. Verdict PASS.
+- v0.1.31 is the Versa UART image of that hybrid at ADDR_W 8, cfg_D 256, percent 8, hold 1. It is not the 35,438-COMB loop. Five LFE5UM-45F seeds all routed. Median Fmax 53.61930465698242 MHz (seed 2), above the pre-registered 35–40 window; no delay was added. TRELLIS_COMB 2447/43848. The median-seed critical path is 18.649999879300594 ns, from `u.hy.ede.in_ready_TRELLIS_FF_Q` to `u.hy.use_fsd_TRELLIS_FF_Q`. The previous `wrap_uart_ff` path was 40.906999967992306 ns. Seed 9: 6 tokens, 2 records. Seed 13: 282 tokens, 135 records. Both bit-exact. Bitstream ready, awaiting physical board. Power needs real board.
 - Reproducible evidence package: pinned toolchain, seeds, sha256 manifest with a stale-hash check, reproduce guides.
 - Not claimed: K1 does not beat full scan on decisions/s per LUT (v0.1.21 sweep FAIL, best 0.34x). Power: needs real board.
 
@@ -377,7 +378,7 @@ Measured differentiators so far:
 
 Primary target: Lattice ECP5 (LFE5U-45F main; 12F/25F/85F for fit checks).
 Toolchain: OSS CAD Suite 20261118 (Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, Project Trellis), Icarus Verilog for bit-exact regression.
-Current density: v0.1.30 first-frame hybrid at 35,438 TRELLIS_COMB. The v0.1.27 N=4 full-scan loop is 33,281. The v0.1.25 retimed K1 loop is 32,497. The post-trim K1 loop is 30,888.
+Current density: v0.1.30 first-frame hybrid at 35,438 TRELLIS_COMB. The v0.1.31 Versa image is the reduced hybrid only, 2,447/43,848 TRELLIS_COMB on LFE5UM-45F. The v0.1.27 N=4 full-scan loop is 33,281. The v0.1.25 retimed K1 loop is 32,497. The post-trim K1 loop is 30,888.
 
 ### Build summary
 
@@ -396,6 +397,7 @@ Current density: v0.1.30 first-frame hybrid at 35,438 TRELLIS_COMB. The v0.1.27 
 | v0.1.28 | Fixed hybrid handoff | Replay eof no longer takes the host token. Percent 15 frozen on seed 17. Both held-out sets bit-exact, both engines. Original wall 383.677009 / 1260.968277 / 2547.991815 µs: under both baselines at 10 and 12, above N=4 at 8. High-churn wall 900.714415 / 3582.172975 / 7161.660662 µs, above N=4 at 8, 10 and 12. Median 37.61236572265625 MHz, 34,559 TRELLIS_COMB, 51 DP16KD, smallest 45F. Critical path stays in the decoder. Verdict STOP. The percent was not changed |
 | v0.1.29 | Coherent hybrid, nearly free switches | Replay and catch-up scan removed. Percent 8, hold 1, start K1. Both held-out sets bit-exact and both engines. Original wall 326.547240 / 1292.154530 / 2595.163816 µs, under both baselines. High-churn wall 664.853800 / 2633.292516 / 5264.063221 µs, above N=4. Median 36.48170471191406 MHz, 34,920 TRELLIS_COMB, 53 DP16KD, FF 10859, smallest 45F. Critical path stays in the decoder. Verdict STOP. The selector was not changed |
 | v0.1.30 | First frame chooses its own engine | Frame 0 is buffered until eof and replayed into the engine its event count selects. Percent 8, hold 1. Seed 31 opens on K1. Seed 35 opens on full scan. Both held-out sets bit-exact. Original wall 301.792018 / 1194.197577 / 2398.427022 µs. High-churn wall 608.422639 / 2410.054869 / 4817.601771 µs. All six cells under both baselines. Median 39.474205017089844 MHz, 35,438 TRELLIS_COMB, 59 DP16KD, FF 10992, smallest 45F. Verdict PASS |
+| v0.1.31 | Versa UART bitstream | `wrap_uart_versa`, LFE5UM-45F, 5/5 seeds. Median 53.61930465698242 MHz (above 35–40; not slowed). 2,447/43,848 TRELLIS_COMB, 1,412 FF, 28 DP16KD. Median path 18.649999879300594 ns. Seed 9 and seed 13 prefixes bit-exact (2 and 135 records). Bitstream ready, awaiting physical board. Power needs real board |
 
 ### Recommendations
 

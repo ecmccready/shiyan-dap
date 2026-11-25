@@ -1,10 +1,10 @@
-/** File-bridge driver for the UART wrapper. Runs Icarus. Does not open a serial port
- * (serialport is not a dependency) and does not touch a board. Power is needs real board.
+/** UART driver. The default is the Icarus file bridge. `--tty <path>` opens a real
+ * serial device and is not used by the checks. Power is needs real board.
  *
  *   npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/scp-uart-driver.ts
  */
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, openSync, readSync, writeFileSync, writeSync, closeSync } from "node:fs";
+import { mkdtempSync, openSync, readSync, writeFileSync, writeSync, closeSync, constants } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { mulberry32 } from "./scp-v012-fixtures";
@@ -132,6 +132,34 @@ export function runUartCosim(): { ok: boolean; text: string } {
   return { ok: run.status === 0 && text.includes("PASS uart-ff bit-exact"), text };
 }
 
+function pause(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+/** Read one reply frame: 0xA5, uint16 length, payload, CRC-16. Stops at the frame or at the deadline. */
+function readReply(fd: number, deadline: number): Buffer {
+  const parts: Buffer[] = [];
+  const buf = Buffer.alloc(256);
+  let total = 0;
+  while (Date.now() < deadline && total < 4096) {
+    let n = 0;
+    try { n = readSync(fd, buf, 0, buf.length, null); }
+    catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "EAGAIN") throw e;
+    }
+    if (n > 0) {
+      parts.push(Buffer.from(buf.subarray(0, n)));
+      total += n;
+      const got = Buffer.concat(parts);
+      if (got.length >= 3 && got[0] === 0xA5) {
+        const len = got[1]! + (got[2]! << 8);
+        if (got.length >= len + 5) return got.subarray(0, len + 5);
+      }
+    } else pause(20);
+  }
+  return Buffer.concat(parts);
+}
+
 function ttySend(): void {
   const i = process.argv.indexOf("--tty");
   const path = process.argv[i + 1];
@@ -143,12 +171,12 @@ function ttySend(): void {
     process.exitCode = 1;
     return;
   }
-  const fd = openSync(path, "r+");
+  const fd = openSync(path, constants.O_RDWR | constants.O_NONBLOCK);
   try {
     writeSync(fd, frame);
-    const buf = Buffer.alloc(64);
-    const n = readSync(fd, buf, 0, buf.length, null);
-    process.stdout.write(buf.subarray(0, n).toString("hex") + "\n");
+    const got = readReply(fd, Date.now() + 2000);
+    process.stdout.write(got.toString("hex") + "\n");
+    if (got.length < 5) process.exitCode = 1;
   } finally { closeSync(fd); }
 }
 

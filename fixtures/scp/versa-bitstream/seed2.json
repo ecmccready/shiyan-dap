@@ -1,0 +1,38 @@
+{
+  "label": "final",
+  "seed": 2,
+  "device": "LFE5UM-45F",
+  "package": "CABGA381",
+  "freq_arg_mhz": 100,
+  "fmax_mhz": 53.61930465698242,
+  "clocks": {
+    "$glbnet$clk20": {
+      "achieved": 53.61930465698242,
+      "constraint": 100
+    }
+  },
+  "wall_clock_s": 6.882,
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "trellis_comb": {
+    "used": 2447,
+    "available": 43848,
+    "pct": 0.05580642218573253
+  },
+  "trellis_ff": {
+    "used": 1412,
+    "available": 43848,
+    "pct": 0.03220215289180806
+  },
+  "dp16kd": {
+    "used": 28,
+    "available": 108,
+    "pct": 0.25925925925925924
+  },
+  "critical_path_ns": 18.649999879300594,
+  "critical_from": "u.hy.ede.in_ready_TRELLIS_FF_Q",
+  "critical_to": "u.hy.use_fsd_TRELLIS_FF_Q",
+  "netlist_sha256": "dfc6628f6929003a837c5153dff3adcd52565e4708f7937dc847f104b6d94180",
+  "error": null
+}
