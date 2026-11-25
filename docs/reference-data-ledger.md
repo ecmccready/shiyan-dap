@@ -20,10 +20,20 @@ Each record in `fixtures/reference-ledger/records.json` has:
 | Validation | Bit-exact result, or null when that check does not apply |
 | Evidence | One or more labels: `simulated`, `routed`, `physically_measured` |
 | Outcome | `PASS`, `STOP`, or `RECORDED`, plus whether it is a kept negative result |
+| Reference status | `verified` only after a physical measurement. Otherwise pending or stopped |
+| Audit | Pull-request URLs, fixture paths, and hashes |
 
 The JSON Schema is `fixtures/reference-ledger/schema.json`. The TypeScript type is `src/lib/reference-ledger/types.ts`.
 
 A STOP stays in the ledger. A result is not relabeled as physically measured because a route succeeded.
+
+## Promotion
+
+A record's `reference_status` may be `verified` only when `evidence.labels` includes `physically_measured` from a run on the supported board, the ECP5 Versa (LFE5UM-45F). Simulated and routed results stay pending. `scripts/check-reference-ledger.ts` rejects a `verified` record that lacks that label, and it rejects any seeded record that claims `verified` today.
+
+v0.1.31 status is `reference (routed + simulated), physical verification pending`. The displayed median 53.62 MHz is the measured 53.61930465698242 MHz rounded to two decimal places. The ledger and the homepage footnote keep the exact value.
+
+There is no path from an arbitrary RTL upload to an optimized-chip promise. The initial path is a controlled workload assessment for that one FPGA target.
 
 ## Seeded records
 
@@ -38,10 +48,10 @@ v0.1.31 is the reduced Versa image (ADDR_W 8, cfg_D 256), not the 35,438 TRELLIS
 
 ## Boundaries
 
-- **Core boundary.** Semiconductor computation and verification.
-- **Computational boundary.** 4D-SCP.
-- **Domain boundary.** Verticals do not redefine the core. Global Misdiagnosis, ACA/Medicare, and other domains keep their own inputs, rules, agents, measurements, and evidence format.
-- **Evidence boundary.** Results stay separately labeled until verified. Simulated, routed, and physically measured are different labels.
+- **Core boundary.** Semiconductor computation and verification is the primary product.
+- **Computational boundary.** 4D-SCP owns representations and operations. Aethel Node orchestrates. Shiyan DAP records and evaluates.
+- **Domain boundary.** Healthcare, insurance, and AI verticals do not redefine the semiconductor core. Each domain keeps its own inputs, rules, permissions, agent roles, measurement criteria, and evidence format. Unknown items stay planned.
+- **Evidence boundary.** A result is not promoted to a verified reference until it meets the promotion rule above.
 
 ## Check
 

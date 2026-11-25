@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 const file = ledger as LedgerFile;
+const blob = (path: string) => `https://github.com/ecmccready/shiyan-dap/blob/main/${path}`;
 
 export default function ReferenceLedgerPage() {
   return (
@@ -31,7 +32,7 @@ export default function ReferenceLedgerPage() {
               <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-xl font-semibold">{r.id}</h2>
                 <p className="font-mono text-xs text-emerald-400">
-                  {r.outcome.verdict}{r.outcome.negative ? " · negative result" : ""} · {r.evidence.labels.join(" · ")}
+                  {r.reference_status} · {r.outcome.verdict}{r.outcome.negative ? " · negative result" : ""} · {r.evidence.labels.join(" · ")}
                 </p>
               </header>
               <p className="text-sm text-zinc-300">{r.workload_identity}</p>
@@ -44,6 +45,22 @@ export default function ReferenceLedgerPage() {
                 <div><dt className="text-zinc-500">Hardware target</dt><dd>{r.hardware_target.summary}</dd></div>
                 <div><dt className="text-zinc-500">Validation</dt><dd>{r.validation.summary}</dd></div>
                 <div><dt className="text-zinc-500">Outcome</dt><dd>{r.outcome.summary}</dd></div>
+                <div>
+                  <dt className="text-zinc-500">Audit</dt>
+                  <dd className="space-y-1">
+                    <p>Pull requests: {r.audit.pull_requests.map((href) => (
+                      <a key={href} className="mr-2 text-emerald-400 underline" href={href}>{href.replace("https://github.com/ecmccready/shiyan-dap/pull/", "#")}</a>
+                    ))}</p>
+                    <p>Fixtures: {r.audit.fixtures.map((path) => (
+                      <a key={path} className="mr-2 text-emerald-400 underline" href={blob(path)}>{path}</a>
+                    ))}</p>
+                    {Object.keys(r.audit.hashes).length > 0 && (
+                      <ul className="font-mono text-xs">
+                        {Object.entries(r.audit.hashes).map(([k, v]) => <li key={k}>{k}: {v}</li>)}
+                      </ul>
+                    )}
+                  </dd>
+                </div>
               </dl>
             </article>
           ))}

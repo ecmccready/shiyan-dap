@@ -34,6 +34,12 @@ export default function ComputeProofPage() {
           Synthetic fixture only. Level 4 plant untouched. 4D-SCP not invoked.
         </p>
         <p className="text-sm text-zinc-400 mt-3">
+          Shiyan DAP — Computational Intelligence. Semiconductor Proof. is the front door.
+          This page is a domain surface, not that core. The v0.1.31 Versa image is a reference
+          (routed + simulated), physical verification pending. It is not a verified reference.
+          Power needs real board. No PHI. No clinical claims.
+        </p>
+        <p className="text-sm text-zinc-400 mt-3">
           The customer journey leads with the ACA as the US first reference market, then
           connects to the Medicare workbench and the Global Misdiagnosis vertical. AI agents
           present verifiable opportunities; the customer pays after agreed proof criteria.

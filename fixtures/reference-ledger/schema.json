@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/ecmccready/shiyan-dap/fixtures/reference-ledger/schema.json",
   "title": "Shiyan Reference Data Ledger",
+  "description": "A result is not a verified reference until evidence.labels includes physically_measured from a run on the supported board (ECP5 Versa, LFE5UM-45F). Simulated and routed results stay pending. There is no promise that an arbitrary RTL upload becomes an optimized chip. The initial path is a controlled workload assessment for that one FPGA target.",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "power", "naming", "records"],
@@ -30,6 +31,7 @@
       "additionalProperties": false,
       "required": [
         "id",
+        "reference_status",
         "workload_identity",
         "input_conditions",
         "baseline",
@@ -40,10 +42,19 @@
         "validation",
         "evidence",
         "outcome",
+        "audit",
         "numbers"
       ],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
+        "reference_status": {
+          "enum": [
+            "reference (routed + simulated), physical verification pending",
+            "stopped (simulated + routed), not a verified reference",
+            "pass (simulated + routed), physical verification pending",
+            "verified"
+          ]
+        },
         "workload_identity": { "type": "string", "minLength": 1 },
         "input_conditions": { "$ref": "#/$defs/text" },
         "baseline": { "$ref": "#/$defs/text" },
@@ -84,6 +95,16 @@
             "accepted": { "type": "boolean" },
             "negative": { "type": "boolean" },
             "summary": { "type": "string", "minLength": 1 }
+          }
+        },
+        "audit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pull_requests", "fixtures", "hashes"],
+          "properties": {
+            "pull_requests": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+            "fixtures": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+            "hashes": { "type": "object" }
           }
         },
         "numbers": { "type": "object" }

@@ -10,6 +10,7 @@ export const DOMAIN_GROUPS: DomainGroup[] = [
   {
     label: "Semiconductor / FPGA (Core)",
     items: [
+      { label: "Semiconductor / FPGA (Core)", href: "/" },
       { label: "Workload assessment", href: "/assess" },
       { label: "Reference Data Ledger", href: "/workbench/reference-ledger" },
       { label: "Computational Improvement Proof", href: "/workbench/compute-proof" },

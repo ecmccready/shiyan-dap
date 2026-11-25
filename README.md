@@ -4,7 +4,7 @@ Aethel Node turns a declared goal into a bounded run, measures the result agains
 
 The claim is narrow: a verified, reusable workflow can reduce repeated work and next-action error. Retention, savings, and willingness to pay still have to be shown with external users and measured outcomes. “Conscious” is a product metaphor for persistent state, feedback, and continuity across runs, not a claim about machine consciousness.
 
-The front door is semiconductor-first: computational intelligence, FPGA implementation, and evidence. The Reference Data Ledger is at `/workbench/reference-ledger` (`fixtures/reference-ledger/records.json`, `docs/reference-data-ledger.md`). The repo name is 4D-SCP.
+The front door is semiconductor-first: **Shiyan DAP — Computational Intelligence. Semiconductor Proof.** Tagline: optimize, verify and move computational designs toward hardware. Powered by Aethel Node · 4D-SCP · FPGA implementation and measurement. The owner writes 4D-SPC; the repository name is 4D-SCP. The Reference Data Ledger is at `/workbench/reference-ledger`. A result is not a verified reference until it includes a physical measurement on the ECP5 Versa (LFE5UM-45F). v0.1.31 is reference (routed + simulated), physical verification pending. There is no arbitrary-RTL-to-chip promise. Power needs real board.
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap
@@ -347,7 +347,7 @@ Evidence for the Lattice ECP5 path. Detailed records: `docs/design/v0119-industr
 
 The same measurement loop is described as a virtual chip in `docs/virtual-chip.md`. Proposals are pre-registered, frozen on training, measured on the pinned toolchain, and accepted or rejected from the fixtures. `scripts/check-virtual-chip.ts` rebuilds those verdicts. Power on a board is still **needs real board**.
 
-The optional `scp4d` codec on `scripts/compress-tenant.ts` (`--codec scp4d` or `SCP_CODEC=scp4d`, default off) writes an S4DI sidecar line and does not change sealed segment bytes. `wrap_uart_versa` is a UART image of `scp4d_hybrid_ff` (ADDR_W 8, cfg_D 256, not the full v0.1.30 loop). Its Icarus test is bit-exact on the seed-9 and seed-13 prefixes. A signed receipt can be posted to `/api/v1/hw/receipts`. Migration `db/migrations/007_shiyan_hw_receipts.sql` is unapplied. The bitstream exists and has not been loaded. Status: bitstream ready, awaiting physical board. Power stays needs real board. Commands are in `docs/hw/versa-runbook.md`.
+The optional `scp4d` codec on `scripts/compress-tenant.ts` (`--codec scp4d` or `SCP_CODEC=scp4d`, default off) writes an S4DI sidecar line and does not change sealed segment bytes. `wrap_uart_versa` is a UART image of `scp4d_hybrid_ff` (ADDR_W 8, cfg_D 256, not the full v0.1.30 loop). Its Icarus test is bit-exact on the seed-9 and seed-13 prefixes. A signed receipt can be posted to `/api/v1/hw/receipts`. Migration `db/migrations/007_shiyan_hw_receipts.sql` is unapplied. The bitstream exists and has not been loaded. Status: reference (routed + simulated), physical verification pending. It is not a verified reference. Bitstream ready, awaiting physical board. Power stays needs real board. Commands are in `docs/hw/versa-runbook.md`.
 
 ### Vantage points
 
