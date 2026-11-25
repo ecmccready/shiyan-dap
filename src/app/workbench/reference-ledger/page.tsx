@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import { JOURNEY } from "@/lib/semiconductor/journey";
 import ledger from "../../../../fixtures/reference-ledger/records.json";
 import type { LedgerFile } from "@/lib/reference-ledger/types";
 
@@ -65,6 +66,11 @@ export default function ReferenceLedgerPage() {
             </article>
           ))}
         </div>
+        <p className="text-sm text-zinc-400">
+          Journey: {JOURNEY.map((s, i) => (
+            <span key={s.href}>{i > 0 ? " → " : ""}<Link className="text-emerald-400 underline" href={s.href}>{s.n} {s.name}</Link></span>
+          ))}
+        </p>
         <p className="text-sm text-zinc-500">
           Field list and boundaries: <span className="font-mono">docs/reference-data-ledger.md</span>.
         </p>

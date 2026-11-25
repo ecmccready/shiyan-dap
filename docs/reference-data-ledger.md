@@ -50,7 +50,7 @@ v0.1.31 is the reduced Versa image (ADDR_W 8, cfg_D 256), not the 35,438 TRELLIS
 
 - **Core boundary.** Semiconductor computation and verification is the primary product.
 - **Computational boundary.** 4D-SCP owns representations and operations. Aethel Node orchestrates. Shiyan DAP records and evaluates.
-- **Domain boundary.** Healthcare, insurance, and AI verticals do not redefine the semiconductor core. Each domain keeps its own inputs, rules, permissions, agent roles, measurement criteria, and evidence format. Unknown items stay planned.
+- **Domain boundary.** Domains are the fringe. The semiconductor core is the center of gravity. Critical mass is measured from the semiconductor and reference-data records. Other domains do not redefine that core. Their inputs, rules, permissions, agent roles, measurements, and evidence stay on their own pages. Unknown items stay planned.
 - **Evidence boundary.** A result is not promoted to a verified reference until it meets the promotion rule above.
 
 ## Check

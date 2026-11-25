@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import JourneyNav from "@/components/JourneyNav";
 
 export const metadata: Metadata = {
   title: "Workload assessment | Shiyan DAP",
@@ -47,7 +48,10 @@ export default function AssessPage() {
           <Link className="text-emerald-400 underline" href="/workbench/reference-ledger">Reference Data Ledger</Link>
           {" · "}
           <Link className="text-emerald-400 underline" href="/">Front door</Link>
+          {" · "}
+          <Link className="text-emerald-400 underline" href="/journey/characterize">Next · 02 Characterize</Link>
         </p>
+        <JourneyNav href="/assess" />
       </main>
     </div>
   );
