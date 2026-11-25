@@ -186,6 +186,7 @@ const summary = {
   svf_sha256: sha(readFileSync(svf)),
   spi_bit_sha256: sha(readFileSync(spi)),
   netlist_sha256: netHash,
+  yosys_wall_s: Number(readFileSync(join(WORK, "yosys-wall.txt"), "utf8").trim()),
   ecppack_wall_s: Math.round((Date.now() - packT0) / 10) / 100,
   yosys: toolVersion("yosys", ["-V"]),
   nextpnr: toolVersion("nextpnr-ecp5", ["--version"]),

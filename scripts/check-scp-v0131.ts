@@ -17,6 +17,14 @@ function check(name: string, cond: boolean): void {
   if (!cond) process.exitCode = 1;
 }
 
+const prereg = JSON.parse(readFileSync(join(root, "fixtures/scp/v0131-prereg.json"), "utf8")) as {
+  procedure: Record<string, unknown>;
+  procedure_sha256: string;
+};
+check("prereg procedure hash is frozen before the measured route",
+  createHash("sha256").update(JSON.stringify(prereg.procedure)).digest("hex") === prereg.procedure_sha256
+  && prereg.procedure_sha256 === "3c90ab6f158e6cda1516b52b8437d5ed45fddb484f03871c1acd8a29fa7dd176");
+
 const lpf = readFileSync(join(root, "hw/scp4d/constraints/ecp5-versa-uart.lpf"), "utf8");
 const doc = readFileSync(join(root, "docs/hw/ecp5-versa-uart.md"), "utf8");
 check("LPF locates the schematic UART, clock, DIP and LED balls",

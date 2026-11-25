@@ -1,0 +1,21 @@
+{
+  "label": "exploratory",
+  "seed": 1,
+  "device": "LFE5UM-45F",
+  "package": "CABGA381",
+  "freq_arg_mhz": 100,
+  "fmax_mhz": null,
+  "clocks": {},
+  "wall_clock_s": 7.299,
+  "exit_code": 125,
+  "signal": null,
+  "timed_out": false,
+  "trellis_comb": null,
+  "trellis_ff": null,
+  "dp16kd": null,
+  "critical_path_ns": null,
+  "critical_from": null,
+  "critical_to": null,
+  "netlist_sha256": "caac8fb98160990dc358207d15be68c948d7ef9603f9902f700372267c402a39",
+  "error": "ERROR: cannot place differential IO at location PIOD | 1 warning, 1 error"
+}

@@ -4,17 +4,17 @@
 `default_nettype none
 module wrap_uart_versa (
   input  wire clk_p,
-  input  wire clk_n,
   input  wire rst_n,
   input  wire rx,
   output wire tx,
   output wire led0_n,
   output wire led1_n
 );
+  // P4 is the LVDS complement of P3. It is not a port: nextpnr rejects a second
+  // differential input on that PIOD site. The LPF comment records the ball.
   wire clk100 = clk_p;
   wire clk20;
   wire locked;
-  (* keep *) wire clk_n_keep = clk_n;
   (* FREQUENCY_PIN_CLKI = "100.0" *)
   (* FREQUENCY_PIN_CLKOP = "20.0" *)
   EHXPLLL #(

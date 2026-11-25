@@ -5,11 +5,13 @@
 # This file has not been loaded on a board.
 #
 # Clock. Section 7.1: 100 MHz LVDS oscillator, balls P3 (positive) and P4 (negative).
-# The pair must be an LVDS input. nextpnr takes the positive site and the complement.
+# nextpnr maps P3 to X0/Y68/PIOC and P4 to X0/Y68/PIOD on CABGA381.
+# A differential input has to sit on the A side of the pair (PIOC). PIOD is the
+# complement and is reserved by that buffer. A second LVDS port on P4 fails with
+# "cannot place differential IO at location PIOD" and nextpnr exits 125.
+# P4 is therefore not a user port. The complement ball is SITE "P4".
 LOCATE COMP "clk_p" SITE "P3";
 IOBUF PORT "clk_p" IO_TYPE=LVDS;
-LOCATE COMP "clk_n" SITE "P4";
-IOBUF PORT "clk_n" IO_TYPE=LVDS;
 #
 # UART. Appendix A schematic, FPGA bank 0 symbol (3.3 V bank, so LVCMOS33):
 #   PT36A/PCLKT0_1 ball A11 net RXD_UART

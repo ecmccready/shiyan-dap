@@ -1,7 +1,7 @@
 {
   "format": "scp4d-v0131-prereg",
   "power": "needs real board",
-  "note": "Committed before the final five-seed run. The 24.44569206237793 MHz figure below is the already routed wrap_uart_ff seed-3 path, not this variant.",
+  "note": "Committed before the final five-seed run. The 24.44569206237793 MHz figure below is the already routed wrap_uart_ff seed-3 path, not this variant. The 51.6635627746582 MHz figure is the exploratory seed-1 route of this variant, not the five-seed median.",
   "toolchain": {
     "oss_cad_suite": "20261118",
     "yosys": "0.71+50 583f380c6",
@@ -9,9 +9,19 @@
     "router": "router2",
     "device_flag": "--um-45k",
     "package": "CABGA381",
-    "seeds": [1, 2, 3, 4, 5],
+    "freq_mhz": 100,
+    "timing_allow_fail": true,
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
     "bound_s": 7200,
-    "serial": true
+    "serial": true,
+    "lpf": "hw/scp4d/constraints/ecp5-versa-uart.lpf",
+    "allow_unconstrained": false
   },
   "prior_profile": {
     "design": "wrap_uart_ff",
@@ -27,8 +37,15 @@
   },
   "variant": {
     "module": "wrap_uart_ff_pipe",
+    "top": "wrap_uart_versa",
     "file": "hw/scp4d/rtl/scp4d_uart_ff_pipe.v",
-    "does_not_edit": ["hw/scp4d/rtl/scp4d_uart_ff.v", "hw/scp4d/rtl/scp4d_hybrid_ff.v"],
+    "top_file": "hw/scp4d/rtl/scp4d_uart_versa.v",
+    "does_not_edit": [
+      "hw/scp4d/rtl/scp4d_uart_ff.v",
+      "hw/scp4d/rtl/scp4d_hybrid_ff.v",
+      "hw/scp4d/rtl/scp4d_ede_coh.v",
+      "hw/scp4d/rtl/scp4d_fsd_n_coh.v"
+    ],
     "configuration": {
       "ADDR_W": 8,
       "W": 4,
@@ -36,18 +53,73 @@
       "PERCENT": 8,
       "HOLD": 1,
       "PMAX": 2048,
-      "RMAX": 256,
+      "RWORDS": 256,
+      "logic_clock_mhz": 20,
+      "board_clock_mhz": 100,
+      "baud": 125000,
       "full_v0130_loop": false,
       "note": "This is scp4d_hybrid_ff only, ADDR_W 8, cfg_D 256. It is not the v0.1.30 closed loop (encoder, fast decoder, ADDR_W 11, 35438 TRELLIS_COMB)."
     },
-    "change": "Token count increments by one every TOK payload bytes. There is no runtime divide. Payload bytes sit in block RAM. The byte address is registered, the byte is registered on the next clock, and only then is the token presented to the hybrid. Up to four decision records in one cycle are packed into one block-RAM word."
+    "change": "Token count increments by one every TOK payload bytes. There is no runtime divide. The payload address is registered, the block RAM presents the byte on the next clock, and the byte is captured on the clock after that. Up to four decision records in one cycle are packed into one block-RAM word. The clock port is P3 only."
   },
-  "exploratory_rule": "One seed-1 route may be run and labeled exploratory. If its Fmax is below 35 MHz, one extra register may be inserted on the registered payload byte, and that RTL is then frozen. No third stage. The five-seed run is the result and is not followed by another RTL change.",
-  "pins": "hw/scp4d/constraints/ecp5-versa-uart.lpf, every top-level port located, from FPGA-EB-02021-2.4.",
+  "exploratory": {
+    "label": "exploratory",
+    "seed": 1,
+    "fmax_mhz": 51.6635627746582,
+    "critical_path_ns": 19.35599996894598,
+    "critical_from": "u.hy.ede.in_ready_TRELLIS_FF_Q",
+    "critical_to": "u.hy.use_fsd_TRELLIS_FF_Q",
+    "trellis_comb_used": 2447,
+    "trellis_comb_available": 43848,
+    "wall_clock_s": 8.732,
+    "piod_attempt_exit": 125,
+    "piod_attempt_wall_s": 7.299,
+    "extra_register": "not inserted"
+  },
+  "procedure": {
+    "top": "wrap_uart_versa",
+    "device_flag": "--um-45k",
+    "package": "CABGA381",
+    "router": "router2",
+    "freq_mhz": 100,
+    "timing_allow_fail": true,
+    "lpf": "hw/scp4d/constraints/ecp5-versa-uart.lpf",
+    "allow_unconstrained": false,
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "serial": true,
+    "bound_s": 7200,
+    "median": "Sort the five achieved Fmax values ascending. Break ties by seed number. The result is the third.",
+    "bitstream": "ecppack --compress writes the median seed .bit and .svf. ecppack --compress --spimode fast-read writes the .spi.bit.",
+    "extra_register": "Not inserted. Exploratory seed 1 achieved 51.6635627746582 MHz, which is not below 35. Do not add delay to pull a faster median into 35 to 40.",
+    "clock": "P3 is the only clock port and it is LVDS. P4 is the PIOD complement and is not a user port.",
+    "logic_clock_mhz": 20,
+    "board_clock_mhz": 100,
+    "baud": 125000,
+    "unchanged": [
+      "hw/scp4d/rtl/scp4d_uart_ff.v",
+      "hw/scp4d/rtl/scp4d_hybrid_ff.v",
+      "hw/scp4d/rtl/scp4d_ede_coh.v",
+      "hw/scp4d/rtl/scp4d_fsd_n_coh.v"
+    ]
+  },
+  "procedure_sha256": "3c90ab6f158e6cda1516b52b8437d5ed45fddb484f03871c1acd8a29fa7dd176",
+  "pins": "hw/scp4d/constraints/ecp5-versa-uart.lpf. Every top-level port is located. P4 is the LVDS complement of P3 and is not a port, from FPGA-EB-02021-2.4 section 7.1.",
   "sim": {
-    "seeds": [9, 13],
+    "seeds": [
+      9,
+      13
+    ],
     "frames": 2,
-    "fractions": {"9": 0.01, "13": 0.55},
+    "fractions": {
+      "9": 0.01,
+      "13": 0.55
+    },
     "not_a_fit": true,
     "bit_exact": "UART decision records equal the direct hybrid_ff records and the software stepEde/stepFsd change list."
   },

@@ -6,7 +6,7 @@
 
 Source: Lattice *ECP5 Versa Development Board User Guide*, FPGA-EB-02021-2.4, November 2021. The connections in that guide are for LFE5UM-45F-8BG381C. The 5G board (LFE5UM5G-45F) is a different document, FPGA-EB-02048.
 
-- Section 7.1: a 100 MHz LVDS oscillator is connected to balls P3 and P4 and must be used as an LVDS input. `IO_TYPE=LVDS`.
+- Section 7.1: a 100 MHz LVDS oscillator is connected to balls P3 and P4 and must be used as an LVDS input. `IO_TYPE=LVDS`. On CABGA381, nextpnr maps P3 to `X0/Y68/PIOC` and P4 to `X0/Y68/PIOD`. The differential input is the P3 port only. P4 is the complement of that pair. A second LVDS port on PIOD makes nextpnr exit 125 with `cannot place differential IO at location PIOD`.
 - Section 6.2: SW1 drives the dedicated GSRN pin to 0 while pressed. The guide does not publish a user-IO ball for that pin, so it is not in the LPF.
 - Table 8.1: SW3 position 1 is ball H2. Inputs 1–4 are a 1.5 V bank, so `IO_TYPE=LVCMOS15`. ON is logic 0. `rst_n` uses this switch, not GSRN.
 - Table 8.2: D25 is ball E16 (yellow) and D24 is ball D17 (yellow). The bank is 2.5 V, so `IO_TYPE=LVCMOS25`. The LED lights when the pin is low.
