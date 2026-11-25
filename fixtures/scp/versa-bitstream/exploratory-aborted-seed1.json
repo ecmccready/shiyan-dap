@@ -1,0 +1,10 @@
+{
+  "label": "aborted exploratory",
+  "note": "The file previously committed as seed1.json. No nextpnr report was kept, and fixtures/scp/versa-work is gitignored, so the log is gone. fmax is 0 and lut is null. 4.523 s is shorter than the earlier wrap_uart_ff 45k routes (16.774 s to 20.666 s), so this was not a finished route. Exit 125 is the value that was written; this note does not invent a cause the log would have shown.",
+  "seed": 1,
+  "device": "LFE5UM-45F",
+  "fmax_mhz": 0,
+  "wall_clock_s": 4.523,
+  "lut": null,
+  "exit_code": 125
+}
