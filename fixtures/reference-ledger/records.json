@@ -1,0 +1,245 @@
+{
+  "format": "shiyan-reference-ledger",
+  "power": "needs real board",
+  "naming": "The owner wrote 4D-SPC. This repository's established name is 4D-SCP (Four-Dimensional State Compression Processor). Records use 4D-SCP.",
+  "records": [
+    {
+      "id": "v0.1.31",
+      "workload_identity": "Versa UART image of scp4d_hybrid_ff, reduced configuration ADDR_W 8, cfg_D 256, percent 8, hold 1. Not the full v0.1.30 loop (35,438 TRELLIS_COMB).",
+      "input_conditions": {
+        "summary": "Held-out prefixes, not used to fit. Seed 9 fraction 0.01, two frames, 6 tokens. Seed 13 fraction 0.55, two frames, 282 tokens. OSS CAD Suite 20261118, Yosys 0.71+50 583f380c6, nextpnr-ecp5 0.11.1-103-ge811ba48, --um-45k, CABGA381, router2, --freq 100, seeds 1-5 serial.",
+        "source": "fixtures/scp/v0131-prereg.json"
+      },
+      "baseline": {
+        "summary": "Earlier wrap_uart_ff median 24.44569206237793 MHz, critical path 40.906999967992306 ns, 6666/43848 TRELLIS_COMB.",
+        "source": "fixtures/scp/v0131-prereg.json"
+      },
+      "experiment": {
+        "summary": "wrap_uart_ff_pipe removes the runtime token-width divide and reads payload bytes from block RAM one cycle after the address. Five LFE5UM-45F seeds, median seed 2.",
+        "source": "fixtures/scp/versa-bitstream/summary.json"
+      },
+      "build_provenance": {
+        "summary": "Procedure hash 3c90ab6f158e6cda1516b52b8437d5ed45fddb484f03871c1acd8a29fa7dd176 committed before the five-seed run. Measurement merge is pull request 31. The route pull request is 30.",
+        "source": "fixtures/scp/v0131-prereg.json"
+      },
+      "implementation": {
+        "summary": "Median Fmax 53.61930465698242 MHz. 5/5 seeds routed. TRELLIS_COMB 2447/43848, TRELLIS_FF 1412, DP16KD 28/108. Packaged .bit, .svf, and .spi.bit for seed 2.",
+        "source": "fixtures/scp/versa-bitstream/summary.json"
+      },
+      "hardware_target": {
+        "summary": "Lattice ECP5 Versa, LFE5UM-45F, CABGA381. Pins from FPGA-EB-02021-2.4. Logic clock 20 MHz from the 100 MHz oscillator. Power needs real board.",
+        "source": "docs/hw/ecp5-versa-uart.md"
+      },
+      "validation": {
+        "summary": "Icarus file bridge is bit-exact on the seed 9 prefix (2 records) and the seed 13 prefix (135 records). The bitstream has not been loaded. Not yet physically validated.",
+        "source": "scripts/check-scp-v0131.ts",
+        "bit_exact": true
+      },
+      "evidence": {
+        "labels": ["simulated", "routed"],
+        "sources": [
+          "fixtures/scp/versa-bitstream/summary.json",
+          "fixtures/scp/v0131-prereg.json",
+          "https://github.com/ecmccready/shiyan-dap/pull/31",
+          "https://github.com/ecmccready/shiyan-dap/pull/30"
+        ]
+      },
+      "outcome": {
+        "verdict": "RECORDED",
+        "accepted": false,
+        "negative": false,
+        "summary": "Reference implementation. Median 53.61930465698242 MHz is above the pre-registered 35-40 MHz window. No delay was added. Place-and-route and simulation only. Physical board programming, real workload throughput, and power measurement remain outstanding."
+      },
+      "numbers": {
+        "fmax_mhz_median": 53.61930465698242,
+        "trellis_comb_used": 2447,
+        "trellis_ff_used": 1412,
+        "dp16kd_used": 28,
+        "routes": "5/5",
+        "addr_w": 8,
+        "cfg_d": 256,
+        "full_loop_trellis_comb": 35438,
+        "bit_sha256": "a433b1461c28dcb847726647cb5eb597b7002b0a99ab2ee5b6f7448b08dc426b",
+        "svf_sha256": "eb44d7b0b82ceb3d626b8e78e0e99453c51e577f27b03383a42fd5b8bb2daa44",
+        "spi_bit_sha256": "99b43d5fc31e5ab7312d72e64bb3f993ec2a59ca2d5798d38f1566767e65afc5"
+      }
+    },
+    {
+      "id": "v0.1.28",
+      "workload_identity": "4D-SCP fixed hybrid handoff, loop-hnfix-w4l8, percent 15. Held-out original and high workloads at ADDR_W 8, 10, and 12.",
+      "input_conditions": {
+        "summary": "Held-out after the freeze. Percent was not changed. Power needs real board.",
+        "source": "fixtures/scp/v0128-heldout.json"
+      },
+      "baseline": {
+        "summary": "Compared with pipelined K1 and N=4 full scan. Wall time beats both baselines only at original ADDR_W 10 and 12.",
+        "source": "fixtures/scp/v0128-prereg.json"
+      },
+      "experiment": {
+        "summary": "Replay eof no longer takes the host token. Both held-out sets are bit-exact and use both engines.",
+        "source": "fixtures/scp/v0128-heldout.json"
+      },
+      "build_provenance": {
+        "summary": "Virtual-chip ledger entry v0.1.28, verdict STOP, accepted false. Pull request 22.",
+        "source": "fixtures/virtual-chip/ledger.json"
+      },
+      "implementation": {
+        "summary": "Five of five 45F seeds routed. Median Fmax 37.61236572265625 MHz. TRELLIS_COMB 34559 at the median-Fmax seed. DP16KD 51. Smallest part 45F.",
+        "source": "fixtures/scp/v0119-industry-benchmark.json"
+      },
+      "hardware_target": {
+        "summary": "Lattice ECP5 45F place-and-route. Power needs real board. Not physically measured.",
+        "source": "fixtures/scp/v0128-heldout.json"
+      },
+      "validation": {
+        "summary": "Held-out rows are bit-exact. The verdict is STOP because wall time loses to N=4 at original ADDR_W 8 and on the high-churn set.",
+        "source": "fixtures/scp/v0128-heldout.json",
+        "bit_exact": true
+      },
+      "evidence": {
+        "labels": ["simulated", "routed"],
+        "sources": [
+          "fixtures/virtual-chip/ledger.json",
+          "fixtures/scp/v0128-heldout.json",
+          "fixtures/scp/v0119-industry-benchmark.json"
+        ]
+      },
+      "outcome": {
+        "verdict": "STOP",
+        "accepted": false,
+        "negative": true,
+        "summary": "Kept negative result. Bit-exact, both engines, and the wall-time rule fails. The percent was not changed."
+      },
+      "numbers": {
+        "fmax_mhz_median": 37.61236572265625,
+        "trellis_comb_used": 34559,
+        "dp16kd_used": 51,
+        "routes": "5/5",
+        "design": "loop-hnfix-w4l8",
+        "cycles": {
+          "original": { "8": 14431, "10": 47428, "12": 95836 },
+          "high": { "8": 33878, "10": 134734, "12": 269367 }
+        }
+      }
+    },
+    {
+      "id": "v0.1.29",
+      "workload_identity": "4D-SCP coherent hybrid, loop-hcoh-w4l8, percent 8, hold 1, start K1. Held-out original and high workloads at ADDR_W 8, 10, and 12.",
+      "input_conditions": {
+        "summary": "Held-out after the freeze. Selector was not changed. Power needs real board.",
+        "source": "fixtures/scp/v0129-heldout.json"
+      },
+      "baseline": {
+        "summary": "Original wall time is under both baselines. High-churn wall time is above pure N=4.",
+        "source": "fixtures/scp/v0129-prereg.json"
+      },
+      "experiment": {
+        "summary": "Replay and catch-up scan removed. Both held-out sets are bit-exact and use both engines.",
+        "source": "fixtures/scp/v0129-heldout.json"
+      },
+      "build_provenance": {
+        "summary": "Virtual-chip ledger entry v0.1.29, verdict STOP, accepted false. Pull request 24.",
+        "source": "fixtures/virtual-chip/ledger.json"
+      },
+      "implementation": {
+        "summary": "Five of five 45F seeds routed. Median Fmax 36.48170471191406 MHz. TRELLIS_COMB 34920, TRELLIS_FF 10859, DP16KD 53 at the median-Fmax seed.",
+        "source": "fixtures/scp/v0119-industry-benchmark.json"
+      },
+      "hardware_target": {
+        "summary": "Lattice ECP5 45F place-and-route. Power needs real board. Not physically measured.",
+        "source": "fixtures/scp/v0129-heldout.json"
+      },
+      "validation": {
+        "summary": "Held-out rows are bit-exact. The verdict is STOP because the high-churn wall time loses to pure N=4.",
+        "source": "fixtures/scp/v0129-heldout.json",
+        "bit_exact": true
+      },
+      "evidence": {
+        "labels": ["simulated", "routed"],
+        "sources": [
+          "fixtures/virtual-chip/ledger.json",
+          "fixtures/scp/v0129-heldout.json",
+          "fixtures/scp/v0119-industry-benchmark.json"
+        ]
+      },
+      "outcome": {
+        "verdict": "STOP",
+        "accepted": false,
+        "negative": true,
+        "summary": "Kept negative result. Bit-exact, both engines, and the high-churn wall time loses to N=4. The selector was not changed."
+      },
+      "numbers": {
+        "fmax_mhz_median": 36.48170471191406,
+        "trellis_comb_used": 34920,
+        "trellis_ff_used": 10859,
+        "dp16kd_used": 53,
+        "routes": "5/5",
+        "design": "loop-hcoh-w4l8",
+        "cycles": {
+          "original": { "8": 11913, "10": 47140, "12": 94676 },
+          "high": { "8": 24255, "10": 96067, "12": 192042 }
+        }
+      }
+    },
+    {
+      "id": "v0.1.30",
+      "workload_identity": "4D-SCP first-frame hybrid, loop-hff-w4l8, scp4d_hybrid_ff, percent 8, hold 1. Held-out original and high workloads at ADDR_W 8, 10, and 12. This is the full loop, 35438 TRELLIS_COMB.",
+      "input_conditions": {
+        "summary": "Held-out after the freeze. Selector was not changed. Seed 9 and seed 13 were not used to fit. Power needs real board.",
+        "source": "fixtures/scp/v0130-heldout.json"
+      },
+      "baseline": {
+        "summary": "Wall time is strictly under pipelined K1 and N=4 full scan at all six held-out cells.",
+        "source": "fixtures/scp/v0130-prereg.json"
+      },
+      "experiment": {
+        "summary": "Frame 0 is buffered until its own eof and replayed into the engine that count selects. Both held-out sets are bit-exact and use both engines.",
+        "source": "fixtures/scp/v0130-heldout.json"
+      },
+      "build_provenance": {
+        "summary": "Virtual-chip ledger entry v0.1.30, verdict PASS, accepted true. Pull request 28.",
+        "source": "fixtures/virtual-chip/ledger.json"
+      },
+      "implementation": {
+        "summary": "Five of five 45F seeds routed. Median Fmax 39.474205017089844 MHz. TRELLIS_COMB 35438, TRELLIS_FF 10992, DP16KD 59 at the median-Fmax seed.",
+        "source": "fixtures/scp/v0119-industry-benchmark.json"
+      },
+      "hardware_target": {
+        "summary": "Lattice ECP5 45F place-and-route. Power needs real board. Not physically measured.",
+        "source": "fixtures/scp/v0130-heldout.json"
+      },
+      "validation": {
+        "summary": "Held-out rows are bit-exact. Wall time is under both baselines at ADDR_W 8, 10, and 12 on both workloads.",
+        "source": "fixtures/scp/v0130-heldout.json",
+        "bit_exact": true
+      },
+      "evidence": {
+        "labels": ["simulated", "routed"],
+        "sources": [
+          "fixtures/virtual-chip/ledger.json",
+          "fixtures/scp/v0130-heldout.json",
+          "fixtures/scp/v0119-industry-benchmark.json"
+        ]
+      },
+      "outcome": {
+        "verdict": "PASS",
+        "accepted": true,
+        "negative": false,
+        "summary": "Accepted on the locked wall-time rule. Still not physically measured. Power needs real board."
+      },
+      "numbers": {
+        "fmax_mhz_median": 39.474205017089844,
+        "trellis_comb_used": 35438,
+        "trellis_ff_used": 10992,
+        "dp16kd_used": 59,
+        "routes": "5/5",
+        "design": "loop-hff-w4l8",
+        "full_loop_trellis_comb": 35438,
+        "cycles": {
+          "original": { "8": 11913, "10": 47140, "12": 94676 },
+          "high": { "8": 24017, "10": 95135, "12": 190171 }
+        }
+      }
+    }
+  ]
+}

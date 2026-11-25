@@ -4,6 +4,8 @@ Aethel Node turns a declared goal into a bounded run, measures the result agains
 
 The claim is narrow: a verified, reusable workflow can reduce repeated work and next-action error. Retention, savings, and willingness to pay still have to be shown with external users and measured outcomes. “Conscious” is a product metaphor for persistent state, feedback, and continuity across runs, not a claim about machine consciousness.
 
+The front door is semiconductor-first: computational intelligence, FPGA implementation, and evidence. The Reference Data Ledger is at `/workbench/reference-ledger` (`fixtures/reference-ledger/records.json`, `docs/reference-data-ledger.md`). The repo name is 4D-SCP.
+
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap
 
@@ -95,7 +97,7 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
 
 ## Surfaces and the Domains dropdown
 
-Pages that use the shared header show a Domains dropdown with four groups: Know, Know How, Show, and Do. Selecting an item navigates to it. The current page is preselected.
+Pages that use the shared header show a domain selector, not the identity of the front door. The groups are Semiconductor / FPGA (Core), AI / Computational workloads, Global Misdiagnosis, ACA / Medicare, and International healthcare (planned, no route). Existing routes remain in that selector. Selecting an item navigates to it. The current page is preselected. Each domain keeps its own inputs, rules, agents, measurements, and evidence format.
 
 | Group | Entry | Path |
 | --- | --- | --- |

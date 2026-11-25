@@ -29,7 +29,13 @@ const find = (g: ReturnType<typeof rankDomainGroups>, label: string) => items(g)
 
 // 1. No data: static order, four groups, no annotations.
 const empty = rankDomainGroups(DOMAIN_GROUPS, []);
-assert.deepEqual(empty.map((g) => g.label), ["Know", "Know How", "Show", "Do"]);
+assert.deepEqual(empty.map((g) => g.label), [
+  "Semiconductor / FPGA (Core)",
+  "AI / Computational workloads",
+  "Global Misdiagnosis",
+  "ACA / Medicare",
+  "International healthcare",
+]);
 assert.deepEqual(empty.map((g) => g.items.map((i) => i.href)), DOMAIN_GROUPS.map((g) => g.items.map((i) => i.href)));
 assert.ok(items(empty).every((i) => i.phi === null));
 console.log("no records     -> static order, no annotation");
@@ -38,10 +44,12 @@ console.log("no records     -> static order, no annotation");
 const list = [...run("run_a")];
 const ranked = rankDomainGroups(DOMAIN_GROUPS, list);
 assert.equal(find(ranked, "Level 4 run").phi, phi);
-assert.equal(ranked[1].items[0].label, "Level 4 run");
+const ai = ranked.find((g) => g.label === "AI / Computational workloads")!;
+assert.equal(ai.items[0].label, "Level 4 run");
+assert.equal(ai.items[1].label, "Marketplace");
 assert.equal(find(ranked, "ROE · Reciprocal Optimization Engine").phi, null);
-assert.deepEqual(ranked[0].items.slice(0, 2).map((i) => i.label), ["Diagnostics", "Safety"]);
-assert.equal(ranked[2].items[0].label, "Result");
+const globalGroup = ranked.find((g) => g.label === "Global Misdiagnosis")!;
+assert.deepEqual(globalGroup.items.slice(0, 2).map((i) => i.label), ["Diagnostics", "Safety"]);
 assert.equal(phiSuffix(find(ranked, "Level 4 run")), ` · Φ ${phi.toFixed(3)}`);
 console.log(`eligible run   -> Level 4 run first with Φ ${phi}; ROE unannotated`);
 
@@ -54,9 +62,9 @@ console.log("ineligible     -> never annotated (eligible=false, not COMPLETE, Φ
 
 // 4. ROE item uses only selector records; highest Φ wins with a tie going to the later run.
 const roe = rankDomainGroups(DOMAIN_GROUPS, [...run("run_a"), ...run("run_roe", { selector: "roe_step_aware" })]);
-assert.equal(find(roe, "ROE · Reciprocal Optimization Engine").sourceRunId, "run_roe");
+assert.equal(find(roe, "ROE · Reciprocal Optimization Engine").phi, null, "ROE has no experience join");
 assert.equal(find(roe, "Level 4 run").sourceRunId, "run_roe");
-console.log("tie            -> later record wins; ROE joins only selector records");
+console.log("tie            -> later record wins; ROE stays unjoined");
 
 // 5. Reuse hand-off href: only the Level 4 run item carries ?reuse=.
 assert.equal(hrefFor(find(ranked, "Level 4 run")), "/workbench/autonomous?reuse=run_a");
@@ -89,40 +97,38 @@ assert.equal(strict.reuse?.status, "fallback"); // fails the replay vet against 
 console.log("hand-off       -> applied; missing / self / bad id / not permitted / vet failure all fall back with a reason");
 
 // 7. Marketplace in the Do group: annotated, ranked first in Do, hands off ?reuse= for highlighting.
-assert.deepEqual(DOMAIN_GROUPS.map((g) => g.label), ["Know", "Know How", "Show", "Do"]);
-assert.deepEqual(
-  DOMAIN_GROUPS[3].items.map((i) => i.href),
-  ["/workbench#guided-run", "/workbench/outcome", "/workbench/client", "/workbench/offer", "/workbench/pilot", "/workbench/marketplace"],
-);
+assert.equal(DOMAIN_GROUPS.find((g) => g.items.some((i) => i.href === "/workbench/marketplace"))?.label, "AI / Computational workloads");
 assert.equal(items(empty).filter((i) => i.href === "/workbench/marketplace").length, 1, "listed once");
 assert.equal(find(empty, "Marketplace").phi, null);
 assert.equal(hrefFor(find(empty, "Marketplace")), "/workbench/marketplace"); // no data: plain navigation
 const mk2 = rankDomainGroups(DOMAIN_GROUPS, list);
-assert.equal(mk2[3].items[0].label, "Marketplace"); // annotated -> first in Do
-assert.deepEqual(mk2[3].items.slice(1).map((i) => i.label), ["Start a durable run", "Declare an outcome", "Client pipeline", "Offer", "Pilot"]);
 assert.equal(find(mk2, "Marketplace").phi, phi);
 assert.equal(phiSuffix(find(mk2, "Marketplace")), ` · Φ ${phi.toFixed(3)}`);
 assert.equal(hrefFor(find(mk2, "Marketplace")), "/workbench/marketplace?reuse=run_a");
 assert.equal(hrefFor(find(mk2, "Level 4 run")), "/workbench/autonomous?reuse=run_a", "Level 4 run unchanged");
 const bad2 = rankDomainGroups(DOMAIN_GROUPS, run("run_bad", { eligible: false }));
 assert.equal(find(bad2, "Marketplace").phi, null, "ineligible never annotates Marketplace");
-console.log("marketplace    -> Do group, first when annotated (Φ " + phi + "), href /workbench/marketplace?reuse=run_a; plain path with no data");
-// 8. Global · misdiagnosis in Know: annotated with the best eligible Φ like Diagnostics and Safety; plain navigation, no ?reuse=.
+console.log("marketplace    -> AI group, href /workbench/marketplace?reuse=run_a when annotated; plain path with no data");
+// 8. Global · misdiagnosis: its own domain, plain navigation, no experience join, no ?reuse=.
 assert.equal(find(empty, "Global · misdiagnosis").phi, null);
 assert.equal(hrefFor(find(empty, "Global · misdiagnosis")), "/workbench/global");
-assert.equal(find(mk2, "Global · misdiagnosis").phi, phi);
-assert.equal(phiSuffix(find(mk2, "Global · misdiagnosis")), ` · Φ ${phi.toFixed(3)}`);
+assert.equal(find(mk2, "Global · misdiagnosis").phi, null);
 assert.equal(hrefFor(find(mk2, "Global · misdiagnosis")), "/workbench/global", "no reuse hand-off");
-assert.deepEqual(mk2[0].items.slice(0, 3).map((i) => i.label), ["Diagnostics", "Safety", "Global · misdiagnosis"], "annotated Know items first, static order on equal Φ");
+assert.equal(DOMAIN_GROUPS.find((g) => g.items.some((i) => i.href === "/workbench/global"))?.label, "Global Misdiagnosis");
 assert.equal(find(bad2, "Global · misdiagnosis").phi, null, "ineligible never annotates Global");
-console.log("global         -> Know group, annotated (Φ " + phi + "), href /workbench/global, no ?reuse=");
-// 9. Medicare · Public Data Intelligence: in Know right after Global · misdiagnosis, no experience join (no Φ), plain navigation.
-const know = DOMAIN_GROUPS[0].items.map((i) => i.label);
-assert.equal(know.indexOf("Medicare · Public Data Intelligence"), know.indexOf("Global · misdiagnosis") + 1, "right after Global");
-const med = DOMAIN_GROUPS[0].items.find((i) => i.href === "/workbench/medicare");
+console.log("global         -> Global Misdiagnosis domain, href /workbench/global, no Φ, no ?reuse=");
+// 9. Medicare: its own domain, no experience join (no Φ), plain navigation.
+const medGroup = DOMAIN_GROUPS.find((g) => g.label === "ACA / Medicare")!;
+assert.equal(medGroup.items.length, 1);
+const med = medGroup.items.find((i) => i.href === "/workbench/medicare");
 assert.ok(med); assert.equal(med!.experience, undefined, "no experience field");
 assert.equal(find(mk2, "Medicare · Public Data Intelligence").phi, null, "never annotated");
 assert.equal(hrefFor(find(mk2, "Medicare · Public Data Intelligence")), "/workbench/medicare");
 assert.equal(items(empty).filter((i) => i.href === "/workbench/medicare").length, 1, "listed once");
-console.log("medicare       -> Know group after Global, href /workbench/medicare, no Φ");
+console.log("medicare       -> ACA / Medicare, href /workbench/medicare, no Φ");
+const hrefs = new Set(DOMAIN_GROUPS.flatMap((g) => g.items.map((i) => i.href)));
+for (const href of ["/workbench/global", "/workbench/medicare", "/workbench/compute-proof", "/workbench/offer", "/assess", "/workbench/reference-ledger"]) {
+  assert.equal(hrefs.has(href), true, href);
+}
+assert.equal(DOMAIN_GROUPS.find((g) => g.label === "International healthcare")?.items[0]?.planned, true);
 console.log("OK");

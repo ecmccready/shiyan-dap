@@ -4,7 +4,7 @@
  * Joins the static Know / Know How / Show / Do items to the verified-experience records returned by
  * GET /api/level4/experience, keeps the best eligible Φ per item, annotates the item with it and sorts
  * annotated items ahead of the rest inside each group. Nothing here writes to the store or touches the
- * Level 4 loop; the four group names and their order never change.
+ * Level 4 loop. This function does not rename groups; the selector in groups.ts owns the names.
  *
  * "Eligible" is exactly the durable feed's reuse filter (isReusable in level4/durable-self.ts): eligible,
  * state COMPLETE, Φ > 0, tensor distance within ε, ROE-eligible. Φ is each run's own value against its
@@ -13,7 +13,12 @@
 import type { ExperienceEntry } from "@/lib/level4/experience-client";
 import { isReusable } from "@/lib/level4/durable-self";
 
-export type DomainGroupName = "Know" | "Know How" | "Show" | "Do";
+export type DomainGroupName =
+  | "Semiconductor / FPGA (Core)"
+  | "AI / Computational workloads"
+  | "Global Misdiagnosis"
+  | "ACA / Medicare"
+  | "International healthcare";
 
 /** Which experience records back an item. `{}` = every reusable record. */
 export type DomainExperienceScope = {
@@ -25,7 +30,13 @@ export type DomainExperienceScope = {
   reuse?: boolean;
 };
 
-export type DomainItem = { label: string; href: string; experience?: DomainExperienceScope };
+export type DomainItem = {
+  label: string;
+  href: string;
+  /** No route yet. The dropdown shows it and does not navigate. */
+  planned?: boolean;
+  experience?: DomainExperienceScope;
+};
 export type DomainGroup = { label: DomainGroupName; items: DomainItem[] };
 
 export type RankedDomainItem = DomainItem & {

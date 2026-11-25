@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import WorkbenchHome from "./workbench/WorkbenchHome";
+import SemiconductorDoor from "@/components/SemiconductorDoor";
 
 export const metadata: Metadata = {
-  title: "Aethel Node | Workbench",
+  title: "Shiyan DAP | Computational Intelligence. Semiconductor Proof.",
   description:
-    "Start a durable run, review verified experience, inspect proof, and access Aethel Node workbench resources.",
+    "A semiconductor optimization and verification platform connecting intelligent computation, FPGA implementation and evidence-driven performance improvement. Powered by Aethel Node and 4D-SCP.",
 };
 
 export default function HomePage() {
-  return <WorkbenchHome />;
+  return <SemiconductorDoor />;
 }

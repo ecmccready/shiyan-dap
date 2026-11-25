@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import DomainsDropdown from "./DomainsDropdown";
 
 const NAV = [
-  { href: "/", label: "Workbench" },
-  { href: "/#guided-run", label: "New run" },
+  { href: "/workbench", label: "Workbench" },
+  { href: "/workbench/home#guided-run", label: "New run" },
   { href: "/workbench/diagnostic", label: "Diagnostics" },
   { href: "/workbench/marketplace", label: "Marketplace" },
 ];
 
 // Hidden on the Workbench home page only; other pages keep them.
-const HOME_HIDDEN = new Set(["/", "/workbench", "/#guided-run", "/workbench#guided-run", "/workbench/diagnostic", "/workbench/marketplace"]);
+const HOME_HIDDEN = new Set(["/", "/workbench", "/#guided-run", "/workbench#guided-run", "/workbench/home#guided-run", "/workbench/diagnostic", "/workbench/marketplace"]);
 // Level 4 pages that share the trimmed /workbench/status header (exact paths; query ignored).
 const TRIMMED_PATHS = new Set([
   "/",
@@ -25,7 +25,7 @@ const TRIMMED_PATHS = new Set([
   "/roadmap",
 ]);
 
-export default function SiteHeader({ section }: { section?: string }) {
+export default function SiteHeader({ section, brand = "Aethel Node" }: { section?: string; brand?: string }) {
   const pathname = usePathname();
   const isWorkbenchLanding = pathname === "/" || pathname === "/workbench";
   const isFocused = pathname === "/workbench/marketplace" || pathname === "/workbench/diagnostic";
@@ -42,7 +42,7 @@ export default function SiteHeader({ section }: { section?: string }) {
       <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/" className="font-semibold">
-            Aethel Node
+            {brand}
           </Link>
           {section && !isWorkbenchLanding ? (
             <span className="text-zinc-500 text-sm">
