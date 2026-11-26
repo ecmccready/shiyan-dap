@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LicensingNotice from "@/components/LicensingNotice";
 
 export const dynamic = "force-dynamic";
 
@@ -320,6 +321,8 @@ npx tsx scripts/check-scp-all.ts   # hardware track (unwired)
           </table>
         </div>
       </section>
+
+      <LicensingNotice />
 
       <footer className="text-xs text-zinc-500">
         Boundaries: synthetic/fixture data · Level 4 plant authoritative and unmodified ·
