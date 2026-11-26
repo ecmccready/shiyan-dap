@@ -36,7 +36,10 @@
         "bit_exact": true
       },
       "evidence": {
-        "labels": ["simulated", "routed"],
+        "labels": [
+          "simulated",
+          "routed"
+        ],
         "sources": [
           "fixtures/scp/versa-bitstream/summary.json",
           "fixtures/scp/v0131-prereg.json",
@@ -62,6 +65,23 @@
         "bit_sha256": "a433b1461c28dcb847726647cb5eb597b7002b0a99ab2ee5b6f7448b08dc426b",
         "svf_sha256": "eb44d7b0b82ceb3d626b8e78e0e99453c51e577f27b03383a42fd5b8bb2daa44",
         "spi_bit_sha256": "99b43d5fc31e5ab7312d72e64bb3f993ec2a59ca2d5798d38f1566767e65afc5"
+      },
+      "reference_status": "reference (routed + simulated), physical verification pending",
+      "audit": {
+        "pull_requests": [
+          "https://github.com/ecmccready/shiyan-dap/pull/31",
+          "https://github.com/ecmccready/shiyan-dap/pull/30"
+        ],
+        "fixtures": [
+          "fixtures/scp/versa-bitstream/summary.json",
+          "fixtures/scp/v0131-prereg.json"
+        ],
+        "hashes": {
+          "procedure_sha256": "3c90ab6f158e6cda1516b52b8437d5ed45fddb484f03871c1acd8a29fa7dd176",
+          "bit_sha256": "a433b1461c28dcb847726647cb5eb597b7002b0a99ab2ee5b6f7448b08dc426b",
+          "svf_sha256": "eb44d7b0b82ceb3d626b8e78e0e99453c51e577f27b03383a42fd5b8bb2daa44",
+          "spi_bit_sha256": "99b43d5fc31e5ab7312d72e64bb3f993ec2a59ca2d5798d38f1566767e65afc5"
+        }
       }
     },
     {
@@ -97,7 +117,10 @@
         "bit_exact": true
       },
       "evidence": {
-        "labels": ["simulated", "routed"],
+        "labels": [
+          "simulated",
+          "routed"
+        ],
         "sources": [
           "fixtures/virtual-chip/ledger.json",
           "fixtures/scp/v0128-heldout.json",
@@ -117,9 +140,29 @@
         "routes": "5/5",
         "design": "loop-hnfix-w4l8",
         "cycles": {
-          "original": { "8": 14431, "10": 47428, "12": 95836 },
-          "high": { "8": 33878, "10": 134734, "12": 269367 }
+          "original": {
+            "8": 14431,
+            "10": 47428,
+            "12": 95836
+          },
+          "high": {
+            "8": 33878,
+            "10": 134734,
+            "12": 269367
+          }
         }
+      },
+      "reference_status": "stopped (simulated + routed), not a verified reference",
+      "audit": {
+        "pull_requests": [
+          "https://github.com/ecmccready/shiyan-dap/pull/22"
+        ],
+        "fixtures": [
+          "fixtures/virtual-chip/ledger.json",
+          "fixtures/scp/v0128-heldout.json",
+          "fixtures/scp/v0119-industry-benchmark.json"
+        ],
+        "hashes": {}
       }
     },
     {
@@ -155,7 +198,10 @@
         "bit_exact": true
       },
       "evidence": {
-        "labels": ["simulated", "routed"],
+        "labels": [
+          "simulated",
+          "routed"
+        ],
         "sources": [
           "fixtures/virtual-chip/ledger.json",
           "fixtures/scp/v0129-heldout.json",
@@ -176,9 +222,29 @@
         "routes": "5/5",
         "design": "loop-hcoh-w4l8",
         "cycles": {
-          "original": { "8": 11913, "10": 47140, "12": 94676 },
-          "high": { "8": 24255, "10": 96067, "12": 192042 }
+          "original": {
+            "8": 11913,
+            "10": 47140,
+            "12": 94676
+          },
+          "high": {
+            "8": 24255,
+            "10": 96067,
+            "12": 192042
+          }
         }
+      },
+      "reference_status": "stopped (simulated + routed), not a verified reference",
+      "audit": {
+        "pull_requests": [
+          "https://github.com/ecmccready/shiyan-dap/pull/24"
+        ],
+        "fixtures": [
+          "fixtures/virtual-chip/ledger.json",
+          "fixtures/scp/v0129-heldout.json",
+          "fixtures/scp/v0119-industry-benchmark.json"
+        ],
+        "hashes": {}
       }
     },
     {
@@ -214,7 +280,10 @@
         "bit_exact": true
       },
       "evidence": {
-        "labels": ["simulated", "routed"],
+        "labels": [
+          "simulated",
+          "routed"
+        ],
         "sources": [
           "fixtures/virtual-chip/ledger.json",
           "fixtures/scp/v0130-heldout.json",
@@ -236,9 +305,29 @@
         "design": "loop-hff-w4l8",
         "full_loop_trellis_comb": 35438,
         "cycles": {
-          "original": { "8": 11913, "10": 47140, "12": 94676 },
-          "high": { "8": 24017, "10": 95135, "12": 190171 }
+          "original": {
+            "8": 11913,
+            "10": 47140,
+            "12": 94676
+          },
+          "high": {
+            "8": 24017,
+            "10": 95135,
+            "12": 190171
+          }
         }
+      },
+      "reference_status": "pass (simulated + routed), physical verification pending",
+      "audit": {
+        "pull_requests": [
+          "https://github.com/ecmccready/shiyan-dap/pull/28"
+        ],
+        "fixtures": [
+          "fixtures/virtual-chip/ledger.json",
+          "fixtures/scp/v0130-heldout.json",
+          "fixtures/scp/v0119-industry-benchmark.json"
+        ],
+        "hashes": {}
       }
     }
   ]

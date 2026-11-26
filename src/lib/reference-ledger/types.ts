@@ -7,13 +7,34 @@ export type EvidenceLabel = (typeof EVIDENCE_LABELS)[number];
 export const VERDICTS = ["PASS", "STOP", "RECORDED"] as const;
 export type LedgerVerdict = (typeof VERDICTS)[number];
 
+/** A record becomes `verified` only when its evidence includes a physical board measurement. */
+export const VERIFIED_STATUS = "verified" as const;
+export const REFERENCE_STATUSES = [
+  "reference (routed + simulated), physical verification pending",
+  "stopped (simulated + routed), not a verified reference",
+  "pass (simulated + routed), physical verification pending",
+  VERIFIED_STATUS,
+] as const;
+export type ReferenceStatus = (typeof REFERENCE_STATUSES)[number];
+
+export const PROMOTION_RULE =
+  "A result is not a verified reference until evidence.labels includes physically_measured from a run on the supported board (ECP5 Versa, LFE5UM-45F). Simulated and routed results stay pending.";
+
 export type LedgerText = {
   summary: string;
   source: string;
 };
 
+export type LedgerAudit = {
+  pull_requests: string[];
+  fixtures: string[];
+  hashes: Record<string, string>;
+};
+
 export type LedgerRecord = {
   id: string;
+  /** Not `verified` unless a physical measurement is recorded. */
+  reference_status: ReferenceStatus;
   workload_identity: string;
   input_conditions: LedgerText;
   baseline: LedgerText;
@@ -30,6 +51,7 @@ export type LedgerRecord = {
     negative: boolean;
     summary: string;
   };
+  audit: LedgerAudit;
   /** Exact figures copied from the cited fixtures. The check recomputes them from those files. */
   numbers: {
     fmax_mhz_median?: number;

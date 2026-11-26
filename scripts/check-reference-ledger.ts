@@ -3,9 +3,9 @@
  *
  * Run: npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-reference-ledger.ts
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { EVIDENCE_LABELS, VERDICTS, type LedgerFile, type LedgerRecord } from "../src/lib/reference-ledger/types";
+import { EVIDENCE_LABELS, PROMOTION_RULE, REFERENCE_STATUSES, VERDICTS, type LedgerFile, type LedgerRecord } from "../src/lib/reference-ledger/types";
 
 const root = resolve(join(import.meta.dirname, ".."));
 const read = (p: string) => readFileSync(join(root, p), "utf8");
@@ -17,8 +17,8 @@ function check(name: string, cond: boolean): void {
 }
 
 const REQUIRED = [
-  "id", "workload_identity", "input_conditions", "baseline", "experiment", "build_provenance",
-  "implementation", "hardware_target", "validation", "evidence", "outcome", "numbers",
+  "id", "reference_status", "workload_identity", "input_conditions", "baseline", "experiment", "build_provenance",
+  "implementation", "hardware_target", "validation", "evidence", "outcome", "audit", "numbers",
 ] as const;
 
 function textOk(v: unknown): boolean {
@@ -39,6 +39,10 @@ function recordShape(r: LedgerRecord): boolean {
   if (!(VERDICTS as readonly string[]).includes(r.outcome.verdict)) return false;
   if (typeof r.outcome.accepted !== "boolean" || typeof r.outcome.negative !== "boolean") return false;
   if (typeof r.outcome.summary !== "string" || r.outcome.summary.length === 0) return false;
+  if (!(REFERENCE_STATUSES as readonly string[]).includes(r.reference_status)) return false;
+  if (!r.audit || !Array.isArray(r.audit.pull_requests) || r.audit.pull_requests.length === 0) return false;
+  if (!Array.isArray(r.audit.fixtures) || r.audit.fixtures.length === 0) return false;
+  if (!r.audit.fixtures.every((f) => existsSync(join(root, f)))) return false;
   return true;
 }
 
@@ -63,6 +67,12 @@ check("no seeded record is labeled physically measured",
 
 check("a STOP verdict is stored as a negative result, and PASS or RECORDED is not",
   file.records.every((r) => r.outcome.negative === (r.outcome.verdict === "STOP")));
+
+check("verified requires a physical measurement, and no seeded record is verified",
+  schema.includes(PROMOTION_RULE)
+  && file.records.every((r) => r.reference_status !== "verified")
+  && file.records.filter((r) => r.reference_status === "verified").every((r) => r.evidence.labels.includes("physically_measured"))
+  && file.records.find((r) => r.id === "v0.1.31")?.reference_status === "reference (routed + simulated), physical verification pending");
 
 const byId = Object.fromEntries(file.records.map((r) => [r.id, r]));
 const summary = JSON.parse(read("fixtures/scp/versa-bitstream/summary.json")) as {
@@ -100,7 +110,12 @@ check("v0.1.31 numbers match the Versa summary and the frozen prereg",
   && prereg.prior_profile.path_ns === 40.906999967992306
   && prereg.prior_profile.trellis_comb_used === 6666
   && v31.outcome.verdict === "RECORDED"
-  && v31.build_provenance.summary.includes(prereg.procedure_sha256));
+  && v31.build_provenance.summary.includes(prereg.procedure_sha256)
+  && v31.audit.hashes.bit_sha256 === summary.bit_sha256
+  && v31.audit.hashes.svf_sha256 === summary.svf_sha256
+  && v31.audit.hashes.spi_bit_sha256 === summary.spi_bit_sha256
+  && v31.audit.hashes.procedure_sha256 === prereg.procedure_sha256
+  && Number(summary.fmax_mhz_median.toFixed(2)) === 53.62);
 
 type Held = { rows: { workload: string; addr_w: number; cycles: number; bit_exact: boolean }[]; bit_exact: boolean };
 type Chip = { entries: { id: string; verdict: string; accepted: boolean }[] };
@@ -145,16 +160,19 @@ function loopMatch(id: string, design: string, heldPath: string, fmax: number, l
 
 check("v0.1.28 STOP matches the virtual-chip ledger, held-out cycles, and the 45F median",
   loopMatch("v0.1.28", "loop-hnfix-w4l8", "fixtures/scp/v0128-heldout.json", 37.61236572265625, 34559, 51)
-  && byId["v0.1.28"]!.outcome.verdict === "STOP");
+  && byId["v0.1.28"]!.outcome.verdict === "STOP"
+  && byId["v0.1.28"]!.reference_status === "stopped (simulated + routed), not a verified reference");
 
 check("v0.1.29 STOP matches the virtual-chip ledger, held-out cycles, and the 45F median",
   loopMatch("v0.1.29", "loop-hcoh-w4l8", "fixtures/scp/v0129-heldout.json", 36.48170471191406, 34920, 53, 10859)
-  && byId["v0.1.29"]!.outcome.verdict === "STOP");
+  && byId["v0.1.29"]!.outcome.verdict === "STOP"
+  && byId["v0.1.29"]!.reference_status === "stopped (simulated + routed), not a verified reference");
 
 check("v0.1.30 PASS matches the virtual-chip ledger, held-out cycles, and the 45F median",
   loopMatch("v0.1.30", "loop-hff-w4l8", "fixtures/scp/v0130-heldout.json", 39.474205017089844, 35438, 59, 10992)
   && byId["v0.1.30"]!.outcome.verdict === "PASS"
-  && byId["v0.1.30"]!.numbers.full_loop_trellis_comb === 35438);
+  && byId["v0.1.30"]!.numbers.full_loop_trellis_comb === 35438
+  && byId["v0.1.30"]!.reference_status === "pass (simulated + routed), physical verification pending");
 
 if (process.exitCode) process.exit(1);
 console.log(`PASS check-reference-ledger (${n} checks)`);

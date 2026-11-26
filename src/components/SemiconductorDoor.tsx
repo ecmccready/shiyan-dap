@@ -1,14 +1,8 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import { SCOPE } from "@/lib/domains/pipelines";
+import { JOURNEY } from "@/lib/semiconductor/journey";
 import summary from "../../fixtures/scp/versa-bitstream/summary.json";
-
-const STAGES = [
-  { n: "01", name: "Discover", bring: "A computational workload and the constraint that matters.", get: "A written question the assessment can answer." },
-  { n: "02", name: "Characterize", bring: "Inputs, size, and the current implementation.", get: "A description of what the workload actually does." },
-  { n: "03", name: "Optimize", bring: "Permission to try 4D-SCP variants on that description.", get: "Candidates, including the ones that stop." },
-  { n: "04", name: "Prove", bring: "The frozen candidate.", get: "Bit-exact checks and place-and-route evidence, labeled separately." },
-  { n: "05", name: "Deploy or hand off", bring: "The evidence pack.", get: "A proof package. Physical programming is still outstanding." },
-] as const;
 
 const MAP = [
   ["Can my workload be improved?", "Workload characterization"],
@@ -19,7 +13,7 @@ const MAP = [
   ["Can I reproduce the result?", "Versioned evidence and artifacts"],
 ] as const;
 
-const JOURNEY = [
+const STEPS = [
   "Bring a workload",
   "Establish baseline",
   "Run optimization",
@@ -28,8 +22,12 @@ const JOURNEY = [
   "Deliver the proof package",
 ] as const;
 
-const comb = summary.seeds[0]?.trellis_comb.used;
+const combUsed = summary.seeds[0]?.trellis_comb.used ?? 0;
+const combAvail = summary.seeds[0]?.trellis_comb.available ?? 0;
+const combPct = combAvail > 0 ? ((combUsed / combAvail) * 100).toFixed(2) : "";
 const routes = summary.seeds.filter((s) => s.exit_code === 0).length;
+const exactFmax = summary.fmax_mhz_median;
+const shownFmax = exactFmax.toFixed(2);
 
 export default function SemiconductorDoor() {
   return (
@@ -37,25 +35,26 @@ export default function SemiconductorDoor() {
       <SiteHeader brand="Shiyan DAP" section="Semiconductor" />
       <main className="max-w-5xl mx-auto px-6 py-12 space-y-12">
         <header className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">Shiyan DAP</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">SHIYAN DAP</p>
           <h1 className="text-4xl font-bold tracking-tight">Computational Intelligence. Semiconductor Proof.</h1>
           <p className="text-lg text-zinc-300">Optimize, verify and move computational designs toward hardware.</p>
+          <p className="text-sm text-zinc-300">Powered by Aethel Node · 4D-SCP · FPGA implementation and measurement.</p>
           <p className="text-lg text-zinc-200">From Computational Workload to Verified Hardware.</p>
           <p className="max-w-3xl text-zinc-400">
             A semiconductor optimization and verification platform connecting intelligent computation, FPGA implementation and evidence-driven performance improvement.
           </p>
-          <p className="text-sm text-zinc-300">Powered by Aethel Node · 4D-SCP · FPGA implementation and measurement</p>
+          <p className="text-sm text-zinc-400">Explore the engineering journey (Discover / Characterize / Optimize / Prove / Deliver).</p>
           <p className="text-sm text-zinc-500">Aethel Node · 4D-SCP · FPGA · Reference Data Engine</p>
         </header>
 
         <section className="grid gap-3 sm:grid-cols-5">
-          {STAGES.map((s) => (
-            <article key={s.n} className="rounded-xl border border-zinc-800 p-4">
+          {JOURNEY.map((s) => (
+            <Link key={s.href} href={s.href} className="rounded-xl border border-zinc-800 p-4 hover:border-emerald-800">
               <p className="font-mono text-xs text-emerald-400">{s.n}</p>
               <h2 className="mt-1 font-semibold">{s.name}</h2>
               <p className="mt-2 text-xs text-zinc-400">Bring: {s.bring}</p>
               <p className="mt-1 text-xs text-zinc-300">Get: {s.get}</p>
-            </article>
+            </Link>
           ))}
         </section>
 
@@ -84,7 +83,7 @@ export default function SemiconductorDoor() {
         <section>
           <h2 className="text-xl font-semibold">Journey</h2>
           <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-zinc-300">
-            {JOURNEY.map((step) => <li key={step}>{step}</li>)}
+            {STEPS.map((step) => <li key={step}>{step}</li>)}
           </ol>
         </section>
 
@@ -98,7 +97,7 @@ export default function SemiconductorDoor() {
           <dl className="grid gap-3 sm:grid-cols-4 text-sm">
             <div>
               <dt className="text-zinc-500">Median Fmax</dt>
-              <dd className="font-mono">{summary.fmax_mhz_median} MHz</dd>
+              <dd className="font-mono" title={`${exactFmax} MHz, the unrounded five-seed median`}>{shownFmax} MHz median</dd>
             </div>
             <div>
               <dt className="text-zinc-500">Routing seeds</dt>
@@ -106,7 +105,7 @@ export default function SemiconductorDoor() {
             </div>
             <div>
               <dt className="text-zinc-500">TRELLIS_COMB</dt>
-              <dd className="font-mono">{comb}</dd>
+              <dd className="font-mono" title={`${combUsed}/${combAvail} = ${combPct}%`}>{combUsed.toLocaleString("en-US")}/{combAvail.toLocaleString("en-US")} ({combPct}%)</dd>
             </div>
             <div>
               <dt className="text-zinc-500">Packaged formats</dt>
@@ -116,8 +115,12 @@ export default function SemiconductorDoor() {
           <p className="text-sm text-zinc-300">
             Not yet physically validated. Place-and-route results. Physical board programming, real workload throughput and power measurement remain outstanding.
           </p>
+          <p className="text-sm text-zinc-300">Power: needs real board.</p>
+          <p className="text-xs text-zinc-500">
+            Displayed median is {shownFmax} MHz, rounded to two decimal places from the measured {exactFmax} MHz in fixtures/scp/versa-bitstream/summary.json. The exact value is also on the ledger.
+          </p>
           <p className="text-sm text-zinc-400">
-            Measurement merge{" "}
+            Status: reference (routed + simulated), physical verification pending. Measurement merge{" "}
             <a className="text-emerald-400 underline" href="https://github.com/ecmccready/shiyan-dap/pull/31">PR #31</a>
             {" "}and route{" "}
             <a className="text-emerald-400 underline" href="https://github.com/ecmccready/shiyan-dap/pull/30">PR #30</a>.
@@ -129,16 +132,19 @@ export default function SemiconductorDoor() {
           <Link href="/assess" className="inline-flex h-11 items-center rounded-full bg-emerald-500 px-5 text-sm font-medium text-black">
             Run a workload assessment
           </Link>
+          <p className="text-sm text-zinc-300">Stage 01 Discover of the engineering journey.</p>
           <p className="text-sm text-zinc-500">
-            Other domains stay available in the domain selector. Each keeps its own inputs, rules, agents, measurements, and evidence format.
+            Other domains stay in the selector. Semiconductor / FPGA is the Core default.
           </p>
         </section>
 
+        <p className="text-sm text-zinc-400">{SCOPE}</p>
+
         <section className="grid gap-3 sm:grid-cols-2 text-sm text-zinc-400">
-          <p><span className="text-zinc-200">Core boundary.</span> Semiconductor computation and verification.</p>
-          <p><span className="text-zinc-200">Computational boundary.</span> 4D-SCP.</p>
-          <p><span className="text-zinc-200">Domain boundary.</span> Verticals do not redefine the core.</p>
-          <p><span className="text-zinc-200">Evidence boundary.</span> Results stay separately labeled until verified.</p>
+          <p><span className="text-zinc-200">Core boundary.</span> Semiconductor computation and verification is the primary product.</p>
+          <p><span className="text-zinc-200">Computational boundary.</span> 4D-SCP owns representations and operations. Aethel Node orchestrates. Shiyan DAP records and evaluates.</p>
+          <p><span className="text-zinc-200">Domain boundary.</span> Other domains are the fringe. They do not redefine the semiconductor core. They are reached from the domain selector, not from this page.</p>
+          <p><span className="text-zinc-200">Evidence boundary.</span> A result is not promoted to a verified reference until it includes a physical measurement on the ECP5 Versa.</p>
         </section>
       </main>
     </div>
