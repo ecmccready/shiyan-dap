@@ -6,6 +6,7 @@ import PilotReadiness from "@/components/PilotReadiness";
 import ExternalConfirmation from "@/components/ExternalConfirmation";
 import JourneyNote from "@/components/JourneyNote";
 import SiteHeader from "@/components/SiteHeader";
+import LicensingNotice from "@/components/LicensingNotice";
 
 export default function PilotPage() {
   return (
@@ -13,10 +14,24 @@ export default function PilotPage() {
     <div className="bg-black text-white">
       <SiteHeader section="Pilot" />
     </div>
-    <main className="mx-auto max-w-2xl space-y-6 p-6">
-      <h1 className="text-xl font-semibold">Paid pilot</h1>
-      <p className="text-sm text-neutral-700">Aethel Node proves that the next action is no longer a misdiagnosis.</p>
-      <p className="text-sm text-neutral-700">
+    <main className="mx-auto max-w-2xl space-y-6 bg-black p-6 text-zinc-200">
+      <h1 className="text-xl font-semibold text-white">30-day Proof-to-Pilot</h1>
+      <p className="text-sm text-zinc-300">
+        Assessment, then a baseline, then measured proof. Payment follows verified improvement.
+        Not yet physically validated. Power needs real board. No PHI. No clinical claims.
+      </p>
+      <p className="text-sm text-zinc-300">Bring a workload description, the current implementation or a precise account of it, and the number that must improve. Seeds held out from fitting stay held out.</p>
+      <p className="text-sm text-zinc-300">
+        Contact <a className="underline" href="https://github.com/ecmccready">https://github.com/ecmccready</a>.
+        Start at <Link className="underline" href="/assess">/assess</Link>.
+        The evidence baseline is the <Link className="underline" href="/workbench/reference-ledger">Reference Data Ledger</Link>.
+      </p>
+      <p className="text-xs text-neutral-500">
+        This page does not add a new form or a payment. The economic-benefit form already on this page posts to /api/v1/ledger/benefit. There is no checkout.
+      </p>
+      <LicensingNotice />
+      <p className="text-sm text-zinc-300">Aethel Node proves that the next action is no longer a misdiagnosis.</p>
+      <p className="text-sm text-zinc-300">
         Available only after the workflow is reliable and a measurable business
         outcome has been demonstrated on matched cases.
       </p>
@@ -30,9 +45,9 @@ export default function PilotPage() {
         <li>No charge on ties or regressions.</li>
       </ul>
 
-      <div className="rounded border bg-neutral-50 p-4 text-sm">
-        <p className="font-medium">Current status</p>
-        <p className="mt-1 text-neutral-600">
+      <div className="rounded border border-zinc-700 bg-zinc-950 p-4 text-sm text-zinc-200">
+        <p className="font-medium text-white">Current status</p>
+        <p className="mt-1 text-zinc-400">
           Evidence collection. Pricing and settlement activate after one
           confirmed improved Run under safety constraints.
         </p>
@@ -40,11 +55,11 @@ export default function PilotPage() {
 
       <PilotReadiness />
 
-      <ExternalConfirmation tone="light" />
+      <ExternalConfirmation tone="dark" />
 
       <section className="rounded border p-4 text-sm">
-        <p className="font-medium">Request a pilot</p>
-        <p className="mt-1 text-neutral-600">
+        <p className="font-medium text-white">Request a pilot</p>
+        <p className="mt-1 text-zinc-300">
           Aethel Node proves that the next action is no longer a misdiagnosis. Start a pilot request
           by running your repeated workflow and reference through the client pipeline and exporting
           the Run. Pricing is set per pilot against the measured Φ; no charge on ties or regressions.
@@ -100,7 +115,7 @@ export default function PilotPage() {
         <a href="/api/v1/audit/summary" className="underline">Audit summary (JSON)</a>
       </p>
 
-      <JourneyNote className="text-neutral-500" />
+      <JourneyNote className="text-zinc-400" />
 
       <p className="text-xs text-neutral-500">
         Proof-to-pilot journey and the two agent roles (acquisition and evidence, both human-approved):{" "}
@@ -109,10 +124,10 @@ export default function PilotPage() {
 
       <div className="rounded border p-4 space-y-4">
         <PilotJourneyProgress />
-        <EconomicBenefitForm tone="light" />
+        <EconomicBenefitForm tone="dark" />
       </div>
 
-      <WhatYouGet tone="light" />
+      <WhatYouGet tone="dark" />
 
       <p className="text-xs text-neutral-500">
         Client handoff:{" "}
