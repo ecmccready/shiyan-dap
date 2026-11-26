@@ -6,14 +6,6 @@ export const dynamic = "force-dynamic";
 const linkClass =
   "text-emerald-400 hover:text-emerald-300 underline underline-offset-2";
 
-const MEASURES = [
-  "Potential annual premium savings",
-  "Estimated annual out-of-pocket exposure",
-  "Coverage suitability",
-  "Accuracy of the comparison",
-  "Time saved navigating coverage choices",
-] as const;
-
 const CAPABILITIES: readonly { capability: string; value: string }[] = [
   { capability: "Workload intake & isolation", value: "Customer trust" },
   { capability: "Reproducible baseline", value: "Credibility" },
@@ -27,110 +19,28 @@ const CAPABILITIES: readonly { capability: string; value: string }[] = [
 
 export default function ComputeProofPage() {
   return (
+    <div className="min-h-screen bg-black text-white">
+      <SiteHeader brand="Shiyan DAP" section="04 Prove" />
     <main className="max-w-3xl mx-auto p-6 space-y-8">
       <header>
         <h1 className="text-3xl font-bold">Computational Improvement Proof</h1>
         <p className="text-zinc-400 mt-2">
-          Customer workload → measured baseline → alternatives tested → verified improvement.
-          Synthetic fixture only. Level 4 plant untouched. 4D-SCP not invoked.
+          Workload → measured baseline → alternatives tested → evidence retained only when it is measured and correct.
+          Synthetic fixture only. Level 4 plant untouched. This page does not invoke a new 4D-SCP fit.
         </p>
         <p className="text-sm text-zinc-400 mt-3">
-          The customer journey leads with the ACA as the US first reference market, then
-          connects to the Medicare workbench and the Global Misdiagnosis vertical. AI agents
-          present verifiable opportunities; the customer pays after agreed proof criteria.
-          Evidence-only. No PHI. No clinical claims. Power needs real board.
+          Stage 04 Prove of the semiconductor journey. The v0.1.31 Versa image is a reference
+          (routed + simulated), physical verification pending. It is not a verified reference.
+          Power needs real board. No PHI. No clinical claims.
+        </p>
+        <p className="text-sm mt-3">
+          <Link href="/journey/prove" className={linkClass}>Journey · Prove</Link>
+          {" · "}
+          <Link href="/workbench/reference-ledger" className={linkClass}>Reference Data Ledger</Link>
+          {" · "}
+          <Link href="/" className={linkClass}>Reference card</Link>
         </p>
       </header>
-
-      <section className="border border-zinc-700 rounded-lg p-5 space-y-4">
-        <h2 className="text-xl font-semibold">Customer journey · ACA reference market</h2>
-        <p className="text-xs uppercase tracking-widest text-emerald-400">
-          US first reference market
-        </p>
-        <p className="text-sm text-zinc-200">
-          Can a person or family identify a more affordable suitable health coverage option, with transparent evidence of the financial trade-offs?
-        </p>
-        <div>
-          <h3 className="text-sm font-semibold text-zinc-200">Measures</h3>
-          <ol className="mt-2 list-decimal pl-5 text-sm text-zinc-300 space-y-1">
-            {MEASURES.map((measure) => (
-              <li key={measure}>{measure}</li>
-            ))}
-          </ol>
-        </div>
-        <p className="text-xs text-zinc-500">
-          These are the declared comparison measures for the ACA reference market. This page
-          does not claim live ACA plan feeds, live quotes, or a completed customer coverage
-          comparison. No <span className="font-mono">/workbench/aca</span> route exists on{" "}
-          <span className="font-mono">main</span>; the reference-market question and measures
-          are published here.
-        </p>
-        <div>
-          <h3 className="text-sm font-semibold text-zinc-200">Progression path</h3>
-          <ol className="mt-3 grid gap-3 sm:grid-cols-3">
-            <li className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4 space-y-1">
-              <p className="text-xs uppercase tracking-widest text-emerald-400">1 · Lead</p>
-              <p className="text-sm font-medium text-zinc-100">
-                ACA (US first reference market)
-              </p>
-              <p className="text-xs text-zinc-500">
-                Published on this page. Offer intake is at{" "}
-                <Link href="/workbench/offer" className={linkClass}>
-                  /workbench/offer
-                </Link>
-                .
-              </p>
-            </li>
-            <li className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4 space-y-1">
-              <p className="text-xs uppercase tracking-widest text-emerald-400">2 · Next</p>
-              <p className="text-sm font-medium text-zinc-100">
-                <Link href="/workbench/medicare" className={linkClass}>
-                  Medicare workbench
-                </Link>
-              </p>
-              <p className="text-xs text-zinc-500">
-                Synthetic public-data fixture. No live CMS. No PHI.
-              </p>
-            </li>
-            <li className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4 space-y-1">
-              <p className="text-xs uppercase tracking-widest text-emerald-400">3 · Vertical</p>
-              <p className="text-sm font-medium text-zinc-100">
-                <Link href="/workbench/global" className={linkClass}>
-                  Global Misdiagnosis vertical
-                </Link>
-              </p>
-              <p className="text-xs text-zinc-500">
-                Domain-neutral run status. Not a clinical finding.
-              </p>
-            </li>
-          </ol>
-        </div>
-      </section>
-
-      <section className="border border-zinc-700 rounded-lg p-5 space-y-4">
-        <h2 className="text-xl font-semibold">Global framing</h2>
-        <p className="text-sm text-zinc-300">
-          A common engine, with separate country-specific adapters for policy, data, language,
-          currency, and regulatory context. ACA is the first reference market; the customer
-          problem—understanding, accessing, and affording healthcare—is global.
-        </p>
-        <p className="text-sm text-zinc-400">
-          The virtual measurement path on this page and a future physical board are two
-          execution paths through the same proof gate. Country adapters are the intended
-          extension model; they are not claimed as shipped live feeds.
-        </p>
-        <p className="text-sm text-zinc-300">
-          Continue to{" "}
-          <Link href="/workbench/medicare" className={linkClass}>
-            Medicare · Public Data Intelligence
-          </Link>{" "}
-          and{" "}
-          <Link href="/workbench/global" className={linkClass}>
-            Global · misdiagnosis
-          </Link>
-          .
-        </p>
-      </section>
 
       <section className="border border-zinc-700 rounded-lg p-5 space-y-4">
         <h2 className="text-xl font-semibold">Declared workload</h2>
@@ -261,8 +171,7 @@ npx tsx scripts/check-scp-all.ts   # hardware track (unwired)
         </p>
         <ol className="list-decimal pl-5 text-sm text-zinc-300 space-y-2">
           <li>
-            AI agents seek out clients and present verifiable opportunities, starting with
-            ACA coverage navigation and hardware or compute-proof engagements. See{" "}
+            Acquisition qualifies a semiconductor workload locally and hands it to Discover. Nothing is sent. See{" "}
             <Link href="/workbench/opportunity" className={linkClass}>
               Customer opportunity
             </Link>{" "}
@@ -326,9 +235,10 @@ npx tsx scripts/check-scp-all.ts   # hardware track (unwired)
 
       <footer className="text-xs text-zinc-500">
         Boundaries: synthetic/fixture data · Level 4 plant authoritative and unmodified ·
-        4D-SCP complementary and not called · no silicon or board-power claims · no PHI ·
-        no clinical claims · no live ACA plan feeds · no live customer billing on this page.
+        no silicon or board-power claims · no PHI · no clinical claims · no live customer billing on this page.
+        Power needs real board.
       </footer>
     </main>
+    </div>
   );
 }

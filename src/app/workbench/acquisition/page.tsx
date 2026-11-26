@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
 
 type Opportunity = {
   id: string;
@@ -15,24 +16,20 @@ type Opportunity = {
   status?: string;
 };
 
-export default function AcquisitionPage() {
-  const [records, setRecords] = useState<Opportunity[]>([]);
-  const [approved, setApproved] = useState<Record<string, boolean>>({});
+const LOCAL_OPPORTUNITY: Opportunity = {
+  id: "opp_demo_1",
+  prospect: "Workload owner",
+  problem: "A computational workload that may map to the ECP5 Versa",
+  proposedValue: "A controlled assessment: baseline, 4D-SCP candidates, and a labeled proof package",
+  objective: "Hand the workload to Stage 01 Discover",
+  baseline: "Not yet measured on this record",
+  successMetric: "Bit-exact simulation and a five-seed route, labeled separately from any physical measurement",
+  acceptanceThreshold: "Human qualification only. Nothing is sent.",
+};
 
-  useEffect(() => {
-    setRecords([
-      {
-        id: "opp_demo_1",
-        prospect: "Robotics lead",
-        problem: "Long-horizon task reliability and intervention reduction",
-        proposedValue: "Measured reduction in interventions with verified evidence, including Φ stability under metamorphic drift",
-        objective: "Reduce next-action error against baseline",
-        baseline: "Current measured e and Φ",
-        successMetric: "Δe ≤ −0.05 with full reproducibility and Φ convergence under high-entropy drift",
-        acceptanceThreshold: "Independent verification PASS + human disposition",
-      },
-    ]);
-  }, []);
+export default function AcquisitionPage() {
+  const records = [LOCAL_OPPORTUNITY];
+  const [approved, setApproved] = useState<Record<string, boolean>>({});
 
   function approve(id: string) {
     setApproved((prev) => ({ ...prev, [id]: true }));
@@ -40,16 +37,23 @@ export default function AcquisitionPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <SiteHeader brand="Shiyan DAP" section="Acquisition" />
       <main className="max-w-4xl mx-auto px-6 py-16">
         <p className="text-xs uppercase tracking-widest text-emerald-400 mb-4">
-          Aethel Node · Acquisition Agent
+          Aethel Node · Acquisition · semiconductor journey
         </p>
 
-        <h1 className="text-4xl font-semibold mb-6">Opportunity qualification</h1>
+        <h1 className="text-4xl font-semibold mb-6">Qualify a workload, then hand it to Discover</h1>
 
-        <p className="text-zinc-300 mb-10">
-          Opportunity records appear here. The agent matches them to Global or Developer Workbench and drafts an offer that can include the metamorphic Φ stability evidence. Human approval is required before outreach. Acquisition remains gated until the five evidence conditions are met.
+        <p className="text-zinc-300 mb-6">
+          Know what the workload is. Know how 4D-SCP and the Versa path work. Show the reference card and the ledger. Do: hand off to Stage 01 Discover. The agent does not redefine the semiconductor core. This page does not send email, messages, or outreach.
         </p>
+        <ol className="mb-8 list-decimal space-y-1 pl-5 text-sm text-zinc-300">
+          <li>Know — the workload and the constraint.</li>
+          <li>Know-how — 4D-SCP exploration and the ECP5 Versa (LFE5UM-45F) target.</li>
+          <li>Show — the v0.1.31 reference card and the Reference Data Ledger.</li>
+          <li>Do — open Discover. Nothing is transmitted.</li>
+        </ol>
 
         <div className="mb-8">
           <Link
@@ -74,7 +78,7 @@ export default function AcquisitionPage() {
                   <div className="font-semibold">{opp.prospect}</div>
                   <div className="text-sm text-zinc-400">{opp.id}</div>
                 </div>
-                <span className="text-xs bg-zinc-800 px-2 py-1 rounded">Developer Workbench</span>
+                <span className="text-xs bg-zinc-800 px-2 py-1 rounded">Local fixture</span>
               </div>
 
               <div className="mb-3">
@@ -93,13 +97,17 @@ export default function AcquisitionPage() {
               </div>
 
               {approved[opp.id] ? (
-                <div className="text-emerald-400 text-sm">Approved for outreach</div>
+                <div className="text-sm text-emerald-400">
+                  Qualified locally. Nothing was sent.{" "}
+                  <Link className="underline" href="/assess">Hand off to Discover</Link>
+                </div>
               ) : (
                 <button
+                  type="button"
                   onClick={() => approve(opp.id)}
                   className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded text-sm"
                 >
-                  Approve outreach
+                  Mark qualified locally
                 </button>
               )}
             </div>
@@ -127,7 +135,7 @@ export default function AcquisitionPage() {
         <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
           <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Drift review</div>
           <div className="text-sm text-zinc-400">
-            When Φ does not converge, the telemetry response includes review_flag: "DRIFT_EXCEEDED". Flag the runtime for human review.
+            When Φ does not converge, the telemetry response includes review_flag DRIFT_EXCEEDED. Flag the runtime for human review.
           </div>
         </div>
 
@@ -141,7 +149,7 @@ export default function AcquisitionPage() {
         <div className="mt-6 border border-zinc-800 rounded-xl p-5 bg-zinc-950">
           <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Live middleware</div>
           <div className="text-sm text-zinc-400">
-            /api/v1/telemetry accepts predicted and observed values. The metamorphic engine evaluates Φ under drift. Non-converged runs return review_flag: "DRIFT_EXCEEDED". /api/v1/proof hashes and stores the result as an experience record.
+            /api/v1/telemetry accepts predicted and observed values. The metamorphic engine evaluates Φ under drift. Non-converged runs return review_flag DRIFT_EXCEEDED. /api/v1/proof hashes and stores the result as an experience record.
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import JourneyNav from "@/components/JourneyNav";
 
 export const metadata: Metadata = {
   title: "Workload assessment | Shiyan DAP",
@@ -13,11 +14,14 @@ export default function AssessPage() {
       <SiteHeader brand="Shiyan DAP" section="Discover" />
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-8">
         <header className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">01 Discover</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">Stage 01 Discover</p>
           <h1 className="text-3xl font-bold">Run a workload assessment</h1>
+          <p className="text-zinc-300">This is Stage 01 Discover of the engineering journey (Discover / Characterize / Optimize / Prove / Deliver).</p>
           <p className="text-zinc-400">
             This page describes what to bring and what you get. There is no submission form and no billing.
             Do not send protected health information. Nothing here is a clinical claim.
+            There is no path from an arbitrary RTL upload to an optimized-chip promise.
+            The supported FPGA target is the ECP5 Versa (LFE5UM-45F) only.
           </p>
         </header>
         <section className="space-y-2 text-sm text-zinc-300">
@@ -44,7 +48,10 @@ export default function AssessPage() {
           <Link className="text-emerald-400 underline" href="/workbench/reference-ledger">Reference Data Ledger</Link>
           {" · "}
           <Link className="text-emerald-400 underline" href="/">Front door</Link>
+          {" · "}
+          <Link className="text-emerald-400 underline" href="/journey/characterize">Next · 02 Characterize</Link>
         </p>
+        <JourneyNav href="/assess" />
       </main>
     </div>
   );
