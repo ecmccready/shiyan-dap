@@ -232,7 +232,7 @@ npx tsx scripts/check-scp-all.ts   # hardware track (unwired)
         </div>
       </section>
 
-      <LicensingNotice />
+      <LicensingNotice showTrajectory />
 
       <footer className="text-xs text-zinc-500">
         Boundaries: synthetic/fixture data · Level 4 plant authoritative and unmodified ·

@@ -1,29 +1,44 @@
-import Link from "next/link";
-import { LICENSING_PARAGRAPHS, LICENSING_TITLE, OWNER_CONTACT_URL, PILOT_PATH, TRAJECTORY_PARAGRAPHS, TRAJECTORY_TITLE } from "@/lib/licensing";
+"use client";
 
-/** Renders the published licensing and trajectory text. The last licensing sentence links the owner profile and the pilot page. */
-export default function LicensingNotice() {
+import Link from "next/link";
+import {
+  LICENSING_PARAGRAPHS,
+  LICENSING_TITLE,
+  OWNER_CONTACT_URL,
+  PILOT_PATH,
+  TRAJECTORY_PARAGRAPHS,
+  TRAJECTORY_TITLE,
+} from "@/lib/licensing";
+
+/** Renders the published licensing text. Trajectory is opt-in so only the surfaces that publish it show it. */
+export default function LicensingNotice({ showTrajectory = false }: { showTrajectory?: boolean }) {
   const [intro, welcome, commercial, closing] = LICENSING_PARAGRAPHS;
-  const contact = "https://github.com/ecmccready";
-  const pilot = "/workbench/pilot";
-  const before = closing.slice(0, closing.indexOf(contact));
-  const afterContact = closing.slice(closing.indexOf(contact) + contact.length, closing.indexOf(pilot));
-  const afterPilot = closing.slice(closing.indexOf(pilot) + pilot.length);
+  const contactAt = closing.indexOf(OWNER_CONTACT_URL);
+  const pilotAt = closing.indexOf(PILOT_PATH);
+  const linked = contactAt >= 0 && pilotAt > contactAt;
   return (
-    <section className="space-y-3 text-sm text-zinc-300">
-      <h2 className="text-xl font-semibold text-white">{LICENSING_TITLE}</h2>
+    <section className="mt-8 space-y-3 text-sm">
+      <h2 className="text-lg font-semibold">{LICENSING_TITLE}</h2>
       <p>{intro}</p>
       <p>{welcome}</p>
       <p>{commercial}</p>
-      <p>
-        {before}
-        <a className="underline" href={OWNER_CONTACT_URL}>{contact}</a>
-        {afterContact}
-        <Link className="underline" href={PILOT_PATH}>{pilot}</Link>
-        {afterPilot}
-      </p>
-      <h2 className="text-xl font-semibold text-white">{TRAJECTORY_TITLE}</h2>
-      {TRAJECTORY_PARAGRAPHS.map((p) => <p key={p}>{p}</p>)}
+      {linked ? (
+        <p>
+          {closing.slice(0, contactAt)}
+          <a className="underline" href={OWNER_CONTACT_URL}>{OWNER_CONTACT_URL}</a>
+          {closing.slice(contactAt + OWNER_CONTACT_URL.length, pilotAt)}
+          <Link className="underline" href={PILOT_PATH}>{PILOT_PATH}</Link>
+          {closing.slice(pilotAt + PILOT_PATH.length)}
+        </p>
+      ) : (
+        <p>{closing}</p>
+      )}
+      {showTrajectory ? (
+        <>
+          <h2 className="text-lg font-semibold">{TRAJECTORY_TITLE}</h2>
+          {TRAJECTORY_PARAGRAPHS.map((p) => <p key={p}>{p}</p>)}
+        </>
+      ) : null}
     </section>
   );
 }

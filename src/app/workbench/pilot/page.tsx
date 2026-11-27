@@ -14,24 +14,36 @@ export default function PilotPage() {
     <div className="bg-black text-white">
       <SiteHeader section="Pilot" />
     </div>
-    <main className="mx-auto max-w-2xl space-y-6 bg-black p-6 text-zinc-200">
-      <h1 className="text-xl font-semibold text-white">30-day Proof-to-Pilot</h1>
-      <p className="text-sm text-zinc-300">
-        Assessment, then a baseline, then measured proof. Payment follows verified improvement.
-        Not yet physically validated. Power needs real board. No PHI. No clinical claims.
-      </p>
-      <p className="text-sm text-zinc-300">Bring a workload description, the current implementation or a precise account of it, and the number that must improve. Seeds held out from fitting stay held out.</p>
-      <p className="text-sm text-zinc-300">
-        Contact <a className="underline" href="https://github.com/ecmccready">https://github.com/ecmccready</a>.
-        Start at <Link className="underline" href="/assess">/assess</Link>.
-        The evidence baseline is the <Link className="underline" href="/workbench/reference-ledger">Reference Data Ledger</Link>.
-      </p>
-      <p className="text-xs text-neutral-500">
-        This page does not add a new form or a payment. The economic-benefit form already on this page posts to /api/v1/ledger/benefit. There is no checkout.
-      </p>
+    <main className="mx-auto max-w-2xl space-y-6 p-6">
+      <h1 className="text-xl font-semibold">30-day Proof-to-Pilot</h1>
+      <section className="space-y-2 text-sm">
+        <p>Assessment, then a baseline, then measured proof. Payment follows verified improvement.</p>
+        <p>What to bring is the list already on <Link className="underline" href="/assess">/assess</Link>:</p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>The workload: what is computed, and the input size.</li>
+          <li>The current implementation, or a precise description of it.</li>
+          <li>The number you care about: cycles, latency, area, or a correctness check.</li>
+          <li>What must stay unchanged: interfaces, golden outputs, and seeds that are not for fitting.</li>
+        </ul>
+        <p>
+          Contact <a className="underline" href="https://github.com/ecmccready">https://github.com/ecmccready</a>.
+          Start at <Link className="underline" href="/assess">/assess</Link>.
+          The Reference Data Ledger is at <Link className="underline" href="/workbench/reference-ledger">/workbench/reference-ledger</Link>.
+          The virtual-chip evidence ledger is <span className="font-mono">fixtures/virtual-chip/ledger.json</span>.
+        </p>
+        <p className="text-xs text-neutral-500">
+          Not yet physically validated. Power needs real board. No PHI. No clinical claims.
+        </p>
+        <p className="text-xs text-neutral-500">
+          EconomicBenefitForm is already on this page and is unchanged. Saving stores a self-reported amount in this browser.
+          Recording on the ledger is optional and POSTs {"{runId, amount, unit, note}"} to /api/v1/ledger/benefit.
+          This page adds no new form, no payment, and no data collection.
+        </p>
+      </section>
       <LicensingNotice />
-      <p className="text-sm text-zinc-300">Aethel Node proves that the next action is no longer a misdiagnosis.</p>
-      <p className="text-sm text-zinc-300">
+      <h2 className="text-lg font-semibold">Paid pilot</h2>
+      <p className="text-sm text-neutral-700">Aethel Node proves that the next action is no longer a misdiagnosis.</p>
+      <p className="text-sm text-neutral-700">
         Available only after the workflow is reliable and a measurable business
         outcome has been demonstrated on matched cases.
       </p>

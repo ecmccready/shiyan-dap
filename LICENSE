@@ -2,6 +2,8 @@ Shiyan DAP / Aethel Node - Source-Available License
 
 Copyright (c) 2026 ECMcCready. All rights reserved except as stated below.
 
+Licensing
+
 The source code in this repository is Source-Available for Inspection and Non-Commercial Evaluation.
 
 Prospective enterprise customers, hardware partners, and investors are welcome to inspect the codebase, run the local verification scripts (scripts/check-scp-all.ts), and evaluate the architecture.
