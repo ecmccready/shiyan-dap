@@ -35,7 +35,7 @@ Commercial Use & Pilots:
 
 Production deployment, commercial integration, and IP licensing of the Aethel Node engine, 4D State Compression (M1–M5), and 4D-SCP RTL/models require a paid pilot agreement or commercial license. To initiate a 30-day Proof-to-Pilot or request an enterprise evaluation license, contact https://github.com/ecmccready or visit [/workbench/pilot](/workbench/pilot).
 
-There is no `LICENSE` file. `package.json` is private and has no `license` field. That is a decision for the owner, not an open-source grant.
+The terms are in [LICENSE](LICENSE). `package.json` stays private and sets `license` to `SEE LICENSE IN LICENSE`.
 
 ## Trajectory
 

@@ -16,8 +16,18 @@ function check(name: string, cond: boolean, detail = ""): void {
 }
 
 const pkg = JSON.parse(read("package.json")) as { license?: string; private?: boolean };
-check("no LICENSE file and package.json has no license field",
-  !existsSync(join(root, "LICENSE")) && !existsSync(join(root, "LICENSE.md")) && pkg.license === undefined && pkg.private === true);
+const license = existsSync(join(root, "LICENSE")) ? read("LICENSE") : "";
+check("LICENSE states the source-available terms and package.json points at it",
+  license.includes("Shiyan DAP / Aethel Node - Source-Available License")
+  && license.includes("Copyright (c) 2026 ECMcCready. All rights reserved except as stated below.")
+  && LICENSING_PARAGRAPHS.every((p) => license.includes(p))
+  && pkg.license === "SEE LICENSE IN LICENSE"
+  && pkg.private === true
+  && readmeIncludesLicense(read("README.md")));
+
+function readmeIncludesLicense(text: string): boolean {
+  return text.includes("The terms are in [LICENSE](LICENSE).");
+}
 
 const readme = read("README.md").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 check("README contains the licensing paragraphs verbatim",
