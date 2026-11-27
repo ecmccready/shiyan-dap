@@ -25,9 +25,25 @@ Boundaries I keep:
 - **Tenant boundary.** Production writes, proofs, and anchors are scoped per tenant.
 - **Commercial surfaces.** Workbench, customer proof export, and related pages are inspect-only or human-in-the-loop. They do not replace the closed loop or the plant.
 
-### Propriety
+## Licensing
 
-This repository currently declares no open-source license: there is no `LICENSE` file, and `package.json` is marked private with no `license` field. The source is published here for inspection. That publication is not a grant of rights to use, copy, modify, or distribute the work beyond the terms of the host. I reserve rights in the Aethel Node stack, including the 4D state compression engine, the 4D-SCP (Four-Dimensional State Compression Processor) model and proofs, and the deterministic proof and anchoring layers, until a license is stated.
+The source code in this repository is Source-Available for Inspection and Non-Commercial Evaluation.
+
+Prospective enterprise customers, hardware partners, and investors are welcome to inspect the codebase, run the local verification scripts (scripts/check-scp-all.ts), and evaluate the architecture.
+
+Commercial Use & Pilots:
+
+Production deployment, commercial integration, and IP licensing of the Aethel Node engine, 4D State Compression (M1–M5), and 4D-SCP RTL/models require a paid pilot agreement or commercial license. To initiate a 30-day Proof-to-Pilot or request an enterprise evaluation license, contact [https://github.com/ecmccready](https://github.com/ecmccready) or visit [/workbench/pilot](/workbench/pilot).
+
+See [LICENSE](LICENSE).
+
+## Trajectory
+
+Software: Level 4 plant + M1–M5 4D state-compression engine remain the production core. Commercial surfaces (compute-proof, offer, journey, pilot) convert after measured proof. Payment follows verified improvement.
+
+Chip / board path: 4D-SCP (including the v0.1.30 hybrid and the v0.1.31 Versa bitstream) stays unwired and synthetic-only until a paid pilot or commercial license is in place. Physical board runs and power measurement remain "needs real board". The virtual-chip evidence ledger (fixtures/virtual-chip/ledger.json) is the reproducible baseline for any future hardware engagement. Not yet physically validated.
+
+Boundaries unchanged: no PHI, no clinical claims, Level 4 plant untouched, 4D-SCP not imported by any production route.
 
 ### Note: Early sole-founder and proprietary intent
 

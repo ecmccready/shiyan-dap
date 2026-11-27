@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import LicensingNotice from "@/components/LicensingNotice";
 
 export default function OfferPage() {
   return (
@@ -60,6 +61,7 @@ export default function OfferPage() {
         <p className="text-xs text-zinc-500 mt-10">
           Payment follows proof. Front door: /workbench/journey
         </p>
+        <LicensingNotice />
 
         <div className="mt-10 border-t border-zinc-800 pt-6">
           <div className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Platform contract</div>
