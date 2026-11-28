@@ -62,7 +62,7 @@ export default function SiteHeader({ section, brand = "Aethel Node" }: { section
 
   return (
     <header className="border-b border-zinc-800">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4 min-w-0">
         <div className="flex items-center gap-3">
           <Link href="/" className="font-semibold">
             {brand}
