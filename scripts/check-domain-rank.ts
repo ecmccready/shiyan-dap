@@ -30,10 +30,13 @@ const find = (g: ReturnType<typeof rankDomainGroups>, label: string) => items(g)
 // 1. No data: static order, four groups, no annotations.
 const empty = rankDomainGroups(DOMAIN_GROUPS, []);
 assert.deepEqual(empty.map((g) => g.label), [
-  "Semiconductor / FPGA (Core)",
-  "AI / Computational workloads",
+  "Layer Two — Physical AI / Robotics",
+  "Layer Three — Telemetry / Governance",
+  "Medicare intelligence",
   "Global Misdiagnosis",
-  "ACA / Medicare",
+  "ACA reference",
+  "AI / Computational workloads",
+  "Semiconductor / FPGA (Core)",
   "International healthcare",
 ]);
 assert.deepEqual(empty.map((g) => g.items.map((i) => i.href)), DOMAIN_GROUPS.map((g) => g.items.map((i) => i.href)));
@@ -44,9 +47,24 @@ console.log("no records     -> static order, no annotation");
 const list = [...run("run_a")];
 const ranked = rankDomainGroups(DOMAIN_GROUPS, list);
 assert.equal(find(ranked, "Level 4 run").phi, phi);
+const gov = ranked.find((g) => g.label === "Layer Three — Telemetry / Governance")!;
+assert.equal(gov.items[0].label, "Level 4 run");
+assert.equal(gov.items[1].label, "Reference Data Ledger");
 const ai = ranked.find((g) => g.label === "AI / Computational workloads")!;
-assert.equal(ai.items[0].label, "Level 4 run");
-assert.equal(ai.items[1].label, "Marketplace");
+assert.equal(ai.items[0].label, "Marketplace");
+assert.equal(ai.items[1].label, "Workbench");
+const tie = rankDomainGroups(
+  [{
+    label: "AI / Computational workloads",
+    items: [
+      { label: "Level 4 run", href: "/workbench/autonomous", experience: { reuse: true } },
+      { label: "Marketplace", href: "/workbench/marketplace", experience: { reuse: true } },
+    ],
+  }],
+  list,
+);
+assert.equal(tie[0]?.items[0]?.label, "Level 4 run");
+assert.equal(tie[0]?.items[1]?.label, "Marketplace");
 assert.equal(find(ranked, "ROE · Reciprocal Optimization Engine").phi, null);
 const globalGroup = ranked.find((g) => g.label === "Global Misdiagnosis")!;
 assert.deepEqual(globalGroup.items.slice(0, 2).map((i) => i.label), ["Diagnostics", "Safety"]);
@@ -118,17 +136,19 @@ assert.equal(DOMAIN_GROUPS.find((g) => g.items.some((i) => i.href === "/workbenc
 assert.equal(find(bad2, "Global · misdiagnosis").phi, null, "ineligible never annotates Global");
 console.log("global         -> Global Misdiagnosis domain, href /workbench/global, no Φ, no ?reuse=");
 // 9. Medicare: its own domain, no experience join (no Φ), plain navigation.
-const medGroup = DOMAIN_GROUPS.find((g) => g.label === "ACA / Medicare")!;
+const medGroup = DOMAIN_GROUPS.find((g) => g.label === "Medicare intelligence")!;
 assert.equal(medGroup.items.length, 1);
 const med = medGroup.items.find((i) => i.href === "/workbench/medicare");
 assert.ok(med); assert.equal(med!.experience, undefined, "no experience field");
 assert.equal(find(mk2, "Medicare · Public Data Intelligence").phi, null, "never annotated");
 assert.equal(hrefFor(find(mk2, "Medicare · Public Data Intelligence")), "/workbench/medicare");
 assert.equal(items(empty).filter((i) => i.href === "/workbench/medicare").length, 1, "listed once");
-console.log("medicare       -> ACA / Medicare, href /workbench/medicare, no Φ");
+console.log("medicare       -> Medicare intelligence, href /workbench/medicare, no Φ");
 const hrefs = new Set(DOMAIN_GROUPS.flatMap((g) => g.items.map((i) => i.href)));
 for (const href of ["/workbench/global", "/workbench/medicare", "/workbench/compute-proof", "/workbench/offer", "/assess", "/workbench/reference-ledger"]) {
   assert.equal(hrefs.has(href), true, href);
 }
 assert.equal(DOMAIN_GROUPS.find((g) => g.label === "International healthcare")?.items[0]?.planned, true);
+assert.equal(DOMAIN_GROUPS.find((g) => g.label === "ACA reference")?.items[0]?.planned, true);
+assert.equal(DOMAIN_GROUPS.find((g) => g.label === "ACA reference")?.items[0]?.href, "");
 console.log("OK");
