@@ -40,7 +40,7 @@ export default function LoopStrip({ here, note }: { here: LoopLayerId; note: str
       <p className="text-sm text-zinc-300">{RETENTION_SENTENCE}</p>
       <p className="text-xs text-zinc-500">{ADVANTAGE_LIMIT}</p>
       <p className="text-xs text-zinc-500">
-        Silicon records are retained in the Reference Data Ledger. Not yet physically validated. Power: {versa.power}.
+        The front door leads with Layer One. Silicon records are retained in the Reference Data Ledger. Not yet physically validated. Power: {versa.power}.
         Robotics fixtures on this path are synthetic, and next-run reuse of them is planned.
         The Level 4 plant reuses a qualifying experience. This strip links the plant and does not modify it.{" "}
         <Link href="/#convergence-loop" className="text-emerald-400 underline">Full loop on the front door</Link>.

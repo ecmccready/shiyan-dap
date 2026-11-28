@@ -1,11 +1,12 @@
 /** TEST ONLY. Semiconductor journey pages stay free of other-domain copy, and front-door links resolve.
- * The Physical AI front door (src/app/page.tsx) may name Medicare and the selector domains.
+ * The front door (src/app/page.tsx) leads with Layer One and may name Medicare and the selector domains.
  * The Compute / Silicon layer (SemiconductorDoor) may not.
  * Run: npx --yes tsx@4 --tsconfig ./tsconfig.json scripts/check-semiconductor-nav.ts
  */
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import summary from "../fixtures/scp/versa-bitstream/summary.json";
+import { DOMAIN_GROUPS } from "../src/lib/domains/groups";
 import { JOURNEY } from "../src/lib/semiconductor/journey";
 import {
   ADVANTAGE,
@@ -105,14 +106,25 @@ const readme = read("README.md");
 
 check("bridge language on the front door", front.includes(bridge));
 check("bridge language in the README", readme.includes(bridge));
-check("front door h1 is Physical AI", /<h1[^>]*>\s*Physical AI\s*<\/h1>/.test(front));
+check("front door h1 is Compute / Silicon", /<h1[^>]*>\s*Compute \/ Silicon\s*<\/h1>/.test(door));
+check("Layer One is the first content section",
+  /<main[^>]*>\s*<SemiconductorDoor\s*\/>/.test(front)
+  && front.indexOf("<SemiconductorDoor") < front.indexOf("<RecursiveLoop"));
 check("Compute / Silicon layer is present", door.includes("Compute / Silicon") && door.includes('data-front-door-layer="compute-silicon"'));
-check("Physical AI / Robotics layer is present", front.includes("Physical AI / Robotics") && front.includes('data-front-door-layer="physical-ai-robotics"'));
-check("Telemetry / Governance layer is present", front.includes("Telemetry / Governance") && front.includes('data-front-door-layer="telemetry-governance"'));
+check("moat sentence on the door", door.includes("software → virtualware → hardware"));
+check("moat sentence in the README", readme.includes("software → virtualware → hardware"));
+check("moat sits above the reference card",
+  door.indexOf("software → virtualware → hardware") >= 0
+  && door.indexOf("software → virtualware → hardware") < door.indexOf("data-reference-card"));
+check("layers two and three are not homepage headline sections",
+  !front.includes('data-front-door-layer="physical-ai-robotics"')
+  && !front.includes('data-front-door-layer="telemetry-governance"')
+  && !/<h[12][^>]*>\s*Physical AI \/ Robotics\s*<\/h[12]>/.test(front)
+  && !/<h[12][^>]*>\s*Telemetry \/ Governance\s*<\/h[12]>/.test(front));
 check("README names the three layers",
   readme.includes("Compute / Silicon") && readme.includes("Physical AI / Robotics") && readme.includes("Telemetry / Governance"));
 check("other domains are not a heading",
-  !/<h[12][^>]*>[^<]*Misdiagnosis/.test(front) && !/<h[12][^>]*>[^<]*\bACA\b/.test(front));
+  !/<h[12][^>]*>[^<]*Misdiagnosis/.test(front) && !/<h[12][^>]*>[^<]*\bACA\b/.test(front) && !/<h[12][^>]*>[^<]*Misdiagnosis/.test(door));
 
 const cardAt = door.indexOf("data-reference-card");
 const card = cardAt >= 0 ? door.slice(cardAt) : "";
@@ -150,34 +162,22 @@ check("fixture counts group as 2,447/43,848",
 check("fixture routes are 5/5", routed === 5 && summary.seeds.length === 5);
 check("fixture power is needs real board", summary.power === "needs real board");
 
+const groupsText = read("src/lib/domains/groups.ts");
 const requiredHrefs = [
   ["/assess", door],
   ["/workbench/compute-proof", door],
   ["/workbench/reference-ledger", door],
-  ["/workbench/medicare", front],
-  ["/workbench/offer", front],
-  ["/workbench/pilot", front],
-  ["/workbench/autonomous", front],
-  ["/workbench/proof", front],
-  ["/workbench/evidence", front],
+  ["/workbench/medicare", groupsText],
+  ["/workbench/offer", groupsText],
+  ["/workbench/pilot", groupsText],
+  ["/workbench/autonomous", groupsText],
+  ["/workbench/proof", groupsText],
+  ["/workbench/evidence", groupsText],
 ] as const;
 for (const [href, source] of requiredHrefs) {
-  check(`links ${href}`, source.includes(`href="${href}"`));
+  const needle = source === groupsText ? `href: "${href}"` : `href="${href}"`;
+  check(`links ${href}`, source.includes(needle));
 }
-
-const roboticsStart = front.indexOf('data-front-door-layer="physical-ai-robotics"');
-const roboticsEnd = front.indexOf('data-front-door-layer="telemetry-governance"');
-check("robotics layer is before governance", roboticsStart >= 0 && roboticsEnd > roboticsStart);
-const robotics = roboticsStart >= 0 && roboticsEnd > roboticsStart ? front.slice(roboticsStart, roboticsEnd) : "";
-const roboticsText = visibleText(robotics);
-check("robotics copy has no digits unless fixture-derived and labeled synthetic",
-  roboticsDigitsOk(robotics, roboticsText),
-  roboticsText.replace(/\s+/g, " ").trim());
-check("robotics layer is labeled synthetic", /synthetic/i.test(roboticsText));
-const roboticsHrefs = [...robotics.matchAll(/href="(\/[^"]+)"/g)].map((m) => m[1]!);
-check("robotics layer links the existing routes",
-  roboticsRoutes.every((href) => roboticsHrefs.includes(href))
-  && roboticsHrefs.every((href) => roboticsRoutes.includes(href)));
 for (const href of roboticsRoutes) {
   const file = `src/app${href}/page.tsx`;
   check(`robotics page exists ${href}`, existsSync(join(root, file)));
@@ -195,9 +195,7 @@ const headings = [
 ];
 
 check("three layer headings",
-  /<h2[^>]*>\s*Compute \/ Silicon\s*<\/h2>/.test(door)
-  && /<h2[^>]*>\s*Physical AI \/ Robotics\s*<\/h2>/.test(front)
-  && /<h2[^>]*>\s*Telemetry \/ Governance\s*<\/h2>/.test(front)
+  /<h1[^>]*>\s*Compute \/ Silicon\s*<\/h1>/.test(door)
   && LOOP_LAYERS.every((layer, i) => layer.heading === headings[i]));
 check("front door renders the recursive loop", front.includes("<RecursiveLoop"));
 check("loop section marker", full.includes("data-recursive-loop") && full.includes('id="convergence-loop"'));
@@ -230,18 +228,25 @@ check("advantage limit is on the door and in the README",
   front.includes("{ADVANTAGE_LIMIT}") && readme.includes(ADVANTAGE_LIMIT) && full.includes("{ADVANTAGE_LIMIT}"));
 check("loop headings render", full.includes("{silicon.heading}") && strip.includes("{layer.heading}"));
 
-const telemetryStart = front.indexOf('data-front-door-layer="telemetry-governance"');
-const telemetry = telemetryStart >= 0 ? front.slice(telemetryStart) : "";
 const govAt = full.indexOf('data-loop-layer="governance"');
 const govEnd = full.indexOf("</ol>", govAt);
 const governanceStep = govAt >= 0 && govEnd > govAt ? full.slice(govAt, govEnd) : "";
-check("Medicare link in Layer Three", telemetry.includes('href="/workbench/medicare"'));
+check("Medicare link in Layer Three", governanceStep.includes('href="/workbench/medicare"'));
 check("Medicare link in the loop governance step", governanceStep.includes('href="/workbench/medicare"'));
 
 const robAt = full.indexOf('data-loop-layer="robotics"');
 const robEnd = full.indexOf('data-loop-layer="governance"');
+check("robotics layer is before governance", robAt >= 0 && robEnd > robAt);
 const loopRobotics = robAt >= 0 && robEnd > robAt ? full.slice(robAt, robEnd) : "";
 const loopRoboticsText = visibleText(loopRobotics);
+check("robotics copy has no digits unless fixture-derived and labeled synthetic",
+  roboticsDigitsOk(loopRobotics, loopRoboticsText),
+  loopRoboticsText.replace(/\s+/g, " ").trim());
+check("robotics layer is labeled synthetic", /synthetic/i.test(loopRoboticsText));
+const roboticsHrefs = [...loopRobotics.matchAll(/href="(\/[^"]+)"/g)].map((m) => m[1]!);
+check("robotics layer links the existing routes",
+  roboticsRoutes.every((href) => roboticsHrefs.includes(href))
+  && roboticsHrefs.every((href) => roboticsRoutes.includes(href)));
 check("loop robotics step has no digits unless fixture-derived and labeled synthetic",
   roboticsDigitsOk(loopRobotics, loopRoboticsText),
   loopRoboticsText.replace(/\s+/g, " ").trim());
@@ -286,6 +291,106 @@ for (const rel of qualified) {
   }
 }
 check("no physically validated claim without Not yet", unqualified.length === 0, unqualified.join("\n"));
+
+const honesty = [
+  "Design rule. Nothing writes a bitstream measurement into a robotics policy.",
+  "Design rule. A synthetic policy result does not open a commercial charge.",
+  "Status: synthetic. No field metric.",
+  "Next-run reuse of these fixtures is planned.",
+  "Status: implemented for the Level 4 plant.",
+  "Status: implemented, routed and simulated.",
+  "Becoming the next place-and-route baseline is a design rule, not an automatic rewrite.",
+  "Next-run reuse is planned.",
+];
+for (const line of honesty) check(`honesty label: ${line}`, full.includes(line));
+
+const dropdownLabels = DOMAIN_GROUPS.map((g) => g.label);
+check("dropdown group order",
+  dropdownLabels.join(" | ") === [
+    "Layer Two — Physical AI / Robotics",
+    "Layer Three — Telemetry / Governance",
+    "Medicare intelligence",
+    "Global Misdiagnosis",
+    "ACA reference",
+    "AI / Computational workloads",
+    "Semiconductor / FPGA (Core)",
+    "International healthcare",
+  ].join(" | "));
+check("dropdown robotics routes",
+  DOMAIN_GROUPS[0]?.items.map((i) => i.href).join(",") === roboticsRoutes.join(","));
+check("dropdown governance routes",
+  DOMAIN_GROUPS[1]?.items.map((i) => i.href).join(",") === [
+    "/workbench/reference-ledger",
+    "/workbench/compute-proof",
+    "/workbench/autonomous",
+    "/workbench/status",
+    "/workbench/offer",
+    "/workbench/pilot",
+    "/workbench/journey",
+  ].join(","));
+check("dropdown medicare route",
+  DOMAIN_GROUPS[2]?.label === "Medicare intelligence"
+  && DOMAIN_GROUPS[2]?.items.map((i) => i.href).join(",") === "/workbench/medicare");
+check("ACA reference has no route",
+  DOMAIN_GROUPS.find((g) => g.label === "ACA reference")?.items.every((i) => i.planned === true && i.href === "") === true);
+
+const previousHrefs = [
+  "/",
+  "/assess",
+  "/journey/characterize",
+  "/journey/optimize",
+  "/journey/prove",
+  "/journey/deploy",
+  "/workbench/reference-ledger",
+  "/workbench/compute-proof",
+  "/workbench/acquisition",
+  "/workbench/proof",
+  "/workbench/result",
+  "/workbench/history",
+  "/workbench/conditions",
+  "/workbench/contract",
+  "/workbench/evidence",
+  "/workbench/journey",
+  "/workbench",
+  "/workbench/autonomous",
+  "/workbench/marketplace",
+  "/loop",
+  "/workbench/loop",
+  "/workbench/autonomous?roe_drive=1",
+  "/workbench/status",
+  "/workbench/robotics",
+  "/workbench/robotics/benchmark",
+  "/workbench/robotics/value",
+  "/workbench/robotics/experiment",
+  "/workbench/robotics/policies",
+  "/workbench/engine",
+  "/workbench/opportunity",
+  "/workbench/execute",
+  "/workbench/review",
+  "/workbench/convert",
+  "/workbench/flywheel",
+  "/api/v1/telemetry",
+  "/api/v1/proof",
+  "/workbench/home#guided-run",
+  "/workbench/offer",
+  "/workbench/pilot",
+  "/workbench/diagnostic",
+  "/workbench/safety",
+  "/workbench/global",
+  "/workbench/medicare",
+];
+const dropdownHrefs = new Set(DOMAIN_GROUPS.flatMap((g) => g.items.map((i) => i.href)));
+const dropped = previousHrefs.filter((href) => !dropdownHrefs.has(href));
+check("dropdown keeps every previous route", dropped.length === 0, dropped.join(", "));
+
+const missingRoutes: string[] = [];
+for (const item of DOMAIN_GROUPS.flatMap((g) => g.items)) {
+  if (item.planned || item.href === "" || item.href.startsWith("/api/")) continue;
+  const path = item.href.split("?")[0]!.split("#")[0]!;
+  const file = path === "/" ? frontDoor : `src/app${path}/page.tsx`;
+  if (!existsSync(join(root, file))) missingRoutes.push(`${item.href} -> ${file}`);
+}
+check("dropdown routes exist", missingRoutes.length === 0, missingRoutes.join("\n"));
 
 if (failed) process.exit(1);
 console.log(`PASS check-semiconductor-nav (${n} checks)`);

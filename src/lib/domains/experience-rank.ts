@@ -14,10 +14,13 @@ import type { ExperienceEntry } from "@/lib/level4/experience-client";
 import { isReusable } from "@/lib/level4/durable-self";
 
 export type DomainGroupName =
-  | "Semiconductor / FPGA (Core)"
-  | "AI / Computational workloads"
+  | "Layer Two — Physical AI / Robotics"
+  | "Layer Three — Telemetry / Governance"
+  | "Medicare intelligence"
   | "Global Misdiagnosis"
-  | "ACA / Medicare"
+  | "ACA reference"
+  | "AI / Computational workloads"
+  | "Semiconductor / FPGA (Core)"
   | "International healthcare";
 
 /** Which experience records back an item. `{}` = every reusable record. */
