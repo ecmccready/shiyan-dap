@@ -42,6 +42,10 @@ export default function SemiconductorDoor() {
         <p className="text-sm text-zinc-500">
           4D-SCP owns representations and operations. Aethel Node orchestrates. Shiyan DAP records and evaluates. 4D-SCP stays unwired from production routes.
         </p>
+        <p className="text-sm text-zinc-500">
+          <a className="text-emerald-400 underline" href="#convergence-loop">Where this step sits in the loop</a>
+          : Layer One. Measured silicon evidence feeds robotics policy evaluation. That feed is a design rule.
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-5">

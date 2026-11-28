@@ -1,6 +1,7 @@
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
 import LicensingNotice from "@/components/LicensingNotice";
+import LoopStrip from "@/components/LoopStrip";
+import SiteHeader from "@/components/SiteHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,8 @@ export default function ComputeProofPage() {
           <Link href="/" className={linkClass}>Reference card</Link>
         </p>
       </header>
+
+      <LoopStrip here="silicon" note="The measured proof table on this page is inside Layer One." />
 
       <section className="border border-zinc-700 rounded-lg p-5 space-y-4">
         <h2 className="text-xl font-semibold">Declared workload</h2>

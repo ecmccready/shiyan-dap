@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
 import JourneyNav from "@/components/JourneyNav";
+import LoopStrip from "@/components/LoopStrip";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "05 Deploy or hand off | Shiyan DAP",
@@ -15,6 +16,7 @@ export default function DeployPage() {
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-6">
         <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">Stage 05 Deploy or hand off</p>
         <h1 className="text-3xl font-bold">Deliver the proof package</h1>
+        <LoopStrip here="silicon" note="Stage 05 Deploy or hand off is inside Layer One." />
         <p className="text-zinc-300">
           The package is the ledger record, the bitstream hashes, and the runbook. The v0.1.31 image has not been loaded. Not yet physically validated. Power: needs real board.
         </p>

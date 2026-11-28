@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
 import JourneyNav from "@/components/JourneyNav";
+import LoopStrip from "@/components/LoopStrip";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "Workload assessment | Shiyan DAP",
@@ -24,6 +25,7 @@ export default function AssessPage() {
             The supported FPGA target is the ECP5 Versa (LFE5UM-45F) only.
           </p>
         </header>
+        <LoopStrip here="silicon" note="Stage 01 Discover is inside Layer One." />
         <section className="space-y-2 text-sm text-zinc-300">
           <h2 className="text-lg font-semibold text-white">Bring</h2>
           <ul className="list-disc space-y-1 pl-5">

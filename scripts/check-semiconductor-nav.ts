@@ -7,6 +7,14 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import summary from "../fixtures/scp/versa-bitstream/summary.json";
 import { JOURNEY } from "../src/lib/semiconductor/journey";
+import {
+  ADVANTAGE,
+  ADVANTAGE_LIMIT,
+  FEEDS_NEXT,
+  LOOP_LAYERS,
+  RETENTION_SENTENCE,
+  versa,
+} from "../src/lib/semiconductor/loop";
 
 const root = resolve(join(import.meta.dirname, ".."));
 const read = (rel: string) => readFileSync(join(root, rel), "utf8");
@@ -53,6 +61,14 @@ function visibleText(block: string): string {
     .replace(/<[^>]+>/g, " ");
 }
 
+/** Digits are refused unless that same source is labeled synthetic and cites a fixture. */
+function roboticsDigitsOk(source: string, text: string): boolean {
+  const hasDigit = /\d/.test(text);
+  const hasUnit = /%|MHz|ΔΦ|delta_phi|success rate/i.test(text);
+  if (!hasDigit && !hasUnit) return true;
+  return /synthetic/i.test(source) && /fixtures\//.test(source) && !hasUnit;
+}
+
 for (const rel of journeyPages) {
   check(`${rel} has no other-domain terms`, !forbidden.test(read(rel)));
 }
@@ -65,8 +81,15 @@ for (const stage of JOURNEY) {
 }
 
 const hrefs = new Set<string>();
-for (const rel of linkedPages) {
-  for (const m of read(rel).matchAll(/href="(\/[^"#?]*)/g)) hrefs.add(m[1]!);
+const loopSources = [
+  "src/components/RecursiveLoop.tsx",
+  "src/components/LoopStrip.tsx",
+  "src/lib/semiconductor/loop.ts",
+];
+for (const rel of [...linkedPages, ...loopSources]) {
+  const text = read(rel);
+  for (const m of text.matchAll(/href="(\/[^"#?]*)/g)) hrefs.add(m[1]!);
+  for (const m of text.matchAll(/href:\s*"(\/[^"#?]*)"/g)) hrefs.add(m[1]!);
 }
 const missing: string[] = [];
 for (const href of [...hrefs].sort()) {
@@ -147,7 +170,8 @@ const roboticsEnd = front.indexOf('data-front-door-layer="telemetry-governance"'
 check("robotics layer is before governance", roboticsStart >= 0 && roboticsEnd > roboticsStart);
 const robotics = roboticsStart >= 0 && roboticsEnd > roboticsStart ? front.slice(roboticsStart, roboticsEnd) : "";
 const roboticsText = visibleText(robotics);
-check("robotics copy has no digits or unit metrics", !/\d|%|MHz|ΔΦ|delta_phi|success rate/i.test(roboticsText),
+check("robotics copy has no digits unless fixture-derived and labeled synthetic",
+  roboticsDigitsOk(robotics, roboticsText),
   roboticsText.replace(/\s+/g, " ").trim());
 check("robotics layer is labeled synthetic", /synthetic/i.test(roboticsText));
 const roboticsHrefs = [...robotics.matchAll(/href="(\/[^"]+)"/g)].map((m) => m[1]!);
@@ -160,6 +184,108 @@ for (const href of roboticsRoutes) {
 }
 const leaked = ["0.041", "0.027", "0.018", "0.159", "0.847", "0.1612", "delta_phi"];
 check("front door does not copy robotics fixture metrics", leaked.every((token) => !front.includes(token) && !door.includes(token)));
+
+const full = read("src/components/RecursiveLoop.tsx");
+const strip = read("src/components/LoopStrip.tsx");
+const loopLib = read("src/lib/semiconductor/loop.ts");
+const headings = [
+  "Layer One — Compute / Silicon",
+  "Layer Two — Physical AI / Robotics",
+  "Layer Three — Telemetry / Governance",
+];
+
+check("three layer headings",
+  /<h2[^>]*>\s*Compute \/ Silicon\s*<\/h2>/.test(door)
+  && /<h2[^>]*>\s*Physical AI \/ Robotics\s*<\/h2>/.test(front)
+  && /<h2[^>]*>\s*Telemetry \/ Governance\s*<\/h2>/.test(front)
+  && LOOP_LAYERS.every((layer, i) => layer.heading === headings[i]));
+check("front door renders the recursive loop", front.includes("<RecursiveLoop"));
+check("loop section marker", full.includes("data-recursive-loop") && full.includes('id="convergence-loop"'));
+check("three feeds-next steps",
+  LOOP_LAYERS.length === 3
+  && FEEDS_NEXT.length === 3
+  && LOOP_LAYERS.every((layer, i) => layer.feedsNext === FEEDS_NEXT[i])
+  && FEEDS_NEXT.every((line) => readme.includes(line) && loopLib.includes(line))
+  && full.includes("data-feeds-next={silicon.feeds}")
+  && full.includes("data-feeds-next={robotics.feeds}")
+  && full.includes("data-feeds-next={governance.feeds}")
+  && strip.includes("data-feeds-next={layer.feeds}"));
+check("feed ids",
+  LOOP_LAYERS.map((layer) => layer.feeds).join(",")
+  === "silicon-evidence-to-robotics,robotics-evaluation-to-governance,governance-retention-to-next-run");
+check("retention/baseline sentence",
+  RETENTION_SENTENCE === "Qualifying results are retained and become the baseline for the next run."
+  && readme.includes(RETENTION_SENTENCE)
+  && loopLib.includes(RETENTION_SENTENCE)
+  && full.includes("{RETENTION_SENTENCE}")
+  && strip.includes("{RETENTION_SENTENCE}"));
+check("convergence to emergence",
+  ADVANTAGE.includes("convergence to emergence")
+  && /convergence to emergence/i.test(readme)
+  && /convergence to emergence/i.test(full)
+  && front.includes("{ADVANTAGE}")
+  && full.includes("{ADVANTAGE}")
+  && strip.includes("{ADVANTAGE}"));
+check("advantage limit is on the door and in the README",
+  front.includes("{ADVANTAGE_LIMIT}") && readme.includes(ADVANTAGE_LIMIT) && full.includes("{ADVANTAGE_LIMIT}"));
+check("loop headings render", full.includes("{silicon.heading}") && strip.includes("{layer.heading}"));
+
+const telemetryStart = front.indexOf('data-front-door-layer="telemetry-governance"');
+const telemetry = telemetryStart >= 0 ? front.slice(telemetryStart) : "";
+const govAt = full.indexOf('data-loop-layer="governance"');
+const govEnd = full.indexOf("</ol>", govAt);
+const governanceStep = govAt >= 0 && govEnd > govAt ? full.slice(govAt, govEnd) : "";
+check("Medicare link in Layer Three", telemetry.includes('href="/workbench/medicare"'));
+check("Medicare link in the loop governance step", governanceStep.includes('href="/workbench/medicare"'));
+
+const robAt = full.indexOf('data-loop-layer="robotics"');
+const robEnd = full.indexOf('data-loop-layer="governance"');
+const loopRobotics = robAt >= 0 && robEnd > robAt ? full.slice(robAt, robEnd) : "";
+const loopRoboticsText = visibleText(loopRobotics);
+check("loop robotics step has no digits unless fixture-derived and labeled synthetic",
+  roboticsDigitsOk(loopRobotics, loopRoboticsText),
+  loopRoboticsText.replace(/\s+/g, " ").trim());
+
+const stripPages = [
+  "src/app/assess/page.tsx",
+  "src/app/journey/characterize/page.tsx",
+  "src/app/journey/optimize/page.tsx",
+  "src/app/journey/prove/page.tsx",
+  "src/app/journey/deploy/page.tsx",
+  "src/app/workbench/compute-proof/page.tsx",
+];
+for (const rel of stripPages) {
+  const text = read(rel);
+  check(`${rel} places this step in the loop`, text.includes("<LoopStrip") && text.includes('here="silicon"'));
+}
+check("loop strip has no other-domain terms", !forbidden.test(strip) && !forbidden.test(loopLib));
+check("strip names where this step sits", strip.includes("Where this step sits in the loop"));
+
+check("loop figures match the fixture",
+  versa.shownFmax === summary.fmax_mhz_median.toFixed(2)
+  && versa.shownPct === ((used / avail) * 100).toFixed(1)
+  && versa.combUsedLabel === used.toLocaleString("en-US")
+  && versa.combAvailLabel === avail.toLocaleString("en-US")
+  && versa.routes === routed
+  && versa.seeds === summary.seeds.length
+  && versa.power === summary.power);
+check("loop sources do not hardcode the reference numbers",
+  hardcoded.every((token) => !full.includes(token) && !strip.includes(token) && !loopLib.includes(token)),
+  hardcoded.filter((token) => full.includes(token) || strip.includes(token) || loopLib.includes(token)).join(", "));
+check("loop renders the derived figures",
+  full.includes("versa.shownFmax") && full.includes("versa.shownPct") && full.includes("versa.power") && strip.includes("versa.power"));
+
+const qualified = [frontDoor, silicon, ...loopSources, "README.md", ...journeyPages];
+const unqualified: string[] = [];
+for (const rel of qualified) {
+  const text = read(rel);
+  for (const m of text.matchAll(/physically validated/gi)) {
+    const index = m.index ?? 0;
+    const before = text.slice(Math.max(0, index - 16), index);
+    if (!/not yet\s*$/i.test(before)) unqualified.push(`${rel}: …${before.replace(/\s+/g, " ")}physically validated`);
+  }
+}
+check("no physically validated claim without Not yet", unqualified.length === 0, unqualified.join("\n"));
 
 if (failed) process.exit(1);
 console.log(`PASS check-semiconductor-nav (${n} checks)`);

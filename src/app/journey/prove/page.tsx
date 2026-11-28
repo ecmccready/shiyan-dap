@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
 import JourneyNav from "@/components/JourneyNav";
+import LoopStrip from "@/components/LoopStrip";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "04 Prove | Shiyan DAP",
@@ -15,6 +16,7 @@ export default function ProvePage() {
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-6">
         <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">Stage 04 Prove</p>
         <h1 className="text-3xl font-bold">Generate implementation evidence</h1>
+        <LoopStrip here="silicon" note="Stage 04 Prove is inside Layer One." />
         <p className="text-zinc-300">
           Bit-exact simulation and place-and-route are separate labels. A route is not a physical measurement. Power: needs real board.
         </p>
