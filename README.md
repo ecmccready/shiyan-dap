@@ -4,7 +4,7 @@ Aethel Node turns a declared goal into a bounded run, measures the result agains
 
 The claim is narrow: a verified, reusable workflow can reduce repeated work and next-action error. Retention, savings, and willingness to pay still have to be shown with external users and measured outcomes. “Conscious” is a product metaphor for persistent state, feedback, and continuity across runs, not a claim about machine consciousness.
 
-The front door is semiconductor-first: **Shiyan DAP — Computational Intelligence. Semiconductor Proof.** Tagline: optimize, verify and move computational designs toward hardware. Powered by Aethel Node · 4D-SCP · FPGA implementation and measurement. The owner writes 4D-SPC; the repository name is 4D-SCP. The Reference Data Ledger is at `/workbench/reference-ledger`. A result is not a verified reference until it includes a physical measurement on the ECP5 Versa (LFE5UM-45F). v0.1.31 is reference (routed + simulated), physical verification pending. There is no arbitrary-RTL-to-chip promise. Power needs real board.
+The front door at `/` is a Physical AI surface for Shiyan DAP / Aethel Node. It is written to bridge the gap between silicon performance and real-world physical autonomy. Three layers are on the page. **Compute / Silicon** is semiconductor and FPGA hardware verification: the engineering journey (`/assess`, `/journey/characterize`, `/journey/optimize`, `/journey/prove`, `/journey/deploy`), 4D-SCP, the ECP5 bitstream, measured Fmax, and bit-exact proofs, plus `/workbench/compute-proof`. The v0.1.31 reference card stays on the door and reads `fixtures/scp/versa-bitstream/summary.json` (median Fmax rounded from that file to 53.62 MHz, TRELLIS_COMB utilization rounded to 5.6%, 5/5 seeds routed). It is labeled bit-exact, bitstream ready, awaiting physical board, Power: needs real board, and Not yet physically validated. **Physical AI / Robotics** links only to routes that exist (`/workbench/robotics`, `/workbench/robotics/benchmark`, `/workbench/robotics/value`, `/workbench/robotics/experiment`, `/workbench/robotics/policies`). Those pages are synthetic fixtures. The door shows no robotics field metrics. Real robot control remains outside the engine. **Telemetry / Governance** links the Reference Data Ledger (`/workbench/reference-ledger`), proof surfaces, the Level 4 plant (link only), commercial conversion after measured proof (`/workbench/offer`, `/workbench/pilot`), and Medicare public-data intelligence (`/workbench/medicare`). Global Misdiagnosis, the ACA reference market, and AI pipelines stay in the domain selector and are not the headline. Powered by Aethel Node · 4D-SCP · FPGA implementation and measurement. The owner writes 4D-SPC; the repository name is 4D-SCP. A result is not a verified reference until it includes a physical measurement on the ECP5 Versa (LFE5UM-45F). v0.1.31 is reference (routed + simulated), physical verification pending. There is no arbitrary-RTL-to-chip promise. Power needs real board.
 
 Live: https://shiyan-dap.vercel.app  
 Repo: https://github.com/ecmccready/shiyan-dap
@@ -113,7 +113,7 @@ Phase 1 is complete. Phase 2 (MCP + boundary) is current. Phase 3 asset map and 
 
 ## Surfaces and the Domains dropdown
 
-Pages that use the shared header show a domain selector, not the identity of the front door. The groups are Semiconductor / FPGA (Core), AI / Computational workloads, Global Misdiagnosis, ACA / Medicare, and International healthcare (planned, no route). Existing routes remain in that selector. Selecting an item navigates to it. The current page is preselected. Each domain keeps its own inputs, rules, agents, measurements, and evidence format.
+Pages that use the shared header show a domain selector. The front door at `/` is the Physical AI surface (Compute / Silicon, Physical AI / Robotics, Telemetry / Governance). The selector is not that headline. The groups are Semiconductor / FPGA (Core), AI / Computational workloads, Global Misdiagnosis, ACA / Medicare, and International healthcare (planned, no route). Existing routes remain in that selector. Selecting an item navigates to it. The current page is preselected. Each domain keeps its own inputs, rules, agents, measurements, and evidence format.
 
 | Group | Entry | Path |
 | --- | --- | --- |
@@ -173,7 +173,7 @@ Customer experience (problem, evidence, result, value).
 Acquisition agent (evidence-backed discovery and approved outreach).  
 
 New customer outcomes feed the next optimization cycle.  
-The proof journey at `/workbench/journey` is the front door. Acquisition remains gated until the five evidence conditions are met.
+The proof journey at `/workbench/journey` remains the commercial proof-to-payment entry. The site front door is `/`. Acquisition remains gated until the five evidence conditions are met.
 
 ## Metamorphic Perturbation Engine
 

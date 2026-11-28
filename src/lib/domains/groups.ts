@@ -1,8 +1,9 @@
 import type { DomainGroup } from "./experience-rank";
 
 /**
- * Domain selector. The front door is semiconductor-first; this menu is how a
- * reader reaches another domain. Every previous route is still listed.
+ * Domain selector. The front door is the Physical AI surface. This menu is how a
+ * reader reaches another domain, including domains that are not the front-door headline.
+ * Every previous route is still listed.
  * International healthcare has no route and is marked planned.
  * Each domain keeps its own inputs, rules, agents, measurements, and evidence format.
  */

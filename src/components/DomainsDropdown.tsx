@@ -40,8 +40,8 @@ export default function DomainsDropdown() {
   const groups = useRankedDomainGroups();
 
   return (
-    <label className="flex items-center gap-2 text-sm text-zinc-400">
-      Domains
+    <label className="flex w-full min-w-0 items-center gap-2 text-sm text-zinc-400 sm:w-auto">
+      <span className="shrink-0">Domains</span>
       <select
         data-domain-select
         value={selectedDomain}
@@ -54,7 +54,7 @@ export default function DomainsDropdown() {
           if (target.startsWith("/api/")) window.location.assign(target);
           else router.push(target);
         }}
-        className="h-10 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white"
+        className="h-10 min-w-0 w-full max-w-full flex-1 rounded-full bg-zinc-900 border border-zinc-700 px-3 text-sm text-white sm:w-auto sm:flex-none"
       >
         {selectedDomain === "" && (
           <option value="" disabled>
