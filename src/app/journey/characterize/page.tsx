@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
 import JourneyNav from "@/components/JourneyNav";
+import LoopStrip from "@/components/LoopStrip";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "02 Characterize | Shiyan DAP",
@@ -15,6 +16,7 @@ export default function CharacterizePage() {
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-6">
         <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">Stage 02 Characterize</p>
         <h1 className="text-3xl font-bold">Characterize the workload</h1>
+        <LoopStrip here="silicon" note="Stage 02 Characterize is inside Layer One." />
         <p className="text-zinc-300">
           Record what is computed, the input size, the current implementation, and the number that matters: cycles, latency, area, or a correctness check. This stage does not optimize and does not program a board.
         </p>

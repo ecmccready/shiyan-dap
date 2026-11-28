@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import RecursiveLoop from "@/components/RecursiveLoop";
 import SemiconductorDoor from "@/components/SemiconductorDoor";
 import SiteHeader from "@/components/SiteHeader";
 import { SCOPE } from "@/lib/domains/pipelines";
+import { ADVANTAGE, ADVANTAGE_LIMIT } from "@/lib/semiconductor/loop";
 
 export const metadata: Metadata = {
   title: "Shiyan DAP — Physical AI",
@@ -26,6 +28,8 @@ export default function HomePage() {
           <p className="max-w-3xl text-zinc-400">
             Semiconductors and robotics sit on one evidence path. Silicon is measured. Robotics on this door is a synthetic fixture. Governance keeps the ledger, the plant, and the step that follows a measured proof.
           </p>
+          <p className="max-w-3xl text-zinc-300">{ADVANTAGE}</p>
+          <p className="max-w-3xl text-sm text-zinc-500">{ADVANTAGE_LIMIT}</p>
         </header>
 
         <nav aria-label="Layers" className="grid gap-3 sm:grid-cols-3">
@@ -45,6 +49,8 @@ export default function HomePage() {
             <p className="mt-2 text-xs text-zinc-400">Ledger, proof, the Level 4 plant, and conversion after measured proof.</p>
           </a>
         </nav>
+
+        <RecursiveLoop />
 
         <SemiconductorDoor />
 
